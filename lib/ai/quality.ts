@@ -10,12 +10,7 @@ import {
 } from "@/lib/creed-data";
 import { callOpenRouter, parseJsonObject } from "@/lib/ai/openrouter";
 import { recordAiUsage } from "@/lib/ai/persistence";
-import {
-  deductCredits,
-  deductCompanyCredits,
-  resolveAiCredential,
-  resolveCompanyAiCredential,
-} from "@/lib/ai/credits";
+import { resolveAiCredential, resolveCompanyAiCredential } from "@/lib/ai/credits";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import {
   buildQualityPrompt,
@@ -704,9 +699,8 @@ export async function analyzeCreedQuality({
   // personal report by the owner's personal creed, a company report by the
   // shared company creed (so every member sees the one report).
   creedId: string;
-  // Set only for a company analysis: bill the company wallet and use the company
-  // credential, attributed to userId (the owner/admin who ran it). Unset for a
-  // personal analysis, which bills the personal wallet exactly as before.
+  // Set only for a company analysis: use the company credential, attributed to
+  // userId (the owner/admin who ran it). Unset for a personal analysis.
   companyId?: string;
   // Company only: the sections this caller is allowed to (re)grade - owner/admin
   // get every section (undefined = no cap); a member gets just the sections they
@@ -732,7 +726,6 @@ export async function analyzeCreedQuality({
         contentHash,
         sectionHashes: Object.keys(storedHashes).length ? storedHashes : sectionHashes,
         cached: true,
-        creditBalanceUsd: null,
       };
     }
   }
@@ -795,10 +788,10 @@ export async function analyzeCreedQuality({
       // caller sees the one true overall, not a subset recompute.
       const shared = await readQualityBaseline({ client, userId, creedId, sections, companyRead: true });
       if (shared.report) {
-        return { report: shared.report, contentHash, sectionHashes, cached: false, creditBalanceUsd: null };
+        return { report: shared.report, contentHash, sectionHashes, cached: false };
       }
     }
-    return { report: reportWithHashes, contentHash, sectionHashes, cached: false, creditBalanceUsd: null };
+    return { report: reportWithHashes, contentHash, sectionHashes, cached: false };
   }
 
   const credential = companyId
@@ -866,31 +859,6 @@ export async function analyzeCreedQuality({
   });
   const reportWithHashes = { ...report, sectionHashes, rubricVersion: CREED_QUALITY_RUBRIC_VERSION };
 
-  // Now that we have a valid report, bill prepaid credits - before the report /
-  // usage writes so a later DB hiccup can't skip the charge. No-op for BYOK.
-  let creditBalanceUsd: number | null = null;
-  let chargedMicroUsd: number | null = null;
-  if (credential.mode === "credits") {
-    const debit = companyId
-      ? await deductCompanyCredits({
-          creedId: companyId,
-          spentBy: userId,
-          costUsd: result.costUsd,
-          feature: "analysis",
-          modelId: credential.modelId,
-        })
-      : await deductCredits({
-          userId,
-          costUsd: result.costUsd,
-          feature: "analysis",
-          modelId: credential.modelId,
-        });
-    if (debit) {
-      creditBalanceUsd = debit.balanceUsd;
-      chargedMicroUsd = debit.chargedMicroUsd;
-    }
-  }
-
   await persistQualityReport({
     userId,
     creedId,
@@ -901,32 +869,25 @@ export async function analyzeCreedQuality({
     modelId: credential.modelId,
   });
 
-  // Record usage only when the charge actually landed: BYOK never charges, and
-  // in credits mode a non-null balance means the debit succeeded. This keeps the
-  // spend chart consistent with the balance (no phantom cost if the debit failed).
-  if (credential.mode === "byok" || creditBalanceUsd !== null) {
-    try {
-      await recordAiUsage({
-        client,
-        userId,
-        // Stamp company usage with the company creed so the shared spend chart
-        // attributes it; personal usage stays creed-less exactly as before.
-        creedId: companyId,
-        feature: "analysis",
-        modelId: credential.modelId,
-        modelQuality: result.modelQuality,
-        inputTokens: result.inputTokens,
-        outputTokens: result.outputTokens,
-        costUsd: result.costUsd,
-        // Credits mode charges the marked-up amount the debit returned; BYOK is
-        // at-cost (the user paid their own key).
-        chargedMicroUsd: chargedMicroUsd ?? Math.round(result.costUsd * 1_000_000),
-        aiMode: credential.mode,
-      });
-    } catch {
-      // Usage logging is best-effort; a completed, charged analysis must not
-      // fail just because the spend-chart insert hiccupped.
-    }
+  try {
+    await recordAiUsage({
+      client,
+      userId,
+      // Stamp company usage with the company creed so the shared spend chart
+      // attributes it; personal usage stays creed-less exactly as before.
+      creedId: companyId,
+      feature: "analysis",
+      modelId: credential.modelId,
+      modelQuality: result.modelQuality,
+      inputTokens: result.inputTokens,
+      outputTokens: result.outputTokens,
+      costUsd: result.costUsd,
+      chargedMicroUsd: Math.round(result.costUsd * 1_000_000),
+      aiMode: credential.mode,
+    });
+  } catch {
+    // Usage logging is best-effort; a completed analysis must not fail just
+    // because the spend-chart insert hiccupped.
   }
 
   if (companyId) {
@@ -936,9 +897,9 @@ export async function analyzeCreedQuality({
     // over its own subset - a transient number nobody else sees.
     const shared = await readQualityBaseline({ client, userId, creedId, sections, companyRead: true });
     if (shared.report) {
-      return { report: shared.report, contentHash, sectionHashes, cached: false, creditBalanceUsd };
+      return { report: shared.report, contentHash, sectionHashes, cached: false };
     }
   }
 
-  return { report: reportWithHashes, contentHash, sectionHashes, cached: false, creditBalanceUsd };
+  return { report: reportWithHashes, contentHash, sectionHashes, cached: false };
 }

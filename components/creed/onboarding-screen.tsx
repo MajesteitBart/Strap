@@ -19,7 +19,6 @@ import {
   summarizeDiff,
 } from "@/components/creed/inline-proposal-diff";
 import { RichTextEditor } from "@/components/creed/rich-text-editor";
-import { useStripeCheckout } from "@/components/marketing/use-stripe-checkout";
 import {
   accentColorMap,
   type AgentIconKind,
@@ -38,7 +37,7 @@ import { cn } from "@/lib/utils";
 // questions feed a deterministic seed draft; three explainer slides woven
 // through them teach what Creed is. The user copies a prompt into any
 // assistant, which returns a markdown Creed they paste back. No MCP in
-// onboarding - the agent connection is a paid feature set up later. Each step
+// onboarding - the agent connection is set up later in the app. Each step
 // picks an accent for the top progress bar so the colour tracks where the user
 // is in the flow.
 const TOTAL_STEPS = 10;
@@ -67,15 +66,12 @@ const stepAccentMap = [
 ];
 
 export function OnboardingScreen({
-  paid,
   initialStage,
 }: {
-  paid: boolean;
   initialStage?: "prompt" | "preview";
 }) {
   const router = useRouter();
   const { state, updateOnboarding, claimOnboardingPreview } = useCreed();
-  const { startCheckout, submitting: checkoutSubmitting } = useStripeCheckout();
   const [step, setStep] = useState(
     initialStage === "preview" ? PREVIEW_STEP : initialStage === "prompt" ? PROMPT_STEP : 0
   );
@@ -106,16 +102,13 @@ export function OnboardingScreen({
     composedResult !== null ||
     state.sections.some((section) => section.lastEditedType === "agent");
 
-  // A returning PAID user who already has a composed Creed skips onboarding and
-  // goes straight to /file. We gate on `paid` so unpaid composed users (whom the
-  // app layout sends here to pay) are NOT bounced - that would loop them
-  // /file <-> /onboarding. They instead start on the preview (via initialStage)
-  // with the "Get Creed" button. We only bounce at step 0, never mid-flow.
+  // A returning user who already has a composed Creed skips onboarding and
+  // goes straight to /file. We only bounce at step 0, never mid-flow.
   useEffect(() => {
-    if (paid && step === 0 && composed) {
+    if (step === 0 && composed) {
       router.replace("/file");
     }
-  }, [router, paid, step, composed]);
+  }, [router, step, composed]);
 
   const handleContinue = useCallback(async () => {
     if (step === EXPLAINER_C_STEP) {
@@ -537,7 +530,7 @@ export function OnboardingScreen({
                 )}
               </Button>
             </div>
-          ) : paid ? (
+          ) : (
             <Button
               style={{ borderRadius: "0.875rem" }}
               className="bg-[var(--creed-text-primary)] px-5 text-[var(--creed-button-primary-fg)] hover:bg-[var(--creed-button-primary-hover)]"
@@ -545,22 +538,6 @@ export function OnboardingScreen({
             >
               Go to my Creed
               <ArrowRightIcon className="h-4 w-4" size={16} />
-            </Button>
-          ) : (
-            // Subscription-first: a single low-friction monthly checkout. Yearly
-            // and lifetime are chosen later on /pricing or in the billing dialog.
-            <Button
-              style={{ borderRadius: "0.875rem" }}
-              className="bg-[var(--creed-text-primary)] px-5 text-[var(--creed-button-primary-fg)] hover:bg-[var(--creed-button-primary-hover)] disabled:bg-[var(--creed-border-strong)] disabled:text-[var(--creed-text-tertiary)]"
-              onClick={() => void startCheckout({ plan: "personal", cadence: "monthly" })}
-              disabled={checkoutSubmitting}
-            >
-              {checkoutSubmitting ? "Starting" : "Start for $12/mo"}
-              {checkoutSubmitting ? (
-                <LoaderCircle className="h-4 w-4 animate-spin" />
-              ) : (
-                <ArrowRightIcon className="h-4 w-4" size={16} />
-              )}
             </Button>
           )}
         </div>

@@ -1,11 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireApiAuth } from "@/lib/api-auth";
-import {
-  resolveAiCredential,
-  deductCredits,
-  resolveCompanyAiCredential,
-  deductCompanyCredits,
-} from "@/lib/ai/credits";
+import { resolveAiCredential, resolveCompanyAiCredential } from "@/lib/ai/credits";
 import { callOpenRouter, streamOpenRouter, parseJsonObject } from "@/lib/ai/openrouter";
 import { getAgentModelId } from "@/lib/ai/model-catalog";
 import { recordAiUsage } from "@/lib/ai/persistence";
@@ -21,8 +16,6 @@ import {
 import { executeAgentActions, executeCompanyAgentActions } from "@/lib/panel/agent-execute";
 import { loadActiveCreedState } from "@/lib/creed-backend";
 import { resolveActiveCreed } from "@/lib/creed-context";
-import { getCompanyAccessState } from "@/lib/creed-membership";
-import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import { sectionBodyMarkdown } from "@/lib/creed-data";
 
 export const maxDuration = 300;
@@ -40,17 +33,6 @@ export async function POST(request: Request) {
     (c) => c.id === activeCreed.creedId && c.type === "company"
   );
   const companyId = companyEntry ? activeCreed!.creedId : undefined;
-
-  // A frozen company is read-only; refuse before spending on a model call.
-  if (companyId) {
-    const admin = getSupabaseAdminClient();
-    if ((await getCompanyAccessState(admin, companyId)) === "frozen") {
-      return NextResponse.json(
-        { error: "This company Creed is read-only until billing is fixed." },
-        { status: 403 }
-      );
-    }
-  }
 
   // Setup (auth, parse, state, credential) happens before the stream so a
   // setup failure returns a normal JSON error the client can read.
@@ -105,7 +87,7 @@ export async function POST(request: Request) {
       archived,
       state,
       apiKey: credential.apiKey,
-      modelId: getAgentModelId(),
+      modelId: getAgentModelId({ byok: credential.mode === "byok" }),
       mode: credential.mode,
       sectionIds,
       archivedIds,
@@ -202,47 +184,23 @@ export async function POST(request: Request) {
           });
         }
 
-        // Bill for the spend regardless of what the plan turns out to be.
-        let creditBalanceUsd: number | null = null;
-        let chargedMicroUsd: number | null = null;
-        if (p.mode === "credits") {
-          const debit = p.companyId
-            ? await deductCompanyCredits({
-                creedId: p.companyId,
-                spentBy: auth.user.id,
-                costUsd: modelResult.costUsd,
-                feature: "panel",
-                modelId: p.modelId,
-              })
-            : await deductCredits({
-                userId: auth.user.id,
-                costUsd: modelResult.costUsd,
-                feature: "panel",
-                modelId: p.modelId,
-              });
-          if (debit) {
-            creditBalanceUsd = debit.balanceUsd;
-            chargedMicroUsd = debit.chargedMicroUsd;
-          }
-        }
-        if (p.mode === "byok" || creditBalanceUsd !== null) {
-          try {
-            await recordAiUsage({
-              client: auth.supabase,
-              userId: auth.user.id,
-              creedId: p.companyId,
-              feature: "panel",
-              modelId: p.modelId,
-              modelQuality: modelResult.modelQuality,
-              inputTokens: modelResult.inputTokens,
-              outputTokens: modelResult.outputTokens,
-              costUsd: modelResult.costUsd,
-              chargedMicroUsd: chargedMicroUsd ?? Math.round(modelResult.costUsd * 1_000_000),
-              aiMode: p.mode,
-            });
-          } catch {
-            // Best-effort.
-          }
+        // Record the real usage regardless of what the plan turns out to be.
+        try {
+          await recordAiUsage({
+            client: auth.supabase,
+            userId: auth.user.id,
+            creedId: p.companyId,
+            feature: "panel",
+            modelId: p.modelId,
+            modelQuality: modelResult.modelQuality,
+            inputTokens: modelResult.inputTokens,
+            outputTokens: modelResult.outputTokens,
+            costUsd: modelResult.costUsd,
+            chargedMicroUsd: Math.round(modelResult.costUsd * 1_000_000),
+            aiMode: p.mode,
+          });
+        } catch {
+          // Best-effort.
         }
 
         let parsed: unknown;
@@ -267,8 +225,8 @@ export async function POST(request: Request) {
         }
 
         // The user stopped between the model reply and here: don't apply or
-        // persist edits they cancelled. Billing already happened (the spend is
-        // real), but nothing touches the creed.
+        // persist edits they cancelled. The model spend already happened, but
+        // nothing touches the creed.
         if (request.signal.aborted) return;
 
         send({ type: "stage", stage: "filing" });

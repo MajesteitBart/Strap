@@ -11,7 +11,6 @@ function statusFor(result: Extract<SectionCreateResult, { ok: false }>): number 
     case "exists":
       return 409;
     case "forbidden":
-    case "frozen":
       return 403;
     case "not_found":
       return 404;

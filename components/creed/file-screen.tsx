@@ -842,11 +842,9 @@ export function FileScreen() {
   const canReorderSections = state.creedType !== "company" || isCompanyManager;
   // Analysis runs: owners/admins can trigger a full-file analysis; members can
   // only refresh individual sections they have propose or direct access to.
+  // Every member can SEE quality scores (the shared report is loaded as a
+  // baseline for everyone).
   const canRunQuality = state.creedType !== "company" || isCompanyManager;
-  // All non-frozen members can SEE quality scores (the shared report is loaded
-  // as a baseline for everyone). This controls ring display, not the refresh button.
-  const canSeeQuality =
-    state.creedType !== "company" || state.company?.accessState !== "frozen";
   // Archived sections stay in state (so they persist) but are hidden from the
   // editor; the section list renders from this live set.
   const visibleSections = useMemo(
@@ -2850,25 +2848,21 @@ export function FileScreen() {
                       const baseLocked = isOverridden
                         ? !state.locked
                         : state.locked;
-                      // Company mode: a frozen Creed is read-only for everyone, and a
-                      // member with Read-only access on this section cannot edit it.
-                      // Direct/Proposal-only stay editable (Proposal-only edits are
-                      // filed as proposals by the provider).
+                      // Company mode: a member with Read-only access on this
+                      // section cannot edit it. Direct/Proposal-only stay
+                      // editable (Proposal-only edits are filed as proposals by
+                      // the provider).
                       const myPerm =
                         state.creedType === "company"
                           ? (state.company?.myPermissions?.[section.id] ??
                             "direct")
                           : "direct";
-                      const frozen =
-                        state.creedType === "company" &&
-                        state.company?.accessState === "frozen";
                       const companyReadOnly =
-                        state.creedType === "company" &&
-                        (frozen || myPerm === "read-only");
+                        state.creedType === "company" && myPerm === "read-only";
                       const sectionLocked = baseLocked || companyReadOnly;
                       // A company member with Proposal-only edits by hand into a local
                       // draft, then submits it as a proposal (no autosave). Only when
-                      // not frozen and not otherwise locked.
+                      // not otherwise locked.
                       const proposeMode =
                         state.creedType === "company" &&
                         myPerm === "propose" &&
@@ -2878,14 +2872,11 @@ export function FileScreen() {
                       // members see proposals preview-only.
                       const canReview =
                         state.creedType !== "company" || myPerm === "direct";
-                      // A member's per-section read-only (not the whole-Creed frozen
-                      // state, which has its own banner). Drives the "look but don't
-                      // touch" treatment: no drag, no kebab, a click shows an amber
-                      // "read-only" toast instead of letting them edit.
+                      // A member's per-section read-only. Drives the "look but
+                      // don't touch" treatment: no drag, no kebab, a click shows
+                      // an amber "read-only" toast instead of letting them edit.
                       const readOnlyMember =
-                        state.creedType === "company" &&
-                        !frozen &&
-                        myPerm === "read-only";
+                        state.creedType === "company" && myPerm === "read-only";
                       const canArchiveSection =
                         state.creedType !== "company" || isCompanyManager;
                       return (
@@ -2910,7 +2901,6 @@ export function FileScreen() {
                           qualityLoading={qualitySectionLoading === section.id}
                           qualityDirty={
                             qualityEnabled &&
-                            canSeeQuality &&
                             // Members can only refresh sections they have propose or direct access to.
                             (state.creedType !== "company" ||
                               canProposeToSection(myPerm)) &&
@@ -3557,8 +3547,8 @@ function SectionCard({
   proposeMode?: boolean;
   // Whether this viewer can accept/reject proposals on this section.
   canReview?: boolean;
-  // Per-member read-only (not whole-Creed frozen): look-but-don't-touch. No
-  // drag, no kebab; a click on the body shows an amber read-only toast.
+  // Per-member read-only: look-but-don't-touch. No drag, no kebab; a click on
+  // the body shows an amber read-only toast.
   readOnlyMember?: boolean;
   // Whether this viewer may reorder sections (owner/admin, or personal). When
   // false the drag handle is hidden and there's no icon left of the name.

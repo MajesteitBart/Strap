@@ -1,7 +1,7 @@
 // Pure permission logic for Company Creeds.
 //
 // No IO, no DB, no React - just the rules that decide what a role, a member, or
-// a member's agent may do to a section, plus the derived billing-access state.
+// a member's agent may do to a section.
 // Kept pure and dependency-free (only a type-only import) so it is unit-testable
 // with `node --test` and shared byte-identically by three call sites:
 //
@@ -31,9 +31,6 @@ export type CreedRole = "owner" | "admin" | "member";
 // "proposal-only" (user-facing) vs the section permission's "propose"; mapped
 // into the shared lattice by MODE_TO_PERMISSION below.
 export type McpAgentMode = "read-only" | "proposal-only" | "direct";
-
-// Derived access state for a company Creed, from its billing status.
-export type CompanyAccessState = "active" | "past_due" | "frozen";
 
 // The permission lattice. Higher rank = more power. Every ceiling operation is
 // a `min` over this order, so combining two ceilings never grants more than
@@ -109,11 +106,6 @@ export function canRunAnalysis(role: CreedRole): boolean {
   return role === "owner" || role === "admin";
 }
 
-/** Owner only: billing, seats, top-ups, BYOK, cancel, transfer, delete Creed. */
-export function canManageBilling(role: CreedRole): boolean {
-  return role === "owner";
-}
-
 /**
  * The permission levels at or below `ceiling`, weakest first. A member may only
  * grant their own agent up to what they themselves hold on a section, so the UI
@@ -151,31 +143,4 @@ export function minPermission(
   b: AgentPermission,
 ): AgentPermission {
   return PERMISSION_RANK[a] <= PERMISSION_RANK[b] ? a : b;
-}
-
-/**
- * Derive the access state of a company Creed from its billing status.
- * `past_due` still grants full access (Stripe's smart-retry grace window) but
- * warrants a fix-billing banner. `frozen` is read-only: no writes, proposals,
- * invites, or AI, but data is retained and recovers when billing is fixed.
- */
-export function deriveCompanyAccessState(
-  status: string | null | undefined,
-): CompanyAccessState {
-  switch (status) {
-    case "paid":
-    case "active":
-    case "trialing":
-      return "active";
-    case "past_due":
-      return "past_due";
-    // refunded, canceled, incomplete, unknown -> locked.
-    default:
-      return "frozen";
-  }
-}
-
-/** Writes (manual, MCP, proposals, invites, AI) are allowed unless frozen. */
-export function companyIsWritable(state: CompanyAccessState): boolean {
-  return state !== "frozen";
 }

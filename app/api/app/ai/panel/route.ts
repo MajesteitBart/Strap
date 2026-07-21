@@ -1,11 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireApiAuth } from "@/lib/api-auth";
-import {
-  resolveAiCredential,
-  deductCredits,
-  resolveCompanyAiCredential,
-  deductCompanyCredits,
-} from "@/lib/ai/credits";
+import { resolveAiCredential, resolveCompanyAiCredential } from "@/lib/ai/credits";
 import { callOpenRouter, parseJsonObject } from "@/lib/ai/openrouter";
 import { recordAiUsage } from "@/lib/ai/persistence";
 import { resolveActiveCreed } from "@/lib/creed-context";
@@ -72,9 +67,6 @@ export async function POST(request: Request) {
         ? active.creedId
         : null;
     const { state } = await loadActiveCreedState(auth.supabase, auth.user, active);
-    if (companyId && state.company?.accessState === "frozen") {
-      return NextResponse.json({ error: "This company Creed is read-only until billing is fixed." }, { status: 403 });
-    }
     const sections: PanelSectionSummary[] = state.sections
       .filter((section) => !section.archived && permissionIsReadable(section.agentPermission))
       .map((section) => ({
@@ -131,7 +123,7 @@ export async function POST(request: Request) {
       messages,
     });
 
-    // Parse before billing, so a malformed reply never charges the user.
+    // Parse before recording usage, so a malformed reply is never counted.
     let parsed: unknown;
     try {
       parsed = parseJsonObject(result.content);
@@ -157,47 +149,22 @@ export async function POST(request: Request) {
       modelOk &&
       (mode === "ask" ? Boolean(answer) || (actions?.length ?? 0) > 0 : (actions?.length ?? 0) > 0);
 
-    let creditBalanceUsd: number | null = null;
-    let chargedMicroUsd: number | null = null;
-    if (credential.mode === "credits") {
-      const debit = companyId
-        ? await deductCompanyCredits({
-            creedId: companyId,
-            spentBy: auth.user.id,
-            costUsd: result.costUsd,
-            feature: "panel",
-            modelId: credential.modelId,
-          })
-        : await deductCredits({
-            userId: auth.user.id,
-            costUsd: result.costUsd,
-            feature: "panel",
-            modelId: credential.modelId,
-          });
-      if (debit) {
-        creditBalanceUsd = debit.balanceUsd;
-        chargedMicroUsd = debit.chargedMicroUsd;
-      }
-    }
-
-    if (credential.mode === "byok" || creditBalanceUsd !== null) {
-      try {
-        await recordAiUsage({
-          client: auth.supabase,
-          userId: auth.user.id,
-          creedId: companyId,
-          feature: "panel",
-          modelId: credential.modelId,
-          modelQuality: result.modelQuality,
-          inputTokens: result.inputTokens,
-          outputTokens: result.outputTokens,
-          costUsd: result.costUsd,
-          chargedMicroUsd: chargedMicroUsd ?? Math.round(result.costUsd * 1_000_000),
-          aiMode: credential.mode,
-        });
-      } catch {
-        // Best-effort; a completed, charged call must not fail on a log hiccup.
-      }
+    try {
+      await recordAiUsage({
+        client: auth.supabase,
+        userId: auth.user.id,
+        creedId: companyId,
+        feature: "panel",
+        modelId: credential.modelId,
+        modelQuality: result.modelQuality,
+        inputTokens: result.inputTokens,
+        outputTokens: result.outputTokens,
+        costUsd: result.costUsd,
+        chargedMicroUsd: Math.round(result.costUsd * 1_000_000),
+        aiMode: credential.mode,
+      });
+    } catch {
+      // Best-effort; a completed call must not fail on a log hiccup.
     }
 
     const payload: PanelResult = {

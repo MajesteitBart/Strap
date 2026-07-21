@@ -8,7 +8,6 @@ import {
   type CreedGrant,
 } from "@/lib/oauth";
 import { listUserCreeds } from "@/lib/creed-membership";
-import { hasActiveEntitlement } from "@/lib/stripe";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 // Handles the Allow / Deny POST from the consent screen. The user is
@@ -72,15 +71,6 @@ export async function POST(request: Request) {
       error: "access_denied",
       ...(stateValue ? { state: stateValue } : {}),
     });
-  }
-
-  // MCP is a paid feature. Re-check entitlement at grant time (the consent page
-  // checks too, but never trust the page). We do NOT require a finished Creed -
-  // a paid user can connect before composing content; onboarding itself uses
-  // copy-paste, not MCP.
-  const paid = await hasActiveEntitlement(supabase, user.id);
-  if (!paid) {
-    return badRequest("This account is not set up to connect agents yet.");
   }
 
   // OAuth scope is a coarse hint; real edit rights are enforced per-section on

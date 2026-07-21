@@ -5,8 +5,8 @@ import { setActiveCreed } from "@/lib/creed-context";
 import { recordAuditEvent } from "@/lib/audit-log";
 
 // POST /api/app/company/invites/accept { token } - the signed-in user accepts
-// an invite. Validates expiry, seat capacity, and email match in the lib, then
-// creates membership and switches the active Creed to the company.
+// an invite. Validates expiry and email match in the lib, then creates
+// membership and switches the active Creed to the company.
 export async function POST(request: Request) {
   const auth = await requireApiAuth();
   if (auth instanceof NextResponse) return auth;
@@ -24,7 +24,7 @@ export async function POST(request: Request) {
 
   const result = await acceptInvite(token, auth.user);
   if (!result.ok) {
-    const status = result.code === "no_seats" ? 409 : result.code === "email_mismatch" ? 403 : 400;
+    const status = result.code === "email_mismatch" ? 403 : 400;
     return NextResponse.json({ error: result.error, code: result.code }, { status });
   }
 

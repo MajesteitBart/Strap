@@ -24,7 +24,7 @@ wrong change.
 ```
 Next.js 16 (App Router, Turbopack)   React 19   TypeScript (strict)
 Tailwind v4   shadcn/ui   Tiptap   Framer Motion / motion
-Supabase (Postgres + RLS + auth)   OpenRouter (credits + BYOK)
+Supabase (Postgres + RLS + auth)   OpenRouter (included key + BYOK)
 ```
 
 ---
@@ -56,7 +56,7 @@ lib/
 ├── creed-markdown.ts         Markdown ↔ section parser
 ├── rich-text.ts              Tiptap content normalization
 ├── ai/quality{,-runner,-rubric}.ts   quality analysis
-├── ai/openrouter.ts          OpenRouter call helper (credits + BYOK)
+├── ai/openrouter.ts          OpenRouter call helper (included key + BYOK)
 ├── ai/model-catalog.ts       OpenRouter model list + tier scoring
 ├── onboarding/{compile,refine,validate}.ts   synthesizer pipeline
 ├── supabase/{server,browser,admin}.ts        per-runtime clients

@@ -14,12 +14,9 @@ import {
   canProposeToSection,
   canApproveProposal,
   canManageMembers,
-  canManageBilling,
   canRunAnalysis,
   effectiveAgentPermission,
   minPermission,
-  deriveCompanyAccessState,
-  companyIsWritable,
 } from "../lib/creed-permissions.ts";
 import { possessive, actorLabel } from "../lib/creed-attribution.ts";
 
@@ -59,8 +56,6 @@ test("role gates", () => {
   assert.equal(canManageMembers("owner"), true);
   assert.equal(canManageMembers("admin"), true);
   assert.equal(canManageMembers("member"), false);
-  assert.equal(canManageBilling("owner"), true);
-  assert.equal(canManageBilling("admin"), false);
 });
 
 test("canRunAnalysis: company analysis is owner/admin only", () => {
@@ -95,21 +90,6 @@ test("minPermission: returns the weaker of two lattice permissions", () => {
   // Equal inputs are returned unchanged.
   assert.equal(minPermission("direct", "direct"), "direct");
   assert.equal(minPermission("read-only", "read-only"), "read-only");
-});
-
-test("deriveCompanyAccessState + companyIsWritable", () => {
-  assert.equal(deriveCompanyAccessState("paid"), "active");
-  assert.equal(deriveCompanyAccessState("active"), "active");
-  assert.equal(deriveCompanyAccessState("trialing"), "active");
-  assert.equal(deriveCompanyAccessState("past_due"), "past_due");
-  assert.equal(deriveCompanyAccessState("canceled"), "frozen");
-  assert.equal(deriveCompanyAccessState("refunded"), "frozen");
-  assert.equal(deriveCompanyAccessState("incomplete"), "frozen");
-  assert.equal(deriveCompanyAccessState(null), "frozen");
-
-  assert.equal(companyIsWritable("active"), true);
-  assert.equal(companyIsWritable("past_due"), true);
-  assert.equal(companyIsWritable("frozen"), false);
 });
 
 test("attribution: manual, MCP agent, panel agent", () => {

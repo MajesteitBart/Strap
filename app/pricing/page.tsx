@@ -14,7 +14,7 @@ import {
 const PATH = "/pricing";
 const TITLE = "Pricing";
 const DESCRIPTION =
-  "Creed pricing: free to self-host, Personal hosting from $12/mo ($99/yr, $199 lifetime), and the Company plan from $129/mo ($999/yr, $1,999 lifetime) for 10 seats. All hosted plans support BYOK.";
+  "Creed is free: self-host the open source build, or use the hosted app with Personal and Company Creeds at no charge. AI runs on an included key or BYOK.";
 
 const DATE_MODIFIED = "2026-07-07";
 

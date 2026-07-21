@@ -143,7 +143,17 @@ export async function streamOpenRouter({
     if (response.status === 401) throw new Error("OpenRouter rejected your key");
     if (response.status === 402) throw new Error("OpenRouter is out of credit");
     if (response.status === 429) throw new Error("OpenRouter is rate-limiting you");
-    throw new Error("OpenRouter rejected this request.");
+    // Mirror callOpenRouter: surface OpenRouter's own message for the generic
+    // statuses (400/403/404 carry the actionable detail, e.g. a provider
+    // allowlist declining the model on a restricted BYOK key).
+    let upstream: string | undefined;
+    try {
+      const payload = (await response.json()) as { error?: { message?: string } };
+      upstream = payload.error?.message?.trim();
+    } catch {
+      // Unreadable error body; fall through to the generic message.
+    }
+    throw new Error(upstream || "OpenRouter rejected this request.");
   }
 
   const reader = response.body.getReader();

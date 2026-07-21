@@ -3,7 +3,7 @@ import { analyzeCreedQuality, readQualityBaseline } from "@/lib/ai/quality";
 import type { CreedSection } from "@/lib/creed-data";
 import { requireApiAuth } from "@/lib/api-auth";
 import { resolveActiveCreed } from "@/lib/creed-context";
-import { getCompanyAccessState, getPersonalCreedId } from "@/lib/creed-membership";
+import { getPersonalCreedId } from "@/lib/creed-membership";
 import { canRunAnalysis } from "@/lib/creed-permissions";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 
@@ -29,11 +29,10 @@ export async function POST(request: Request) {
     }
 
     // Every report is keyed by creed_id: a company report by the shared company
-    // creed (billed to the company wallet, owner/admin-run), a personal report by
-    // the user's personal creed (billed to their wallet, unchanged). Every member
-    // can read the shared company baseline for the sections they can see (their
-    // client only sends visible sections, so hidden-section scores never reach
-    // them).
+    // creed (owner/admin-run), a personal report by the user's personal creed.
+    // Every member can read the shared company baseline for the sections they
+    // can see (their client only sends visible sections, so hidden-section
+    // scores never reach them).
     const admin = getSupabaseAdminClient();
     const active = await resolveActiveCreed(auth.supabase, auth.user);
     const companyEntry = active?.creeds.find(
@@ -61,14 +60,6 @@ export async function POST(request: Request) {
     }
 
     if (companyId) {
-      const access = await getCompanyAccessState(admin, companyId);
-      if (access === "frozen") {
-        return NextResponse.json(
-          { error: "This company Creed is read-only until billing is fixed." },
-          { status: 403 }
-        );
-      }
-
       const role = companyEntry!.role;
       if (!canRunAnalysis(role)) {
         return NextResponse.json(

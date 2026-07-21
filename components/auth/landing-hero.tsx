@@ -6,7 +6,6 @@ import { BelowHeroSections } from "@/components/marketing/below-hero-sections";
 import { CreedAppDemo } from "@/components/marketing/creed-app-demo";
 import { MarketingHeader } from "@/components/marketing/site-chrome";
 import { useLandingAuthState } from "@/components/marketing/use-landing-auth-state";
-import { usePaidStatus } from "@/components/marketing/use-paid-status";
 import { useOnboardingResume } from "@/components/marketing/use-onboarding-resume";
 import { useAnimatedIconControls } from "@/components/creed/animated-icon-controls";
 import { ArrowRightIcon } from "@/components/ui/arrow-right";
@@ -16,15 +15,14 @@ const darkHeroImage = "/assets/landing/scenery/dark-hero.png";
 
 export function LandingHero({ configured }: { configured: boolean }) {
   const authState = useLandingAuthState(configured);
-  const paidStatus = usePaidStatus(configured);
-  const isPaid = authState === "signed-in" && paidStatus === "paid";
-  // Signed-in, unpaid, with an unfinished onboarding in this browser -> resume
+  const signedIn = authState === "signed-in";
+  // Signed-out, with an unfinished onboarding in this browser -> resume
   // straight into /onboarding rather than the generic "Get Started".
-  const canResume = useOnboardingResume(configured) && !isPaid;
+  const canResume = useOnboardingResume(configured) && !signedIn;
   const heroArrow = useAnimatedIconControls(80, undefined, 420);
 
-  const ctaHref = isPaid ? "/file" : canResume ? "/onboarding" : "/pricing";
-  const ctaLabel = isPaid ? "Go to app" : canResume ? "Resume" : "Get Started";
+  const ctaHref = signedIn ? "/file" : canResume ? "/onboarding" : "/pricing";
+  const ctaLabel = signedIn ? "Go to app" : canResume ? "Resume" : "Get Started";
 
   return (
     <>

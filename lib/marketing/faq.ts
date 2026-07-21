@@ -38,42 +38,37 @@ export const homeFaqItems: FaqItem[] = [
   {
     question: "Is Creed for teams or just for me?",
     answer:
-      "Both. Creed starts as a personal profile, and the Company plan adds one shared Company Creed that every member's agents read, with member roles, an activity view across the team, and admin controls. It starts at $129 per month for 10 seats.",
+      "Both. Creed starts as a personal profile, and a Company Creed adds one shared file that every member's agents read, with member roles, an activity view across the team, and admin controls. It is free, like everything else in Creed.",
   },
 ];
 
-// FAQ for the /pricing page. Answers the billing questions a buyer actually
-// has, phrased as standalone facts so an answer engine can quote one item.
+// FAQ for the /pricing page. Phrased as standalone facts so an answer engine
+// can quote one item.
 export const pricingFaqItems: FaqItem[] = [
   {
     question: "Is Creed free?",
     answer:
-      "Yes. Creed is open source and free to self-host, with the full editor, every MCP connection, and quality scoring. Hosted plans add cross-device sync, backups, and managed auth and storage, and start at $12 per month.",
+      "Yes, all of it. Creed is open source and free to self-host, with the full editor, every MCP connection, and quality scoring. The hosted app is free too, and adds cross-device sync, backups, and managed auth and storage.",
   },
   {
-    question: "What are usage credits?",
+    question: "How do AI features run?",
     answer:
-      "Hosted plans include a monthly allowance of AI usage for quality analysis and agent work: $5 per month on Personal and $50 per month on Company. Lifetime plans include a one-time credit instead. When the allowance runs out you can top up, or bring your own key so model spend runs on your own account.",
+      "AI features like quality analysis and agent work run on the deployment's included OpenRouter key, or on your own key (BYOK) when you want model spend on your own account.",
   },
   {
     question: "What is BYOK?",
     answer:
-      "BYOK means bring your own key. You connect your own OpenRouter key so AI spend runs on your account and Creed never owns your model bill. Every hosted plan supports it.",
+      "BYOK means bring your own key. You connect your own OpenRouter key so AI spend runs on your account and Creed never owns your model bill.",
   },
   {
-    question: "How much does the Company plan cost?",
+    question: "How much does a Company Creed cost?",
     answer:
-      "The Company plan is $129 per month, $999 per year, or $1,999 one-time for lifetime. Each includes 10 seats. Extra seats are $12 per month, $99 per year, or $199 one-time depending on the cycle.",
+      "Nothing. A Company Creed is free, with as many members as you need, roles and section permissions, a team activity view, and BYOK support.",
   },
   {
-    question: "Can I switch between monthly, yearly, and lifetime?",
+    question: "Do I own my data?",
     answer:
-      "Yes. You can move between billing cycles from your billing portal, and a subscriber can pay the difference to own Creed for life. Only the account owner manages billing.",
-  },
-  {
-    question: "Do I own my data, and can I cancel?",
-    answer:
-      "Your Creed is plain Markdown you own and can export at any time. You can cancel a subscription whenever you want, and deleting your account wipes everything. There is no lock-in.",
+      "Your Creed is plain Markdown you own and can export at any time, and deleting your account wipes everything. There is no lock-in.",
   },
 ];
 
@@ -91,19 +86,19 @@ export const companyFaqItems: FaqItem[] = [
       "A wiki is a large, complete record for people to search. A Company Creed is short, curated, and written to be read by agents before they answer. It is the profile your AI reads, not the archive your team browses. Most teams keep both.",
   },
   {
-    question: "What roles does the Company plan have?",
+    question: "What roles does a Company Creed have?",
     answer:
-      "Three: Owner, who manages billing, members, and content; Admin, who manages members and content; and Member, who reads and proposes. Section permissions can further control who edits each section directly versus by proposal, and every change is attributed in the activity view.",
+      "Three: Owner, who manages company settings, members, and content; Admin, who manages members and content; and Member, who reads and proposes. Section permissions can further control who edits each section directly versus by proposal, and every change is attributed in the activity view.",
   },
   {
     question: "Do team members need their own personal Creed?",
     answer:
-      "No. A member needs a Creed account to join a seat, but not a personal Creed. They connect their own agents over MCP and read the shared Company Creed. They can keep a personal Creed too, and switch between them from the workspace dropdown.",
+      "No. A member needs a Creed account to join, but not a personal Creed. They connect their own agents over MCP and read the shared Company Creed. They can keep a personal Creed too, and switch between them from the workspace dropdown.",
   },
   {
-    question: "How much does the Company plan cost?",
+    question: "How much does a Company Creed cost?",
     answer:
-      "It is $129 per month, $999 per year, or $1,999 one-time for lifetime. Each includes 10 seats. Extra seats are $12 per month, $99 per year, or $199 one-time depending on the cycle. Every Company plan supports BYOK, and billing is owner-only.",
+      "Nothing. It is free, with as many members as you need, and every company supports BYOK so model spend can run on the company's own key.",
   },
 ];
 

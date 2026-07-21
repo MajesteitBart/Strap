@@ -6,8 +6,6 @@ import { getCreedRole } from "@/lib/creed-membership";
 import { encryptSecret, hashSecret } from "@/lib/secret-crypto";
 import type { AgentPermission } from "@/lib/creed-data";
 import { recordAuditEvent } from "@/lib/audit-log";
-import { getCompanyBilling } from "@/lib/company-billing";
-import { deriveCompanyAccessState } from "@/lib/creed-permissions";
 import { getDisplayName } from "@/lib/user-name";
 
 // Owner/admin management operations for a company Creed: roles, member removal,
@@ -20,22 +18,6 @@ export type AdminResult =
 
 function admin(): SupabaseLikeClient {
   return getSupabaseAdminClient() as unknown as SupabaseLikeClient;
-}
-
-// A frozen (billing-lapsed) company is read-only: management ops are rejected,
-// consistent with the content/invite/AI paths. The escape hatches - transfer
-// ownership and delete - are deliberately NOT gated so a lapsed owner can still
-// hand off or wind down.
-async function frozenResult(creedId: string): Promise<AdminResult | null> {
-  const billing = await getCompanyBilling(creedId);
-  if (billing && deriveCompanyAccessState(billing.status) === "frozen") {
-    return {
-      ok: false,
-      error: "This company is read-only until billing is fixed.",
-      status: 403,
-    };
-  }
-  return null;
 }
 
 function actorName(user: User): string {
@@ -83,8 +65,6 @@ export async function setMemberRole(params: {
       status: 403,
     };
   }
-  const frozen = await frozenResult(params.creedId);
-  if (frozen) return frozen;
   const targetRole = await getCreedRole(
     db,
     params.targetUserId,
@@ -142,8 +122,6 @@ export async function removeMember(params: {
       status: 403,
     };
   }
-  const frozen = await frozenResult(params.creedId);
-  if (frozen) return frozen;
   const targetRole = await getCreedRole(
     db,
     params.targetUserId,
@@ -228,8 +206,6 @@ export async function setSectionPermission(params: {
       status: 403,
     };
   }
-  const frozen = await frozenResult(params.creedId);
-  if (frozen) return frozen;
   // Do not let a permission be set on an owner/admin (they are always direct).
   const targetRole = await getCreedRole(
     db,
@@ -295,8 +271,6 @@ export async function updateCompanyGeneral(params: {
       status: 403,
     };
   }
-  const frozen = await frozenResult(params.creedId);
-  if (frozen) return frozen;
   const patch: Record<string, unknown> = {
     updated_at: new Date().toISOString(),
   };
@@ -424,8 +398,6 @@ export async function setCompanyByok(params: {
   if (actorRole !== "owner") {
     return { ok: false, error: "Only the owner can manage BYOK.", status: 403 };
   }
-  const frozen = await frozenResult(params.creedId);
-  if (frozen) return frozen;
   const row: Record<string, unknown> = {
     creed_id: params.creedId,
     updated_by: params.actor.id,
@@ -484,8 +456,6 @@ export async function setCompanyAiMode(params: {
       status: 403,
     };
   }
-  const frozen = await frozenResult(params.creedId);
-  if (frozen) return frozen;
   const { error } = await db
     .from("creed_company_ai_settings")
     .upsert(

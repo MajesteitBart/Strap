@@ -38,11 +38,6 @@ import {
   DisconnectButton,
   ReauthorizeButton,
 } from "@/components/creed/settings-screen";
-import { CreditsHistoryDialog } from "@/components/creed/credits-history-dialog";
-import { AddCreditsDialog } from "@/components/creed/add-credits-dialog";
-import { BuySeatsDialog } from "@/components/creed/buy-seats-dialog";
-import { RemoveSeatsDialog } from "@/components/creed/remove-seats-dialog";
-import { seatCadence } from "@/lib/seat-config";
 import { SearchableSelect } from "@/components/creed/searchable-select";
 import { RichTextEditor } from "@/components/creed/rich-text-editor";
 import {
@@ -64,7 +59,6 @@ import type {
   AiMode,
   AiUsageRange,
   AiUsageSummary,
-  CreditsState,
   OpenRouterBalance,
   PublicAiSettings,
 } from "@/components/creed/settings-preload";
@@ -114,10 +108,10 @@ const INVITE_BUTTON =
 // a single scrolling column of sections, each a bare card under an outside H2,
 // separated by rules. Sections mirror the personal ones the company needs:
 // Profile (avatar, name, email), Members & permissions, Model usage, Danger zone.
-// AI/money lives in Model usage (like personal) - there is no separate billing
-// or API-key section. Every member SEES every section; access is by role.
+// AI lives in Model usage (like personal) - there is no separate API-key
+// section. Every member SEES every section; access is by role.
 // Managers (owner/admin) edit General + Members. The owner alone manages Model
-// usage (mode, credits, BYOK key) and the Danger zone. A plain member sees the
+// usage (mode, BYOK key) and the Danger zone. A plain member sees the
 // same sections read-only: General is disabled, and Model usage shows the
 // figures + spend chart (time frame still switchable) with the owner-only
 // controls and purchase history hidden.
@@ -136,7 +130,6 @@ const FIELD_LABEL =
 const CARD =
   "mt-4 rounded-[var(--radius-xl)] border border-[var(--creed-border)] bg-[var(--creed-surface)] p-5";
 const H2 = "text-[16px] font-medium text-[var(--creed-text-primary)]";
-const LOW_ALLOWANCE_RATIO = 0.2;
 
 function looksLikeApiKey(value: string) {
   return /^sk-or-[A-Za-z0-9-_]{8,}$/.test(value.trim());
@@ -204,7 +197,7 @@ function GitHubMark({ className }: { className?: string }) {
   );
 }
 
-// One credits/allowance tile, matching the personal Model-usage stat tiles.
+// One stat tile, matching the personal Model-usage stat tiles.
 function CreditTile({
   label,
   primary,
@@ -317,9 +310,9 @@ export function CompanySettings() {
     {},
   );
 
-  // Model usage: company AI credits / allowance / usage / BYOK, fetched directly
-  // (not via the personal settings cache, which is per-user). Read by every
-  // member; only the owner can mutate it.
+  // Model usage: company AI usage / BYOK, fetched directly (not via the
+  // personal settings cache, which is per-user). Read by every member; only the
+  // owner can mutate it.
   const [aiSettings, setAiSettings] = useState<PublicAiSettings>({
     provider: "openrouter",
     keyStatus: "missing",
@@ -329,13 +322,8 @@ export function CompanySettings() {
   const [aiSaving, setAiSaving] = useState(false);
   const [usageRange, setUsageRange] = useState<AiUsageRange>("90d");
   const [usage, setUsage] = useState<AiUsageSummary | null>(null);
-  const [credits, setCredits] = useState<CreditsState | null>(null);
   const [openRouterBalance, setOpenRouterBalance] =
     useState<OpenRouterBalance | null>(null);
-  const [historyOpen, setHistoryOpen] = useState(false);
-  const [addCreditsOpen, setAddCreditsOpen] = useState(false);
-  const [buySeatsOpen, setBuySeatsOpen] = useState(false);
-  const [removeSeatsOpen, setRemoveSeatsOpen] = useState(false);
 
   // Owner dialogs.
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -363,30 +351,22 @@ export function CompanySettings() {
   }, [permTarget, creedId]);
 
   // Model-usage data. Every member can view the company's model usage (owners
-  // additionally manage it), so this loads for all roles. The endpoints are
-  // company-aware off the active-Creed cookie, so a plain GET returns this
-  // company's figures (with owner-only detail like purchase history stripped
-  // server-side for non-owners).
+  // additionally manage it), so this loads for all roles.
   useEffect(() => {
     if (!creedId) return;
     let cancelled = false;
     void (async () => {
-      // Pin every AI-data read to THIS company Creed (not the active-Creed
-      // cookie), so the card always shows the company's own pooled figures.
-      const q = `?creedId=${encodeURIComponent(creedId)}`;
-      const [settingsRes, creditsRes] = await Promise.all([
-        fetch(`/api/app/ai/settings${q}`, { cache: "no-store" }),
-        fetch(`/api/app/credits${q}`, { cache: "no-store" }),
-      ]);
+      // Pin the AI-settings read to THIS company Creed (not the active-Creed
+      // cookie), so the card always shows the company's own figures.
+      const res = await fetch(
+        `/api/app/ai/settings?creedId=${encodeURIComponent(creedId)}`,
+        { cache: "no-store" },
+      );
       if (cancelled) return;
-      const s = (await settingsRes.json().catch(() => ({}))) as {
+      const s = (await res.json().catch(() => ({}))) as {
         settings?: PublicAiSettings;
       };
       if (s.settings) setAiSettings(s.settings);
-      const c = (await creditsRes.json().catch(() => ({}))) as {
-        credits?: CreditsState;
-      };
-      if (c.credits) setCredits(c.credits);
     })();
     return () => {
       cancelled = true;
@@ -872,31 +852,6 @@ export function CompanySettings() {
     });
   }
 
-  async function openPortal() {
-    const res = await fetch("/api/app/company/portal", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ creedId }),
-    });
-    const data = (await res.json().catch(() => ({}))) as {
-      url?: string;
-      error?: string;
-    };
-    if (data.url) window.location.href = data.url;
-    else toast.error(data.error ?? "Could not open billing.");
-  }
-
-  async function refreshCredits() {
-    const res = await fetch(
-      `/api/app/credits?creedId=${encodeURIComponent(creedId)}`,
-      { cache: "no-store" },
-    );
-    const data = (await res.json().catch(() => ({}))) as {
-      credits?: CreditsState;
-    };
-    if (data.credits) setCredits(data.credits);
-  }
-
   async function putAiSettings(
     body: Record<string, unknown>,
   ): Promise<PublicAiSettings | null> {
@@ -957,8 +912,6 @@ export function CompanySettings() {
     }
   }
 
-  const seats = company.seats;
-
   // The roster with optimistic member edits applied (role overrides + removals),
   // so role changes and removals render instantly. The owner is never overridden.
   const members = company.members
@@ -992,16 +945,6 @@ export function CompanySettings() {
     .split(/\s+/)
     .filter(Boolean).length;
 
-  // Credits figures (mirrors the personal Model-usage card).
-  const grantedUsd = credits?.grantedUsd ?? 0;
-  const purchasedUsd = credits?.purchasedUsd ?? 0;
-  const balanceUsd = credits?.balanceUsd ?? 0;
-  const allowanceUsd = credits?.allowanceUsd ?? 0;
-  const allTimeSpentUsd = credits?.allTimeSpentUsd ?? 0;
-  const allowanceResets = credits?.allowanceResets ?? false;
-  const allowanceSpentUsd = Math.max(0, allowanceUsd - grantedUsd);
-  const lowOnAllowance =
-    allowanceUsd > 0 && balanceUsd <= allowanceUsd * LOW_ALLOWANCE_RATIO;
   const canSaveAiKey = looksLikeApiKey(aiKeyDraft) && !aiSaving;
 
   const blocks: ReactNode[] = [];
@@ -1190,52 +1133,6 @@ export function CompanySettings() {
             </div>
           ))}
       </div>
-
-      {seats ? (
-        <div className="mt-5 border-t border-[var(--creed-border)] pt-5">
-          <div className="flex items-center justify-between gap-4">
-            <div className="min-w-0">
-              <div className="text-[14px] font-medium text-[var(--creed-text-primary)]">
-                Seats
-              </div>
-              <p className="mt-1 hidden text-[13px] text-[var(--creed-text-secondary)] md:block">
-                {`${seats.used} of ${seats.capacity} in use.`}
-                {seats.used >= seats.capacity
-                  ? " Every seat is taken."
-                  : ` ${seats.capacity - seats.used} open.`}
-              </p>
-            </div>
-            {isOwner ? (
-              <div className="flex shrink-0 items-center gap-2">
-                <Button
-                  variant="ghost"
-                  className={GHOST_BUTTON}
-                  onClick={openPortal}
-                >
-                  Manage
-                </Button>
-                {/* Removing seats is subscription-only; lifetime seats are
-                    purchased capacity and never refunded. */}
-                {company.billing?.billingMode === "subscription" && seats.extra > 0 ? (
-                  <Button
-                    variant="ghost"
-                    className={GHOST_BUTTON}
-                    onClick={() => setRemoveSeatsOpen(true)}
-                  >
-                    Remove
-                  </Button>
-                ) : null}
-                <Button
-                  className="rounded-md bg-[var(--creed-accent)] px-4 text-white hover:bg-[var(--creed-accent-hover)] hover:text-white"
-                  onClick={() => setBuySeatsOpen(true)}
-                >
-                  Buy
-                </Button>
-              </div>
-            ) : null}
-          </div>
-        </div>
-      ) : null}
 
       {isManager ? (
         <div className="mt-5 border-t border-[var(--creed-border)] pt-5">
@@ -1470,8 +1367,9 @@ export function CompanySettings() {
   }
 
   // ── Model usage ──────────────────────────────────────────────────────────────
-  // Every member sees the allowance/balance figures and usage chart. Owners
-  // alone manage mode switching, top-ups, purchase history, and BYOK.
+  // Every member sees the usage chart. Owners alone manage mode switching and
+  // BYOK. "Included" runs on the deployment's shared OpenRouter key; BYOK runs
+  // on the company's own key.
   blocks.push(
     <section key="model-usage" className="scroll-mt-6">
       <div className="flex items-center justify-between gap-4">
@@ -1483,7 +1381,7 @@ export function CompanySettings() {
                 type="button"
                 className="inline-flex h-8 items-center gap-2 rounded-md border border-[var(--creed-border)] bg-[var(--creed-surface)] px-3 text-sm text-[var(--creed-text-primary)] transition-colors duration-150 hover:bg-[var(--creed-surface-raised)]"
               >
-                {aiSettings.aiMode === "credits" ? "Credits" : "BYOK"}
+                {aiSettings.aiMode === "credits" ? "Included" : "BYOK"}
                 <ChevronDown className="h-3.5 w-3.5 text-[var(--creed-text-secondary)]" />
               </button>
             </DropdownMenuTrigger>
@@ -1501,7 +1399,7 @@ export function CompanySettings() {
                       "bg-[var(--creed-surface-selected)] font-medium",
                   )}
                 >
-                  <span>{mode === "credits" ? "Credits" : "BYOK"}</span>
+                  <span>{mode === "credits" ? "Included" : "BYOK"}</span>
                   {aiSettings.aiMode === mode ? (
                     <Check className="h-3.5 w-3.5 shrink-0 text-[var(--creed-text-primary)]" />
                   ) : null}
@@ -1511,7 +1409,7 @@ export function CompanySettings() {
           </DropdownMenu>
         ) : (
           <span className="inline-flex h-8 items-center rounded-md border border-[var(--creed-border)] bg-[var(--creed-surface)] px-3 text-sm text-[var(--creed-text-tertiary)]">
-            {aiSettings.aiMode === "credits" ? "Credits" : "BYOK"}
+            {aiSettings.aiMode === "credits" ? "Included" : "BYOK"}
           </span>
         )}
       </div>
@@ -1519,32 +1417,11 @@ export function CompanySettings() {
         <div className="grid gap-5 md:grid-cols-[1.1fr_0.9fr] md:items-stretch">
           <div className="flex flex-col gap-4">
             {aiSettings.aiMode === "credits" ? (
-              allowanceResets ? (
-                <>
-                  <CreditTile
-                    label="This month"
-                    primary={`$${allowanceSpentUsd.toFixed(2)}`}
-                    secondary={`/ $${allowanceUsd.toFixed(2)}`}
-                  />
-                  <CreditTile
-                    label="Extra credits"
-                    primary={`$${purchasedUsd.toFixed(2)}`}
-                    size={22}
-                  />
-                </>
-              ) : (
-                <>
-                  <CreditTile
-                    label="Credits left"
-                    primary={`$${balanceUsd.toFixed(2)}`}
-                  />
-                  <CreditTile
-                    label="All-time spend"
-                    primary={`$${allTimeSpentUsd.toFixed(2)}`}
-                    size={22}
-                  />
-                </>
-              )
+              <p className="text-[14px] leading-7 text-[var(--creed-text-secondary)]">
+                AI features run on this deployment&apos;s shared OpenRouter key.
+                Switch to BYOK to run them on your company&apos;s own key
+                instead.
+              </p>
             ) : (
               <div>
                 {openRouterBalance ? (
@@ -1585,35 +1462,7 @@ export function CompanySettings() {
               </div>
             )}
 
-            {aiSettings.aiMode === "credits" ? (
-              // Visible to everyone; only the owner can actually act, so a
-              // member sees the buttons greyed out (they learn where they live
-              // in case they are later promoted to owner).
-              <div className="mt-auto flex items-center justify-between gap-2 pt-1">
-                <Button
-                  variant="ghost"
-                  className={GHOST_BUTTON}
-                  onClick={() => setHistoryOpen(true)}
-                  disabled={!isOwner}
-                >
-                  View history
-                </Button>
-                <div className="flex items-center gap-3">
-                  {lowOnAllowance ? (
-                    <span className="text-[12px] text-[#B45309] dark:text-[#F5A623]">
-                      Running low
-                    </span>
-                  ) : null}
-                  <Button
-                    className="rounded-md bg-[var(--creed-accent)] px-4 text-white hover:bg-[var(--creed-accent-hover)]"
-                    onClick={() => setAddCreditsOpen(true)}
-                    disabled={!isOwner}
-                  >
-                    Add credits
-                  </Button>
-                </div>
-              </div>
-            ) : isOwner ? (
+            {aiSettings.aiMode === "byok" && isOwner ? (
               <div className="mt-auto flex items-center justify-between gap-2 pt-1">
                 <Button
                   variant="ghost"
@@ -2019,32 +1868,6 @@ export function CompanySettings() {
           Settings
         </h1>
 
-        {company.accessState === "frozen" ? (
-          <div className="mt-6 rounded-[var(--radius-xl)] border border-[var(--creed-border)] bg-[var(--creed-surface-raised)] p-4 text-[13px] leading-6 text-[var(--creed-text-secondary)]">
-            This company Creed is read-only until billing is fixed.{" "}
-            {isOwner ? (
-              <button
-                onClick={openPortal}
-                className="font-medium text-[var(--creed-text-primary)] underline underline-offset-2"
-              >
-                Fix billing
-              </button>
-            ) : (
-              "Ask your owner to fix billing."
-            )}
-          </div>
-        ) : company.accessState === "past_due" && isOwner ? (
-          <div className="mt-6 rounded-[var(--radius-xl)] border border-[var(--creed-border)] bg-[var(--creed-surface-raised)] p-4 text-[13px] leading-6 text-[var(--creed-text-secondary)]">
-            A payment did not go through.{" "}
-            <button
-              onClick={openPortal}
-              className="font-medium text-[var(--creed-text-primary)] underline underline-offset-2"
-            >
-              Fix billing
-            </button>
-          </div>
-        ) : null}
-
         {blocks.map((block, index) => (
           <div key={index} className={index === 0 ? "mt-10" : undefined}>
             {index > 0 ? (
@@ -2054,51 +1877,6 @@ export function CompanySettings() {
           </div>
         ))}
       </div>
-
-      <AddCreditsDialog
-        open={addCreditsOpen}
-        onOpenChange={setAddCreditsOpen}
-        currentBalanceUsd={balanceUsd}
-        onToppedUp={() => void refreshCredits()}
-      />
-
-      {company.billing ? (
-        <BuySeatsDialog
-          open={buySeatsOpen}
-          onOpenChange={setBuySeatsOpen}
-          creedId={creedId}
-          cadence={seatCadence(
-            company.billing.billingMode,
-            company.billing.interval,
-          )}
-          used={seats?.used ?? 0}
-          capacity={seats?.capacity ?? 0}
-          onPurchased={() => void refreshState()}
-        />
-      ) : null}
-
-      {company.billing && seats ? (
-        <RemoveSeatsDialog
-          open={removeSeatsOpen}
-          onOpenChange={setRemoveSeatsOpen}
-          creedId={creedId}
-          cadence={seatCadence(
-            company.billing.billingMode,
-            company.billing.interval,
-          )}
-          used={seats.used}
-          included={seats.included}
-          extra={seats.extra}
-          onDone={() => void refreshState()}
-        />
-      ) : null}
-
-      <CreditsHistoryDialog
-        open={historyOpen}
-        onOpenChange={setHistoryOpen}
-        transactions={credits?.transactions ?? []}
-        allowanceResets={allowanceResets}
-      />
 
       <Dialog
         open={archivedDeleteTarget !== null}
@@ -2155,7 +1933,7 @@ export function CompanySettings() {
             {(() => {
               const target = members.find((m) => m.userId === transferTargetId);
               const who = target?.name ?? "this member";
-              return `${who} becomes owner and gets billing control. You become an admin.`;
+              return `${who} becomes owner. You become an admin.`;
             })()}
           </p>
           <div className="mt-2 flex items-center justify-between gap-3">

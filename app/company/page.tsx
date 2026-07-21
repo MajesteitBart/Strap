@@ -13,7 +13,7 @@ import {
 const PATH = "/company";
 const TITLE = "Company plan";
 const DESCRIPTION =
-  "The Creed Company plan: one shared Company Creed every member's agents read, with roles, section permissions, an activity view, and admin controls. From $129/mo for 10 seats.";
+  "The Company Creed: one shared file every member's agents read, with roles, section permissions, an activity view, and admin controls. Free for your whole team.";
 const DATE_MODIFIED = "2026-07-07";
 
 export const metadata: Metadata = {

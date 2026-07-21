@@ -784,23 +784,13 @@ export type CompanyContext = {
   // The current member's effective permission per section id (owner/admin get
   // "direct" everywhere; Hidden sections are already stripped from the payload).
   myPermissions: Partial<Record<string, AgentPermission>>;
-  // Billing-derived: "active" | "past_due" | "frozen". Frozen = read-only.
-  accessState: "active" | "past_due" | "frozen";
   // Whether the dedicated team-GitHub OAuth App is configured on this
   // deployment (env). Managers use it to decide whether to offer "Connect
   // GitHub"; false hides the affordance with an explanatory note.
   githubOAuthConfigured?: boolean;
-  seats?: { used: number; capacity: number; included: number; extra: number };
-  // Pending invites (owner/admin only): each holds a seat until accepted or
-  // revoked. Shown in the Members list with a Revoke action.
+  // Pending invites (owner/admin only). Shown in the Members list with a
+  // Revoke action.
   invites?: Array<{ id: string; email: string; role: "admin" | "member" }>;
-  billing?: {
-    billingMode: "subscription" | "lifetime";
-    interval: "month" | "year" | null;
-    status: string;
-    currentPeriodEnd: string | null;
-    cancelAtPeriodEnd: boolean;
-  };
 };
 
 // Post-onboarding "Get started" checklist (the card by the toast stack).
