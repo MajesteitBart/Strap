@@ -134,6 +134,24 @@ These are non-negotiable. Don't cross them without asking.
 - No `next/dynamic({ ssr: false })` for heavy public-route components
   — known to hang in Next 16 dev.
 
+### Supabase CLI + environment
+- Always invoke the Supabase CLI through `npx supabase`; do not rely on a
+  globally installed `supabase` binary.
+- `.env.local` is the canonical source for this checkout's Supabase instance
+  values. Load it into the current process before commands or scripts that
+  access the configured instance, and never print secret values in logs or
+  replies. Do not silently use credentials inherited from another shell or
+  checkout.
+- App/API checks use `NEXT_PUBLIC_SUPABASE_URL`,
+  `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, and `SUPABASE_SECRET_KEY` from
+  `.env.local`. Supabase management commands such as `npx supabase link` and
+  `npx supabase db push` additionally require CLI credentials (normally
+  `SUPABASE_ACCESS_TOKEN` and `SUPABASE_DB_PASSWORD`); keep those in
+  `.env.local` too, never in source.
+- Use `npx supabase db reset` for local migration verification. Before any
+  remote migration command, confirm the project ref derived from
+  `NEXT_PUBLIC_SUPABASE_URL` matches the intended instance.
+
 ### Animations
 - `framer-motion` (older imports) and `motion/react` (newer) are the
   same library aliased. Match the surrounding file.
@@ -161,7 +179,7 @@ npm run lint            # zero new ESLint errors
 npm run build           # production build must succeed
 ```
 
-If you touched a Supabase migration, `supabase db reset` against a
+If you touched a Supabase migration, `npx supabase db reset` against a
 local Supabase before pushing — schema-only PRs that haven't been
 applied will not be merged.
 
@@ -222,3 +240,13 @@ for one release, then drop in a follow-up.
 
 If anything here conflicts with the code: **the code is canonical.**
 Update this file in the same pass.
+
+<!-- OPENWIKI:START -->
+
+## OpenWiki
+
+This repository uses OpenWiki for recurring code documentation. Start with `openwiki/quickstart.md`, then follow its links to architecture, workflows, domain concepts, operations, integrations, testing guidance, and source maps.
+
+Run OpenWiki manually to refresh the repository wiki. Do not hand-edit generated OpenWiki pages unless explicitly asked; prefer updating source code/docs and letting OpenWiki regenerate.
+
+<!-- OPENWIKI:END -->
