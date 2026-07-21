@@ -1,5 +1,10 @@
 create extension if not exists pgcrypto;
 
+-- On hosted Supabase, pgcrypto lives in the `extensions` schema, which is not
+-- on the migration session's search_path; digest()/gen_random_bytes() below
+-- need it. `set local` keeps this scoped to this migration's transaction.
+set local search_path = public, extensions;
+
 alter table public.creed_tokens
   add column if not exists read_token_hash text,
   add column if not exists proposal_token_hash text,

@@ -67,3 +67,6 @@ supabase/.temp/
 *.log
 .idea/
 .vscode/
+
+# Local Netlify folder
+.netlify
