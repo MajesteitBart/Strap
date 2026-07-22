@@ -1,4 +1,5 @@
 import { randomBytes } from "node:crypto";
+import type { HeadlessKeyMode } from "@/lib/headless-access-shared";
 
 export const DEVICE_USER_CODE_ALPHABET = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
 export const DEVICE_USER_CODE_LENGTH = 8;
@@ -30,4 +31,24 @@ export function normalizeOAuthScope(value: string): string {
   const allowed = new Set(["read", "propose", "direct_edit"]);
   const requested = value.trim().split(/\s+/).filter((scope) => allowed.has(scope));
   return [...new Set(requested.length ? requested : ["read", "propose"])].join(" ");
+}
+
+const DEVICE_GRANT_MODES: HeadlessKeyMode[] = ["read-only", "proposal-only", "direct"];
+
+export function deviceGrantModesForScope(scope: string): HeadlessKeyMode[] {
+  const requested = new Set(normalizeOAuthScope(scope).split(" "));
+  const maximum = requested.has("direct_edit")
+    ? "direct"
+    : requested.has("propose")
+      ? "proposal-only"
+      : "read-only";
+  return DEVICE_GRANT_MODES.slice(0, DEVICE_GRANT_MODES.indexOf(maximum) + 1);
+}
+
+export function capDeviceGrantMode(
+  mode: HeadlessKeyMode,
+  scope: string,
+): HeadlessKeyMode {
+  const allowed = deviceGrantModesForScope(scope);
+  return allowed.includes(mode) ? mode : allowed[allowed.length - 1];
 }

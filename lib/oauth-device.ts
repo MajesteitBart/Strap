@@ -8,6 +8,7 @@ import { getOAuthClient, type CreedGrantMode, type OAuthClient } from "@/lib/oau
 import { listUserCreeds, type CreedSummary } from "@/lib/creed-membership";
 import { recordAuditEvent } from "@/lib/audit-log";
 import {
+  capDeviceGrantMode,
   createDeviceUserCode,
   normalizeDeviceUserCode,
   normalizeOAuthScope,
@@ -134,6 +135,7 @@ export async function decideDeviceAuthorization(input: {
 
   const creed = approval.creeds.find((item) => item.id === input.creedId);
   if (!creed) return false;
+  const mode = capDeviceGrantMode(input.mode, approval.request.scope);
   const now = new Date().toISOString();
   const { data } = await adminDb()
     .from("oauth_device_authorizations")
@@ -141,7 +143,7 @@ export async function decideDeviceAuthorization(input: {
       status: "approved",
       user_id: input.userId,
       creed_id: creed.id,
-      mode: input.mode,
+      mode,
       approved_at: now,
     })
     .eq("id", input.requestId)
@@ -153,7 +155,7 @@ export async function decideDeviceAuthorization(input: {
   void recordAuditEvent({
     userId: input.userId,
     action: "oauth.device_approved",
-    metadata: { requestId: input.requestId, clientId: approval.client.clientId, creedId: creed.id, mode: input.mode },
+    metadata: { requestId: input.requestId, clientId: approval.client.clientId, creedId: creed.id, mode },
     request: input.request,
   });
   return true;

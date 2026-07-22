@@ -8,8 +8,10 @@ import {
   parseOptionalExpiry,
 } from "../lib/headless-access-shared.ts";
 import {
+  capDeviceGrantMode,
   createDeviceUserCode,
   DEVICE_USER_CODE_ALPHABET,
+  deviceGrantModesForScope,
   normalizeDeviceUserCode,
   normalizeOAuthScope,
 } from "../lib/oauth-device-shared.ts";
@@ -64,6 +66,19 @@ test("device scope keeps only supported unique values", () => {
   assert.equal(normalizeOAuthScope("direct_edit"), "direct_edit");
 });
 
+test("device grants cannot exceed the client-requested OAuth scope", () => {
+  assert.deepEqual(deviceGrantModesForScope("read"), ["read-only"]);
+  assert.deepEqual(deviceGrantModesForScope("read propose"), ["read-only", "proposal-only"]);
+  assert.deepEqual(deviceGrantModesForScope("read propose direct_edit"), [
+    "read-only",
+    "proposal-only",
+    "direct",
+  ]);
+  assert.equal(capDeviceGrantMode("direct", "read"), "read-only");
+  assert.equal(capDeviceGrantMode("direct", "read propose"), "proposal-only");
+  assert.equal(capDeviceGrantMode("proposal-only", "read propose direct_edit"), "proposal-only");
+});
+
 test("migration keeps credentials private and Vault RPCs service-role-only", () => {
   assert.match(migration, /alter table public\.creed_headless_access_keys enable row level security/);
   assert.match(migration, /alter table public\.oauth_device_authorizations enable row level security/);
@@ -97,6 +112,8 @@ test("credential ceilings govern advertised and executed writes", () => {
     /permissionCeiling: credentialModeToPermission\(credentialMode\)/,
   );
   assert.match(companySections, /permissionCeiling\?: AgentPermission/);
+  assert.match(mcpRoute, /credentialMode === "read-only"/);
+  assert.match(mcpRoute, /!MUTATION_TOOL_NAMES\.has\(tool\.name\)/);
   assert.match(companySections, /const createPermission = minPermission\(/);
   assert.match(
     companySections,

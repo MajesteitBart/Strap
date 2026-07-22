@@ -470,11 +470,25 @@ const tools = [
   },
 ];
 
-// Conditional tool exposure. `direct_edit_creed` only works when the user has
-// approval turned off, so we hide it otherwise rather than advertising a tool
-// that would only return a 403. The flat creed_* tools stay listed in both
-// modes because they degrade to proposals automatically.
-function listToolsFor(state: CreedState) {
+const MUTATION_TOOL_NAMES = new Set([
+  "propose_creed_update",
+  "direct_edit_creed",
+  "creed_update_section",
+  "creed_append_to_section",
+  "creed_create_section",
+  "creed_delete_section",
+  "creed_rename_section",
+  "creed_recolor_section",
+  "creed_reorder_section",
+]);
+
+// Conditional tool exposure keeps discovery aligned with the credential
+// ceiling. Read-only credentials receive only read tools; write-capable
+// credentials still hide the legacy direct tool when no section allows it.
+function listToolsFor(state: CreedState, credentialMode: CreedGrantMode) {
+  if (credentialMode === "read-only") {
+    return tools.filter((tool) => !MUTATION_TOOL_NAMES.has(tool.name));
+  }
   // direct_edit_creed is only useful when at least one section allows direct
   // edits; otherwise hide it so the agent doesn't reach for a tool it'd be
   // 403'd from.
@@ -2173,7 +2187,7 @@ async function handleRpcRequest(
   }
 
   if (rpcRequest.method === "tools/list") {
-    return responseFor(rpcRequest.id, { tools: listToolsFor(state) });
+    return responseFor(rpcRequest.id, { tools: listToolsFor(state, credentialMode) });
   }
 
   if (rpcRequest.method === "resources/list") {

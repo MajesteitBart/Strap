@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { CreedWordmark } from "@/components/creed/brand";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getDeviceApproval } from "@/lib/oauth-device";
+import { deviceGrantModesForScope } from "@/lib/oauth-device-shared";
 
 export const dynamic = "force-dynamic";
 
@@ -54,6 +55,12 @@ export default async function DevicePage({ searchParams }: { searchParams: Promi
     : null;
 
   if (approval) {
+    const allowedModes = deviceGrantModesForScope(approval.request.scope);
+    const modeLabels = {
+      "read-only": "Read only",
+      "proposal-only": "Read and propose",
+      direct: "Allow permitted direct edits",
+    } as const;
     return (
       <Shell>
         <h1 className="text-lg font-medium">Connect {approval.client.clientName}</h1>
@@ -67,10 +74,8 @@ export default async function DevicePage({ searchParams }: { searchParams: Promi
             {approval.creeds.map((creed) => <option key={creed.id} value={creed.id}>{creed.type === "personal" ? "Personal" : creed.name}</option>)}
           </select>
           <label className="block text-sm font-medium" htmlFor="mode">Maximum access</label>
-          <select id="mode" name="mode" defaultValue="proposal-only" className="h-10 w-full rounded-md border border-[var(--creed-border)] bg-transparent px-3 text-sm">
-            <option value="read-only">Read only</option>
-            <option value="proposal-only">Read and propose</option>
-            <option value="direct">Allow permitted direct edits</option>
+          <select id="mode" name="mode" defaultValue={allowedModes[allowedModes.length - 1]} className="h-10 w-full rounded-md border border-[var(--creed-border)] bg-transparent px-3 text-sm">
+            {allowedModes.map((mode) => <option key={mode} value={mode}>{modeLabels[mode]}</option>)}
           </select>
           <div className="flex gap-3 pt-2">
             <Button type="submit" name="decision" value="deny" variant="secondary" className="flex-1">Deny</Button>
