@@ -3,7 +3,7 @@ name: Headless Access and API Key Vault
 status: done
 lead: MajesteitBart
 created: 2026-07-22T05:39:38Z
-updated: 2026-07-22T08:54:45Z
+updated: 2026-07-22T09:11:27Z
 linear_project_id:
 risk_level: high
 spec_status_at_plan_time: planned

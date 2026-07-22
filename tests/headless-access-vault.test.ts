@@ -80,6 +80,10 @@ test("MCP enforcement has no explicit-grant fallback and strips mutation tokens"
   assert.match(mcpRoute, /writeToken: mode === "read-only" \? "" : state\.writeToken/);
   assert.match(mcpRoute, /directEditToken: mode === "direct" \? state\.directEditToken : ""/);
   assert.match(mcpRoute, /identifier: digestCredential\(bearer\)/);
+  assert.match(
+    mcpRoute,
+    /if \(state\.creedId\) \{\s+await recordMcpClientUsage\(admin as never, userId, clientName, state\.creedId\);\s+\}/,
+  );
 });
 
 test("credential ceilings govern advertised and executed writes", () => {

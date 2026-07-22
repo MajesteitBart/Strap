@@ -2354,7 +2354,13 @@ export async function POST(request: Request) {
   const clientName =
     resolveMcpAgentName(firstRequest ?? {}, firstToolArgs, resolved.clientName) ??
     resolved.clientName;
-  await recordMcpClientUsage(admin as never, userId, clientName, state.creedId);
+  // An explicit grant can become inaccessible after issuance (for example,
+  // when company membership is removed). resolveMcpState intentionally returns
+  // an empty state in that case. Do not let the usage helper interpret a
+  // missing Creed id as permission to fall back to Personal.
+  if (state.creedId) {
+    await recordMcpClientUsage(admin as never, userId, clientName, state.creedId);
+  }
   const cliAgentHeader = request.headers
     .get("x-creed-cli-agent")
     ?.trim()
