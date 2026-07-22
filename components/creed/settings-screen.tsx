@@ -64,6 +64,7 @@ import { toast } from "sonner";
 import { SearchableSelect } from "@/components/creed/searchable-select";
 import { useCreed } from "@/components/creed/creed-provider";
 import { CompanySettings } from "@/components/creed/company-settings";
+import { LegacySubscriptionNotice } from "@/components/creed/legacy-subscription-notice";
 import {
   clearSettingsOpenRouterBalanceCache,
   clearSettingsRepoCache,
@@ -1371,6 +1372,10 @@ function PersonalSettingsScreen() {
               </div>
             </div>
           </section>
+
+          <Separator className="my-10 bg-[var(--creed-border)]" />
+
+          <LegacySubscriptionNotice scope="personal" />
 
           <Separator className="my-10 bg-[var(--creed-border)]" />
 
