@@ -19,6 +19,11 @@ const migration = readFileSync(
   "utf8",
 );
 const mcpRoute = readFileSync(new URL("../app/mcp/route.ts", import.meta.url), "utf8");
+const companySections = readFileSync(
+  new URL("../lib/company-sections.ts", import.meta.url),
+  "utf8",
+);
+const nextConfig = readFileSync(new URL("../next.config.ts", import.meta.url), "utf8");
 const tokenRoute = readFileSync(new URL("../app/token/route.ts", import.meta.url), "utf8");
 const oauthMetadata = readFileSync(
   new URL("../app/.well-known/oauth-authorization-server/route.ts", import.meta.url),
@@ -75,6 +80,28 @@ test("MCP enforcement has no explicit-grant fallback and strips mutation tokens"
   assert.match(mcpRoute, /writeToken: mode === "read-only" \? "" : state\.writeToken/);
   assert.match(mcpRoute, /directEditToken: mode === "direct" \? state\.directEditToken : ""/);
   assert.match(mcpRoute, /identifier: digestCredential\(bearer\)/);
+});
+
+test("credential ceilings govern advertised and executed writes", () => {
+  assert.match(mcpRoute, /agentWritable: permissionToWritable\(effective\)/);
+  assert.match(
+    mcpRoute,
+    /requireApproval: state\.settings\.requireApproval \|\| mode !== "direct"/,
+  );
+  assert.match(
+    mcpRoute,
+    /permissionCeiling: credentialModeToPermission\(credentialMode\)/,
+  );
+  assert.match(companySections, /permissionCeiling\?: AgentPermission/);
+  assert.match(companySections, /const createPermission = minPermission\(/);
+  assert.match(
+    companySections,
+    /await effectivePermission\(creedId, user\.id, sectionId, role, true\),\s+permissionCeiling/,
+  );
+});
+
+test("Vault page receives private no-store caching headers", () => {
+  assert.match(nextConfig, /"\/vault\/:path\*"/);
 });
 
 test("OAuth discovery and token exchange advertise the RFC device grant", () => {

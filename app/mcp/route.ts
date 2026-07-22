@@ -12,6 +12,7 @@ import {
   buildAgentReadPayload,
   buildVisibleCreedMarkdown,
   isAccentKey,
+  permissionToWritable,
 } from "@/lib/creed-data";
 import {
   loadCreedState,
@@ -740,18 +741,26 @@ async function resolveMcpCredential(bearer: string): Promise<McpCredentialGrant 
   };
 }
 
+function credentialModeToPermission(mode: CreedGrantMode): AgentPermission {
+  return mode === "proposal-only" ? "propose" : mode;
+}
+
 function applyCredentialMode(state: CreedState, mode: CreedGrantMode): CreedState {
-  const ceiling: AgentPermission = mode === "proposal-only" ? "propose" : mode;
+  const ceiling = credentialModeToPermission(mode);
   return {
     ...state,
     writeToken: mode === "read-only" ? "" : state.writeToken,
     directEditToken: mode === "direct" ? state.directEditToken : "",
+    settings: {
+      ...state.settings,
+      requireApproval: state.settings.requireApproval || mode !== "direct",
+    },
     sections: state.sections.map((section) => {
       const effective = minPermission(section.agentPermission, ceiling);
       return {
         ...section,
         agentPermission: effective,
-        agentWritable: effective === "direct",
+        agentWritable: permissionToWritable(effective),
       };
     }),
   };
@@ -769,7 +778,11 @@ async function resolveMcpState(
   user: { id: string } & Record<string, unknown>,
   credential: McpCredentialGrant,
   requests: JsonRpcRequest[]
-): Promise<{ state: CreedState; creeds: Awaited<ReturnType<typeof listUserCreeds>> }> {
+): Promise<{
+  state: CreedState;
+  creeds: Awaited<ReturnType<typeof listUserCreeds>>;
+  credentialMode: CreedGrantMode;
+}> {
   const allCreeds = await listUserCreeds(admin, user.id);
   const personal = allCreeds.find((c) => c.type === "personal");
 
@@ -819,9 +832,14 @@ async function resolveMcpState(
   // the cases where the token has no Creed it may currently load. Reads return
   // nothing and every write tool fails auth (empty tokens), so it never exposes
   // a Creed the token was not granted.
-  const emptyState = (): { state: CreedState; creeds: typeof creeds } => ({
+  const emptyState = (): {
+    state: CreedState;
+    creeds: typeof creeds;
+    credentialMode: CreedGrantMode;
+  } => ({
     state: { ...createBlankCreedState(user as never), creeds: switcherCreeds },
     creeds,
+    credentialMode: "read-only",
   });
 
   if (target && target.type === "company") {
@@ -856,11 +874,15 @@ async function resolveMcpState(
           .map((s) => {
             const ceiling = resolveSectionPermission(role, overrides.get(s.id));
             const effective = minPermission(ceiling, s.agentPermission);
-            return { ...s, agentPermission: effective, agentWritable: effective === "direct" };
+            return {
+              ...s,
+              agentPermission: effective,
+              agentWritable: permissionToWritable(effective),
+            };
           })
           .filter((s) => s.agentPermission !== "hidden"),
       };
-      return { state: applyCredentialMode(state, targetMode), creeds };
+      return { state: applyCredentialMode(state, targetMode), creeds, credentialMode: targetMode };
     }
     // Company target but membership was revoked between listing the Creeds and
     // this role check (a remove-member request interleaving with this MCP
@@ -890,6 +912,7 @@ async function resolveMcpState(
       creedId: personal?.id,
     }, targetMode),
     creeds,
+    credentialMode: targetMode,
   };
 }
 
@@ -898,7 +921,8 @@ async function handleToolCall(
   rpcRequest: JsonRpcRequest,
   state: CreedState,
   user: User,
-  fallbackAgentName: string | null
+  fallbackAgentName: string | null,
+  credentialMode: CreedGrantMode,
 ) {
   const userId = user.id;
   const params = (rpcRequest.params ?? {}) as McpToolCallParams;
@@ -958,7 +982,13 @@ async function handleToolCall(
     // company op and let companyMcpWrite enforce + route it (the server picks
     // direct vs proposal from the section's effective permission).
     if (state.creedType === "company") {
-      return runCompanyWrite(state, user, agentName, companyOpFromDraft(state, args));
+      return runCompanyWrite(
+        state,
+        user,
+        agentName,
+        companyOpFromDraft(state, args),
+        credentialMode,
+      );
     }
     const normalized = normalizeLegacyProposalArgs(state, args);
     const proposalBody = {
@@ -980,7 +1010,13 @@ async function handleToolCall(
 
   if (name === "direct_edit_creed") {
     if (state.creedType === "company") {
-      return runCompanyWrite(state, user, agentName, companyOpFromOperation(state, args));
+      return runCompanyWrite(
+        state,
+        user,
+        agentName,
+        companyOpFromOperation(state, args),
+        credentialMode,
+      );
     }
     // Per-section now: the write route 403s any non-direct target. Give an
     // early, clearer error only when no section allows direct edits at all.
@@ -1028,7 +1064,8 @@ async function handleToolCall(
       section,
       { contentMarkdown, reason },
       agentName,
-      user
+      user,
+      credentialMode,
     );
   }
 
@@ -1067,7 +1104,8 @@ async function handleToolCall(
         reason,
       },
       agentName,
-      user
+      user,
+      credentialMode,
     );
   }
 
@@ -1082,7 +1120,8 @@ async function handleToolCall(
       section,
       { reason },
       agentName,
-      user
+      user,
+      credentialMode,
     );
   }
 
@@ -1101,7 +1140,8 @@ async function handleToolCall(
       section,
       { name: newName.trim(), reason },
       agentName,
-      user
+      user,
+      credentialMode,
     );
   }
 
@@ -1122,7 +1162,8 @@ async function handleToolCall(
       section,
       { accent, reason },
       agentName,
-      user
+      user,
+      credentialMode,
     );
   }
 
@@ -1237,7 +1278,15 @@ async function handleToolCall(
       throw new Error("creed_append_to_section requires non-empty `contentMarkdown`.");
     }
     const section = resolveSectionOrThrow(state, sectionId);
-    return await runAppend(request, state, section, { contentMarkdown, reason }, agentName, user);
+    return await runAppend(
+      request,
+      state,
+      section,
+      { contentMarkdown, reason },
+      agentName,
+      user,
+      credentialMode,
+    );
   }
 
   if (name === "creed_reorder_section") {
@@ -1275,7 +1324,8 @@ async function handleToolCall(
       section,
       { afterSectionId: resolvedAnchorId, position, reason },
       agentName,
-      user
+      user,
+      credentialMode,
     );
   }
 
@@ -1540,12 +1590,19 @@ async function runCompanyWrite(
   state: CreedState,
   user: User,
   agentName: string,
-  op: CompanyMcpOp
+  op: CompanyMcpOp,
+  credentialMode: CreedGrantMode,
 ) {
   if (!state.creedId) {
     throw new Error("This company Creed can't be addressed right now.");
   }
-  const result = await companyMcpWrite({ creedId: state.creedId, user, agentName, op });
+  const result = await companyMcpWrite({
+    creedId: state.creedId,
+    user,
+    agentName,
+    op,
+    permissionCeiling: credentialModeToPermission(credentialMode),
+  });
   if (!result.ok) {
     throw new Error(result.error);
   }
@@ -1648,7 +1705,8 @@ async function runSectionMutation(
     reason?: string;
   },
   agentName: string | null,
-  user: User
+  user: User,
+  credentialMode: CreedGrantMode,
 ) {
   if (state.creedType === "company") {
     const op: CompanyMcpOp =
@@ -1659,7 +1717,7 @@ async function runSectionMutation(
           : kind === "rename"
             ? { kind: "rename", sectionId: section.id, name: payload.name ?? "" }
             : { kind: "recolor", sectionId: section.id, accent: payload.accent ?? "custom" };
-    return runCompanyWrite(state, user, agentName ?? "Connected agent", op);
+    return runCompanyWrite(state, user, agentName ?? "Connected agent", op, credentialMode);
   }
 
   const useDirectEdit = sectionUseDirectEdit(section);
@@ -1747,16 +1805,23 @@ async function runCreate(
     reason?: string;
   },
   agentName: string | null,
-  user: User
+  user: User,
+  credentialMode: CreedGrantMode,
 ) {
   if (state.creedType === "company") {
-    return runCompanyWrite(state, user, agentName ?? "Connected agent", {
-      kind: "create",
-      name: payload.name,
-      contentHtml: markdownToRichHtml(payload.contentMarkdown),
-      accent: payload.accent,
-      insertAfterSectionId: payload.insertAfterSectionId,
-    });
+    return runCompanyWrite(
+      state,
+      user,
+      agentName ?? "Connected agent",
+      {
+        kind: "create",
+        name: payload.name,
+        contentHtml: markdownToRichHtml(payload.contentMarkdown),
+        accent: payload.accent,
+        insertAfterSectionId: payload.insertAfterSectionId,
+      },
+      credentialMode,
+    );
   }
 
   const useDirectEdit = !state.settings.requireApproval;
@@ -1836,14 +1901,21 @@ async function runAppend(
   section: CreedSection,
   payload: { contentMarkdown: string; reason?: string },
   agentName: string | null,
-  user: User
+  user: User,
+  credentialMode: CreedGrantMode,
 ) {
   if (state.creedType === "company") {
-    return runCompanyWrite(state, user, agentName ?? "Connected agent", {
-      kind: "append",
-      sectionId: section.id,
-      contentHtml: markdownToRichHtml(payload.contentMarkdown),
-    });
+    return runCompanyWrite(
+      state,
+      user,
+      agentName ?? "Connected agent",
+      {
+        kind: "append",
+        sectionId: section.id,
+        contentHtml: markdownToRichHtml(payload.contentMarkdown),
+      },
+      credentialMode,
+    );
   }
 
   if (sectionUseDirectEdit(section)) {
@@ -1901,15 +1973,22 @@ async function runReorder(
     reason?: string;
   },
   agentName: string | null,
-  user: User
+  user: User,
+  credentialMode: CreedGrantMode,
 ) {
   if (state.creedType === "company") {
-    return runCompanyWrite(state, user, agentName ?? "Connected agent", {
-      kind: "reorder",
-      sectionId: section.id,
-      afterSectionId: payload.afterSectionId,
-      position: payload.position,
-    });
+    return runCompanyWrite(
+      state,
+      user,
+      agentName ?? "Connected agent",
+      {
+        kind: "reorder",
+        sectionId: section.id,
+        afterSectionId: payload.afterSectionId,
+        position: payload.position,
+      },
+      credentialMode,
+    );
   }
 
   if (sectionUseDirectEdit(section)) {
@@ -2066,7 +2145,8 @@ async function handleRpcRequest(
   rpcRequest: JsonRpcRequest,
   state: CreedState,
   user: User,
-  fallbackAgentName: string | null
+  fallbackAgentName: string | null,
+  credentialMode: CreedGrantMode,
 ) {
   if (!rpcRequest.method) {
     return errorFor(rpcRequest.id, -32600, "Missing JSON-RPC method.");
@@ -2150,7 +2230,14 @@ async function handleRpcRequest(
 
   if (rpcRequest.method === "tools/call") {
     try {
-      const result = await handleToolCall(request, rpcRequest, state, user, fallbackAgentName);
+      const result = await handleToolCall(
+        request,
+        rpcRequest,
+        state,
+        user,
+        fallbackAgentName,
+        credentialMode,
+      );
       return responseFor(rpcRequest.id, result);
     } catch (error) {
       return errorFor(
@@ -2252,7 +2339,7 @@ export async function POST(request: Request) {
   // Resolve which Creed this batch targets (personal by default, or a company
   // Creed named via the `creed` arg + granted to this token). Company Creeds
   // load read-only. MCP only needs recent activity + a tight proposal cap.
-  const { state } = await resolveMcpState(
+  const { state, credentialMode } = await resolveMcpState(
     admin as unknown as SupabaseLikeClient,
     userData.user as unknown as { id: string } & Record<string, unknown>,
     resolved,
@@ -2289,7 +2376,18 @@ export async function POST(request: Request) {
   }
 
   const results = (
-    await Promise.all(requests.map((rpcRequest) => handleRpcRequest(request, rpcRequest, state, userData.user as User, clientName)))
+    await Promise.all(
+      requests.map((rpcRequest) =>
+        handleRpcRequest(
+          request,
+          rpcRequest,
+          state,
+          userData.user as User,
+          clientName,
+          credentialMode,
+        ),
+      ),
+    )
   ).filter(Boolean);
 
   if (results.length === 0) {

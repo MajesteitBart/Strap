@@ -4,7 +4,7 @@ slug: headless-access-secret-vault
 owner: MajesteitBart
 status: complete
 created: 2026-07-22T05:39:38Z
-updated: 2026-07-22T06:39:46Z
+updated: 2026-07-22T08:39:47Z
 outcome: Headless agents can securely connect to one authorized Creed using revocable API keys or device authorization, and signed-in users can manage API-key secrets backed by Supabase Vault without exposing secret values in application tables.
 uncertainty: high
 probe_required: true

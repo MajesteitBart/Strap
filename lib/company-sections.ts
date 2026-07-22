@@ -950,15 +950,19 @@ export type CompanyMcpOp =
  * effective agent permission per section (Direct applies immediately, Proposal
  * files a proposal, Read-only / Hidden are rejected) with agent attribution.
  * Creating a section is structural, so owner/admin create directly while members
- * propose - there is no existing section whose permission would gate it.
+ * propose - there is no existing section whose permission would gate it. MCP
+ * credentials can supply a permission ceiling so their scope remains enforced
+ * even though this function re-derives live membership and section permissions.
  */
 export async function companyMcpWrite(params: {
   creedId: string;
   user: User;
   agentName: string;
   op: CompanyMcpOp;
+  permissionCeiling?: AgentPermission;
 }): Promise<SectionWriteResult> {
   const { creedId, user, op } = params;
+  const permissionCeiling = params.permissionCeiling ?? "direct";
   const db = admin();
 
   const role = await getCreedRole(db, user.id, creedId);
@@ -975,7 +979,18 @@ export async function companyMcpWrite(params: {
       accent: op.accent,
       insertAfterSectionId: op.insertAfterSectionId ?? null,
     };
-    if (role === "owner" || role === "admin") {
+    const createPermission = minPermission(
+      role === "owner" || role === "admin" ? "direct" : "propose",
+      permissionCeiling,
+    );
+    if (createPermission === "hidden" || createPermission === "read-only") {
+      return {
+        ok: false,
+        code: "forbidden",
+        error: "This credential is read-only and cannot create sections.",
+      };
+    }
+    if (createPermission === "direct") {
       const applied = await applyDraft({ creedId, sectionId: null, draft, actor, cause: "mcp" });
       if (!applied.ok) return applied;
       await writeActivity({
@@ -1032,7 +1047,10 @@ export async function companyMcpWrite(params: {
     };
   }
 
-  const permission = await effectivePermission(creedId, user.id, sectionId, role, true);
+  const permission = minPermission(
+    await effectivePermission(creedId, user.id, sectionId, role, true),
+    permissionCeiling,
+  );
   if (permission === "hidden" || permission === "read-only") {
     return {
       ok: false,
