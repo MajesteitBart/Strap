@@ -100,7 +100,8 @@ test("credential ceilings govern advertised and executed writes", () => {
   );
 });
 
-test("Vault page receives private no-store caching headers", () => {
+test("Vault and device approval pages receive private no-store caching headers", () => {
+  assert.match(nextConfig, /"\/device\/:path\*"/);
   assert.match(nextConfig, /"\/vault\/:path\*"/);
 });
 
