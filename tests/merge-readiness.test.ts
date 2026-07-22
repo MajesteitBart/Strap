@@ -22,6 +22,14 @@ const authorizeDecision = readFileSync(
   new URL("../app/authorize/decision/route.ts", import.meta.url),
   "utf8",
 );
+const membershipSource = readFileSync(
+  new URL("../lib/creed-membership.ts", import.meta.url),
+  "utf8",
+);
+const inviteSource = readFileSync(
+  new URL("../lib/company-invites.ts", import.meta.url),
+  "utf8",
+);
 
 test("included AI is protected by burst and daily per-user limits", () => {
   assert.match(quotaSource, /scope: "included-ai"/);
@@ -45,4 +53,16 @@ test("OAuth never issues an authorization code without a Creed grant", () => {
   assert.match(authorizePage, /href="\/onboarding"/);
   assert.match(authorizeDecision, /if \(!target\)/);
   assert.doesNotMatch(authorizeDecision, /const creedGrants:[^\n]+\? \[/);
+});
+
+test("company membership excludes personal-only membership rows", () => {
+  assert.match(
+    membershipSource,
+    /hasCompanyMembership[\s\S]+\.from\("creeds"\)[\s\S]+\.eq\("type", "company"\)/,
+  );
+});
+
+test("company invites reject personal Creed ids on create and accept", () => {
+  assert.match(inviteSource, /if \(!\(await isCompanyCreed\(db, creedId\)\)\)/);
+  assert.match(inviteSource, /if \(creed\?\.type !== "company"\) return null/);
 });

@@ -34,6 +34,15 @@ function admin(): SupabaseLikeClient {
   return getSupabaseAdminClient() as unknown as SupabaseLikeClient;
 }
 
+async function isCompanyCreed(db: SupabaseLikeClient, creedId: string): Promise<boolean> {
+  const { data, error } = (await db
+    .from("creeds")
+    .select("type")
+    .eq("id", creedId)
+    .maybeSingle()) as { data: { type: string } | null; error: unknown };
+  return !error && data?.type === "company";
+}
+
 /**
  * Flip pending invites past their expiry to `expired`. Lazy sweep (single
  * indexed UPDATE, idempotent): called before creating an invite so the
@@ -96,6 +105,9 @@ export async function createInvite(params: {
   const actorRole = await getCreedRole(db, actorUserId, creedId);
   if (actorRole !== "owner" && actorRole !== "admin") {
     return { ok: false, error: "Only an owner or admin can invite.", code: "forbidden" };
+  }
+  if (!(await isCompanyCreed(db, creedId))) {
+    return { ok: false, error: "Invites are only available for company Creeds.", code: "forbidden" };
   }
 
   // Expire dead invites first so the one-pending-invite-per-email uniqueness
@@ -236,9 +248,12 @@ export async function resolveInviteByToken(
     .maybeSingle()) as { data: InviteRow | null };
   if (!data) return null;
   const [{ data: creed }, inviter] = await Promise.all([
-    db.from("creeds").select("name").eq("id", data.creed_id).maybeSingle() as Promise<{ data: { name: string } | null }>,
+    db.from("creeds").select("name, type").eq("id", data.creed_id).maybeSingle() as Promise<{
+      data: { name: string; type: string } | null;
+    }>,
     resolveInviterProfile(data.invited_by),
   ]);
+  if (creed?.type !== "company") return null;
   return {
     invite: data,
     companyName: creed?.name ?? "the company",

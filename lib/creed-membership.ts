@@ -146,11 +146,20 @@ export async function hasCompanyMembership(
   userId: string
 ): Promise<boolean> {
   const db = client as SupabaseLikeClient;
-  const { data: memberRows, error } = (await db
+  const { data: memberRows, error: memberError } = (await db
     .from("creed_members")
     .select("creed_id")
     .eq("user_id", userId)) as { data: Array<{ creed_id: string }> | null; error: unknown };
-  return !error && Boolean(memberRows?.length);
+  if (memberError || !memberRows?.length) return false;
+
+  const { data: companyRows, error: companyError } = (await db
+    .from("creeds")
+    .select("id")
+    .in("id", memberRows.map((row) => row.creed_id))
+    .eq("type", "company")
+    .limit(1)) as { data: Array<{ id: string }> | null; error: unknown };
+
+  return !companyError && Boolean(companyRows?.length);
 }
 
 export type { MemberRow, CreedRow };
