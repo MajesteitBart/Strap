@@ -8,7 +8,7 @@
 - The `shadcn` skill is available under `.agents/skills/`; the repo-local next-forge skill was removed by owner direction because Creed does not use that starter architecture.
 - `delano-bootstrap` now tracks runtime, entrypoint, context, validation, commit, and push evidence.
 - Delano validates with zero errors and warnings. Creed passes 138 tests, strict TypeScript, ESLint with zero errors, the Next.js production build, and a clean local Supabase migration reset.
-- Signed-in browser QA now passes authentication with the configured test account. The Headless Access and Vault surfaces render, and the device-code form plus invalid/expired-code state work; hosted API CRUD remains unavailable until the linked Supabase project receives the pending migrations.
+- The linked hosted Supabase project now matches local migration history through `20260722120000`. Hosted PR-preview QA passed headless-key MCP authentication and revocation, the complete OAuth device grant and revocation flow, Vault create/reveal/rotate/delete, and metadata-only audit events.
 - The `npm test` script no longer single-quotes its glob, so Windows executes the real suite instead of reporting zero discovered tests.
 
 ## Why It Changed
@@ -16,10 +16,10 @@
 - Bart explicitly requested that Creed be bootstrapped from the private Delano setup brief after the repository was understood and running.
 
 ## What Is Next
-- Merge and deploy the feature PR, apply pending migrations `20260721160000`, `20260722100000`, and `20260722120000` to the confirmed linked Supabase project, then exercise headless-key and Vault CRUD plus a real device-capable client against that deployment.
+- Merge PR #2, deploy the application release, and exercise one real Hermes Agent or OpenClaw connection against the production MCP URL.
 
 ## Remaining Risks
-- T3 Preview automation remained unavailable at the broker, so signed-in QA used local Playwright CLI without preserving credentials or browser artifacts. Hosted Headless Access and Vault requests currently return 500 because the three local migrations above are not yet applied remotely; local SQL behavior and the clean migration reset passed.
+- T3 Preview automation remained unavailable at the broker, so hosted QA used local Playwright CLI. Synthetic secrets, credentials, OAuth clients, tokens, Vault rows, and browser artifacts were removed after verification; only metadata audit evidence remains.
 - Codex hooks remain inactive until the operator enables hooks and approves repository and hook trust.
 - Next-forge is intentionally absent because its initializer creates a new project and does not safely retrofit this established app.
 - Node emits existing module-type warnings while running TypeScript tests, ESLint reports one existing unused-disable warning, and the build reports a Node deprecation warning; none failed verification.
