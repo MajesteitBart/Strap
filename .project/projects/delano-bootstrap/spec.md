@@ -2,9 +2,9 @@
 name: Bootstrap Delano for Creed
 slug: delano-bootstrap
 owner: MajesteitBart
-status: active
+status: complete
 created: 2026-07-22T05:19:56Z
-updated: 2026-07-22T05:24:10Z
+updated: 2026-07-22T05:31:03Z
 outcome: Creed has a validated Delano runtime, repository-specific context pack, agent entrypoints, and a clean pushed baseline.
 uncertainty: low
 probe_required: false

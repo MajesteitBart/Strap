@@ -1,9 +1,9 @@
 ---
 name: Bootstrap Delano for Creed
-status: active
+status: done
 lead: MajesteitBart
 created: 2026-07-22T05:19:56Z
-updated: 2026-07-22T05:24:10Z
+updated: 2026-07-22T05:31:03Z
 linear_project_id:
 risk_level: low
 spec_status_at_plan_time: planned

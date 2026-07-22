@@ -1,10 +1,10 @@
 ---
 id: T-004
 name: Validate and publish bootstrap baseline
-status: in-progress
+status: done
 workstream: WS-B
 created: 2026-07-22T05:19:58Z
-updated: 2026-07-22T05:29:01Z
+updated: 2026-07-22T05:31:03Z
 linear_issue_id:
 github_issue:
 github_pr:
@@ -28,7 +28,7 @@ Run Delano and repository checks, inspect the diff, commit only bootstrap files,
 
 - [x] delano validate passes.
 - [x] Repository checks pass or failures are recorded honestly.
-- [ ] The private origin receives the bootstrap commit.
+- [x] The private origin receives the bootstrap commit.
 
 ## Traceability
 - Story: US-001
@@ -41,15 +41,18 @@ Run Delano and repository checks, inspect the diff, commit only bootstrap files,
 - The test command was made cross-platform after the original single-quoted glob discovered zero files on Windows.
 
 ## Definition of Done
-- [ ] Implementation complete
+- [x] Implementation complete
 - [x] Tests pass
 - [x] Review complete
 - [x] Docs updated
 
 ## Evidence Log
 
+- 2026-07-22T05:31:03Z: Baseline commit 7436a0c94d79382fa0c8a07711cb2b957e7b1cde passed validation and was pushed to private origin/main.
+
 - 2026-07-22T05:29:01Z: Run final diff, commit, and private origin publication steps.
 
 - 2026-07-22T05:29:01Z: Entrypoint and context dependencies are complete; verification and publication are ready.
 - 2026-07-22T05:19:58Z: Created from .project/templates/task.md by `delano task add`.
 - 2026-07-22T05:20:23Z: `delano validate` passed with zero errors/warnings; `npm test` passed 131 tests; TypeScript and build passed; lint passed with zero errors and one existing warning.
+- 2026-07-22T05:20:23Z: Baseline commit `7436a0c94d79382fa0c8a07711cb2b957e7b1cde` pushed to the private `origin/main` branch.

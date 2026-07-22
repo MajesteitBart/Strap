@@ -11,8 +11,7 @@
 - Bart explicitly requested that Creed be bootstrapped from the private Delano setup brief after the repository was understood and running.
 
 ## What Is Next
-- Commit only the bootstrap baseline and push `main` to the existing private origin.
-- Record the pushed commit as closeout evidence and complete `delano-bootstrap`.
+- `delano-bootstrap` is complete. Create the next Delano project only when an explicit Creed product or operational outcome is selected.
 
 ## Remaining Risks
 - Codex hooks remain inactive until the operator enables hooks and approves repository and hook trust.

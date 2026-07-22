@@ -2,9 +2,9 @@
 id: WS-B
 name: WS-B Project context and validation
 owner: MajesteitBart
-status: active
+status: done
 created: 2026-07-22T05:19:56Z
-updated: 2026-07-22T05:24:12Z
+updated: 2026-07-22T05:31:03Z
 operating_mode: feature
 ---
 
