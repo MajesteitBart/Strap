@@ -97,7 +97,11 @@ test("MCP enforcement has no explicit-grant fallback and strips mutation tokens"
   assert.match(mcpRoute, /identifier: digestCredential\(bearer\)/);
   assert.match(
     mcpRoute,
-    /if \(state\.creedId\) \{\s+await recordMcpClientUsage\(admin as never, userId, clientName, state\.creedId\);\s+\}/,
+    /resolved\.credentialType === "oauth" && state\.creedId/,
+  );
+  assert.match(
+    mcpRoute,
+    /buildAgentReadPayload\(\{\s+\.\.\.state,[\s\S]*?writeToken: "",\s+directEditToken: "",/,
   );
 });
 

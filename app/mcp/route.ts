@@ -965,9 +965,14 @@ async function handleToolCall(
 
   if (name === "read_creed") {
     return textToolResult(
-      buildAgentReadPayload(state, {
-        proposalUrl: `${getSiteUrl()}/api/creed/proposals`,
-        directEditUrl: `${getSiteUrl()}/api/creed/write`,
+      buildAgentReadPayload({
+        ...state,
+        // Scoped MCP credentials are the only bearer the client should ever
+        // retain. Legacy HTTP write tokens stay server-side for tool dispatch
+        // so revoking or expiring the MCP credential ends write access.
+        writeToken: "",
+        directEditToken: "",
+      }, {
         docsUrl: `${getSiteUrl()}/docs`,
       })
     );
@@ -2372,7 +2377,11 @@ export async function POST(request: Request) {
   // when company membership is removed). resolveMcpState intentionally returns
   // an empty state in that case. Do not let the usage helper interpret a
   // missing Creed id as permission to fall back to Personal.
-  if (state.creedId) {
+  // OAuth connections use the roster that powers the Connections cards and
+  // their OAuth Disconnect action. Headless keys have their own lifecycle UI;
+  // putting them in this roster would make Disconnect appear to revoke a key
+  // when it only removed OAuth state.
+  if (resolved.credentialType === "oauth" && state.creedId) {
     await recordMcpClientUsage(admin as never, userId, clientName, state.creedId);
   }
   const cliAgentHeader = request.headers
