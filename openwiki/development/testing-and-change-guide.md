@@ -24,22 +24,22 @@ For database changes:
 npx supabase db reset
 ```
 
-Then exercise affected routes/UI locally. For API mutations, verify authentication, failure status, expected audit/activity records, and frozen/permission behavior. The root Node test runner exists, but no repository workflow was found that runs it automatically.
+Then exercise affected routes/UI locally. For API mutations, verify authentication, failure status, expected audit/activity records, and permission behavior. OpenWiki documentation refreshes are run manually and do not run application tests.
 
 ## Test map
 
 | Area | Representative tests |
 |---|---|
 | Company rules | `company-permissions`, `company-onboarding`, `company-proposal-drafts` |
-| Schema hardening | `company-p0-migrations` |
+| Schema hardening | `company-p0-migrations`, `headless-access-vault` |
 | Editing and rich text | `editing-system`, `rich-text-equivalence`, `section-suggestions` |
 | GitHub format | `github-roundtrip` |
 | Agent/AI behavior | `panel-*`, `tab-completion`, `quality-scope` |
 | MCP/connections | `connection-actions`, `mcp-connection-status`, `mcp-health-filter`, `agent-icon` |
-| Product utilities | `nexus-graph`, `roadmap`, `refund-handling` |
+| Product utilities | `nexus-graph`, `roadmap` |
 | CLI | `packages/creed-cli/tests/**` |
 
-Most root tests exercise pure functions, parsers, or migration text. They do not replace browser, live Supabase/RLS, OAuth, Stripe webhook, GitHub, or OpenRouter integration testing.
+Most root tests exercise pure functions, parsers, or migration text. They do not replace browser, live Supabase/RLS/Vault, OAuth, GitHub, or OpenRouter integration testing.
 
 ## Change map
 
@@ -49,19 +49,19 @@ Start with `components/creed/file-screen.tsx`, `rich-text-editor.tsx`, `creed-pr
 
 ### Company permissions and administration
 
-Start with `lib/creed-permissions.ts`, `lib/company-sections.ts`, `lib/company-admin.ts`, `lib/company-invites.ts`, settings UI, and the company migrations. Maintain the TypeScript/SQL policy twin. Include owner/admin/member, hidden/read/propose/direct, frozen billing, seat capacity, and concurrent revision cases.
+Start with `lib/creed-permissions.ts`, `lib/company-sections.ts`, `lib/company-admin.ts`, `lib/company-invites.ts`, settings UI, and the company migrations. Maintain the TypeScript/SQL policy twin. Include owner/admin/member, hidden/read/propose/direct, invitation capacity, and concurrent revision cases.
 
 ### OAuth, MCP, and connections
 
-Start with `app/mcp/route.ts`, `lib/oauth.ts`, OAuth routes, connection status/health helpers, and CLI client tests. Preserve PKCE, redirect validation, one-time code redemption, rotation/revocation, Creed grant narrowing, hidden-section filtering, and CLI attribution. Exercise at least two real MCP clients when changing the universal agent contract or protocol response shapes.
+Start with `app/mcp/route.ts`, `lib/oauth.ts`, `lib/headless-access.ts`, `lib/oauth-device.ts`, OAuth/device routes, connection status/health helpers, and CLI client tests. Preserve PKCE, redirect validation, one-time code/device consumption, polling backoff, rotation/revocation, explicit Creed grants, headless mode clamping, hidden-section filtering, legacy-only Personal fallback, digested rate-limit identifiers, and CLI attribution. Exercise at least two real MCP clients when changing the universal agent contract or protocol response shapes.
+
+### API-key Vault
+
+Start with `lib/api-key-vault.ts`, `app/api/app/vault/**`, `components/creed/api-key-vault-screen.tsx`, and `supabase/migrations/20260722120000_headless_access_and_secret_vault.sql`. Verify signed-in access, Personal versus Company owner/admin/member behavior, item-to-Creed authorization, metadata-only listing, create/reveal/rotate/delete RPCs, no-store responses, 30-second UI hiding, and fail-closed reveal auditing. Run a local Supabase reset: `headless-access-vault.test.ts` mostly checks helpers and source text, not live Vault or route behavior.
 
 ### AI and credits
 
-Start with the feature route plus `lib/ai/openrouter.ts`, `credits.ts`, `persistence.ts`, model catalog, and permission-aware action execution. Check BYOK/platform modes, streaming/non-streaming behavior, timeout/abort, malformed output, frozen company state, and accounting failures after successful inference.
-
-### Billing and seats
-
-Start with Stripe routes, `lib/stripe.ts`, `lib/company-billing.ts`, webhook metadata, and RPC migrations. Treat the signed webhook as authoritative. Verify idempotency, partial/full refunds, subscription state, company freeze/recovery, top-up duplication, and seat/invite concurrency.
+Start with the feature route plus `lib/ai/openrouter.ts`, `credits.ts`, `persistence.ts`, model catalog, and permission-aware action execution. Check BYOK/platform modes, streaming/non-streaming behavior, timeout/abort, malformed output, and accounting failures after successful inference.
 
 ### GitHub sync
 
@@ -87,10 +87,10 @@ Read the whole local code path before editing a helper in these files. Avoid add
 
 High-value additions would cover:
 
-- OAuth discovery, PKCE replay, redirects, refresh rotation, and revocation end to end;
-- MCP authentication and tool authorization against live schema/RLS;
-- proving every `app/api/app/**` route authenticates correctly;
-- Stripe signed webhook routing and provisioning idempotency;
+- OAuth discovery, PKCE replay, redirects, refresh rotation, device polling/consumption, and revocation end to end;
+- MCP authentication and tool authorization for OAuth and headless keys against live schema/RLS;
+- proving every `app/api/app/**` route authenticates correctly, including Vault role checks and required reveal auditing;
+- executing Supabase Vault create/reveal/rotate/delete and device RPC concurrency against a local database;
 - GitHub OAuth/refresh and preview/apply races;
 - OpenRouter SSE parsing, timeout, malformed structured output, and credit concurrency;
 - browser-level Personal/Company switching, onboarding, collaboration, and proposal review.
@@ -99,7 +99,7 @@ High-value additions would cover:
 
 Some root guidance predates current code:
 
-- The test runner is wired in `package.json`, despite older prose saying tests do not exist; automated CI execution was not found.
+- The test runner is wired in `package.json`, but OpenWiki refresh is manual and does not run application verification.
 - Signed-in users without access are currently sent to onboarding by the app layout, not always pricing.
 - Company onboarding and code size have outgrown older repository maps.
 - GitHub round-trip is precise for supported editor markup, not universally byte-lossless.

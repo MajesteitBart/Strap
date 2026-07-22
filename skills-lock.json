@@ -1,11 +1,4 @@
 {
   "version": 1,
-  "skills": {
-    "next-forge": {
-      "source": "vercel/next-forge",
-      "sourceType": "github",
-      "skillPath": "skills/next-forge/SKILL.md",
-      "computedHash": "a0015149b9a498e33d376cb4efb21951b055a9509068f01b2b1df3206cfcc12e"
-    }
-  }
+  "skills": {}
 }

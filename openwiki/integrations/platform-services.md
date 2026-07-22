@@ -2,7 +2,7 @@
 
 ## Supabase
 
-Supabase provides authentication, Postgres, RLS, realtime, and scheduled retention. Server components and ordinary app routes generally use a session client constrained by RLS. OAuth, webhooks, company writes, and secret-bearing integrations often use the admin client, which bypasses RLS and therefore depends on preceding application checks.
+Supabase provides authentication, Postgres, RLS, realtime, scheduled retention, and the `supabase_vault` extension used by Creed’s signed-in API-key Vault. Server components and ordinary app routes generally use a session client constrained by RLS. OAuth, company writes, and secret-bearing integrations often use the admin client, which bypasses RLS and therefore depends on preceding application checks. Vault plaintext is reachable only through service-role-only definer RPCs after application-level Creed and role authorization.
 
 `proxy.ts` refreshes Supabase cookies for non-marketing requests. Client creation and environment validation live in `lib/supabase/`. The ordered SQL files under `supabase/migrations/` are the canonical schema, not generated TypeScript types.
 
@@ -22,30 +22,6 @@ Creed section content crosses an external privacy boundary when sent to OpenRout
 Credit accounting is postpaid: inference happens before the debit RPC. A debit or usage-persistence failure is logged without invalidating a successful model response. Positive-balance checks do not reserve the worst-case request cost, so concurrent calls can overspend. Changes to AI billing need reconciliation and concurrency thinking, not only route behavior.
 
 High-value tests cover quality scopes, panel behavior, agent actions, and tab completion, but direct OpenRouter/SSE, timeout, cost fallback, malformed structured output, and debit-failure integration coverage is limited.
-
-## Stripe billing
-
-Stripe supports Personal entitlements, Company subscriptions/lifetime purchases, seats, and credit top-ups.
-
-Typical plan flow:
-
-1. An authenticated checkout route resolves a stable Stripe lookup key.
-2. Checkout metadata binds the Supabase user, plan, cadence, and mode.
-3. Stripe redirects the user, but redirects are not authoritative.
-4. `app/api/stripe/webhook/route.ts` verifies the raw-body signature.
-5. The webhook provisions or updates entitlement/company/billing/membership rows.
-6. Subscription lifecycle and full refunds revoke or freeze access; company data is retained.
-
-Credit top-ups use PaymentIntents and are credited only after success, keyed idempotently by PaymentIntent ID. Company seat purchase has a transactional RPC for the high-risk capacity/billing update.
-
-Operational caveats:
-
-- With no `STRIPE_WEBHOOK_SECRET`, the webhook returns success without processing. Deployment monitoring must catch configuration mistakes.
-- Checkout Session creation is not protected by a server idempotency key, so concurrent clients may create multiple valid payment pages.
-- Initial company credit grant is best-effort after provisioning and may need recovery.
-- Webhook route/provisioning behavior has less automated coverage than refund classification and permission logic.
-
-Primary sources are `lib/stripe.ts`, `lib/company-billing.ts`, `app/api/stripe/**`, `app/api/app/credits/**`, and billing migrations.
 
 ## GitHub version control
 
@@ -77,7 +53,7 @@ Use `.env.example` only as the documented placeholder inventory; never read or e
 
 - site and Supabase connection;
 - server-side encryption secret;
-- optional OpenRouter, Stripe, GitHub, email/feedback, and branding settings;
+- optional OpenRouter, GitHub, email/feedback, and branding settings;
 - `CREED_CSP_ENFORCE=1` after validating CSP report-only behavior.
 
-`next.config.ts` permits only the known Supabase, OpenRouter, GitHub, and Stripe network origins in CSP. CSP is report-only by default and still permits inline scripts/styles for framework requirements. User pages are no-store; static brand assets use long immutable caching.
+`next.config.ts` permits only the known Supabase, OpenRouter, and GitHub network origins in CSP. CSP is report-only by default and still permits inline scripts/styles for framework requirements. User pages are no-store; static brand assets use long immutable caching.

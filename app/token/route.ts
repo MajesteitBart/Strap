@@ -8,6 +8,7 @@ import {
   type IssuedTokens,
 } from "@/lib/oauth";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { pollDeviceAuthorization } from "@/lib/oauth-device";
 import { isSupabaseAdminConfigured } from "@/lib/supabase/env";
 
 // OAuth 2.1 token endpoint. Handles the authorization_code grant (PKCE-verified
@@ -178,6 +179,33 @@ export async function POST(request: Request) {
       return oauthError(rotated.error, rotated.error === "server_error" ? 500 : 400);
     }
     return tokenResponse(rotated);
+  }
+
+  if (grantType === "urn:ietf:params:oauth:grant-type:device_code") {
+    const deviceCode = params.device_code;
+    if (!deviceCode) {
+      return oauthError("invalid_request", 400, "device_code is required.");
+    }
+    const polled = await pollDeviceAuthorization({ deviceCode, clientId });
+    if (polled.outcome === "approved") {
+      const tokens = await issueTokenPair({
+        clientId,
+        userId: polled.userId,
+        scope: polled.scope,
+        creedGrants: [{ creedId: polled.creedId, mode: polled.mode }],
+      });
+      return tokenResponse(tokens);
+    }
+    if (polled.outcome === "authorization_pending" || polled.outcome === "slow_down") {
+      return NextResponse.json(
+        { error: polled.outcome },
+        {
+          status: 400,
+          headers: { ...BASE_HEADERS, "Retry-After": String(polled.retryAfterSeconds) },
+        },
+      );
+    }
+    return oauthError(polled.outcome, polled.outcome === "server_error" ? 500 : 400);
   }
 
   return oauthError("unsupported_grant_type", 400);

@@ -24,6 +24,7 @@ import {
 import { splitConnectionClients } from "@/lib/connection-actions";
 import type { AgentIconKind } from "@/lib/creed-data";
 import { cn } from "@/lib/utils";
+import { HeadlessAccessCard } from "@/components/creed/headless-access-card";
 
 const SETUP_STEPS = [
   {
@@ -477,6 +478,8 @@ export function ConnectionsScreen() {
             </AnimatePresence>
           </div>
         </div>
+
+        <HeadlessAccessCard />
 
         <div className="mt-10 flex flex-wrap items-end justify-between gap-3">
           <div>

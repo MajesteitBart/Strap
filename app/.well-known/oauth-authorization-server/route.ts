@@ -23,11 +23,16 @@ export async function GET() {
     {
       issuer: site,
       authorization_endpoint: `${site}/authorize`,
+      device_authorization_endpoint: `${site}/device/authorize`,
       token_endpoint: `${site}/token`,
       revocation_endpoint: `${site}/revoke`,
       registration_endpoint: `${site}/register`,
       response_types_supported: ["code"],
-      grant_types_supported: ["authorization_code", "refresh_token"],
+      grant_types_supported: [
+        "authorization_code",
+        "refresh_token",
+        "urn:ietf:params:oauth:grant-type:device_code",
+      ],
       code_challenge_methods_supported: ["S256"],
       token_endpoint_auth_methods_supported: ["none"],
       scopes_supported: ["read", "propose", "direct_edit"],

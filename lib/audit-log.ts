@@ -13,6 +13,14 @@ export type AuditAction =
   | "creed.claimed"
   | "creed.composed"
   | "creed.imported"
+  | "headless.key_created"
+  | "headless.key_revoked"
+  | "oauth.device_approved"
+  | "oauth.device_denied"
+  | "vault.secret_created"
+  | "vault.secret_revealed"
+  | "vault.secret_updated"
+  | "vault.secret_deleted"
   // Company plan
   | "company.provisioned"
   | "company.invite_created"
@@ -80,5 +88,34 @@ export async function recordAuditEvent(input: AuditLogInput): Promise<void> {
       { action: input.action },
       error instanceof Error ? error : new Error(String(error)),
     );
+  }
+}
+
+/**
+ * Required audit write for actions where the audit row is a compensating
+ * security control. Unlike recordAuditEvent, this throws when persistence is
+ * unavailable so callers can fail closed before returning sensitive data.
+ */
+export async function recordRequiredAuditEvent(input: AuditLogInput): Promise<void> {
+  if (!isSupabaseAdminConfigured()) {
+    throw new Error("Audit logging is unavailable.");
+  }
+
+  const admin = getSupabaseAdminClient() as unknown as {
+    from: (table: string) => {
+      insert: (values: Record<string, unknown>) => Promise<{
+        error: { message: string } | null;
+      }>;
+    };
+  };
+  const { error } = await admin.from("creed_audit_log").insert({
+    user_id: input.userId,
+    action: input.action,
+    metadata: input.metadata ?? {},
+    ip_address: clientIp(input.request),
+    user_agent: input.request?.headers.get("user-agent") ?? null,
+  });
+  if (error) {
+    throw new Error("Required audit event could not be persisted.");
   }
 }

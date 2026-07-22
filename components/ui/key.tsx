@@ -13,10 +13,11 @@ export interface KeyIconHandle {
 
 interface KeyIconProps extends HTMLAttributes<HTMLDivElement> {
   size?: number;
+  initialState?: "normal" | "animate";
 }
 
 const KeyIcon = forwardRef<KeyIconHandle, KeyIconProps>(
-  ({ onMouseEnter, onMouseLeave, className, size = 28, ...props }, ref) => {
+  ({ onMouseEnter, onMouseLeave, className, size = 28, initialState = "normal", ...props }, ref) => {
     const controls = useAnimation();
     const isControlledRef = useRef(false);
 
@@ -61,7 +62,7 @@ const KeyIcon = forwardRef<KeyIconHandle, KeyIconProps>(
           animate={controls}
           fill="none"
           height={size}
-          initial="normal"
+          initial={initialState}
           stroke="currentColor"
           strokeLinecap="round"
           strokeLinejoin="round"
