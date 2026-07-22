@@ -71,15 +71,14 @@ const sections: TermsSection[] = [
     id: "payments",
     title: "6. Payments",
     paragraphs: [
-      "Creed is currently offered free of charge. In future, Creed may be offered as a one-time purchase or under other paid access terms.",
+      "Creed is offered free of charge. In future, Creed may be offered as a one-time purchase or under other paid access terms.",
       "If and when paid access is introduced:",
     ],
     bullets: [
       "pricing will be shown clearly before purchase",
-      "payments will be processed by Stripe or another payment provider",
+      "payments will be processed by a third-party payment provider",
       "payment card details will not be stored directly by Creed",
     ],
-    note: "Unless required by law, payments are non-refundable.",
   },
   {
     id: "commercial-use",
@@ -90,7 +89,7 @@ const sections: TermsSection[] = [
     id: "third-party",
     title: "8. Third-party services",
     paragraphs: [
-      "Creed relies on third-party services to operate parts of the product, including services for hosting, authentication, payments, and AI processing.",
+      "Creed relies on third-party services to operate parts of the product, including services for hosting, authentication, and AI processing.",
       "Creed is not responsible for outages, errors, or changes caused by third-party providers.",
       "Your use of those services may also be subject to their own terms and policies.",
     ],

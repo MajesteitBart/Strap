@@ -4,10 +4,8 @@ import type { User } from "@supabase/supabase-js";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import type { SupabaseLikeClient } from "@/lib/supabase/types";
 import { getCreedRole } from "@/lib/creed-membership";
-import { getCompanyBilling } from "@/lib/company-billing";
 import {
   resolveSectionPermission,
-  deriveCompanyAccessState,
   canApproveProposal,
   canManageSectionsLifecycle,
   minPermission,
@@ -34,7 +32,6 @@ import {
 //   - membership + effective section permission (owner/admin = direct; member =
 //     their override or direct; an agent is capped again by the member's own
 //     per-section agent ceiling),
-//   - the billing freeze gate (frozen company = read-only),
 //   - baseRevision optimistic concurrency for human edits (409 on mismatch),
 // and record a version row (creed_section_versions) + an activity row on every
 // change. A caller who lacks Direct edit on a section files a proposal instead.
@@ -51,7 +48,6 @@ export type SectionWriteError = {
   ok: false;
   code:
     | "forbidden"
-    | "frozen"
     | "conflict"
     | "not_found"
     | "exists"
@@ -83,13 +79,6 @@ export type SectionCreateResult =
 
 function admin(): SupabaseLikeClient {
   return getSupabaseAdminClient() as unknown as SupabaseLikeClient;
-}
-
-async function companyAccess(
-  creedId: string,
-): Promise<"active" | "past_due" | "frozen"> {
-  const billing = await getCompanyBilling(creedId);
-  return deriveCompanyAccessState(billing?.status);
 }
 
 function memberName(user: User): string {
@@ -777,13 +766,6 @@ export async function createCompanySection(params: {
   if (role !== "owner" && role !== "admin") {
     return { ok: false, code: "forbidden", error: "Only an owner or admin can add sections." };
   }
-  if ((await companyAccess(creedId)) === "frozen") {
-    return {
-      ok: false,
-      code: "frozen",
-      error: "This company is read-only until billing is fixed.",
-    };
-  }
 
   const name = params.name.trim();
   if (!name) return { ok: false, code: "failed", error: "A section needs a name." };
@@ -858,13 +840,6 @@ export async function updateCompanySection(params: {
   const role = await getCreedRole(db, user.id, creedId);
   if (!role)
     return { ok: false, code: "forbidden", error: "You are not a member of this Creed." };
-  if ((await companyAccess(creedId)) === "frozen") {
-    return {
-      ok: false,
-      code: "frozen",
-      error: "This company is read-only until billing is fixed.",
-    };
-  }
 
   const permission = await effectivePermission(creedId, user.id, sectionId, role, false);
   if (permission === "hidden" || permission === "read-only") {
@@ -989,13 +964,6 @@ export async function companyMcpWrite(params: {
   const role = await getCreedRole(db, user.id, creedId);
   if (!role)
     return { ok: false, code: "forbidden", error: "You are not a member of this Creed." };
-  if ((await companyAccess(creedId)) === "frozen") {
-    return {
-      ok: false,
-      code: "frozen",
-      error: "This company is read-only until billing is fixed.",
-    };
-  }
 
   const actor = describeActor(user, params.agentName);
 
@@ -1219,13 +1187,6 @@ export async function setCompanySectionArchived(params: {
       error: "Only the owner or an admin can archive sections.",
     };
   }
-  if ((await companyAccess(creedId)) === "frozen") {
-    return {
-      ok: false,
-      code: "frozen",
-      error: "This company is read-only until billing is fixed.",
-    };
-  }
 
   const { data: current } = (await db
     .from("creed_sections")
@@ -1290,13 +1251,6 @@ export async function reviewCompanyProposal(params: {
   const role = await getCreedRole(db, user.id, creedId);
   if (!role)
     return { ok: false, code: "forbidden", error: "You are not a member of this Creed." };
-  if ((await companyAccess(creedId)) === "frozen") {
-    return {
-      ok: false,
-      code: "frozen",
-      error: "This company is read-only until billing is fixed.",
-    };
-  }
 
   const { data: proposal } = (await db
     .from("creed_proposals")
@@ -1682,13 +1636,6 @@ export async function restoreSectionVersion(params: {
       error: "Only an owner or admin can restore a version.",
     };
   }
-  if ((await companyAccess(creedId)) === "frozen") {
-    return {
-      ok: false,
-      code: "frozen",
-      error: "This company is read-only until billing is fixed.",
-    };
-  }
   const { data: version } = (await db
     .from("creed_section_versions")
     .select("content, name, accent")
@@ -1750,13 +1697,6 @@ export async function deleteCompanySection(params: {
       error: "Only an owner or admin can delete sections.",
     };
   }
-  if ((await companyAccess(creedId)) === "frozen") {
-    return {
-      ok: false,
-      code: "frozen",
-      error: "This company is read-only until billing is fixed.",
-    };
-  }
   const { data: current } = (await db
     .from("creed_sections")
     .select("section_id, name, accent")
@@ -1799,7 +1739,7 @@ export async function reorderCompanySections(params: {
   sectionIds: string[];
 }): Promise<{
   ok: boolean;
-  code?: "forbidden" | "frozen" | "failed";
+  code?: "forbidden" | "failed";
   error?: string;
 }> {
   const { creedId, user, sectionIds } = params;
@@ -1817,13 +1757,6 @@ export async function reorderCompanySections(params: {
       ok: false,
       code: "forbidden",
       error: "Only an owner or admin can reorder sections.",
-    };
-  }
-  if ((await companyAccess(creedId)) === "frozen") {
-    return {
-      ok: false,
-      code: "frozen",
-      error: "This company is read-only until billing is fixed.",
     };
   }
 

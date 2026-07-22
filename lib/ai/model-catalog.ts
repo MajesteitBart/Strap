@@ -82,7 +82,32 @@ const FEATURE_MODEL_DEFAULT: Record<AiFeature, string> = {
   panel: "openai/gpt-oss-120b",
 };
 
-export function getFeatureModelId(feature: AiFeature): string {
+// BYOK keys are commonly provider-restricted: the key owner allowlists a few
+// providers (say OpenAI and Mistral) on their OpenRouter account, and every
+// request outside that set is declined. The platform defaults above lean on
+// Anthropic and on open-weights models served only by Groq/Cerebras-class
+// hosts, so BYOK calls resolve through their own env-or-default table instead.
+// The defaults stay on first-party OpenAI models, which any OpenAI-enabled key
+// can route; point these at mistralai/* (or anything else) to taste.
+const FEATURE_MODEL_BYOK_ENV: Record<AiFeature, string> = {
+  analysis: "BYOK_ANALYSIS_MODEL",
+  tab: "BYOK_TAB_MODEL",
+  panel: "BYOK_PANEL_MODEL",
+};
+
+const FEATURE_MODEL_BYOK_DEFAULT: Record<AiFeature, string> = {
+  analysis: "openai/gpt-5",
+  // Tab is judged on time-to-first-token, so the small fast variant.
+  tab: "openai/gpt-5.4-mini",
+  panel: "openai/gpt-5",
+};
+
+export function getFeatureModelId(feature: AiFeature, options?: { byok?: boolean }): string {
+  if (options?.byok) {
+    return (
+      process.env[FEATURE_MODEL_BYOK_ENV[feature]]?.trim() || FEATURE_MODEL_BYOK_DEFAULT[feature]
+    );
+  }
   return process.env[FEATURE_MODEL_ENV[feature]]?.trim() || FEATURE_MODEL_DEFAULT[feature];
 }
 
@@ -92,7 +117,13 @@ export function getFeatureModelId(feature: AiFeature): string {
 // that Groq and Cerebras serve at very high tokens/sec (the route requests
 // throughput-sorted routing to land on that fast silicon). Override with
 // CREED_AGENT_MODEL if you want to trade speed for a heavier model.
-export function getAgentModelId(): string {
+export function getAgentModelId(options?: { byok?: boolean }): string {
+  if (options?.byok) {
+    // Same provider-restriction story as FEATURE_MODEL_BYOK_DEFAULT: gpt-oss's
+    // fast hosts sit outside a typical restricted key's allowlist, so BYOK
+    // agent runs stay on a first-party OpenAI model.
+    return process.env.BYOK_AGENT_MODEL?.trim() || "openai/gpt-5";
+  }
   return process.env.CREED_AGENT_MODEL?.trim() || "openai/gpt-oss-120b";
 }
 

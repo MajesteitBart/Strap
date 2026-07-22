@@ -4,45 +4,50 @@ import type { User } from "@supabase/supabase-js";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import type { SupabaseLikeClient } from "@/lib/supabase/types";
 import { hashSecret } from "@/lib/secret-crypto";
-import { getCompanyBilling } from "@/lib/company-billing";
-import { deriveCompanyAccessState } from "@/lib/creed-permissions";
 import { getCreedRole } from "@/lib/creed-membership";
 import { getUserName, getAvatarUrl, getAvatarInitials } from "@/lib/creed-backend";
 
 export type InviterProfile = { name: string; avatarUrl?: string; initials: string };
 
-// Company invites: create / accept / resend / revoke, plus seat accounting.
+// Company invites: create / accept / resend / revoke.
 //
-// A seat is an active member OR a pending invite. Invites expire after 7 days,
-// carry a hashed token (the raw token only ever lives in the emailed link), and
-// are unique-per-email-per-Creed while pending. All writes go through the admin
-// client after an app-level owner/admin role check in the calling route.
+// Invites expire after 7 days, carry a hashed token (the raw token only ever
+// lives in the emailed link), and are unique-per-email-per-Creed while pending.
+// All writes go through the admin client after an app-level owner/admin role
+// check in the calling route.
 
 const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
-
-export type SeatUsage = { used: number; capacity: number; available: number };
 
 export type InviteResult =
   | { ok: true; inviteId: string; token: string }
   | {
       ok: false;
       error: string;
-      code: "forbidden" | "frozen" | "no_seats" | "duplicate" | "already_member" | "failed";
+      code: "forbidden" | "duplicate" | "already_member" | "failed";
     };
 
 export type AcceptResult =
   | { ok: true; creedId: string }
-  | { ok: false; error: string; code: "invalid" | "expired" | "no_seats" | "email_mismatch" | "failed" };
+  | { ok: false; error: string; code: "invalid" | "expired" | "email_mismatch" | "failed" };
 
 function admin(): SupabaseLikeClient {
   return getSupabaseAdminClient() as unknown as SupabaseLikeClient;
 }
 
+async function isCompanyCreed(db: SupabaseLikeClient, creedId: string): Promise<boolean> {
+  const { data, error } = (await db
+    .from("creeds")
+    .select("type")
+    .eq("id", creedId)
+    .maybeSingle()) as { data: { type: string } | null; error: unknown };
+  return !error && data?.type === "company";
+}
+
 /**
- * Flip pending invites past their expiry to `expired` so they stop holding a
- * seat. Lazy sweep (single indexed UPDATE, idempotent): called before any seat
- * count so capacity math never counts a dead invite. Cheaper than a cron for
- * the volume here.
+ * Flip pending invites past their expiry to `expired`. Lazy sweep (single
+ * indexed UPDATE, idempotent): called before creating an invite so the
+ * one-pending-invite-per-email uniqueness never trips on a dead invite.
+ * Cheaper than a cron for the volume here.
  */
 export async function sweepExpiredInvites(creedId: string): Promise<void> {
   const db = admin();
@@ -82,34 +87,11 @@ async function emailBelongsToMember(creedId: string, normalizedEmail: string): P
   );
 }
 
-/** Seat usage for a company Creed: active members + pending invites vs capacity. */
-export async function getSeatUsage(creedId: string): Promise<SeatUsage> {
-  const db = admin();
-  await sweepExpiredInvites(creedId);
-  const [{ count: memberCount }, { count: inviteCount }, billing] = await Promise.all([
-    db.from("creed_members").select("user_id", { count: "exact", head: true }).eq("creed_id", creedId) as unknown as Promise<{ count: number | null }>,
-    db.from("creed_invites").select("id", { count: "exact", head: true }).eq("creed_id", creedId).eq("status", "pending") as unknown as Promise<{ count: number | null }>,
-    getCompanyBilling(creedId),
-  ]);
-  // Fail closed: no billing row means no purchased capacity, so no invites can
-  // be sent. (By the time invites are reachable the checkout webhook has
-  // created the row; a missing row is an anomaly, not a free 10 seats.)
-  const capacity = billing ? billing.seats_included + billing.extra_seats : 0;
-  const used = (memberCount ?? 0) + (inviteCount ?? 0);
-  return { used, capacity, available: Math.max(0, capacity - used) };
-}
-
-async function isCompanyFrozen(creedId: string): Promise<boolean> {
-  const billing = await getCompanyBilling(creedId);
-  if (!billing) return false;
-  return deriveCompanyAccessState(billing.status) === "frozen";
-}
-
 /**
  * Create a pending invite. The caller must be owner/admin (checked here against
- * live membership). Enforces the freeze state, seat capacity, and one pending
- * invite per email. Returns the raw token so the route can build + send the
- * email link. Does not send email itself (kept side-effect free for testing).
+ * live membership). Enforces one pending invite per email. Returns the raw
+ * token so the route can build + send the email link. Does not send email
+ * itself (kept side-effect free for testing).
  */
 export async function createInvite(params: {
   creedId: string;
@@ -124,9 +106,13 @@ export async function createInvite(params: {
   if (actorRole !== "owner" && actorRole !== "admin") {
     return { ok: false, error: "Only an owner or admin can invite.", code: "forbidden" };
   }
-  if (await isCompanyFrozen(creedId)) {
-    return { ok: false, error: "Billing is paused for this company.", code: "frozen" };
+  if (!(await isCompanyCreed(db, creedId))) {
+    return { ok: false, error: "Invites are only available for company Creeds.", code: "forbidden" };
   }
+
+  // Expire dead invites first so the one-pending-invite-per-email uniqueness
+  // below never trips on an invite that already lapsed.
+  await sweepExpiredInvites(creedId);
 
   const normalizedEmail = email.trim().toLowerCase();
 
@@ -142,11 +128,6 @@ export async function createInvite(params: {
   }
   if (alreadyMember) {
     return { ok: false, error: "That person is already a member.", code: "already_member" };
-  }
-
-  const seats = await getSeatUsage(creedId);
-  if (seats.available <= 0) {
-    return { ok: false, error: "This company is out of seats.", code: "no_seats" };
   }
 
   const token = randomBytes(32).toString("base64url");
@@ -267,9 +248,12 @@ export async function resolveInviteByToken(
     .maybeSingle()) as { data: InviteRow | null };
   if (!data) return null;
   const [{ data: creed }, inviter] = await Promise.all([
-    db.from("creeds").select("name").eq("id", data.creed_id).maybeSingle() as Promise<{ data: { name: string } | null }>,
+    db.from("creeds").select("name, type").eq("id", data.creed_id).maybeSingle() as Promise<{
+      data: { name: string; type: string } | null;
+    }>,
     resolveInviterProfile(data.invited_by),
   ]);
+  if (creed?.type !== "company") return null;
   return {
     invite: data,
     companyName: creed?.name ?? "the company",
@@ -279,10 +263,10 @@ export async function resolveInviteByToken(
 }
 
 /**
- * Accept an invite for the signed-in user. Re-validates status, expiry, seat
- * capacity (it may have shrunk), and that the invite's email matches the user's
- * (case-insensitive). Creates the membership and marks the invite accepted.
- * Idempotent: an already-member returns ok.
+ * Accept an invite for the signed-in user. Re-validates status, expiry, and
+ * that the invite's email matches the user's (case-insensitive). Creates the
+ * membership and marks the invite accepted. Idempotent: an already-member
+ * returns ok.
  */
 export async function acceptInvite(token: string, user: User): Promise<AcceptResult> {
   const db = admin();
@@ -313,12 +297,6 @@ export async function acceptInvite(token: string, user: User): Promise<AcceptRes
   if (existingRole) {
     await db.from("creed_invites").update({ status: "accepted", updated_at: new Date().toISOString() }).eq("id", invite.id);
     return { ok: true, creedId: invite.creed_id };
-  }
-
-  // Seat capacity may have shrunk since the invite was sent.
-  const seats = await getSeatUsage(invite.creed_id);
-  if (seats.available <= 0) {
-    return { ok: false, error: "This company is out of seats.", code: "no_seats" };
   }
 
   const { error: memberError } = await db.from("creed_members").insert({

@@ -69,7 +69,7 @@ export const teamClaudeMd: Article = {
     { type: "h2", text: "What it costs" },
     {
       type: "p",
-      text: "Creed's Company plan is a shared Company Creed with roles, an activity view, and admin controls. It is $129 per month, $999 per year, or $1,999 for a lifetime license. Ten seats are included. Extra seats are $12 per month, $99 per year, or $199 one-time. Usage is $50 per month included ($200 one-time on the lifetime plan).",
+      text: "Nothing. Creed's Company Creed is free, with roles, an activity view, and admin controls for as many members as you need. AI features run on the deployment's included key or on the company's own OpenRouter key (BYOK).",
     },
     {
       type: "p",
@@ -98,9 +98,9 @@ export const teamClaudeMd: Article = {
         "No. Unlike a repo CLAUDE.md, a Company Creed uses the same structure for anyone on the team, so design, operations, support, and leadership benefit too. Only the examples change; every member's agents read the same shared page.",
     },
     {
-      question: "How much does the Company plan cost?",
+      question: "How much does a Company Creed cost?",
       answer:
-        "It is $129 per month, $999 per year, or $1,999 for a lifetime license, with ten seats included. Extra seats are $12 per month, $99 per year, or $199 one-time, and usage is $50 per month included.",
+        "Nothing. It is free, with as many members as you need. AI features run on the deployment's included key or on the company's own OpenRouter key (BYOK).",
     },
   ],
   related: [

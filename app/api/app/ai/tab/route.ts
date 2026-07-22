@@ -1,11 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireApiAuth } from "@/lib/api-auth";
-import {
-  resolveAiCredential,
-  deductCredits,
-  resolveCompanyAiCredential,
-  deductCompanyCredits,
-} from "@/lib/ai/credits";
+import { resolveAiCredential, resolveCompanyAiCredential } from "@/lib/ai/credits";
 import { streamOpenRouter } from "@/lib/ai/openrouter";
 import { recordAiUsage } from "@/lib/ai/persistence";
 import {
@@ -18,15 +13,13 @@ import {
 } from "@/lib/ai/tab";
 import { loadActiveCreedState } from "@/lib/creed-backend";
 import { resolveActiveCreed } from "@/lib/creed-context";
-import { getCompanyAccessState } from "@/lib/creed-membership";
-import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import { sectionBodyMarkdown } from "@/lib/creed-data";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { log } from "@/lib/observability";
 
 // Tab autocomplete: one explicit press, one streamed suggestion. The route
 // streams raw completion text (text/plain) so the ghost renders from the first
-// token; billing happens after the stream resolves, tagged feature "tab".
+// token; usage is recorded after the stream resolves, tagged feature "tab".
 // Approve / reject / keep typing never reach this route, so only the press
 // itself is metered.
 
@@ -58,16 +51,6 @@ export async function POST(request: Request) {
     (c) => c.id === activeCreed.creedId && c.type === "company",
   );
   const companyId = companyEntry ? activeCreed!.creedId : undefined;
-
-  if (companyId) {
-    const admin = getSupabaseAdminClient();
-    if ((await getCompanyAccessState(admin, companyId)) === "frozen") {
-      return NextResponse.json(
-        { error: "This company Creed is read-only until billing is fixed." },
-        { status: 403 },
-      );
-    }
-  }
 
   let payload: {
     messages: Array<{ role: "system" | "user"; content: string }>;
@@ -116,7 +99,7 @@ export async function POST(request: Request) {
     );
 
     const credential = companyId
-      ? await resolveCompanyAiCredential(companyId, "tab")
+      ? await resolveCompanyAiCredential(companyId, "tab", auth.user.id)
       : await resolveAiCredential(auth.supabase, auth.user.id, "tab");
 
     payload = {
@@ -143,8 +126,7 @@ export async function POST(request: Request) {
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "That didn't go through. Try again";
-    const status = message === "Out of credits" ? 402 : 400;
-    return NextResponse.json({ error: message }, { status });
+    return NextResponse.json({ error: message }, { status: 400 });
   }
 
   const p = payload;
@@ -155,18 +137,24 @@ export async function POST(request: Request) {
         const result = await streamOpenRouter({
           apiKey: p.apiKey,
           modelId: p.modelId,
+          credentialMode: p.mode,
           maxTokens: p.maxTokens,
           temperature: 0.3,
           timeoutMs: 25000,
           // Tab lives or dies on time-to-first-token, so route to the fast
           // silicon explicitly. Measured 2026-07-12 on gpt-oss-120b:
           // Cerebras ~1600 tok/s (340ms TTFT), SambaNova ~1000, Groq ~520.
-          // Fallbacks stay on for outages, throughput-sorted.
-          providerPreferences: {
-            order: ["cerebras", "sambanova", "groq"],
-            allow_fallbacks: true,
-            sort: "throughput",
-          },
+          // Fallbacks stay on for outages, throughput-sorted. BYOK keys are
+          // often provider-restricted and run a different (first-party) model,
+          // so they skip the host pinning and just take the fastest allowed.
+          providerPreferences:
+            p.mode === "byok"
+              ? { sort: "throughput" }
+              : {
+                  order: ["cerebras", "sambanova", "groq"],
+                  allow_fallbacks: true,
+                  sort: "throughput",
+                },
           // Reasoning models spend completion tokens on hidden reasoning by
           // default; at Tab's small budget that can consume everything and
           // return empty content after seconds of silence. Keep it minimal
@@ -178,55 +166,30 @@ export async function POST(request: Request) {
             try {
               controller.enqueue(encoder.encode(chunk));
             } catch {
-              // Client already dismissed the ghost; keep reading so billing
-              // still sees the true usage.
+              // Client already dismissed the ghost; keep reading so usage
+              // recording still sees the true token counts.
             }
           },
         });
 
-        // Bill the real spend once the suggestion exists. Dismissed ghosts
-        // were still generated, so they still cost.
-        let creditBalanceUsd: number | null = null;
-        let chargedMicroUsd: number | null = null;
-        if (p.mode === "credits") {
-          const debit = companyId
-            ? await deductCompanyCredits({
-                creedId: companyId,
-                spentBy: auth.user.id,
-                costUsd: result.costUsd,
-                feature: "tab",
-                modelId: p.modelId,
-              })
-            : await deductCredits({
-                userId: auth.user.id,
-                costUsd: result.costUsd,
-                feature: "tab",
-                modelId: p.modelId,
-              });
-          if (debit) {
-            creditBalanceUsd = debit.balanceUsd;
-            chargedMicroUsd = debit.chargedMicroUsd;
-          }
-        }
-        if (p.mode === "byok" || creditBalanceUsd !== null) {
-          try {
-            await recordAiUsage({
-              client: auth.supabase,
-              userId: auth.user.id,
-              creedId: companyId,
-              feature: "tab",
-              modelId: p.modelId,
-              modelQuality: result.modelQuality,
-              inputTokens: result.inputTokens,
-              outputTokens: result.outputTokens,
-              costUsd: result.costUsd,
-              chargedMicroUsd:
-                chargedMicroUsd ?? Math.round(result.costUsd * 1_000_000),
-              aiMode: p.mode,
-            });
-          } catch {
-            // Best-effort.
-          }
+        // Record the real usage once the suggestion exists. Dismissed ghosts
+        // were still generated, so they still count.
+        try {
+          await recordAiUsage({
+            client: auth.supabase,
+            userId: auth.user.id,
+            creedId: companyId,
+            feature: "tab",
+            modelId: p.modelId,
+            modelQuality: result.modelQuality,
+            inputTokens: result.inputTokens,
+            outputTokens: result.outputTokens,
+            costUsd: result.costUsd,
+            chargedMicroUsd: Math.round(result.costUsd * 1_000_000),
+            aiMode: p.mode,
+          });
+        } catch {
+          // Best-effort.
         }
       } catch (error) {
         // An empty or failed stream simply yields no ghost: the client treats

@@ -35,7 +35,6 @@ import { CompassIcon } from "@/components/ui/compass";
 import { ConnectIcon } from "@/components/ui/connect";
 import { ContrastIcon } from "@/components/ui/contrast";
 import { CpuIcon } from "@/components/ui/cpu";
-import { CreditCardIcon } from "@/components/ui/credit-card";
 import { DatabaseIcon } from "@/components/ui/database";
 import { DownloadIcon } from "@/components/ui/download";
 import { FileTextIcon } from "@/components/ui/file-text";
@@ -87,7 +86,6 @@ type PanelProps = {
   onFileSection: (sectionId: string) => void;
   onFileProposal: (proposalId: string) => void;
   onAddSection: () => void;
-  onOpenBilling: () => void;
   onOpenPush: () => void;
   onSetActivity: (open: boolean) => void;
 };
@@ -268,7 +266,6 @@ export function CreedPanel({
   onFileSection,
   onFileProposal,
   onAddSection,
-  onOpenBilling,
   onOpenPush,
   onSetActivity,
 }: PanelProps) {
@@ -577,35 +574,6 @@ export function CreedPanel({
         run: () => onSetActivity(true),
       },
       {
-        id: "action:add-credits",
-        label: "Add credits",
-        group: "Actions",
-        keywords: ["top up", "buy credits", "topup"],
-        icon: CreditCardIcon as AnimatedIconComponent,
-        run: () =>
-          goSettings({ scrollTo: "model-usage", openDialog: "add-credits" }),
-      },
-      {
-        id: "action:credits-history",
-        label: "Credits history",
-        group: "Actions",
-        keywords: ["transactions", "ledger", "spend history"],
-        icon: HistoryIcon as AnimatedIconComponent,
-        run: () =>
-          goSettings({
-            scrollTo: "model-usage",
-            openDialog: "credits-history",
-          }),
-      },
-      {
-        id: "action:billing",
-        label: "Billing",
-        group: "Actions",
-        keywords: ["subscription", "plan", "invoice", "stripe"],
-        icon: CreditCardIcon as AnimatedIconComponent,
-        run: () => onOpenBilling(),
-      },
-      {
         id: "action:export-creed",
         label: "Export creed",
         group: "Actions",
@@ -650,7 +618,6 @@ export function CreedPanel({
     onAddSection,
     onFileProposal,
     onFileSection,
-    onOpenBilling,
     onOpenPush,
     onSetActivity,
     pendingProposals,
@@ -729,13 +696,6 @@ export function CreedPanel({
             intent.aiMode = action.value;
             intent.scrollTo = intent.scrollTo ?? "model-usage";
             break;
-          case "open-dialog":
-            if (action.target === "billing") onOpenBilling();
-            else {
-              intent.openDialog = action.target;
-              intent.scrollTo = intent.scrollTo ?? "model-usage";
-            }
-            break;
           case "file-section":
             onFileSection(action.target);
             break;
@@ -779,12 +739,7 @@ export function CreedPanel({
             break;
         }
       }
-      if (
-        intent.scrollTo ||
-        intent.usageRange ||
-        intent.aiMode ||
-        intent.openDialog
-      )
+      if (intent.scrollTo || intent.usageRange || intent.aiMode)
         goSettings(intent);
       else if (navTarget) router.push(navTarget);
     },
@@ -796,7 +751,6 @@ export function CreedPanel({
       onAddSection,
       onFileProposal,
       onFileSection,
-      onOpenBilling,
       onOpenPush,
       onSetActivity,
       router,
@@ -1098,10 +1052,6 @@ export function CreedPanel({
     query.trim().length > 0 &&
     flatResults.length === 0 &&
     searchPhase !== "working";
-  const outOfCredits =
-    searchError === "Out of credits" ||
-    askError === "Out of credits" ||
-    agentRun.error === "Out of credits";
   const InputIcon =
     mode === "agent" ? CpuIcon : mode === "ask" ? CompassIcon : SearchIcon;
   const inputIconRef =
@@ -1448,30 +1398,13 @@ export function CreedPanel({
                         <div className="rounded-[var(--radius-md)] bg-[#FEF2F2] px-3 py-2.5 text-[13px] leading-[1.55] text-[#B91C1C] dark:bg-[#3F1212]/35 dark:text-[#F87171]">
                           {agentRun.error}
                         </div>
-                        {outOfCredits ? (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              close();
-                              clearAgentRun();
-                              goSettings({
-                                scrollTo: "model-usage",
-                                openDialog: "add-credits",
-                              });
-                            }}
-                            className="mt-1 flex w-full items-center gap-2.5 rounded-[var(--radius-md)] px-2.5 py-2 text-left text-[14px] font-medium text-[var(--creed-text-secondary)] transition-colors duration-150 hover:bg-accent hover:text-accent-foreground"
-                          >
-                            Add credits
-                          </button>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => clearAgentRun()}
-                            className="mt-1 px-0.5 text-[12px] font-medium text-[var(--creed-text-tertiary)] transition-colors hover:text-[var(--creed-text-primary)]"
-                          >
-                            Dismiss
-                          </button>
-                        )}
+                        <button
+                          type="button"
+                          onClick={() => clearAgentRun()}
+                          className="mt-1 px-0.5 text-[12px] font-medium text-[var(--creed-text-tertiary)] transition-colors hover:text-[var(--creed-text-primary)]"
+                        >
+                          Dismiss
+                        </button>
                       </>
                     ) : null}
                   </div>

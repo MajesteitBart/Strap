@@ -22,7 +22,6 @@ import {
 import { MarketingFooter } from "@/components/marketing/site-chrome";
 import { SceneryImage } from "@/components/marketing/scenery-image";
 import { useLandingAuthState } from "@/components/marketing/use-landing-auth-state";
-import { usePaidStatus } from "@/components/marketing/use-paid-status";
 import { useOnboardingResume } from "@/components/marketing/use-onboarding-resume";
 import { useAnimatedIconControls } from "@/components/creed/animated-icon-controls";
 import { ArrowRightIcon } from "@/components/ui/arrow-right";
@@ -486,8 +485,8 @@ function GovernedCollaborationSection() {
 const PANEL_DEMO_STEPS = [
   {
     mode: "Search",
-    prompt: "billing",
-    status: "Open billing settings",
+    prompt: "model usage",
+    status: "Open model usage settings",
     action: "Take me there",
   },
   {
@@ -992,9 +991,8 @@ function FaqSection() {
 
 function ClosingCtaSection({ configured }: { configured: boolean }) {
   const authState = useLandingAuthState(configured);
-  const paidStatus = usePaidStatus(configured);
   const canResume = useOnboardingResume(configured);
-  const isPaid = authState === "signed-in" && paidStatus === "paid";
+  const signedIn = authState === "signed-in";
   const closingArrow = useAnimatedIconControls(80, undefined, 420);
 
   return (
@@ -1039,7 +1037,7 @@ function ClosingCtaSection({ configured }: { configured: boolean }) {
         </p>
 
         <div className="mt-9 flex justify-center">
-          {isPaid ? (
+          {signedIn ? (
             <Link
               href="/file"
               onMouseEnter={closingArrow.start}

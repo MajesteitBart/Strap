@@ -52,30 +52,6 @@ export type AiUsageSummary = {
   }>;
 };
 
-export type CreditTransaction = {
-  id: string;
-  type: "topup" | "debit" | "grant" | "monthly-spend";
-  amountUsd: number;
-  balanceAfterUsd: number;
-  feature: string | null;
-  modelId: string | null;
-  bucket: string | null;
-  createdAt: string;
-};
-
-export type CreditsState = {
-  grantedMicroUsd: number;
-  purchasedMicroUsd: number;
-  balanceMicroUsd: number;
-  grantedUsd: number;
-  purchasedUsd: number;
-  balanceUsd: number;
-  allowanceUsd: number;
-  allowanceResets: boolean;
-  allTimeSpentUsd: number;
-  transactions: CreditTransaction[];
-};
-
 export type OpenRouterBalance = {
   usageUsd: number;
   limitUsd: number | null;
@@ -91,7 +67,6 @@ const reposCache: CacheEntry<RepoOption[]> = { value: null, promise: null };
 const branchesCache = new Map<string, CacheEntry<BranchOption[]>>();
 const aiSettingsCache: CacheEntry<PublicAiSettings | null> = { value: null, promise: null };
 const usageCache = new Map<string, CacheEntry<AiUsageSummary | null>>();
-const creditsCache: CacheEntry<CreditsState | null> = { value: null, promise: null };
 const openRouterBalanceCache: CacheEntry<OpenRouterBalance | null> = { value: null, promise: null };
 const versionStatusCache = new Map<string, CacheEntry<VersionControlStatus | null>>();
 let activeCacheScope = "";
@@ -103,8 +78,6 @@ function clearAllSettingsCaches() {
   aiSettingsCache.promise = null;
   branchesCache.clear();
   usageCache.clear();
-  creditsCache.value = null;
-  creditsCache.promise = null;
   openRouterBalanceCache.value = null;
   openRouterBalanceCache.promise = null;
   versionStatusCache.clear();
@@ -228,30 +201,8 @@ export function clearSettingsUsageCache() {
   usageCache.clear();
 }
 
-// Balance is volatile (top-ups, per-call debits), so this refetches on every
-// call unless a request is already in flight - same shape as loadSettingsUsage.
-export function loadSettingsCredits() {
-  if (!creditsCache.promise) {
-    creditsCache.promise = readJson<{ credits?: CreditsState }>("/api/app/credits")
-      .then((payload) => {
-        creditsCache.value = payload.credits ?? null;
-        return creditsCache.value;
-      })
-      .finally(() => {
-        creditsCache.promise = null;
-      });
-  }
-
-  return creditsCache.promise;
-}
-
-export function clearSettingsCreditsCache() {
-  creditsCache.value = null;
-  creditsCache.promise = null;
-}
-
-// The BYOK user's live OpenRouter balance. Volatile like credits, so it always
-// refetches; returns null when no valid key is saved or the read failed.
+// The BYOK user's live OpenRouter balance. Volatile, so it always refetches;
+// returns null when no valid key is saved or the read failed.
 export function loadSettingsOpenRouterBalance() {
   if (!openRouterBalanceCache.promise) {
     openRouterBalanceCache.promise = readJson<{ balance?: OpenRouterBalance | null }>(
@@ -322,10 +273,9 @@ export function preloadSettingsData({
 
   void loadSettingsAiSettings().catch(() => null);
   void loadSettingsUsage("90d", "credits").catch(() => null);
-  void loadSettingsCredits().catch(() => null);
   // The OpenRouter balance is only shown for a valid BYOK key (the minority
   // path), so the settings screen fetches it lazily on demand rather than
-  // eagerly here where it would be a wasted call for every credits-mode user.
+  // eagerly here where it would be a wasted call otherwise.
 
   if (!githubConnected) {
     return;

@@ -65,14 +65,12 @@ import { SearchableSelect } from "@/components/creed/searchable-select";
 import { useCreed } from "@/components/creed/creed-provider";
 import { CompanySettings } from "@/components/creed/company-settings";
 import {
-  clearSettingsCreditsCache,
   clearSettingsOpenRouterBalanceCache,
   clearSettingsRepoCache,
   clearSettingsUsageCache,
   hashSettingsMarkdown,
   loadSettingsAiSettings,
   loadSettingsBranches,
-  loadSettingsCredits,
   loadSettingsOpenRouterBalance,
   loadSettingsRepos,
   loadSettingsUsage,
@@ -82,15 +80,11 @@ import {
   type AiUsageRange,
   type AiUsageSummary,
   type BranchOption,
-  type CreditsState,
   type OpenRouterBalance,
   type PublicAiSettings,
   type RepoOption,
   type VersionControlStatus,
 } from "@/components/creed/settings-preload";
-import { AddCreditsDialog } from "@/components/creed/add-credits-dialog";
-import { CreditsHistoryDialog } from "@/components/creed/credits-history-dialog";
-import { LOW_ALLOWANCE_RATIO } from "@/lib/ai/credit-config";
 import { AI_FEATURES, featureMeta } from "@/lib/ai/features";
 import {
   accentColorMap,
@@ -188,25 +182,8 @@ function PersonalSettingsScreen() {
   // by toast notifications - see toast.error/.success calls in the handlers.
   const [usageRange, setUsageRange] = useState<AiUsageRange>("90d");
   const [usage, setUsage] = useState<AiUsageSummary | null>(null);
-  const [credits, setCredits] = useState<CreditsState | null>(null);
   const [openRouterBalance, setOpenRouterBalance] = useState<OpenRouterBalance | null>(null);
-  const [addCreditsOpen, setAddCreditsOpen] = useState(false);
-  const [historyOpen, setHistoryOpen] = useState(false);
   const canSaveAiKey = looksLikeApiKey(aiKeyDraft) && !aiSaving;
-
-  // Two-bucket credits display: the allowance as spent / total, a separate
-  // roll-over "extra credits" card beneath it, and a quiet "low" nudge once the
-  // combined balance drops to <= 20% of the allowance. Kept minimal on purpose.
-  const grantedUsd = credits?.grantedUsd ?? 0;
-  const purchasedUsd = credits?.purchasedUsd ?? 0;
-  const balanceUsd = credits?.balanceUsd ?? 0;
-  const allTimeSpentUsd = credits?.allTimeSpentUsd ?? 0;
-  const allowanceUsd = credits?.allowanceUsd ?? 0;
-  const allowanceResets = credits?.allowanceResets ?? false;
-  const allowanceSpentUsd = Math.max(0, allowanceUsd - grantedUsd);
-  // Low once the combined balance drops to <= 20% of the allowance, so a large
-  // extra-credits buffer suppresses the nudge.
-  const lowOnAllowance = allowanceUsd > 0 && balanceUsd <= allowanceUsd * LOW_ALLOWANCE_RATIO;
 
   // The global control reflects the shared level of all non-hidden sections,
   // or nothing when they differ (mixed). Hidden sections are ignored here.
@@ -492,11 +469,6 @@ function PersonalSettingsScreen() {
       if (intent.usageRange) {
         setUsageRange(intent.usageRange);
       }
-      if (intent.openDialog === "add-credits") {
-        setAddCreditsOpen(true);
-      } else if (intent.openDialog === "credits-history") {
-        setHistoryOpen(true);
-      }
       const key = intent.scrollTo;
       if (!key) {
         return;
@@ -536,27 +508,6 @@ function PersonalSettingsScreen() {
       window.clearTimeout(timeoutId);
       window.cancelAnimationFrame(frameId);
       window.removeEventListener(SETTINGS_PANEL_INTENT_EVENT, consume);
-    };
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadCredits() {
-      try {
-        const next = await loadSettingsCredits();
-        if (!cancelled) {
-          setCredits(next);
-        }
-      } catch {
-        return;
-      }
-    }
-
-    void loadCredits();
-
-    return () => {
-      cancelled = true;
     };
   }, []);
 
@@ -821,15 +772,6 @@ function PersonalSettingsScreen() {
     }
   }
 
-  async function refreshCredits() {
-    clearSettingsCreditsCache();
-    try {
-      setCredits(await loadSettingsCredits());
-    } catch {
-      // Keep the current balance on a transient failure.
-    }
-  }
-
   return (
     <>
       <div className="h-full overflow-y-auto bg-[var(--creed-surface)] creed-scrollbar">
@@ -1023,7 +965,7 @@ function PersonalSettingsScreen() {
                     type="button"
                     className="inline-flex h-8 items-center gap-2 rounded-md border border-[var(--creed-border)] bg-[var(--creed-surface)] px-3 text-sm text-[var(--creed-text-primary)] transition-colors duration-150 hover:bg-[var(--creed-surface-raised)]"
                   >
-                    {aiSettings.aiMode === "credits" ? "Credits" : "BYOK"}
+                    {aiSettings.aiMode === "credits" ? "Included" : "BYOK"}
                     <ChevronDown className="h-3.5 w-3.5 text-[var(--creed-text-secondary)]" />
                   </button>
                 </DropdownMenuTrigger>
@@ -1040,7 +982,7 @@ function PersonalSettingsScreen() {
                         aiSettings.aiMode === mode && "bg-[var(--creed-surface-selected)] font-medium"
                       )}
                     >
-                      <span>{mode === "credits" ? "Credits" : "BYOK"}</span>
+                      <span>{mode === "credits" ? "Included" : "BYOK"}</span>
                       {aiSettings.aiMode === mode ? (
                         <Check className="h-3.5 w-3.5 shrink-0 text-[var(--creed-text-primary)]" />
                       ) : null}
@@ -1053,53 +995,11 @@ function PersonalSettingsScreen() {
               <div className="grid gap-5 md:grid-cols-[1.1fr_0.9fr] md:items-stretch">
                 <div className="flex flex-col gap-4">
                   {aiSettings.aiMode === "credits" ? (
-                    allowanceResets ? (
-                      <>
-                        {/* Recurring allowance: this period's spend / total, plus
-                            the roll-over extra credits as a second bucket. */}
-                        <div className="rounded-[var(--radius-lg)] border border-[var(--creed-border)] px-4 py-3">
-                          <div className="text-[13px] font-medium text-[var(--creed-text-secondary)]">
-                            This month
-                          </div>
-                          <div className="mt-0.5 text-[30px] font-medium tracking-[-0.03em] text-[var(--creed-text-primary)]">
-                            ${allowanceSpentUsd.toFixed(2)}
-                            <span className="text-[var(--creed-text-tertiary)]">
-                              {" "}
-                              / ${allowanceUsd.toFixed(2)}
-                            </span>
-                          </div>
-                        </div>
-                        {/* Extra credits: top-ups that roll over and never reset. */}
-                        <div className="rounded-[var(--radius-lg)] border border-[var(--creed-border)] px-4 py-2.5">
-                          <div className="text-[13px] font-medium text-[var(--creed-text-secondary)]">
-                            Extra credits
-                          </div>
-                          <div className="mt-0.5 text-[22px] font-medium tracking-[-0.02em] text-[var(--creed-text-primary)]">
-                            ${purchasedUsd.toFixed(2)}
-                          </div>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <div className="rounded-[var(--radius-lg)] border border-[var(--creed-border)] px-4 py-3">
-                          <div className="text-[13px] font-medium text-[var(--creed-text-secondary)]">
-                            Credits left
-                          </div>
-                          <div className="mt-0.5 text-[30px] font-medium tracking-[-0.03em] text-[var(--creed-text-primary)]">
-                            ${balanceUsd.toFixed(2)}
-                          </div>
-                        </div>
-                        {/* Lifetime-only: total credits spent over all time. */}
-                        <div className="rounded-[var(--radius-lg)] border border-[var(--creed-border)] px-4 py-2.5">
-                          <div className="text-[13px] font-medium text-[var(--creed-text-secondary)]">
-                            All-time spend
-                          </div>
-                          <div className="mt-0.5 text-[22px] font-medium tracking-[-0.02em] text-[var(--creed-text-primary)]">
-                            ${allTimeSpentUsd.toFixed(2)}
-                          </div>
-                        </div>
-                      </>
-                    )
+                    <p className="text-[14px] leading-7 text-[var(--creed-text-secondary)]">
+                      AI features run on this deployment&apos;s shared
+                      OpenRouter key. Switch to BYOK to run them on your own
+                      key instead.
+                    </p>
                   ) : (
                     <div>
                       {openRouterBalance ? (
@@ -1133,30 +1033,7 @@ function PersonalSettingsScreen() {
                     </div>
                   )}
 
-                  {aiSettings.aiMode === "credits" ? (
-                    <div className="mt-auto flex items-center justify-between gap-2 pt-1">
-                      <Button
-                        variant="ghost"
-                        className="rounded-md px-3 text-[var(--creed-text-secondary)] hover:bg-[var(--creed-surface-raised)] hover:text-[var(--creed-text-primary)]"
-                        onClick={() => setHistoryOpen(true)}
-                      >
-                        View history
-                      </Button>
-                      <div className="flex items-center gap-3">
-                        {lowOnAllowance ? (
-                          <span className="text-[12px] text-[#B45309] dark:text-[#F5A623]">
-                            Running low
-                          </span>
-                        ) : null}
-                        <Button
-                          className="rounded-md bg-[var(--creed-accent)] px-4 text-white hover:bg-[var(--creed-accent-hover)]"
-                          onClick={() => setAddCreditsOpen(true)}
-                        >
-                          Add credits
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
+                  {aiSettings.aiMode === "byok" ? (
                     <div className="mt-auto flex items-center justify-between gap-2 pt-1">
                       <Button
                         variant="ghost"
@@ -1181,7 +1058,7 @@ function PersonalSettingsScreen() {
                         {aiSaving ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
                       </Button>
                     </div>
-                  )}
+                  ) : null}
                 </div>
 
                 <UsageCard
@@ -1192,19 +1069,6 @@ function PersonalSettingsScreen() {
                 />
               </div>
             </div>
-
-            <AddCreditsDialog
-              open={addCreditsOpen}
-              onOpenChange={setAddCreditsOpen}
-              currentBalanceUsd={credits?.balanceUsd ?? 0}
-              onToppedUp={() => void refreshCredits()}
-            />
-            <CreditsHistoryDialog
-              open={historyOpen}
-              onOpenChange={setHistoryOpen}
-              transactions={credits?.transactions ?? []}
-              allowanceResets={allowanceResets}
-            />
           </section>
 
           <Separator className="my-10 bg-[var(--creed-border)]" />
@@ -1784,7 +1648,7 @@ export function UsageCard({
       <div className="flex items-start justify-between gap-4">
         <div>
           <div className="text-[13px] font-medium text-[var(--creed-text-secondary)]">
-            {mode === "credits" ? "Credits spend" : "BYOK spend"}
+            {mode === "credits" ? "Included spend" : "BYOK spend"}
           </div>
           <div className="mt-2 text-[30px] font-medium tracking-[-0.04em] text-[var(--creed-text-primary)]">
             ${total.toFixed(total < 10 ? 2 : 0)}

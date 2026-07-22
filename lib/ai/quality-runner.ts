@@ -22,12 +22,6 @@
 
 import type { CreedQualityReport } from "@/components/creed/file-quality-ui";
 import type { CreedSection } from "@/lib/creed-data";
-import { GRANT_MONTHLY_USD, LOW_ALLOWANCE_RATIO } from "@/lib/ai/credit-config";
-
-// A completed analysis nudges the user to top up once the combined balance
-// falls below ~20% of a monthly allowance (about $1). The richer per-bucket
-// warning lives on the settings card, which knows the exact allowance.
-const LOW_BALANCE_THRESHOLD_USD = GRANT_MONTHLY_USD * LOW_ALLOWANCE_RATIO;
 
 type Listener = () => void;
 
@@ -37,7 +31,6 @@ export type QualityOutcome = {
   id: number;
   ok: boolean;
   message: string | null;
-  lowCredits: boolean;
 };
 
 type RunnerSnapshot = {
@@ -54,7 +47,6 @@ type FullRunResult = {
   storedContentHash?: string | null;
   storedSectionHashes?: Record<string, string>;
   current?: boolean;
-  creditBalanceUsd?: number | null;
 };
 
 const listeners = new Set<Listener>();
@@ -162,19 +154,14 @@ export function runFullQuality(args: FullRunArgs): Promise<FullRunResult> {
       }
       // Only user-initiated analyses (not the silent baseline read) toast.
       if (!args.readOnly) {
-        const balance = payload.creditBalanceUsd;
-        recordOutcome({
-          ok: true,
-          message: null,
-          lowCredits: typeof balance === "number" && balance < LOW_BALANCE_THRESHOLD_USD,
-        });
+        recordOutcome({ ok: true, message: null });
       }
       return payload;
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : "Could not analyze Creed quality.";
       error = message;
       if (!args.readOnly) {
-        recordOutcome({ ok: false, message, lowCredits: false });
+        recordOutcome({ ok: false, message });
       }
       throw cause;
     } finally {
@@ -219,7 +206,6 @@ export function runSectionQuality(
       });
       const payload = (await response.json()) as {
         report?: CreedQualityReport;
-        creditBalanceUsd?: number | null;
         error?: string;
       };
 
@@ -234,20 +220,13 @@ export function runSectionQuality(
         report = payload.report;
         error = null;
       }
-      // Report the outcome so the shell toasts on success / low credits, the
-      // same as a full analysis.
-      recordOutcome({
-        ok: true,
-        message: null,
-        lowCredits:
-          typeof payload.creditBalanceUsd === "number" &&
-          payload.creditBalanceUsd < LOW_BALANCE_THRESHOLD_USD,
-      });
+      // Report the outcome so the shell toasts, the same as a full analysis.
+      recordOutcome({ ok: true, message: null });
       return payload.report?.sections.find((entry) => entry.sectionId === args.section.id) ?? null;
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : "Could not analyze this section.";
       error = message;
-      recordOutcome({ ok: false, message, lowCredits: false });
+      recordOutcome({ ok: false, message });
       throw cause;
     } finally {
       sectionRunning.delete(args.section.id);

@@ -44,11 +44,11 @@ It is not a notes app, a journal, or a memory dump. If you already maintain a ha
 
 Ten sections, five always-on (Identity, Goals, Work, Preferences, Routines) and five optional (Beliefs, Constraints, People, Health, Context). Every section is agent-writable, per-section permissions decide whether edits apply directly or wait for review.
 
-**Personal** is the core one-user product. **Company** extends the same file model into a shared workspace: roles, per-section permissions, attribution, invites, pooled AI credits, seat billing.
+**Personal** is the core one-user product. **Company** extends the same file model into a shared workspace: roles, per-section permissions, attribution, and invites.
 
 ## Quickstart
 
-Prerequisites: **Node 20+** and a free **Supabase** project. (OpenRouter key only for AI features, Stripe only for paid-plan flows.)
+Prerequisites: **Node 20+** and a free **Supabase** project. (OpenRouter key only for AI features.)
 
 ```bash
 git clone https://github.com/connorhpbrn/creed.git
@@ -68,27 +68,13 @@ SUPABASE_SECRET_KEY=<service-role-key>
 CREED_ENCRYPTION_SECRET=$(openssl rand -base64 32)
 ```
 
-Every other variable (OpenRouter, Stripe, GitHub sync, branding, feedback) is documented inline in [`.env.example`](./.env.example). `supabase db push` creates the full schema: sections, proposals, activity, tokens, MCP, GitHub, AI usage, audit log, rate limits, entitlements, all behind row-level security.
-
-<details>
-<summary><b>Wire up Stripe for the paid flows (optional)</b></summary>
-
-The hosted app gates `/file` behind a paid entitlement. Locally you can skip Stripe entirely (unentitled users land on `/pricing`), or run the full flow: set the four `STRIPE_*` vars from `.env.example` with sandbox keys, then
-
-```bash
-stripe listen --forward-to localhost:3000/api/stripe/webhook
-```
-
-and copy the printed `whsec_…` into `STRIPE_WEBHOOK_SECRET`. Test payments then auto-grant entitlements.
-
-</details>
+Every other variable (OpenRouter, GitHub sync, branding, feedback) is documented inline in [`.env.example`](./.env.example). `supabase db push` creates the full schema: sections, proposals, activity, tokens, MCP, GitHub, AI usage, audit log, rate limits, all behind row-level security.
 
 <details>
 <summary><b>Deploy your own hosted instance</b></summary>
 
-- Set `NEXT_PUBLIC_SITE_URL` to your deployed origin so OAuth and Stripe redirects resolve.
+- Set `NEXT_PUBLIC_SITE_URL` to your deployed origin so OAuth redirects resolve.
 - Set `CREED_CSP_ENFORCE=1` after watching one deploy cycle in Report-Only mode.
-- Create a live Stripe webhook endpoint at `https://<your-domain>/api/stripe/webhook` and use its signing secret.
 - Example agent prompts referencing `https://creed.md` are illustrative; real URLs derive from your `NEXT_PUBLIC_SITE_URL`.
 
 </details>
@@ -116,8 +102,7 @@ Agents get three verbs: read the file, propose an update, or direct-edit where y
 | Framework | Next.js 16 (App Router, Turbopack), React 19, TypeScript |
 | UI | Tailwind CSS v4, shadcn/ui, Tiptap editor, Framer Motion |
 | Backend | Supabase (auth, Postgres, RLS, realtime), pg_cron retention jobs |
-| AI | OpenRouter (managed credits or BYOK), per-feature model routing |
-| Billing | Stripe (Personal and Company plans, seats, webhooks) |
+| AI | OpenRouter (included key or BYOK), per-feature model routing |
 | Sync | GitHub push/pull of `creed.md`, lossless Markdown round-trip |
 
 Full tour at [creed.md/stack](https://creed.md/stack).
@@ -137,7 +122,7 @@ lib/
 ├── creed-backend.ts    Supabase reads/writes
 ├── creed-markdown.ts   push/pull Markdown parser (lossless round-trip)
 ├── ai/                 OpenRouter client, model catalog, quality scoring
-├── company-*.ts        Company roles, seats, billing, invites
+├── company-*.ts        Company roles, sections, invites, admin
 supabase/migrations/    canonical schema (RLS everywhere)
 tests/                  node:test suites
 ```

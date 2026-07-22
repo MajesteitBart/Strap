@@ -58,15 +58,14 @@ export function websiteSchema() {
   };
 }
 
-// The product itself. Offers mirror the live pricing (free self-host, Personal
-// $12/mo, $99/yr, $199 lifetime, and the live Company plan $129/mo, $999/yr,
-// $1,999 lifetime) so a price quoted in an AI answer matches the pricing page.
+// The product itself. Offers mirror the live pricing (everything is free) so a
+// price quoted in an AI answer matches the pricing page.
 export function softwareApplicationSchema() {
   const url = base();
-  const offer = (name: string, price: string) => ({
+  const offer = (name: string) => ({
     "@type": "Offer",
     name,
-    price,
+    price: "0",
     priceCurrency: "USD",
     url: `${url}/pricing`,
   });
@@ -82,12 +81,8 @@ export function softwareApplicationSchema() {
     publisher: { "@id": organizationId() },
     offers: [
       { "@type": "Offer", name: "Free (self-host)", price: "0", priceCurrency: "USD" },
-      offer("Personal (monthly)", "12"),
-      offer("Personal (yearly)", "99"),
-      offer("Personal (lifetime)", "199"),
-      offer("Company (monthly)", "129"),
-      offer("Company (yearly)", "999"),
-      offer("Company (lifetime)", "1999"),
+      offer("Personal"),
+      offer("Company"),
     ],
   };
 }

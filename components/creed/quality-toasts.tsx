@@ -12,10 +12,7 @@ import {
   getQualityRunnerSnapshot,
   subscribeQualityRunner,
 } from "@/lib/ai/quality-runner";
-import {
-  clearSettingsCreditsCache,
-  clearSettingsUsageCache,
-} from "@/components/creed/settings-preload";
+import { clearSettingsUsageCache } from "@/components/creed/settings-preload";
 
 export function QualityToasts() {
   const snapshot = useSyncExternalStore(
@@ -43,15 +40,11 @@ export function QualityToasts() {
       toast.error(outcome.message || "Analysis failed");
       return;
     }
-    // A completed analysis recorded usage and (in credits mode) a debit. Drop
-    // the cached settings data so the balance and spend chart refetch fresh the
-    // next time Settings is opened, instead of showing stale figures.
-    clearSettingsCreditsCache();
+    // A completed analysis recorded usage. Drop the cached settings data so the
+    // spend chart refetches fresh the next time Settings is opened, instead of
+    // showing stale figures.
     clearSettingsUsageCache();
     toast.success("Analysis complete");
-    if (outcome.lowCredits) {
-      toast.warning("Running low on credits");
-    }
   }, [outcome]);
 
   return null;

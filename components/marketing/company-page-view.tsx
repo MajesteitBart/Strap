@@ -7,7 +7,6 @@ import {
 } from "@/components/marketing/site-chrome";
 import { FaqSection } from "@/components/marketing/faq-section";
 import { companyFaqItems } from "@/lib/marketing/faq";
-import { COMPANY_PRICING } from "@/lib/marketing/pricing";
 import { cn } from "@/lib/utils";
 
 // Server-rendered Company plan landing page. All content ships in the initial
@@ -17,7 +16,7 @@ import { cn } from "@/lib/utils";
 const ROLES = [
   {
     name: "Owner",
-    body: "Manages billing, members, and content. Every team has one.",
+    body: "Manages members, company settings, and content. Every team has one.",
     fill: "bg-[#EFF6FF] dark:bg-[#102341]/60",
     text: "text-[var(--creed-accent-hover)] dark:text-[#60A5FA]",
   },
@@ -141,44 +140,18 @@ export function CompanyPageView() {
 
         <section className="border-t border-[var(--creed-border)] py-12">
           <h2 className="text-[24px] font-medium tracking-[-0.01em] text-[var(--creed-text-primary)] md:text-[28px]">
-            Company pricing
+            Free for your whole team
           </h2>
           <p className="mt-3 max-w-2xl text-[16px] leading-7 text-[var(--creed-text-secondary)]">
-            Every Company plan includes 10 seats and supports BYOK. Extra seats
-            are available, and billing is owner-only.
+            A Company Creed is free: invite as many members as you need, and
+            run AI on the included key or your company&apos;s own key (BYOK).
           </p>
-          <div className="mt-8 grid items-start gap-4 sm:grid-cols-3">
-            {(["monthly", "yearly", "lifetime"] as const).map((cycle) => {
-              const plan = COMPANY_PRICING[cycle];
-              return (
-                <div
-                  key={cycle}
-                  className="rounded-xl bg-[var(--creed-surface)] p-5"
-                >
-                  <div className="text-[13px] font-medium capitalize text-[var(--creed-text-tertiary)]">
-                    {cycle}
-                  </div>
-                  <div className="mt-2 flex items-baseline gap-1.5">
-                    <span className="text-[28px] font-semibold tracking-[-0.02em] text-[var(--creed-text-primary)]">
-                      {plan.price}
-                    </span>
-                    <span className="text-[13px] text-[var(--creed-text-tertiary)]">
-                      {plan.cadence}
-                    </span>
-                  </div>
-                  <p className="mt-3 text-[14px] leading-6 text-[var(--creed-text-secondary)]">
-                    {plan.tagline}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
           <div className="mt-7">
             <Link
               href="/pricing"
               className="text-[15px] font-medium text-[var(--creed-accent)] transition-colors hover:text-[var(--creed-accent-hover)]"
             >
-              Full pricing and checkout
+              Get started
             </Link>
           </div>
         </section>

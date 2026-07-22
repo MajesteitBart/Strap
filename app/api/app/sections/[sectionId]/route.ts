@@ -14,7 +14,6 @@ function statusFor(result: Extract<SectionWriteResult, { ok: false }>): number {
     case "conflict":
       return 409;
     case "forbidden":
-    case "frozen":
       return 403;
     case "not_found":
       return 404;

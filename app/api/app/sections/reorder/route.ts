@@ -33,8 +33,7 @@ export async function POST(request: Request) {
     sectionIds: b.sectionIds as string[],
   });
   if (!result.ok) {
-    const status =
-      result.code === "forbidden" || result.code === "frozen" ? 403 : 400;
+    const status = result.code === "forbidden" ? 403 : 400;
     return NextResponse.json(
       { error: result.error, code: result.code },
       { status },

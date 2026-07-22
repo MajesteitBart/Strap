@@ -33,7 +33,7 @@ export async function POST(request: Request) {
 
   const result = await createInvite({ creedId, actorUserId: auth.user.id, email, role });
   if (!result.ok) {
-    const status = result.code === "forbidden" ? 403 : result.code === "no_seats" ? 409 : 400;
+    const status = result.code === "forbidden" ? 403 : 400;
     return NextResponse.json({ error: result.error, code: result.code }, { status });
   }
 

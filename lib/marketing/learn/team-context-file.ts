@@ -40,7 +40,7 @@ export const teamContextFile: Article = {
         "Roles: Owner, Admin, and Member, so it is clear who can change the shared profile and who reads it.",
         "Section permissions: control which roles can edit which sections, so sensitive parts are not open to everyone.",
         "Activity view: every change to the shared Creed is visible, so edits are reviewable rather than invisible.",
-        "Admin controls: manage members, seats, and who has write access as the team changes.",
+        "Admin controls: manage members and who has write access as the team changes.",
       ],
     },
     {
@@ -71,7 +71,7 @@ export const teamContextFile: Article = {
     { type: "h2", text: "What it costs" },
     {
       type: "p",
-      text: "Creed's Company plan is a team context file with roles, an activity view, and admin controls. It is $129 per month, $999 per year, or $1,999 for a lifetime license. Ten seats are included. Extra seats are $12 per month, $99 per year, or $199 one-time. Usage is $50 per month included ($200 one-time on the lifetime plan).",
+      text: "Nothing. Creed's Company Creed is a team context file with roles, an activity view, and admin controls, free for as many members as you need. AI features run on the deployment's included key or on the company's own OpenRouter key (BYOK).",
     },
     {
       type: "p",
@@ -97,7 +97,7 @@ export const teamContextFile: Article = {
     {
       question: "How much does a team context file cost with Creed?",
       answer:
-        "The Company plan is $129 per month, $999 per year, or $1,999 for a lifetime license, with ten seats included. Extra seats are $12 per month, $99 per year, or $199 one-time, and usage is $50 per month included.",
+        "Nothing. A Company Creed is free, with as many members as you need. AI features run on the deployment's included key or on the company's own OpenRouter key (BYOK).",
     },
     {
       question: "Does it work for teams that are not engineering teams?",

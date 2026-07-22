@@ -93,7 +93,7 @@ export const memoryMcpServersCompared: Article = {
           "Usage-based dev plans",
           "Open source, self-host",
           "Open source, self-host",
-          "Free self-host; Personal $12/mo, $99/yr, $199 lifetime; Company $129/mo, $999/yr, $1,999 lifetime",
+          "Free: open source self-host and free hosted Personal and Company Creeds",
         ],
       ],
     },
@@ -121,7 +121,7 @@ export const memoryMcpServersCompared: Article = {
     },
     {
       type: "p",
-      text: "Creed keeps one profile with five always-on core sections, Identity, Goals, Work, Preferences, and Routines, plus optional Beliefs, Constraints, People, Health, and Context. Every agent you connect over MCP reads it before answering, then proposes narrow updates you approve, or edits directly if you trust it to. It is plain Markdown you own with BYOK, export, and delete, and it integrates with GitHub for version control. Self-hosting is free; the hosted Personal plan is $12/mo, $99/yr, or $199 lifetime, and the Company plan adds one shared Company Creed for a team at $129/mo, $999/yr, or $1,999 lifetime.",
+      text: "Creed keeps one profile with five always-on core sections, Identity, Goals, Work, Preferences, and Routines, plus optional Beliefs, Constraints, People, Health, and Context. Every agent you connect over MCP reads it before answering, then proposes narrow updates you approve, or edits directly if you trust it to. It is plain Markdown you own with BYOK, export, and delete, and it integrates with GitHub for version control. Creed is free, both self-hosted and hosted, and a Company Creed adds one shared file for a team at no charge.",
     },
     { type: "h2", text: "The short version" },
     {
@@ -153,7 +153,7 @@ export const memoryMcpServersCompared: Article = {
     {
       question: "How much does Creed cost?",
       answer:
-        "Self-hosting is free. The hosted Personal plan is $12/mo, $99/yr, or $199 lifetime, and the Company plan is $129/mo, $999/yr, or $1,999 lifetime with 10 seats included. BYOK is available.",
+        "Nothing. Self-hosting is free, and the hosted app with Personal and Company Creeds is free too. AI runs on an included key or on your own OpenRouter key (BYOK).",
     },
   ],
   related: [

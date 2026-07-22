@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { NO_STORE_HEADERS } from "@/lib/http-headers";
-import { markEntitlementWelcomed, markCompanyWelcomed } from "@/lib/stripe";
+import { markEntitlementWelcomed, markCompanyWelcomed } from "@/lib/welcome";
 import { resolveOwnedCompanyCreedId } from "@/lib/creed-context";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";

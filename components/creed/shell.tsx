@@ -20,9 +20,7 @@ import { FeedbackMenuItem } from "@/components/creed/feedback-menu";
 import { BookTextIcon } from "@/components/ui/book-text";
 import { ConnectIcon } from "@/components/ui/connect";
 import { ContrastIcon, type ContrastIconHandle } from "@/components/ui/contrast";
-import { CreditCardIcon } from "@/components/ui/credit-card";
 import { CpuIcon } from "@/components/ui/cpu";
-import { BillingDialog } from "@/components/creed/billing-dialog";
 import { FileTextIcon } from "@/components/ui/file-text";
 import { LinkIcon } from "@/components/ui/link";
 import { LogoutIcon } from "@/components/ui/logout";
@@ -145,7 +143,6 @@ export function CreedShell({
   const router = useRouter();
   const { signOut, state, exportMarkdown } = useCreed();
   const [failedAvatarUrl, setFailedAvatarUrl] = useState<string | null>(null);
-  const [billingOpen, setBillingOpen] = useState(false);
   const searchIconRef = useRef<SearchIconHandle | null>(null);
   const agentRun = useSyncExternalStore(subscribeAgentRunner, getAgentRunnerSnapshot, getAgentRunnerServerSnapshot);
   const agentBusy = agentRun.status === "working" || agentRun.status === "applying";
@@ -672,15 +669,6 @@ export function CreedShell({
                   <FeedbackMenuItem />
                   <ThemeToggleMenuItem />
                   <AnimatedMenuIconItem
-                    icon={CreditCardIcon}
-                    className="text-[13px]"
-                    onSelect={() => {
-                      setBillingOpen(true);
-                    }}
-                  >
-                    Billing
-                  </AnimatedMenuIconItem>
-                  <AnimatedMenuIconItem
                     icon={LogoutIcon}
                     className="text-[13px]"
                     onSelect={() => {
@@ -700,12 +688,10 @@ export function CreedShell({
         </main>
       </div>
 
-      <BillingDialog open={billingOpen} onOpenChange={setBillingOpen} />
       <CreedPanel
         onFileSection={handleSectionClick}
         onFileProposal={handleProposalClick}
         onAddSection={handleAddSectionClick}
-        onOpenBilling={() => setBillingOpen(true)}
         onOpenPush={handleOpenPushClick}
         onSetActivity={handleActivityClick}
       />

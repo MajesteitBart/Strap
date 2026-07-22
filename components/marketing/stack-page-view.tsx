@@ -20,11 +20,6 @@ const stackRows = [
     website: "https://vercel.com",
   },
   {
-    name: "Stripe",
-    purpose: "Payment processing and billing",
-    website: "https://stripe.com",
-  },
-  {
     name: "OpenRouter",
     purpose: "AI model access for certain features",
     website: "https://openrouter.ai",

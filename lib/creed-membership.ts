@@ -1,16 +1,13 @@
 import "server-only";
 import type { SupabaseLikeClient } from "@/lib/supabase/types";
 import type { CreedRole, CreedType } from "@/lib/creed-permissions";
-import { deriveCompanyAccessState, type CompanyAccessState } from "@/lib/creed-permissions";
-import { hasActiveEntitlement } from "@/lib/stripe";
 
 // Membership + Creed-listing helpers.
 //
-// These read the creeds / creed_members / creed_company_billing tables added in
-// the Company Batch A migration. They are the source of truth for "which Creeds
-// does this user belong to", "what is their role", and "does a company Creed
-// grant app access". Everything is keyed by creed_id; personal Creeds are just
-// the degenerate one-member case.
+// These read the creeds / creed_members tables added in the Company Batch A
+// migration. They are the source of truth for "which Creeds does this user
+// belong to" and "what is their role". Everything is keyed by creed_id;
+// personal Creeds are just the degenerate one-member case.
 //
 // Reads go through whatever client the caller passes (the user's session client
 // under RLS, or the service-role admin client). The generated Database types do
@@ -103,16 +100,6 @@ export async function listUserCreeds(
       return a.name.localeCompare(b.name);
     });
 
-  // A personal Creed is only real when the user actually holds a personal plan.
-  // The company migration backfilled a personal creeds row for every existing
-  // user, so without this an invited company member would see (and be routed
-  // into) a phantom personal Creed they never paid for - the personal Creed is
-  // reserved for the personal plan. Company Creeds are always included. Only
-  // pay the entitlement read when a personal row is actually present.
-  const hasPersonal = mapped.some((c) => c.type === "personal");
-  if (hasPersonal && !(await hasActiveEntitlement(client, userId))) {
-    return mapped.filter((c) => c.type !== "personal");
-  }
   return mapped;
 }
 
@@ -150,53 +137,29 @@ export async function getPersonalCreedId(
 }
 
 /**
- * The access state of a company Creed from its billing row, or null when the
- * Creed has no billing row (personal Creeds, or a company shell before
- * checkout completes). Read via the admin client (billing is owner-only RLS).
+ * Does the user hold membership on at least one company Creed? Used by the app
+ * gate so an invited member without a personal Creed of their own still enters.
+ * Reads membership under RLS via the passed client.
  */
-export async function getCompanyAccessState(
+export async function hasCompanyMembership(
   client: unknown,
-  creedId: string
-): Promise<CompanyAccessState | null> {
-  const db = client as SupabaseLikeClient;
-  const { data, error } = (await db
-    .from("creed_company_billing")
-    .select("status")
-    .eq("creed_id", creedId)
-    .maybeSingle()) as { data: { status: string } | null; error: unknown };
-  if (error || !data) return null;
-  return deriveCompanyAccessState(data.status);
-}
-
-/**
- * Does the user hold membership on at least one company Creed whose billing
- * currently grants access (active/past_due, or lifetime paid)? Used by the app
- * gate so an invited member with no personal entitlement can still enter. Reads
- * membership under RLS via the passed client, then billing via the admin client
- * (billing rows are owner-only under RLS, so a non-owner member cannot read them
- * with their session client).
- */
-export async function hasCompanyAccess(
-  client: unknown,
-  adminClient: unknown,
   userId: string
 ): Promise<boolean> {
   const db = client as SupabaseLikeClient;
-  const { data: memberRows, error } = (await db
+  const { data: memberRows, error: memberError } = (await db
     .from("creed_members")
     .select("creed_id")
     .eq("user_id", userId)) as { data: Array<{ creed_id: string }> | null; error: unknown };
-  if (error || !memberRows || memberRows.length === 0) return false;
+  if (memberError || !memberRows?.length) return false;
 
-  const admin = adminClient as SupabaseLikeClient;
-  const ids = memberRows.map((row) => row.creed_id);
-  const { data: billingRows, error: billingError } = (await admin
-    .from("creed_company_billing")
-    .select("status")
-    .in("creed_id", ids)) as { data: Array<{ status: string }> | null; error: unknown };
-  if (billingError || !billingRows) return false;
+  const { data: companyRows, error: companyError } = (await db
+    .from("creeds")
+    .select("id")
+    .in("id", memberRows.map((row) => row.creed_id))
+    .eq("type", "company")
+    .limit(1)) as { data: Array<{ id: string }> | null; error: unknown };
 
-  return billingRows.some((row) => deriveCompanyAccessState(row.status) !== "frozen");
+  return !companyError && Boolean(companyRows?.length);
 }
 
 export type { MemberRow, CreedRow };

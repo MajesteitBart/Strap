@@ -37,6 +37,6 @@ export function getSiteUrl() {
   }
 
   throw new Error(
-    "NEXT_PUBLIC_SITE_URL is not set. Set it to the deployed origin (e.g. https://your-deploy.vercel.app) so OAuth callbacks, Stripe redirects, and agent read URLs resolve correctly."
+    "NEXT_PUBLIC_SITE_URL is not set. Set it to the deployed origin (e.g. https://your-deploy.vercel.app) so OAuth callbacks and agent read URLs resolve correctly."
   );
 }

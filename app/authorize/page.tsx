@@ -10,7 +10,6 @@ import {
   getUserName,
 } from "@/lib/creed-backend";
 import { listUserCreeds } from "@/lib/creed-membership";
-import { hasActiveEntitlement } from "@/lib/stripe";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -143,49 +142,30 @@ export default async function AuthorizePage({
 
   const iconKind = getAgentIconKind(client.clientName);
 
-  // No Creed gate here on purpose: a paid user may connect before any Creed
-  // content exists (the agent reads an empty/seed Creed fine). Signed-in + paid
-  // is the bar; onboarding composes via copy-paste, not over MCP. Unpaid users
-  // get the same agent-specific consent layout, just with a single "Go to
-  // Creed" CTA instead of Allow / Deny.
-  const paid = await hasActiveEntitlement(supabase, user.id);
-  if (!paid) {
-    return (
-      <Shell>
-        <div className="flex items-center justify-center gap-4">
-          <IntegrationGlyph kind="mcp" framed={false} className="h-14 w-14" />
-          <span className="text-[18px] text-[var(--creed-text-tertiary)]">+</span>
-          <IntegrationGlyph kind={iconKind} framed={false} className="h-14 w-14" />
-        </div>
-
-        <h1 className="mt-6 text-[18px] font-medium text-[var(--creed-text-primary)]">
-          Set up Creed to connect {client.clientName}
-        </h1>
-        <p className="mt-3 text-[14px] leading-7 text-[var(--creed-text-secondary)]">
-          Connecting an agent is part of Creed. Finish setting up your Creed, then
-          start the connection from {client.clientName} again.
-        </p>
-        <p className="mt-2 text-[13px] text-[var(--creed-text-tertiary)]">
-          Signed in as {user.email}
-        </p>
-
-        <div className="mt-7 flex justify-center">
-          <Link href="/">
-            <Button className="h-9 rounded-md bg-[var(--creed-accent)] px-6 text-white hover:bg-[var(--creed-accent-hover)]">
-              Go to Creed
-            </Button>
-          </Link>
-        </div>
-      </Shell>
-    );
-  }
-
   // The spaces the user can grant this agent. A solo user (personal Creed only)
   // sees no picker - the decision route grants their one space by default, which
   // keeps the connect flow a single click. A user in one or more company Creeds
   // gets the picker so they can scope the agent to personal or one company (a
   // connection reaches exactly one Creed).
   const creeds = await listUserCreeds(supabase, user.id);
+  if (creeds.length === 0) {
+    return (
+      <Shell>
+        <Message
+          title="Set up your Creed first"
+          body={`Finish creating your Creed before connecting ${client.clientName}. Then start the connection again from your agent.`}
+        />
+        <div className="mt-6 flex justify-center">
+          <Link
+            href="/onboarding"
+            className="inline-flex h-10 items-center justify-center rounded-md bg-[var(--creed-text-primary)] px-5 text-[14px] font-medium text-[var(--creed-button-primary-fg)] transition-colors hover:bg-[var(--creed-button-primary-hover)]"
+          >
+            Set up Creed
+          </Link>
+        </div>
+      </Shell>
+    );
+  }
   // Show each space by its real name - the person's name for their personal
   // Creed (mirroring the app switcher), the company name for a company Creed -
   // never a generic "Personal"/"Company" label, since the owner knows which is

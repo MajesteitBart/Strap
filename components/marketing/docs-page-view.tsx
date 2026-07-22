@@ -144,13 +144,13 @@ const sections: DocsSection[] = [
     title: "Company Creed",
     paragraphs: [
       "The Company plan adds one shared Company Creed on top of your personal one. It is the same structured file, owned by the team instead of a person, so every member's agents read the same company context before they act: how the team works, what it is building, the conventions and constraints that apply to everyone.",
-      "Members switch between their personal Creed and any Company Creed they belong to from the workspace dropdown. Roles decide what each person and their agents can do. Owners manage billing and members, admins manage members and content, and members read and propose. Section permissions can loosen or tighten who edits what, and every change is attributed and visible in the team activity view.",
-      "Billing is per workspace and owner-only. The Company plan is $129 per month, $999 per year, or $1,999 one-time for lifetime, and each includes 10 seats. Extra seats are $12 per month, $99 per year, or $199 one-time. Every Company plan supports BYOK, and the shared usage allowance is $50 per month (a one-time credit on lifetime).",
+      "Members switch between their personal Creed and any Company Creed they belong to from the workspace dropdown. Roles decide what each person and their agents can do. Owners manage members and company settings, admins manage members and content, and members read and propose. Section permissions can loosen or tighten who edits what, and every change is attributed and visible in the team activity view.",
+      "A Company Creed is free. Invite as many members as you need, and run AI on the deployment's included key or on your company's own OpenRouter key (BYOK).",
     ],
     bullets: [
-      "Buy from the pricing page. You do not need a personal Creed first, only a Creed account.",
-      "Invite members by email. They join a seat, connect their own agents over MCP, and read the shared Company Creed.",
-      "Roles: Owner (billing, members, content), Admin (members, content), Member (read and propose).",
+      "Create one from the pricing page. You do not need a personal Creed first, only a Creed account.",
+      "Invite members by email. They join, connect their own agents over MCP, and read the shared Company Creed.",
+      "Roles: Owner (company settings, members, content), Admin (members, content), Member (read and propose).",
       "Section permissions control who can edit each section directly versus by proposal.",
       "The activity view shows reads, proposals, and edits across every member and agent.",
     ],
