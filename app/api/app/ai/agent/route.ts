@@ -78,7 +78,7 @@ export async function POST(request: Request) {
       .slice(0, 10);
 
     const credential = companyId
-      ? await resolveCompanyAiCredential(companyId, "panel")
+      ? await resolveCompanyAiCredential(companyId, "panel", auth.user.id)
       : await resolveAiCredential(auth.supabase, auth.user.id, "panel");
     payloadForStream = {
       query,
@@ -142,6 +142,7 @@ export async function POST(request: Request) {
           modelResult = await streamOpenRouter({
             apiKey: p.apiKey,
             modelId: p.modelId,
+            credentialMode: p.mode,
             maxTokens: 16000,
             temperature: 0,
             timeoutMs: 240000,
@@ -175,6 +176,7 @@ export async function POST(request: Request) {
           modelResult = await callOpenRouter({
             apiKey: p.apiKey,
             modelId: p.modelId,
+            credentialMode: p.mode,
             maxTokens: 16000,
             temperature: 0,
             timeoutMs: 110000,

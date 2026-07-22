@@ -795,13 +795,14 @@ export async function analyzeCreedQuality({
   }
 
   const credential = companyId
-    ? await resolveCompanyAiCredential(companyId, "analysis")
+    ? await resolveCompanyAiCredential(companyId, "analysis", userId)
     : await resolveAiCredential(client, userId, "analysis");
   const qualityScope: QualityScope = companyId ? "company" : "personal";
   const qualitySubjectText = qualitySubject(qualityScope);
   const result = await callOpenRouter({
     apiKey: credential.apiKey,
     modelId: credential.modelId,
+    credentialMode: credential.mode,
     // The schema-valid reply is compact (scores + short notes for the targeted
     // sections), so this ceiling is generous headroom, not a target.
     maxTokens: 8000,

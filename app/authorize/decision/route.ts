@@ -101,7 +101,14 @@ export async function POST(request: Request) {
     creeds.find((c) => c.id === requestedCreedId) ??
     creeds.find((c) => c.type === "personal") ??
     creeds[0];
-  const creedGrants: CreedGrant[] = target ? [{ creedId: target.id, mode: "direct" }] : [];
+  if (!target) {
+    return redirectWith(redirectUri, {
+      error: "access_denied",
+      error_description: "Set up a Creed before connecting an agent.",
+      ...(stateValue ? { state: stateValue } : {}),
+    });
+  }
+  const creedGrants: CreedGrant[] = [{ creedId: target.id, mode: "direct" }];
 
   const code = await issueAuthorizationCode({
     clientId,

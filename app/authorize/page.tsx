@@ -142,16 +142,30 @@ export default async function AuthorizePage({
 
   const iconKind = getAgentIconKind(client.clientName);
 
-  // No Creed gate here on purpose: a user may connect before any Creed content
-  // exists (the agent reads an empty/seed Creed fine). Signed-in is the bar;
-  // onboarding composes via copy-paste, not over MCP.
-
   // The spaces the user can grant this agent. A solo user (personal Creed only)
   // sees no picker - the decision route grants their one space by default, which
   // keeps the connect flow a single click. A user in one or more company Creeds
   // gets the picker so they can scope the agent to personal or one company (a
   // connection reaches exactly one Creed).
   const creeds = await listUserCreeds(supabase, user.id);
+  if (creeds.length === 0) {
+    return (
+      <Shell>
+        <Message
+          title="Set up your Creed first"
+          body={`Finish creating your Creed before connecting ${client.clientName}. Then start the connection again from your agent.`}
+        />
+        <div className="mt-6 flex justify-center">
+          <Link
+            href="/onboarding"
+            className="inline-flex h-10 items-center justify-center rounded-md bg-[var(--creed-text-primary)] px-5 text-[14px] font-medium text-[var(--creed-button-primary-fg)] transition-colors hover:bg-[var(--creed-button-primary-hover)]"
+          >
+            Set up Creed
+          </Link>
+        </div>
+      </Shell>
+    );
+  }
   // Show each space by its real name - the person's name for their personal
   // Creed (mirroring the app switcher), the company name for a company Creed -
   // never a generic "Personal"/"Company" label, since the owner knows which is

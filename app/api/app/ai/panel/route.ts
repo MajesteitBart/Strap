@@ -108,11 +108,12 @@ export async function POST(request: Request) {
           ];
 
     const credential = companyId
-      ? await resolveCompanyAiCredential(companyId, "panel")
+      ? await resolveCompanyAiCredential(companyId, "panel", auth.user.id)
       : await resolveAiCredential(auth.supabase, auth.user.id, "panel");
     const result = await callOpenRouter({
       apiKey: credential.apiKey,
       modelId: credential.modelId,
+      credentialMode: credential.mode,
       maxTokens: 900,
       temperature: 0,
       timeoutMs: 25000,

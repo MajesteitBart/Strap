@@ -31,13 +31,20 @@ export async function provisionCompany(userId: string): Promise<string> {
   // Reuse an in-flight company shell for this owner if one exists, else create
   // the Creed in onboarding stage.
   let creedId: string;
-  const { data: shell } = (await admin
+  const { data: shell, error: shellError } = (await admin
     .from("creeds")
     .select("id")
     .eq("owner_user_id", userId)
     .eq("type", "company")
     .limit(1)
-    .maybeSingle()) as { data: { id: string } | null };
+    .maybeSingle()) as {
+    data: { id: string } | null;
+    error: { message: string } | null;
+  };
+
+  if (shellError) {
+    throw new Error(shellError.message);
+  }
 
   if (shell) {
     creedId = shell.id;
@@ -51,11 +58,30 @@ export async function provisionCompany(userId: string): Promise<string> {
         onboarding_stage: "questions",
       })
       .select("id")
-      .single()) as { data: { id: string } | null; error: { message: string } | null };
-    if (createError || !created) {
+      .single()) as {
+      data: { id: string } | null;
+      error: { code?: string; message: string } | null;
+    };
+
+    if (createError?.code === "23505") {
+      const { data: concurrentShell, error: concurrentError } = (await admin
+        .from("creeds")
+        .select("id")
+        .eq("owner_user_id", userId)
+        .eq("type", "company")
+        .single()) as {
+        data: { id: string } | null;
+        error: { message: string } | null;
+      };
+      if (concurrentError || !concurrentShell) {
+        throw new Error(concurrentError?.message ?? "Could not resume the company Creed.");
+      }
+      creedId = concurrentShell.id;
+    } else if (createError || !created) {
       throw new Error(createError?.message ?? "Could not create the company Creed.");
+    } else {
+      creedId = created.id;
     }
-    creedId = created.id;
   }
 
   // Owner membership (idempotent via the (creed_id, user_id) PK). Load-bearing:

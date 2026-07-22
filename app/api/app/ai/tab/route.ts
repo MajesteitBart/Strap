@@ -99,7 +99,7 @@ export async function POST(request: Request) {
     );
 
     const credential = companyId
-      ? await resolveCompanyAiCredential(companyId, "tab")
+      ? await resolveCompanyAiCredential(companyId, "tab", auth.user.id)
       : await resolveAiCredential(auth.supabase, auth.user.id, "tab");
 
     payload = {
@@ -137,6 +137,7 @@ export async function POST(request: Request) {
         const result = await streamOpenRouter({
           apiKey: p.apiKey,
           modelId: p.modelId,
+          credentialMode: p.mode,
           maxTokens: p.maxTokens,
           temperature: 0.3,
           timeoutMs: 25000,
