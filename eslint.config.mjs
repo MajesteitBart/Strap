@@ -14,6 +14,13 @@ const eslintConfig = defineConfig([
     // `.next-preview*`); ignore it here too so linting after a preview run
     // doesn't drown in generated-file errors.
     ".next-preview/**",
+    // Generated deployment and delivery runtimes are validated by their own
+    // tools. They include bundled and CommonJS JavaScript that is not part of
+    // Creed's TypeScript application lint surface.
+    ".netlify/**",
+    ".agents/**",
+    ".claude/**",
+    ".delano/**",
     "out/**",
     "build/**",
     "next-env.d.ts",

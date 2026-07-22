@@ -1,0 +1,9 @@
+/.agents/** text eol=lf
+/.claude/common/** text eol=lf
+/.codex/** text eol=lf
+/.delano/** text eol=lf
+/.project/** text eol=lf
+/BOOTSTRAP.md text eol=lf
+/HANDBOOK.md text eol=lf
+/install-delano.sh text eol=lf
+/skills-lock.json text eol=lf

@@ -7,6 +7,46 @@ If a human is reading this, the document you want is [`README.md`](./README.md).
 
 ---
 
+## Start Here
+
+Before making changes, read current repository truth in this order:
+
+1. `README.md`
+2. `BOOTSTRAP.md`
+3. `.project/context/README.md` and the task-relevant context files
+4. The active contract under `.project/projects/`
+5. `openwiki/quickstart.md` and its task-relevant references
+6. The complete code path you intend to change
+
+First-turn workflow:
+
+1. Inspect `git status` and preserve unrelated worktree changes.
+2. Retrieve the relevant product, architecture, security, and delivery context.
+3. Select or create the narrowest Delano task that represents the requested work.
+4. Implement the smallest coherent change while preserving the invariants below.
+5. Run focused checks, then the repository-wide checks required by the changed surface.
+6. Record evidence in `.project/projects/<slug>/` and update `.project/context/` when durable truth changed.
+
+## Project Mission
+
+Keep one compact, curated personal context profile useful and safe across every connected AI agent. Product quality is measured by whether the profile stays current, specific, permission-aware, and worth reading before substantive work.
+
+## Current Implementation Goal
+
+Use Delano as Creed's local delivery contract and runtime without changing the product architecture or turning `.project` into product data. The first tracked project is `.project/projects/delano-bootstrap/`.
+
+## Source Of Truth
+
+- `README.md`: product purpose, confirmed setup, commands, and repository map.
+- `BOOTSTRAP.md`: repeatable Delano setup and retrofit decisions for this repository.
+- `.project/context/`: distilled product, technical, testing, and delivery context.
+- `.project/projects/`: Delano specs, plans, decisions, workstreams, tasks, research, and updates.
+- `openwiki/`: generated architecture and workflow reference; regenerate it rather than hand-editing generated pages.
+- `app/`, `components/`, `lib/`, `supabase/`, `packages/creed-cli/`, and `tests/`: implemented behavior and canonical executable truth.
+- `.agents/`: canonical Delano runtime and repo-local skills. `.claude/` is compatibility only.
+
+---
+
 ## What Creed is
 
 One personal context profile every AI reads before answering the user.
@@ -119,6 +159,46 @@ These are non-negotiable. Don't cross them without asking.
 ---
 
 ## Working defaults
+
+### Delano workflow
+
+- Use `.project/context/` for durable repository context and `.project/projects/` for bounded delivery contracts.
+- Prefer Delano CLI lifecycle commands over hand-editing contract frontmatter so rollups remain consistent.
+- Use the full discovery, planning, breakdown, execution, quality, and closeout flow for features or material contract changes.
+- For small local fixes, inspect current state, make the smallest coherent change, verify narrowly, and report `done`, `partial`, or `blocked`.
+- Do not mark work complete without concrete evidence. External tracker synchronization requires explicit approval before writes.
+
+Common commands:
+
+```bash
+delano help
+delano status --open --brief
+delano validate
+delano next -- --all
+delano viewer
+delano project show <project-slug> --json
+delano workstream show <project-slug> <workstream-id> --json
+delano task open|start|close|block|defer|update <project-slug> <task-id> --reason "<text>"
+delano update add <project-slug> --message "<text>" --task <task-id> --stream <workstream-id>
+```
+
+### Model selection for workflows and subagents
+
+Rankings are higher = better. Cost reflects what the project owner pays; intelligence is unsupervised problem capacity; taste covers UI/UX, code quality, API design, and copy.
+
+| model | cost | intelligence | taste |
+| --- | --- | --- | --- |
+| gpt-5.5 | 9 | 8 | 5 |
+| sonnet-5 | 5 | 5 | 7 |
+| opus-4.8 | 4 | 7 | 8 |
+| fable-5 | 2 | 9 | 9 |
+
+- These are defaults, not limits. Escalate when output does not meet the quality bar.
+- For anything that ships, use intelligence, then taste, then cost as tie-breakers.
+- Use `gpt-5.5` for bulk or mechanical work. Anything user-facing needs taste >= 7.
+- Use `fable-5` or `opus-4.8` for plan or implementation review, optionally with `gpt-5.5` as an independent perspective.
+- Never use Haiku.
+- Do not spawn subagents unless the user explicitly requests them.
 
 ### Style + motion
 - Easing: `cubic-bezier(0.22, 1, 0.36, 1)`.
