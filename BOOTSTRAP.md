@@ -52,7 +52,7 @@ Codex hooks are installed in `.codex/hooks.json` but remain inert until hooks an
 
 ## Frontend Bootstrap Decision
 
-Creed already has an established Next.js 16 frontend and is not a next-forge monorepo. Do not run `npx next-forge@latest init` over this checkout because that command initializes a new project rather than retrofitting an existing app. The required `shadcn` and `next-forge` skills live in `.agents/skills/`; use them only when their task triggers apply.
+Creed already has an established Next.js 16 frontend and does not use next-forge. Do not run `npx next-forge@latest init` over this checkout because that command initializes a new project rather than retrofitting an existing app. The required `shadcn` skill lives in `.agents/skills/`; use it when its task triggers apply. The repo-local next-forge skill was removed by owner direction on 2026-07-22.
 
 ## Context Workflow
 

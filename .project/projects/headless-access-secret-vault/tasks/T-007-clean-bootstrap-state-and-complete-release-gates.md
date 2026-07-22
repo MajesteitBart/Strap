@@ -1,0 +1,52 @@
+---
+id: T-007
+name: Clean bootstrap state and complete release gates
+status: in-progress
+workstream: WS-C
+created: 2026-07-22T05:53:03Z
+updated: 2026-07-22T06:38:31Z
+linear_issue_id:
+github_issue:
+github_pr:
+depends_on: [T-004 T-006]
+conflicts_with: [BOOTSTRAP.md, .project/context, package scripts]
+parallel: false
+priority: high
+estimate: L
+operating_mode: multi-stream
+story_id: US-005
+acceptance_criteria_ids: [AC-001 AC-010]
+---
+
+# Task: Clean bootstrap state and complete release gates
+
+## Description
+
+Remove next-forge artifacts and stale references, update project context, run migration and repository quality gates, smoke-test UI, close Delano contracts, and prepare PR evidence.
+
+## Acceptance Criteria
+
+- [x] Current bootstrap and project context no longer claim next-forge is installed or required.
+- [x] Supabase reset, tests, typecheck, lint, build, Delano validation, and UI smoke checks pass or have explicit environment blocker evidence.
+- [ ] The feature branch is intentionally committed, pushed, and opened as a draft PR to main.
+
+## Traceability
+- Story: US-005
+- Acceptance criteria: AC-001 AC-010
+
+## Technical Notes
+
+## Definition of Done
+- [x] Implementation complete
+- [x] Tests pass
+- [x] Review complete
+- [x] Docs updated
+
+## Evidence Log
+
+- 2026-07-22T06:38:31Z: Release gates passed: clean local Supabase reset, 138 tests, strict TypeScript, zero ESLint errors, production build, git diff check, and Delano validation. Public /device and signed route compilation were smoke-tested; T3 Preview interactive automation was explicitly blocked by connector authentication.
+
+- 2026-07-22T06:18:05Z: Task started with `delano task start`.
+
+- 2026-07-22T06:18:05Z: All implementation workstreams are complete; begin cleanup and release gates.
+- 2026-07-22T05:53:03Z: Created from .project/templates/task.md by `delano task add`.

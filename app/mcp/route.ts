@@ -25,7 +25,9 @@ import { companyMcpWrite, type CompanyMcpOp } from "@/lib/company-sections";
 import { minPermission, resolveSectionPermission } from "@/lib/creed-permissions";
 import { listUserCreeds, getCreedRole } from "@/lib/creed-membership";
 import { CREED_PROMPTS } from "@/lib/creed-prompts";
-import { findOAuthAccessToken } from "@/lib/oauth";
+import { findOAuthAccessToken, type CreedGrant, type CreedGrantMode } from "@/lib/oauth";
+import { resolveHeadlessAccessKey } from "@/lib/headless-access";
+import { digestCredential } from "@/lib/headless-access-shared";
 import type { SupabaseLikeClient } from "@/lib/supabase/types";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
@@ -76,6 +78,15 @@ type JsonRpcRequest = {
 type McpToolCallParams = {
   name?: string;
   arguments?: Record<string, unknown>;
+};
+
+type McpCredentialGrant = {
+  userId: string;
+  credentialId: string;
+  credentialType: "oauth" | "api-key";
+  clientName: string | null;
+  creedGrants: CreedGrant[];
+  allowLegacyPersonalFallback: boolean;
 };
 
 // Keep the MCP route self-contained for schema/error text so a route-module
@@ -704,6 +715,48 @@ async function callInternalCreedRoute(
   return payload;
 }
 
+async function resolveMcpCredential(bearer: string): Promise<McpCredentialGrant | null> {
+  if (bearer.startsWith("creed_key_")) {
+    const key = await resolveHeadlessAccessKey(bearer);
+    if (!key) return null;
+    return {
+      userId: key.userId,
+      credentialId: key.keyId,
+      credentialType: "api-key",
+      clientName: key.clientName,
+      creedGrants: [{ creedId: key.creedId, mode: key.mode }],
+      allowLegacyPersonalFallback: false,
+    };
+  }
+  const oauth = await findOAuthAccessToken(bearer);
+  if (!oauth) return null;
+  return {
+    userId: oauth.userId,
+    credentialId: oauth.tokenId,
+    credentialType: "oauth",
+    clientName: oauth.clientName,
+    creedGrants: oauth.creedGrants,
+    allowLegacyPersonalFallback: oauth.allowLegacyPersonalFallback,
+  };
+}
+
+function applyCredentialMode(state: CreedState, mode: CreedGrantMode): CreedState {
+  const ceiling: AgentPermission = mode === "proposal-only" ? "propose" : mode;
+  return {
+    ...state,
+    writeToken: mode === "read-only" ? "" : state.writeToken,
+    directEditToken: mode === "direct" ? state.directEditToken : "",
+    sections: state.sections.map((section) => {
+      const effective = minPermission(section.agentPermission, ceiling);
+      return {
+        ...section,
+        agentPermission: effective,
+        agentWritable: effective === "direct",
+      };
+    }),
+  };
+}
+
 // Resolve which Creed a request batch targets and load its state. Personal
 // Creeds go through the untouched loadCreedState; company Creeds (only ones the
 // user is a member of AND the token was granted) load with each section's agent
@@ -714,31 +767,21 @@ async function callInternalCreedRoute(
 async function resolveMcpState(
   admin: SupabaseLikeClient,
   user: { id: string } & Record<string, unknown>,
-  tokenId: string,
+  credential: McpCredentialGrant,
   requests: JsonRpcRequest[]
 ): Promise<{ state: CreedState; creeds: Awaited<ReturnType<typeof listUserCreeds>> }> {
   const allCreeds = await listUserCreeds(admin, user.id);
   const personal = allCreeds.find((c) => c.type === "personal");
 
-  // Per-token Creed grants (chosen on the consent screen). A token is confined
-  // to the Creeds it was granted: this is what keeps an agent connected for one
-  // space out of the others. A token with NO grant rows is a legacy connection
-  // from before per-Creed grants existed; it falls back to personal-only, never
-  // "everything", so a missing grant can never widen access.
-  //
-  // Only creed_id is read: with single-select connections a token holds one
-  // Creed, and the real edit ceiling is enforced per section (owner/admin member
-  // permission clamped by the member's own agent permission), so the coarse
-  // per-grant `mode` column is not consulted.
-  const { data: grants } = (await admin
-    .from("oauth_token_creeds")
-    .select("creed_id")
-    .eq("token_id", tokenId)) as { data: Array<{ creed_id: string }> | null };
-  const grantedIds = new Set((grants ?? []).map((g) => g.creed_id));
+  // New credentials carry explicit grants. Only an OAuth token positively
+  // identified as pre-grant legacy may use the historical personal fallback.
+  // If explicit grants become inaccessible, keep the state empty instead of
+  // silently widening to the user's personal Creed.
+  const grantedIds = new Set(credential.creedGrants.map((grant) => grant.creedId));
   let creeds = grantedIds.size > 0 ? allCreeds.filter((c) => grantedIds.has(c.id)) : [];
-  // If the grants point only at Creeds the user has since left (or there are no
-  // grants at all), fall back to the token owner's own personal Creed.
-  if (creeds.length === 0 && personal) creeds = [personal];
+  if (creeds.length === 0 && credential.allowLegacyPersonalFallback && personal) {
+    creeds = [personal];
+  }
   const switcherCreeds: CreedSwitcherItem[] = creeds.map((creed) => ({
     ...creed,
     avatarInitials: getAvatarInitials(creed.name),
@@ -767,6 +810,10 @@ async function resolveMcpState(
     );
     if (match) target = match;
   }
+
+  const targetMode = target
+    ? credential.creedGrants.find((grant) => grant.creedId === target.id)?.mode ?? "direct"
+    : "read-only";
 
   // An empty, write-less state (no section content, no write/direct tokens) for
   // the cases where the token has no Creed it may currently load. Reads return
@@ -813,7 +860,7 @@ async function resolveMcpState(
           })
           .filter((s) => s.agentPermission !== "hidden"),
       };
-      return { state, creeds };
+      return { state: applyCredentialMode(state, targetMode), creeds };
     }
     // Company target but membership was revoked between listing the Creeds and
     // this role check (a remove-member request interleaving with this MCP
@@ -836,12 +883,12 @@ async function resolveMcpState(
     activityLimit: 100,
   });
   return {
-    state: {
+    state: applyCredentialMode({
       ...state,
       creeds: switcherCreeds,
       creedType: "personal",
       creedId: personal?.id,
-    },
+    }, targetMode),
     creeds,
   };
 }
@@ -2171,7 +2218,7 @@ export async function POST(request: Request) {
 
   const verdict = checkRateLimit({
     scope: "creed-mcp",
-    identifier: bearer,
+    identifier: digestCredential(bearer),
     limit: 120,
     windowMs: 60_000,
   });
@@ -2185,7 +2232,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const resolved = await findOAuthAccessToken(bearer);
+  const resolved = await resolveMcpCredential(bearer);
   if (!resolved) {
     return unauthorized();
   }
@@ -2208,7 +2255,7 @@ export async function POST(request: Request) {
   const { state } = await resolveMcpState(
     admin as unknown as SupabaseLikeClient,
     userData.user as unknown as { id: string } & Record<string, unknown>,
-    resolved.tokenId,
+    resolved,
     requests
   );
   const firstRequest = requests[0];
@@ -2226,6 +2273,7 @@ export async function POST(request: Request) {
     ?.trim()
     .toLowerCase();
   if (
+    resolved.credentialType === "oauth" &&
     getAgentIconKind(resolved.clientName) === "cli" &&
     cliAgentHeader &&
     state.creedId &&
@@ -2234,7 +2282,7 @@ export async function POST(request: Request) {
     await recordCliAgentUsage(
       admin as never,
       userId,
-      resolved.tokenId,
+      resolved.credentialId,
       cliAgentHeader,
       state.creedId,
     );

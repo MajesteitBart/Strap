@@ -2,9 +2,13 @@
 
 ## Connection model
 
-The preferred agent integration is Creed’s MCP server at `/mcp`, protected by an OAuth 2.1-style authorization-code flow with dynamic client registration and mandatory PKCE S256. A connection is granted access to one selected Creed. Every tool call re-resolves token validity, Creed grant, membership, billing, and section permissions.
+Creed’s MCP server at `/mcp` accepts three bearer-credential families:
 
-The older direct HTTP API remains under `app/api/creed/**` with separate read, proposal, and direct-write bearer capabilities. Those credentials are not Supabase sessions and must be supplied in the `Authorization` header.
+- OAuth access tokens issued through the browser authorization-code flow with dynamic registration and mandatory PKCE S256;
+- OAuth access tokens issued through the RFC 8628 device authorization grant for headless clients;
+- user-created Creed API keys whose `creed_key_` prefix identifies the credential type.
+
+Modern OAuth connections and API keys are explicitly bound to one selected Creed and a maximum mode. Every tool call re-resolves credential validity, the explicit Creed grant, live membership, and section permissions. The older direct HTTP API remains under `app/api/creed/**` with separate read, proposal, and direct-write bearer capabilities. None of these credentials are Supabase browser sessions, and all must be supplied in the `Authorization` header.
 
 ## OAuth flow
 
@@ -20,11 +24,31 @@ Important implementation files are the well-known routes, `app/register/route.ts
 
 OAuth clients are public and have no meaningful client secret. Security rests on PKCE, exact redirect validation (with standard loopback-port handling), one-time codes, consent, per-Creed grants, and token revocation. Scope strings describe capability, but live section policy is the authoritative write gate.
 
+## RFC 8628 device authorization
+
+OAuth discovery advertises `/device/authorize` and `urn:ietf:params:oauth:grant-type:device_code`. A registered public client posts its `client_id` and optional scope to `/device/authorize`; Creed returns a hashed-at-rest device code, an eight-character user code, `/device` as the verification URI, a 10-minute lifetime, and an initial five-second poll interval. The signed-in user enters the code at `/device`, verifies the registered client name, selects exactly one accessible Creed and a maximum mode, then allows or denies the request.
+
+The client polls `/token` with the device-code grant. Postgres serializes polling and state changes through service-role-only RPCs: a normal pending poll advances the next deadline, an early poll returns `slow_down` and adds five seconds up to 300, approval consumes the request once, and denial/expiry/client mismatch return OAuth errors. Successful exchange issues the same one-hour access and rotating 30-day refresh tokens as the browser flow, with one explicit Creed grant. The device request is consumed before token persistence, so the flow must not be described as one transaction spanning request consumption and token issuance.
+
+`app/device/**`, `lib/oauth-device.ts`, `lib/oauth-device-shared.ts`, `app/token/route.ts`, and the latest headless-access migration implement this flow. Authorization and verification endpoint limits use the process-local limiter; durable poll timing is shared in Postgres.
+
 ## Credential storage
 
-OAuth access/refresh tokens and legacy agent tokens use SHA-256 hashes for lookup. Recoverable credentials are encrypted with AES-256-GCM through `lib/secret-crypto.ts`, using `CREED_ENCRYPTION_SECRET`. Raw credentials must never appear in logs, query parameters, or documentation.
+OAuth access/refresh tokens and legacy agent tokens use SHA-256 hashes for lookup. Recoverable credentials are encrypted with AES-256-GCM through `lib/secret-crypto.ts`, using `CREED_ENCRYPTION_SECRET`. Device and user codes are hash-only. Creed API keys are also hash-only and cannot be recovered after their one-time display. Raw credentials must never appear in logs, query parameters, rate-limit identifiers, or documentation.
 
 Authorization codes expire quickly and are claimed conditionally on `used_at IS NULL`. Redirect fields submitted by the browser are revalidated server-side rather than trusted from hidden form inputs.
+
+## Creed API keys for headless MCP
+
+The Connections screen manages long-lived, one-time-visible API keys through the session-authenticated app API:
+
+- `GET /api/app/headless-access?creedId=…` lists only the current user’s safe metadata;
+- `POST /api/app/headless-access` creates a named key, a `read-only`, `proposal-only`, or `direct` ceiling, and an optional future expiry no more than 366 days away;
+- `DELETE /api/app/headless-access/[id]` immediately revokes a key owned by the signed-in user.
+
+Any current Creed member can create a key for that Creed. The generated value is `creed_key_` plus random material; only its SHA-256 digest and display prefix are stored. The full key is returned only by creation. MCP rechecks revocation, expiry, and the creator’s live membership on every resolution and updates `last_used_at` best-effort.
+
+The key mode is an additional ceiling, never an elevation: read-only removes proposal/direct mutation tokens and clamps visible sections to read; proposal-only removes direct editing and clamps to propose; direct still obeys the user’s company and section permissions. If an explicit key or modern OAuth grant becomes inaccessible, MCP returns no usable Creed state rather than silently falling back to another Creed. Only positively identified legacy OAuth tokens with no explicit-grant marker retain the historical Personal fallback. `lib/headless-access.ts`, `lib/headless-access-shared.ts`, the app routes, and `components/creed/headless-access-card.tsx` are the primary sources.
 
 ## MCP endpoint
 
@@ -38,7 +62,7 @@ Authorization codes expire quickly and are claimed conditionally on `used_at IS 
 
 The initialize response and read payload include an operating contract: read Creed before substantive work, propose only durable changes, prefer pruning/tightening to accumulation, and treat all profile content as user data rather than agent instructions. Changes to this contract in `lib/creed-data.ts` or `app/mcp/route.ts` affect every connected model.
 
-The server strips hidden sections and dynamically narrows available operations. For a Company Creed, an agent’s effective access is the minimum of member permission and the user-selected agent ceiling. CLI activity can carry `X-Creed-CLI-Agent` for per-agent attribution while remaining distinguishable from ordinary MCP client activity.
+The server strips hidden sections and dynamically narrows available operations. For a Company Creed, an agent’s effective access is the minimum of member permission and the credential’s selected ceiling. MCP classifies only `creed_key_` credentials as API keys; every other bearer follows OAuth resolution. It hashes the bearer before using it as a rate-limit identifier, so the in-memory limiter does not retain raw credentials. CLI activity can carry `X-Creed-CLI-Agent` for per-agent attribution while remaining distinguishable from ordinary MCP client activity.
 
 ## Direct HTTP agent APIs
 
@@ -67,8 +91,8 @@ Use `packages/creed-cli/README.md` for user commands. Run its own test and typec
 
 - `lib/rate-limit.ts` is process-local. Limits reset on restart and do not coordinate across regions or instances.
 - Dynamic client registration permits supported custom schemes; registered client identity is therefore not a strong trust signal. Consent and redirects are load-bearing.
-- Best-effort Creed-grant persistence fails narrow, but may produce personal-only behavior rather than the requested company grant.
+- Modern credentials fail narrow when their explicit Creed grant is absent or inaccessible; do not restore Personal fallback outside the marked legacy-token case.
 - The MCP route combines protocol, authentication, policy, state loading, and dispatch; seemingly small changes can affect many clients.
-- Focused endpoint-level OAuth tests are limited. PKCE replay, redirect validation, rotation, revocation, and MCP authorization deserve integration tests.
+- Focused endpoint-level OAuth tests are limited. PKCE replay, redirect validation, rotation, revocation, device polling/token-issuance failure, and MCP authorization deserve integration tests.
 
-Relevant tests include `tests/mcp-connection-status.test.ts`, `tests/mcp-health-filter.test.ts`, `tests/connection-actions.test.ts`, and `packages/creed-cli/tests/**`. Recent CLI hardening added command/option tests, live discovery protections, and explicit agent attribution.
+Relevant tests include `tests/headless-access-vault.test.ts`, `tests/mcp-connection-status.test.ts`, `tests/mcp-health-filter.test.ts`, `tests/connection-actions.test.ts`, and `packages/creed-cli/tests/**`. The headless test covers key/code helpers and source-level enforcement/discovery assertions; it does not execute the routes, RPC concurrency, or live MCP authorization.

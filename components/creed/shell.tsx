@@ -23,6 +23,7 @@ import { ContrastIcon, type ContrastIconHandle } from "@/components/ui/contrast"
 import { CpuIcon } from "@/components/ui/cpu";
 import { FileTextIcon } from "@/components/ui/file-text";
 import { LinkIcon } from "@/components/ui/link";
+import { KeyIcon } from "@/components/ui/key";
 import { LogoutIcon } from "@/components/ui/logout";
 import { SettingsIcon } from "@/components/ui/settings";
 import { useAnimatedIconControls } from "@/components/creed/animated-icon-controls";
@@ -81,6 +82,7 @@ const ShellActionsContext = createContext<ShellActionsContextValue | null>(null)
 const navItems = [
   { href: "/file", label: "File", icon: FileTextIcon },
   { href: "/connections", label: "Connections", icon: ConnectIcon },
+  { href: "/vault", label: "Vault", icon: KeyIcon },
   { href: "/settings", label: "Settings", icon: SettingsIcon },
 ];
 

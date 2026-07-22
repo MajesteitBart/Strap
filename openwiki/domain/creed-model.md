@@ -7,7 +7,7 @@ A **Creed** is a canonical context profile read by AI agents before work. It con
 Two Creed types share this model:
 
 - **Personal**: one owner, personal entitlement, single-writer optimized persistence.
-- **Company**: owner/admin/member roles, shared sections, pooled AI/billing resources, per-member controls, concurrency checks, and collaboration.
+- **Company**: owner/admin/member roles, shared sections, per-member controls, concurrency checks, and collaboration.
 
 The primary shared types and transformation rules are in `lib/creed-data.ts`. Database mapping is split between `lib/creed-backend.ts` and `lib/company-sections.ts`.
 
@@ -33,13 +33,7 @@ hidden < read-only < propose < direct
 - A member uses a per-section override, defaulting to `direct` when absent.
 - An agent receives the weaker of the member’s effective section permission and the member’s own agent ceiling.
 - Owner/admin can manage members and section lifecycle.
-- Only the owner manages billing, seats, BYOK, ownership transfer, or deletion.
-
-Company billing adds another gate:
-
-- `active`: normal operation.
-- `past_due`: still writable during Stripe retry/grace handling.
-- `frozen`: retained but read-only; content changes, proposals, invites, and AI writes are blocked.
+- Only the owner manages BYOK, ownership transfer, or deletion; owner/admin manage invitations and member access.
 
 ## Proposals and review
 
@@ -69,7 +63,7 @@ Personal proposal handling is more client-oriented. The server makes proposal re
 
 ### Company
 
-1. Stripe purchase provisions a company shell, owner membership, billing record, pooled credits, and an onboarding stage.
+1. `POST /api/app/company` idempotently creates or resumes the signed-in owner’s single Company Creed shell and owner membership, then makes it active.
 2. The owner answers organization questions.
 3. `lib/onboarding/compile-company.ts` prepares eight company sections and a composition prompt.
 4. Pasted Markdown is mapped to those sections by heading name.
@@ -105,6 +99,6 @@ When changing this model, verify:
 4. Base-revision conflict behavior and version history.
 5. TypeScript and SQL/RLS policy twins.
 6. Markdown round-trip tests when editor or serialization formats change.
-7. Billing-frozen behavior for every write path.
+7. Company invitation/member and ownership boundaries.
 
 Focused tests include `company-permissions.test.ts`, `company-onboarding.test.ts`, `company-proposal-drafts.test.ts`, `editing-system.test.ts`, `rich-text-equivalence.test.ts`, `section-suggestions.test.ts`, and `github-roundtrip.test.ts`.

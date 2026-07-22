@@ -43,6 +43,7 @@ type TokenRow = {
   revoked_at: string | null;
   access_expires_at: string;
   refresh_expires_at: string;
+  creed_grants_explicit: boolean;
 };
 
 const ACCESS_TTL_MS = 60 * 60 * 1000; // 1 hour
@@ -73,6 +74,9 @@ export type ResolvedAccessToken = {
   // The oauth_tokens row id, used to look up per-Creed grants
   // (oauth_token_creeds) for the Company plan.
   tokenId: string;
+  credentialType: "oauth";
+  creedGrants: CreedGrant[];
+  allowLegacyPersonalFallback: boolean;
 };
 
 function generateOpaqueToken(prefix: string) {
@@ -245,6 +249,7 @@ export async function issueTokenPair(input: {
   userId: string;
   scope: string;
   creedGrants: CreedGrant[];
+  creedGrantsExplicit?: boolean;
 }): Promise<IssuedTokens> {
   const admin = adminDb();
   const accessToken = generateOpaqueToken("creed_at");
@@ -261,6 +266,7 @@ export async function issueTokenPair(input: {
       client_id: input.clientId,
       user_id: input.userId,
       scope: input.scope,
+      creed_grants_explicit: input.creedGrantsExplicit ?? input.creedGrants.length > 0,
       access_expires_at: new Date(now + ACCESS_TTL_MS).toISOString(),
       refresh_expires_at: new Date(now + REFRESH_TTL_MS).toISOString(),
     })
@@ -320,7 +326,7 @@ export async function rotateRefreshToken(
   const admin = adminDb();
   const { data, error } = await admin
     .from("oauth_tokens")
-    .select("id, client_id, user_id, scope, revoked_at, refresh_expires_at")
+    .select("id, client_id, user_id, scope, revoked_at, refresh_expires_at, creed_grants_explicit")
     .eq("refresh_token_hash", hashSecret(refreshToken))
     .maybeSingle();
 
@@ -356,6 +362,7 @@ export async function rotateRefreshToken(
     userId: row.user_id,
     scope: row.scope,
     creedGrants,
+    creedGrantsExplicit: row.creed_grants_explicit,
   });
 }
 
@@ -365,7 +372,7 @@ export async function findOAuthAccessToken(
   const admin = adminDb();
   const { data } = await admin
     .from("oauth_tokens")
-    .select("id, client_id, user_id, scope, revoked_at, access_expires_at")
+    .select("id, client_id, user_id, scope, revoked_at, access_expires_at, creed_grants_explicit")
     .eq("access_token_hash", hashSecret(token))
     .maybeSingle();
 
@@ -386,12 +393,21 @@ export async function findOAuthAccessToken(
     .then(undefined, () => {});
 
   const client = await getOAuthClient(row.client_id);
+  const { data: grantRows } = await admin
+    .from("oauth_token_creeds")
+    .select("creed_id, mode")
+    .eq("token_id", row.id);
+  const creedGrants: CreedGrant[] = ((grantRows as Array<{ creed_id: string; mode: CreedGrantMode }> | null) ?? [])
+    .map((grant) => ({ creedId: grant.creed_id, mode: grant.mode }));
   return {
     userId: row.user_id,
     clientId: row.client_id,
     clientName: client?.clientName ?? null,
     scope: row.scope,
     tokenId: row.id,
+    credentialType: "oauth",
+    creedGrants,
+    allowLegacyPersonalFallback: !row.creed_grants_explicit && creedGrants.length === 0,
   };
 }
 
