@@ -1,5 +1,6 @@
 import "server-only";
 import { estimateAiCostUsd, getAiModel } from "@/lib/ai/model-catalog";
+import { resolveOpenRouterProviderPreferences } from "@/lib/ai/openrouter-routing";
 import { getSiteUrl } from "@/lib/supabase/env";
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
@@ -104,6 +105,11 @@ export async function streamOpenRouter({
 }): Promise<OpenRouterCallResult> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  const routedProviderPreferences = resolveOpenRouterProviderPreferences({
+    credentialMode,
+    modelId,
+    providerPreferences,
+  });
   // Fold an external abort (the user pressed Stop) into our controller.
   if (signal) {
     if (signal.aborted) controller.abort();
@@ -128,7 +134,7 @@ export async function streamOpenRouter({
         stream: true,
         usage: { include: true },
         ...(responseFormat ? { response_format: responseFormat } : {}),
-        ...(providerPreferences ? { provider: providerPreferences } : {}),
+        ...(routedProviderPreferences ? { provider: routedProviderPreferences } : {}),
         ...(reasoning ? { reasoning } : {}),
       }),
       signal: controller.signal,
@@ -260,6 +266,11 @@ export async function callOpenRouter({
 }) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  const routedProviderPreferences = resolveOpenRouterProviderPreferences({
+    credentialMode,
+    modelId,
+    providerPreferences,
+  });
 
   let response: Response;
   try {
@@ -283,7 +294,7 @@ export async function callOpenRouter({
         // the true post-call amount rather than re-deriving it from the catalog.
         usage: { include: true },
         ...(responseFormat ? { response_format: responseFormat } : {}),
-        ...(providerPreferences ? { provider: providerPreferences } : {}),
+        ...(routedProviderPreferences ? { provider: routedProviderPreferences } : {}),
       }),
       signal: controller.signal,
       cache: "no-store",
