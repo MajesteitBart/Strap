@@ -4,7 +4,7 @@ name: Clean bootstrap state and complete release gates
 status: done
 workstream: WS-C
 created: 2026-07-22T05:53:03Z
-updated: 2026-07-22T06:39:46Z
+updated: 2026-07-22T07:54:41Z
 linear_issue_id:
 github_issue:
 github_pr: https://github.com/MajesteitBart/Creed/pull/2
@@ -43,6 +43,8 @@ Remove next-forge artifacts and stale references, update project context, run mi
 - [x] Docs updated
 
 ## Evidence Log
+
+- 2026-07-22T07:54:41Z: Signed-in browser QA used the configured test account successfully. Connections and Vault render their new surfaces, while hosted CRUD is blocked because linked Supabase is behind local migrations 20260721160000, 20260722100000, and 20260722120000; the new APIs return 500 until migration deployment. The signed-in device-code form and invalid/expired-code state passed. T3 Preview remained unavailable, so QA used local Playwright CLI without exposing credentials.
 
 - 2026-07-22T06:39:46Z: Committed 0b256d9 on headless-access-api-key-vault, pushed to origin, and opened draft PR #2 to main: https://github.com/MajesteitBart/Creed/pull/2
 
