@@ -1,7 +1,7 @@
 # Tech Context
 
 ## Stack
-- Next.js 16 App Router with Turbopack, React 19, and strict TypeScript.
+- Next.js 16.2.11 App Router, React 19, and strict TypeScript. Development uses Turbopack; production builds use Webpack so Netlify can package the generated middleware runtime reliably.
 - Tailwind CSS v4, shadcn-style primitives, Tiptap, Framer Motion and `motion/react`.
 - Supabase Auth and Postgres with RLS, realtime, migrations, and scheduled retention.
 - Node 20+ application and `node:test` test suite; the new `@bvdm/strap` CLI lives in `packages/strap/`, while `packages/creed-cli/` remains the legacy package.

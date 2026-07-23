@@ -11,7 +11,7 @@
   "workspace": {
     "packageJson": {
       "dependencies": [
-        "npm:@next/bundle-analyzer@^16.2.4",
+        "npm:@next/bundle-analyzer@^16.2.11",
         "npm:@supabase/ssr@0.10",
         "npm:@supabase/supabase-js@^2.101.1",
         "npm:@tailwindcss/postcss@4",
@@ -33,13 +33,13 @@
         "npm:class-variance-authority@~0.7.1",
         "npm:clsx@^2.1.1",
         "npm:diff@9",
-        "npm:eslint-config-next@16.2.2",
+        "npm:eslint-config-next@16.2.11",
         "npm:eslint@9",
         "npm:framer-motion@^12.38.0",
         "npm:lowlight@^3.3.0",
         "npm:lucide-react@^1.7.0",
         "npm:motion@^12.38.0",
-        "npm:next@16.2.2",
+        "npm:next@16.2.11",
         "npm:radix-ui@^1.4.3",
         "npm:react-dom@19.2.4",
         "npm:react@19.2.4",

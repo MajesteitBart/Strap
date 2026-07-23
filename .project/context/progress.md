@@ -15,12 +15,12 @@
 
 - Delano research, Spec, plan, workstreams, decisions, and atomic tasks validate for `strap-rebrand`.
 - Fable approved the plan after compatibility blockers were resolved and later passed the grounded agent-contract review.
-- The root suite passes 150/150 tests on Node 26, strict TypeScript passes, ESLint reports zero errors and one existing warning, and the final production build succeeds with 96 generated routes.
-- The exact rebrand audit scans 446 files and classifies 23 retained occurrences through 22 reviewed D-004/D-011 allowlist entries.
+- The root suite passes 153/153 tests on Node 26, strict TypeScript passes, ESLint reports zero errors and one existing warning, and the final production build succeeds with 96 generated routes.
+- The exact rebrand audit scans 447 files and classifies 23 retained occurrences through 22 reviewed D-004/D-011 allowlist entries.
 - `@bvdm/strap` passes typecheck, ESLint, and 20 tests. `npm pack --dry-run`, real packaging, and an external tarball install smoke returned Strap help and version `0.1.0`.
 - A bounded, grounded Fable release review passed with no blockers. Its three actionable non-blocking findings were resolved in the same pass.
 - Cloudflare API and public DNS checks confirm `strap.bvdm.ai` resolves to `creed-bvdm.netlify.app`; HTTPS returns 200 with a valid Netlify certificate.
-- Netlify production deploy `6a61d28ebceabc361ab37a49` serves the Strap title, exact bootstrap headline, and `https://strap.bvdm.ai/home` canonical URL.
+- Netlify production deploy `6a61ea093f05b6cf56da9901` is ready and serves the revised keys title and copy, `https://strap.bvdm.ai/home` canonical URL, healthy API/database/auth checks, and Strap OAuth/MCP discovery. The release uses Next.js `16.2.11` and a Webpack production bundle because Netlify's local Windows edge packager does not trace the generated middleware runtime; the equivalent Linux Netlify build and edge packaging pass.
 - T3 collaborative browser evidence covers the production homepage at mobile, tablet, and desktop widths plus visible keyboard focus. Network requests were clean; the browser reported only Netlify's non-blocking report-only CSP warning.
 
 ## What Is Next
@@ -33,5 +33,5 @@
 
 - OpenWiki still reflects its last generated Creed-era snapshot and must be regenerated from source rather than hand-edited.
 - The old production origin must continue serving MCP/OAuth endpoints directly during the migration window.
-- Dependency audits report inherited advisories in the existing dependency graph; dependency versions were not changed as part of the rebrand.
+- Dependency audits still report seven inherited advisories in the dependency graph after the Next.js patch upgrade (one low, one moderate, and five high); resolving unrelated transitive advisories was not included in this deployment fix.
 - Computer Use loaded its safety and confirmation guidance, but runtime bootstrap failed because the native Windows helper pipe was unavailable. T3 Preview supplied production public-route evidence, but the specifically requested Computer Use authenticated-route pass remains blocked.
