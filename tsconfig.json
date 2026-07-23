@@ -59,6 +59,7 @@
   ],
   "exclude": [
     "node_modules",
-    "packages/creed-cli"
+    "packages/creed-cli",
+    "packages/strap"
   ]
 }
