@@ -8,6 +8,7 @@
 
 ## Runtime Constraints
 - `.env.local` is the canonical configuration for this checkout and must never be printed or committed.
+- The root web-app TypeScript project excludes `packages/strap/` and `packages/creed-cli/`; each independent CLI package owns its dependency install, build, tests, and type-check.
 - Use `npx supabase`; confirm the project reference before remote management commands.
 - Default to server components. Client components require a hook, browser API, or interactive event.
 - Marketing rendering must preserve the `x-pathname` gate and avoid user-state fan-out.
