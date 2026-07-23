@@ -13,7 +13,7 @@ import {
 const PATH = "/company";
 const TITLE = "Company plan";
 const DESCRIPTION =
-  "The Company Creed: one shared file every member's agents read, with roles, section permissions, an activity view, and admin controls. Free for your whole team.";
+  "The Company Strap: one shared file every member's agents read, with roles, section permissions, an activity view, and admin controls. Free for your whole team.";
 const DATE_MODIFIED = "2026-07-07";
 
 export const metadata: Metadata = {
@@ -29,12 +29,12 @@ export default function CompanyPage() {
         data={graph(
           webPageSchema({
             path: PATH,
-            name: "Creed Company plan",
+            name: "Strap Company plan",
             description: DESCRIPTION,
             dateModified: DATE_MODIFIED,
           }),
           breadcrumbSchema(PATH, [
-            { name: "Creed", path: "/home" },
+            { name: "Strap", path: "/home" },
             { name: "Company", path: PATH },
           ]),
           softwareApplicationSchema(),

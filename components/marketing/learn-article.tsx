@@ -15,7 +15,7 @@ import type { Article, ArticleBlock } from "@/lib/marketing/learn/types";
 
 // Every article's Related list ends with the same product CTA. It lives here,
 // not in each article's data, so retargeting it is a one-line change.
-const PRODUCT_CTA = { label: "See how Creed works", href: "/home" };
+const PRODUCT_CTA = { label: "See how Strap works", href: "/home" };
 
 function Block({ block }: { block: ArticleBlock }) {
   switch (block.type) {

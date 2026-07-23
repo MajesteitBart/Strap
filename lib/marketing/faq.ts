@@ -11,22 +11,22 @@ export type FaqItem = {
 
 export const homeFaqItems: FaqItem[] = [
   {
-    question: "What actually goes in a Creed?",
+    question: "What actually goes in a Strap?",
     answer:
       "Who you are, what you're working toward, how you like AI to talk to you, the people and routines that shape your week, plus any health, accessibility, or hard noes AI should respect. One concise profile, not a journal.",
   },
   {
     question: "Why not just retell every AI who I am each time?",
     answer:
-      "Because it doesn't stick, doesn't cross tools, and you end up repeating yourself. Creed gives every AI the same profile to read before answering, and lets them propose updates as they learn more about you.",
+      "Because it doesn't stick, doesn't cross tools, and you end up repeating yourself. Strap gives every AI the same profile to read before answering, and lets them propose updates as they learn more about you.",
   },
   {
-    question: "Which tools does Creed work with?",
+    question: "Which tools does Strap work with?",
     answer:
-      "Creed connects to agents like Claude Code, Codex, Cursor, and ChatGPT over MCP, and integrates with GitHub for version control. Support for tools like Notion and Obsidian is coming for editing and storage.",
+      "Strap connects to agents like Claude Code, Codex, Cursor, and ChatGPT over MCP, and integrates with GitHub for version control. Support for tools like Notion and Obsidian is coming for editing and storage.",
   },
   {
-    question: "What gets written back to Creed?",
+    question: "What gets written back to Strap?",
     answer:
       "Durable things AI learns about you, a sharper preference, a new routine, a goal that shifted. Not session recap, not mood, not generic praise.",
   },
@@ -36,9 +36,9 @@ export const homeFaqItems: FaqItem[] = [
       "No. You can keep agent edits reviewable, or trust them to write directly when you want a lighter loop. The point is control when you want it, not friction by default.",
   },
   {
-    question: "Is Creed for teams or just for me?",
+    question: "Is Strap for teams or just for me?",
     answer:
-      "Both. Creed starts as a personal profile, and a Company Creed adds one shared file that every member's agents read, with member roles, an activity view across the team, and admin controls. It is free, like everything else in Creed.",
+      "Both. Strap starts as a personal profile, and a Company Strap adds one shared file that every member's agents read, with member roles, an activity view across the team, and admin controls. It is free, like everything else in Strap.",
   },
 ];
 
@@ -46,9 +46,9 @@ export const homeFaqItems: FaqItem[] = [
 // can quote one item.
 export const pricingFaqItems: FaqItem[] = [
   {
-    question: "Is Creed free?",
+    question: "Is Strap free?",
     answer:
-      "Yes, all of it. Creed is open source and free to self-host, with the full editor, every MCP connection, and quality scoring. The hosted app is free too, and adds cross-device sync, backups, and managed auth and storage.",
+      "Yes, all of it. Strap is open source and free to self-host, with the full editor, every MCP connection, and quality scoring. The hosted app is free too, and adds cross-device sync, backups, and managed auth and storage.",
   },
   {
     question: "How do AI features run?",
@@ -58,17 +58,17 @@ export const pricingFaqItems: FaqItem[] = [
   {
     question: "What is BYOK?",
     answer:
-      "BYOK means bring your own key. You connect your own OpenRouter key so AI spend runs on your account and Creed never owns your model bill.",
+      "BYOK means bring your own key. You connect your own OpenRouter key so AI spend runs on your account and Strap never owns your model bill.",
   },
   {
-    question: "How much does a Company Creed cost?",
+    question: "How much does a Company Strap cost?",
     answer:
-      "Nothing. A Company Creed is free, with as many members as you need, roles and section permissions, a team activity view, and BYOK support.",
+      "Nothing. A Company Strap is free, with as many members as you need, roles and section permissions, a team activity view, and BYOK support.",
   },
   {
     question: "Do I own my data?",
     answer:
-      "Your Creed is plain Markdown you own and can export at any time, and deleting your account wipes everything. There is no lock-in.",
+      "Your Strap is plain Markdown you own and can export at any time, and deleting your account wipes everything. There is no lock-in.",
   },
 ];
 
@@ -76,27 +76,27 @@ export const pricingFaqItems: FaqItem[] = [
 // so an answer engine can quote a single item.
 export const companyFaqItems: FaqItem[] = [
   {
-    question: "What is a Company Creed?",
+    question: "What is a Company Strap?",
     answer:
-      "A Company Creed is one shared context file that every member's agents read before they act. It holds the canonical company context: how the team works, what it is building, and the conventions and constraints that apply to everyone, so agents stop drifting from how the team actually operates.",
+      "A Company Strap is one shared context file that every member's agents read before they act. It holds the canonical company context: how the team works, what it is building, and the conventions and constraints that apply to everyone, so agents stop drifting from how the team actually operates.",
   },
   {
     question: "How is it different from a wiki or knowledge base?",
     answer:
-      "A wiki is a large, complete record for people to search. A Company Creed is short, curated, and written to be read by agents before they answer. It is the profile your AI reads, not the archive your team browses. Most teams keep both.",
+      "A wiki is a large, complete record for people to search. A Company Strap is short, curated, and written to be read by agents before they answer. It is the profile your AI reads, not the archive your team browses. Most teams keep both.",
   },
   {
-    question: "What roles does a Company Creed have?",
+    question: "What roles does a Company Strap have?",
     answer:
       "Three: Owner, who manages company settings, members, and content; Admin, who manages members and content; and Member, who reads and proposes. Section permissions can further control who edits each section directly versus by proposal, and every change is attributed in the activity view.",
   },
   {
-    question: "Do team members need their own personal Creed?",
+    question: "Do team members need their own personal Strap?",
     answer:
-      "No. A member needs a Creed account to join, but not a personal Creed. They connect their own agents over MCP and read the shared Company Creed. They can keep a personal Creed too, and switch between them from the workspace dropdown.",
+      "No. A member needs a Strap account to join, but not a personal Strap. They connect their own agents over MCP and read the shared Company Strap. They can keep a personal Strap too, and switch between them from the workspace dropdown.",
   },
   {
-    question: "How much does a Company Creed cost?",
+    question: "How much does a Company Strap cost?",
     answer:
       "Nothing. It is free, with as many members as you need, and every company supports BYOK so model spend can run on the company's own key.",
   },
@@ -123,16 +123,16 @@ export const contextFileFaqItems: FaqItem[] = [
   {
     question: "What goes in a personal context file?",
     answer:
-      "Creed organizes it into ten sections: Identity, Goals, Work, Preferences, and Routines as the always-on core, plus optional Beliefs, Constraints, People, Health, and Context. Each section is short, specific, and written to change how AI responds.",
+      "Strap organizes it into ten sections: Identity, Goals, Work, Preferences, and Routines as the always-on core, plus optional Beliefs, Constraints, People, Health, and Context. Each section is short, specific, and written to change how AI responds.",
   },
   {
     question: "Which tools does a personal context file work with?",
     answer:
-      "Creed connects to agents like Claude Code, Codex, Cursor, and ChatGPT over MCP, and integrates with GitHub for version control. Support for Notion and Obsidian is on the way.",
+      "Strap connects to agents like Claude Code, Codex, Cursor, and ChatGPT over MCP, and integrates with GitHub for version control. Support for Notion and Obsidian is on the way.",
   },
   {
     question: "Do I own my personal context file?",
     answer:
-      "Yes. Creed is plain Markdown that you control. You bring your own AI key, your tokens stay yours, and deleting your account wipes everything. There is no lock-in.",
+      "Yes. Strap is plain Markdown that you control. You bring your own AI key, your tokens stay yours, and deleting your account wipes everything. There is no lock-in.",
   },
 ];

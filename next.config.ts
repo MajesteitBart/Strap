@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { createRequire } from "node:module";
 
 const isDev = process.env.NODE_ENV !== "production";
 
@@ -59,10 +60,10 @@ const noStoreHeader = {
   value: "private, no-store",
 };
 
+const loadBundleAnalyzer = createRequire(import.meta.url);
 const withBundleAnalyzer = process.env.ANALYZE === "true"
   ? // Loaded only when ANALYZE=true so the dep doesn't run on normal builds
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    require("@next/bundle-analyzer")({ enabled: true })
+    loadBundleAnalyzer("@next/bundle-analyzer")({ enabled: true })
   : (config: NextConfig) => config;
 
 const nextConfig: NextConfig = {
@@ -95,6 +96,18 @@ const nextConfig: NextConfig = {
         destination: "/learn/what-is-a-personal-context-file",
         permanent: true,
       },
+      ...[
+        ["/learn/creed-vs-chatgpt-memory", "/learn/strap-vs-chatgpt-memory"],
+        ["/learn/creed-vs-claude-memory", "/learn/strap-vs-claude-memory"],
+        ["/learn/creed-vs-mem0", "/learn/strap-vs-mem0"],
+        ["/learn/connect-creed-to-chatgpt", "/learn/connect-strap-to-chatgpt"],
+        ["/learn/connect-creed-to-claude-code", "/learn/connect-strap-to-claude-code"],
+        ["/learn/connect-creed-to-cursor", "/learn/connect-strap-to-cursor"],
+      ].map(([source, destination]) => ({
+        source,
+        destination,
+        permanent: true,
+      })),
     ];
   },
   async headers() {

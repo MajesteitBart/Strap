@@ -26,7 +26,7 @@ export async function POST(request: Request) {
 
   const role = await setActiveCreed(auth.supabase, auth.user, creedId);
   if (!role) {
-    return NextResponse.json({ error: "You are not a member of that Creed." }, { status: 403 });
+    return NextResponse.json({ error: "You are not a member of that Strap." }, { status: 403 });
   }
 
   return NextResponse.json({ ok: true, creedId, role });

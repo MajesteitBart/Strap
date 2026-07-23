@@ -3,145 +3,133 @@
 <h1>
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="public/assets/brand/brandmark-email-dark.png">
-    <img alt="Creed" src="public/assets/brand/brandmark-email.png" width="208">
+    <img alt="Strap" src="public/assets/brand/brandmark-email.png" width="208">
   </picture>
 </h1>
 
-**One file across every agent.**
+**Bootstrap your agents with context, skills, and secrets.**
 
-Write yourself down once. Every AI you use reads it before answering,
-and proposes updates as it learns you. You approve the good ones.
+Pack durable context once. Every connected agent reads it before meaningful work and proposes focused improvements as it learns.
 
-[Home](https://creed.md) · [Docs](https://creed.md/docs) · [Pricing](https://creed.md/pricing) · [Stack](https://creed.md/stack) · [Privacy](https://creed.md/privacy)
+[Home](https://strap.bvdm.ai) | [Docs](https://strap.bvdm.ai/docs) | [Pricing](https://strap.bvdm.ai/pricing) | [Stack](https://strap.bvdm.ai/stack) | [Privacy](https://strap.bvdm.ai/privacy)
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![Next.js 16](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org)
-[![MCP](https://img.shields.io/badge/protocol-MCP%20%2B%20OAuth%202.1-8A2BE2)](https://creed.md/docs)
+[![MCP](https://img.shields.io/badge/protocol-MCP%20%2B%20OAuth%202.1-8A2BE2)](https://strap.bvdm.ai/docs)
 
 </div>
 
-## What is Creed?
+## What is Strap?
 
-Anyone using AI seriously pays the same tax: re-explaining themselves every chat, every tool, every session. Creed (creed.md) kills that tax with one file.
+Strap maintains one compact, curated personal context profile in plain Markdown. Claude, ChatGPT, Codex, Cursor, Devin, and any compatible MCP client can read it before responding. Agents propose narrow updates as they learn durable facts, and section permissions decide whether a change applies directly or waits for review.
 
-Your Creed is a curated personal context profile in plain Markdown, sized to read in under a minute. Connected agents (Claude, ChatGPT, Codex, Cursor, Devin, and any MCP client) read it before they answer you, and propose edits as they learn new things. The file sharpens over time instead of rotting in your notes.
+Strap is not a notes app, journal, chat-memory store, or generic AI wrapper. The profile stays small, current, specific, permission-aware, and worth reading.
 
-It is not a notes app, a journal, or a memory dump. If you already maintain a hand-rolled `CLAUDE.md` or a "things ChatGPT gets wrong about me" list, Creed is that file as a real product: first draft written for you, quality scored, one canonical version everywhere, agent edits gated behind your approval.
+The resource model extends beyond context:
 
-```
-┌──────────────────────┐         ┌────────────────────┐
-│  You (onboarding)    │ ──────► │  Your Creed file   │
-│  (one short pass)    │         │  10 sections, MD   │
-└──────────────────────┘         └─────────┬──────────┘
-                                           │
-                              ┌────────────┴────────────┐
-                              ▼                         ▼
-                  ┌─────────────────────┐    ┌──────────────────────┐
-                  │  Agent reads it     │    │  Agent proposes an   │
-                  │  before answering   │    │  update; you approve │
-                  └─────────────────────┘    └──────────────────────┘
-```
+- Context gives agents durable personal or company knowledge.
+- Skills provide reusable workflows and capabilities.
+- Secrets remain server-side and are revealed only through explicit, permission-aware flows.
+- Environments and agent connections determine where those resources are available.
 
-Ten sections, five always-on (Identity, Goals, Work, Preferences, Routines) and five optional (Beliefs, Constraints, People, Health, Context). Every section is agent-writable, per-section permissions decide whether edits apply directly or wait for review.
-
-**Personal** is the core one-user product. **Company** extends the same file model into a shared workspace: roles, per-section permissions, attribution, and invites.
+Personal Strap is the core one-user product. Company Strap applies the same model to a governed workspace with roles, per-section permissions, attribution, and invites.
 
 ## Quickstart
 
-Prerequisites: **Node 20+** and a free **Supabase** project. (OpenRouter key only for AI features.)
+Prerequisites: Node.js 20+ and a Supabase project. OpenRouter is optional and only required for AI features.
 
 ```bash
-git clone https://github.com/connorhpbrn/creed.git
-cd creed && npm install
-cp .env.example .env.local   # fill in the five required vars below
-supabase link --project-ref <your-project-ref> && supabase db push
-npm run dev                  # → http://localhost:3000
+git clone https://github.com/MajesteitBart/Creed.git strap
+cd strap
+npm install
+cp .env.example .env.local
+npx supabase link --project-ref <your-project-ref>
+npx supabase db push
+npm run dev
 ```
 
-Minimum `.env.local` to boot:
+Minimum `.env.local`:
 
 ```bash
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 NEXT_PUBLIC_SUPABASE_URL=https://<project>.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<publishable-key>
 SUPABASE_SECRET_KEY=<service-role-key>
-CREED_ENCRYPTION_SECRET=$(openssl rand -base64 32)
+CREED_ENCRYPTION_SECRET=<32-byte-base64-secret>
 ```
 
-Every other variable (OpenRouter, GitHub sync, branding, feedback) is documented inline in [`.env.example`](./.env.example). `supabase db push` creates the full schema: sections, proposals, activity, tokens, MCP, GitHub, AI usage, audit log, rate limits, all behind row-level security.
+`CREED_ENCRYPTION_SECRET`, `/api/creed/**`, `creed_*` MCP tools, and other lower-level Creed identifiers are retained compatibility contracts. Customer-facing product, site, file defaults, and new connection setup use Strap.
 
-<details>
-<summary><b>Deploy your own hosted instance</b></summary>
-
-- Set `NEXT_PUBLIC_SITE_URL` to your deployed origin so OAuth redirects resolve.
-- Set `CREED_CSP_ENFORCE=1` after watching one deploy cycle in Report-Only mode.
-- Example agent prompts referencing `https://creed.md` are illustrative; real URLs derive from your `NEXT_PUBLIC_SITE_URL`.
-
-</details>
+Every optional variable is documented in [`.env.example`](./.env.example). Never commit `.env.local`.
 
 ## Connect an agent
 
-Open `/connections` and add the Creed MCP URL to your agent as a custom connector. The client opens a browser, you click **Allow**, done. No tokens to copy.
+Open `/connections` and add `https://strap.bvdm.ai/mcp` as a custom MCP server. Strap provides OAuth 2.1 authorization and first-class setup for Claude Code, Codex, Cursor, ChatGPT, Devin, OpenClaw, Hermes, OpenCode, Factory, Manus, and custom agents.
 
-Creed is its own OAuth 2.1 authorization server (`/authorize`, `/token`, `/register`, `/.well-known/*`), so any spec-compliant MCP client connects from the server URL alone. First-class connect flows exist for Claude Code (one-line `claude mcp add`), Codex, Cursor (one-click), ChatGPT, Devin, OpenClaw, Hermes, OpenCode, Factory, Manus, and custom agents. Clients that do not speak MCP can use the documented `/api/creed` HTTP API.
-
-Creed also ships a first-party terminal client. It uses the same OAuth screen
-and discovers every tool, resource, and prompt from the live MCP server, so a
-new MCP tool appears in the CLI without a second implementation or release.
+For terminal and coding-agent workflows, use the separate Strap CLI package:
 
 ```bash
-npx creed-cli
+npx @bvdm/strap
+npx @bvdm/strap --agent codex call read_creed --json
 ```
 
-Agents get three verbs: read the file, propose an update, or direct-edit where you have granted it. The MCP health dashboard tracks per-agent reads, edits, proposals, and outcomes while keeping CLI activity separate.
+The CLI discovers tools, resources, and prompts from the live MCP server. Its configuration is isolated from the legacy `creed-cli` package.
+
+## Files and compatibility
+
+- New exports and GitHub integrations default to `strap.md`.
+- Existing integrations keep their stored path, including `creed.md`.
+- Reads can fall back from `strap.md` to `creed.md` for legacy repositories.
+- Pushes never create a competing `strap.md` beside an existing legacy profile without an explicit migration.
+- `https://creed.md` remains an MCP/OAuth compatibility origin during the migration window. It must serve protocol endpoints directly, not rely on blanket redirects.
 
 ## Stack
 
 | Layer | Choice |
 |---|---|
-| Framework | Next.js 16 (App Router, Turbopack), React 19, TypeScript |
-| UI | Tailwind CSS v4, shadcn/ui, Tiptap editor, Framer Motion |
-| Backend | Supabase (auth, Postgres, RLS, realtime), pg_cron retention jobs |
-| AI | OpenRouter (included key or BYOK), per-feature model routing |
-| Sync | GitHub push/pull of `creed.md`, lossless Markdown round-trip |
+| Framework | Next.js 16 App Router, React 19, strict TypeScript |
+| UI | Tailwind CSS v4, shadcn/ui, Tiptap, Motion |
+| Backend | Supabase Auth and Postgres with RLS, realtime, and Vault |
+| AI | OpenRouter with included and BYOK modes |
+| Sync | GitHub push/pull with lossless Markdown round trips |
+| Agent access | OAuth 2.1, MCP, scoped API keys, and `@bvdm/strap` |
 
-Full tour at [creed.md/stack](https://creed.md/stack).
+Full tour: [strap.bvdm.ai/stack](https://strap.bvdm.ai/stack).
 
 ## Repository map
 
+```text
+app/                    public, authenticated, OAuth, API, and MCP routes
+components/             product, marketing, auth, and shared UI
+lib/                    domain, persistence, authorization, AI, and integrations
+packages/strap/         @bvdm/strap CLI package
+packages/creed-cli/     legacy CLI compatibility package
+supabase/migrations/    canonical forward-only schema and RLS
+tests/                  Node contract and logic tests
+.project/               Delano delivery contracts and durable context
 ```
-app/
-├── (creed-app)/        signed-in product (/file, /connections, /settings)
-├── api/                session-authed + token-authed APIs (incl. /api/creed, MCP, OAuth)
-├── home/, onboarding/  public landing and first-run flow
-components/
-├── creed/              product UI        marketing/   public site
-├── auth/               sign-in           ui/          shadcn primitives
-lib/
-├── creed-data.ts       types, sections, agent contract
-├── creed-backend.ts    Supabase reads/writes
-├── creed-markdown.ts   push/pull Markdown parser (lossless round-trip)
-├── ai/                 OpenRouter client, model catalog, quality scoring
-├── company-*.ts        Company roles, sections, invites, admin
-supabase/migrations/    canonical schema (RLS everywhere)
-tests/                  node:test suites
-```
+
+Internal paths such as `components/creed`, `lib/creed-data.ts`, and `app/api/creed` remain stable until a separately approved compatibility migration.
 
 ## Commands
 
 ```bash
-npm run dev          # dev server (Turbopack)
-npm test             # test suite (node:test)
-npx tsc --noEmit     # typecheck
-npm run lint         # ESLint
-npm run build        # production build
+npm run dev
+npm test
+npx tsc --noEmit -p .
+npm run lint
+npm run build
+
+npm --prefix packages/strap run typecheck
+npm --prefix packages/strap test
+npm --prefix packages/strap pack --dry-run
 ```
 
-## Contributing
+## Contributing and security
 
-PRs welcome. Read [`CONTRIBUTING.md`](./CONTRIBUTING.md) first; it is short and saves us both time. **AI agents**: read [`AGENTS.md`](./AGENTS.md) instead, it is the same information written for you.
+Read [`CONTRIBUTING.md`](./CONTRIBUTING.md) before opening a pull request. Coding agents should follow [`AGENTS.md`](./AGENTS.md).
 
-Found a vulnerability? Do not open a public issue; see [`SECURITY.md`](./SECURITY.md).
+Report vulnerabilities privately using the process in [`SECURITY.md`](./SECURITY.md).
 
 ## License
 

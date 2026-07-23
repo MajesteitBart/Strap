@@ -17,11 +17,11 @@ export function BackendSetupScreen({
                 Backend setup needed
               </div>
               <h1 className="mt-4 font-heading text-[3.4rem] leading-none tracking-[-0.06em] text-[var(--creed-text-primary)]">
-                Auth is working. The Creed tables just aren&apos;t live yet.
+                Auth is working. The Strap tables just aren&apos;t live yet.
               </h1>
               <p className="mt-6 max-w-xl text-[18px] leading-8 text-[var(--creed-text-secondary)]">
                 Your Supabase project is connected, but the schema migration still needs to be run
-                once before Creed can persist sections, proposals, activity, connections, and
+                once before Strap can persist sections, proposals, activity, connections, and
                 tokens.
               </p>
             </div>

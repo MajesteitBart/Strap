@@ -13,7 +13,7 @@ import { breadcrumbSchema, graph, webPageSchema } from "@/lib/seo/structured-dat
 const PATH = "/learn";
 const TITLE = "Learn";
 const DESCRIPTION =
-  "Guides on personal context files: what they are, how to stop repeating yourself to AI, how to share context across ChatGPT, Claude, and Cursor, and how Creed compares to the memory tools.";
+  "Guides on personal context files: what they are, how to stop repeating yourself to AI, how to share context across ChatGPT, Claude, and Cursor, and how Strap compares to the memory tools.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -30,7 +30,7 @@ export default function LearnIndexPage() {
         data={graph(
           webPageSchema({ path: PATH, name: TITLE, description: DESCRIPTION }),
           breadcrumbSchema(PATH, [
-            { name: "Creed", path: "/home" },
+            { name: "Strap", path: "/home" },
             { name: "Learn", path: PATH },
           ])
         )}

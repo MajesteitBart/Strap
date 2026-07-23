@@ -1,4 +1,4 @@
-# Bootstrap Creed with Delano
+# Bootstrap Strap with Delano
 
 ## Source Brief
 
@@ -6,7 +6,7 @@ This retrofit is based on Bart's private `Development/BOOTSTRAP.md` brief, revie
 
 ## Goal
 
-Keep Creed ready for agentic implementation through Delano while preserving its existing Next.js application, repository conventions, security boundaries, and Git history.
+Keep Strap ready for agentic implementation through Delano while preserving its existing Next.js application, repository conventions, security boundaries, compatibility contracts, and Git history.
 
 ## Read First
 
@@ -19,8 +19,8 @@ Keep Creed ready for agentic implementation through Delano while preserving its 
 
 ## Repository and GitHub
 
-- Local repository: the current Creed checkout.
-- Remote: `https://github.com/MajesteitBart/Creed.git`.
+- Local repository: the current Strap checkout.
+- Remote: `https://github.com/MajesteitBart/Creed.git`, retained until an explicitly approved repository rename.
 - Visibility: private at bootstrap time.
 - Default branch: `main`.
 - Owner and required collaborator: `MajesteitBart`; no separate collaborator invitation is needed because the required collaborator owns the repository.
@@ -29,7 +29,7 @@ Keep Creed ready for agentic implementation through Delano while preserving its 
 ## Human and Agent Entrypoints
 
 - Preserve `README.md` as the confirmed human/product entrypoint; do not replace it with starter copy.
-- Keep `AGENTS.md` compact enough to retrieve rules quickly while preserving Creed's non-negotiable product, security, and verification invariants.
+- Keep `AGENTS.md` compact enough to retrieve rules quickly while preserving Strap's non-negotiable product, security, compatibility, and verification invariants.
 - Keep `CLAUDE.md` as the single line `@AGENTS.md`; do not maintain a second authored instruction set.
 - Treat `.agents/` as the canonical Delano runtime. `.claude/` exists only for compatibility.
 
@@ -52,7 +52,7 @@ Codex hooks are installed in `.codex/hooks.json` but remain inert until hooks an
 
 ## Frontend Bootstrap Decision
 
-Creed already has an established Next.js 16 frontend and does not use next-forge. Do not run `npx next-forge@latest init` over this checkout because that command initializes a new project rather than retrofitting an existing app. The required `shadcn` skill lives in `.agents/skills/`; use it when its task triggers apply. The repo-local next-forge skill was removed by owner direction on 2026-07-22.
+Strap already has an established Next.js 16 frontend and does not use next-forge. Do not run `npx next-forge@latest init` over this checkout because that command initializes a new project rather than retrofitting an existing app. The required `shadcn` skill lives in `.agents/skills/`; use it when its task triggers apply. The repo-local next-forge skill was removed by owner direction on 2026-07-22.
 
 ## Context Workflow
 
@@ -69,7 +69,7 @@ The bootstrap creates one project because the supplied scope contains one bounde
 
 - `.project/projects/delano-bootstrap/`: install the runtime, adapt entrypoints, seed context, validate, and publish the baseline.
 
-It is decomposed into `WS-A` for runtime and agent entrypoints and `WS-B` for project context and validation. Do not invent future Creed roadmap projects during bootstrap. Create later projects from explicit product outcomes when they become active.
+It is decomposed into `WS-A` for runtime and agent entrypoints and `WS-B` for project context and validation. Do not invent future Strap roadmap projects during bootstrap. Create later projects from explicit product outcomes when they become active.
 
 ## Verification
 

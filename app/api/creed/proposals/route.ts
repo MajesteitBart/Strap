@@ -71,7 +71,7 @@ export async function POST(request: Request) {
   });
   const creedId = state.creedId ?? (await getPersonalCreedId(admin as never, userId));
   if (!creedId) {
-    return NextResponse.json({ error: "Could not resolve Creed for proposal." }, { status: 500 });
+    return NextResponse.json({ error: "Could not resolve Strap for proposal." }, { status: 500 });
   }
 
   let submittedBody: ProposalSubmission;

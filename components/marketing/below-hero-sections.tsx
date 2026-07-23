@@ -373,14 +373,14 @@ function HowCreedWorksSection() {
       <div className="mx-auto mt-12 max-w-5xl space-y-5 md:mt-16 md:space-y-6">
         <LoopRow
           title="Every agent reads it first"
-          body="Before it answers, any agent pulls your Creed over MCP, so you never re-explain who you are, what you're building, or how you like to work."
+          body="Before it answers, any agent pulls your Strap over MCP, so you never re-explain who you are, what you're building, or how you like to work."
           plate="var(--plate-connect)"
         >
           <ReadDemo />
         </LoopRow>
         <LoopRow
           title="It updates as it learns"
-          body="When an agent notices something durable, it proposes a precise edit. It lands in your Creed as a diff. Approve it and the section updates in place."
+          body="When an agent notices something durable, it proposes a precise edit. It lands in your Strap as a diff. Approve it and the section updates in place."
           plate="var(--plate-proposal)"
           flip
         >
@@ -388,7 +388,7 @@ function HowCreedWorksSection() {
         </LoopRow>
         <LoopRow
           title="And it sharpens over time"
-          body="Creed scores every section for signal, what's specific and what's thin, so your profile keeps getting sharper without you auditing it."
+          body="Strap scores every section for signal, what's specific and what's thin, so your profile keeps getting sharper without you auditing it."
           plate="var(--plate-create)"
         >
           <ScoreDemo />
@@ -472,7 +472,7 @@ function GovernedCollaborationSection() {
           <PlateCard
             plateColor="var(--plate-direct)"
             title="Let trusted agents write directly."
-            body="Agents can update your Creed without review, keeping your context current as you work."
+            body="Agents can update your Strap without review, keeping your context current as you work."
           >
             <DirectEditDemo />
           </PlateCard>
@@ -712,7 +712,7 @@ function AiFeaturesSection() {
         <PlateCard
           plateColor="#EC4899"
           title="Panel"
-          body="Search, ask, and let Creed draft reversible edits without leaving the file."
+          body="Search, ask, and let Strap draft reversible edits without leaving the file."
           square
         >
           <PanelFeatureDemo />
@@ -745,7 +745,7 @@ function HowItWorksSection() {
           number="1"
           numberColor="#FBBF24"
           title="Describe yourself"
-          body="Answer a few quick questions and Creed drafts your starter profile."
+          body="Answer a few quick questions and Strap drafts your starter profile."
           square
         >
           <CreateDemo />
@@ -896,7 +896,7 @@ function IntegrationsSection() {
     <section className="px-6 py-24 md:px-10 md:py-30 lg:px-12">
       <SectionHeading
         headline="Works with your stack"
-        subline="Connect Creed once, then every AI you talk to knows you instantly."
+        subline="Connect Strap once, then every AI you talk to knows you instantly."
         className="max-w-[64rem]"
       />
 

@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { getGitHubFileSnapshot } from "@/lib/github";
 import {
   getConfiguredRepo,
   hasLinkedGitHubIdentity,
   requireAuthenticatedUser,
+  resolveGitHubProfileSnapshot,
   resolveSyncStatus,
   withAuthenticatedGitHubAccess,
 } from "@/lib/github-version-control";
@@ -39,20 +39,15 @@ export async function GET(request: Request) {
       }
 
       const payload = await withCompanyGitHubAccess(companyId, async (token) => {
-        const remoteFile = await getGitHubFileSnapshot(
-          token,
-          configuredRepo.repoOwner,
-          configuredRepo.repoName,
-          configuredRepo.path,
-          configuredRepo.branch
-        );
+        const resolvedRemote = await resolveGitHubProfileSnapshot(token, configuredRepo);
+        const remoteFile = resolvedRemote?.snapshot;
         return {
           connected: true,
           configured: true,
           repoOwner: configuredRepo.repoOwner,
           repoName: configuredRepo.repoName,
           branch: configuredRepo.branch,
-          path: configuredRepo.path,
+          path: resolvedRemote?.path ?? configuredRepo.path,
           syncStatus: resolveSyncStatus({
             localHash,
             remoteHash: remoteFile?.contentHash ?? null,
@@ -82,13 +77,11 @@ export async function GET(request: Request) {
     }
 
     const payload = await withAuthenticatedGitHubAccess(async ({ integration: activeIntegration }) => {
-      const remoteFile = await getGitHubFileSnapshot(
+      const resolvedRemote = await resolveGitHubProfileSnapshot(
         activeIntegration.access_token!,
-        configuredRepo.repoOwner,
-        configuredRepo.repoName,
-        configuredRepo.path,
-        configuredRepo.branch
+        configuredRepo,
       );
+      const remoteFile = resolvedRemote?.snapshot;
 
       const syncStatus = resolveSyncStatus({
         localHash,
@@ -102,7 +95,7 @@ export async function GET(request: Request) {
         repoOwner: configuredRepo.repoOwner,
         repoName: configuredRepo.repoName,
         branch: configuredRepo.branch,
-        path: configuredRepo.path,
+        path: resolvedRemote?.path ?? configuredRepo.path,
         syncStatus,
         remoteSha: remoteFile?.sha ?? null,
         remoteMessage: remoteFile?.commitMessage ?? null,

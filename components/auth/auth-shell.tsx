@@ -21,7 +21,7 @@ export function AuthShell({ topRight, children }: { topRight?: ReactNode; childr
         <div className="flex items-center justify-between">
           <Link
             href="/home"
-            aria-label="Creed home"
+            aria-label="Strap home"
             className="-ml-1 inline-flex shrink-0 items-center transition-opacity duration-200 hover:opacity-60"
           >
             <CreedWordmark className="ml-0" />
@@ -34,7 +34,7 @@ export function AuthShell({ topRight, children }: { topRight?: ReactNode; childr
         </div>
 
         <div className="flex items-center justify-between text-[13px] text-[var(--creed-text-tertiary)]">
-          <span>© 2026 Creed</span>
+          <span>© 2026 Strap</span>
           <div className="flex items-center gap-5">
             <a href={CONTACT_MAILTO} className="transition-colors hover:text-[var(--creed-accent)]">
               Contact

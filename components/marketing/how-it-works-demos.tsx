@@ -107,7 +107,7 @@ export function CreateDemo() {
                 </span>
               </div>
               <div className="mt-3 inline-flex h-9 items-center gap-1.5 rounded-md bg-[var(--creed-text-primary)] px-4 text-[13px] font-medium text-[var(--creed-button-primary-fg)]">
-                {step === total - 1 ? "Create my Creed" : "Continue"}
+                {step === total - 1 ? "Create my Strap" : "Continue"}
                 <ArrowRight className="h-3.5 w-3.5" />
               </div>
             </motion.div>
@@ -122,7 +122,7 @@ export function CreateDemo() {
               <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#ECFDF5] text-[#16A34A] dark:bg-[#052e1a]/55 dark:text-[#4ade80]">
                 <Check className="h-4 w-4" />
               </span>
-              <div className="text-[14px] font-medium text-[var(--creed-text-primary)]">Your starter Creed is ready</div>
+              <div className="text-[14px] font-medium text-[var(--creed-text-primary)]">Your starter Strap is ready</div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -168,7 +168,7 @@ export function ConnectDemo() {
           </div>
         </div>
         <p className="mt-4 text-[13px] leading-6 text-[var(--creed-text-secondary)]">
-          Paste it into any AI. It reads your Creed before every reply.
+          Paste it into any AI. It reads your Strap before every reply.
         </p>
         <div className="mt-4">
           <AnimatedIconButton

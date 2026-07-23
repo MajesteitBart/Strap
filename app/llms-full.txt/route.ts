@@ -35,19 +35,19 @@ export function GET() {
     .map((a) => `- ${a.title} (${base}/learn/${a.slug}): ${a.description}`)
     .join("\n");
 
-  const body = `# Creed
+  const body = `# Strap
 
 ${CREED_TAGLINE}
 ${CREED_DESCRIPTION.slice(CREED_TAGLINE.length).trim()} Site: ${base}
 
-## What Creed is
+## What Strap is
 
-Creed is a single, structured profile that describes who you are and how you
+Strap is a single, structured profile that describes who you are and how you
 want AI to work with you. Every AI tool you connect reads it before it answers,
 so you stop re-explaining your role, your goals, and your preferences at the
 start of every chat. It is plain Markdown you own, not a database you rent.
 
-Creed is not a journal, a scratchpad, or a chat log. Its value comes from
+Strap is not a journal, a scratchpad, or a chat log. Its value comes from
 staying concise, current, and specific enough that every line changes how an AI
 replies to you. It works the same whether you write code all day or never open a
 terminal; only the examples differ.
@@ -62,7 +62,7 @@ tool, so one profile follows you everywhere.
 
 ## The ten sections
 
-A Creed has ten sections: five always-on core sections everyone fills in, and
+A Strap has ten sections: five always-on core sections everyone fills in, and
 five optional ones that appear only once you use them.
 
 - Identity: who you are, in a few lines an AI should never get wrong.
@@ -81,16 +81,16 @@ changes how AI replies beats a long one that reads like a resume.
 
 ## How it works
 
-Creed runs on a simple loop. You write yourself down once. Connected agents read
+Strap runs on a simple loop. You write yourself down once. Connected agents read
 the file before they answer you. As they learn something durable, they propose a
 narrow update to the right section, and you approve what stays or let trusted
 agents edit directly. Session chatter, moods, and one-off tasks are left out by
 design.
 
 Agents connect over MCP (Model Context Protocol) using OAuth, so there is
-nothing to copy. You add the Creed server URL (${base}/mcp) to your agent, click
+nothing to copy. You add the Strap server URL (${base}/mcp) to your agent, click
 Allow on the consent screen while signed in, and it stays connected. Clients
-that cannot speak MCP can use the HTTP API instead. Creed also integrates with
+that cannot speak MCP can use the HTTP API instead. Strap also integrates with
 GitHub for manual version control of your file.
 
 Supported agents include Claude Code, Codex, Cursor, and ChatGPT, plus any
@@ -98,18 +98,18 @@ custom agent that speaks MCP.
 
 ## Ownership and privacy
 
-Your Creed is plain Markdown you own. You bring your own AI key (BYOK) so model
+Your Strap is plain Markdown you own. You bring your own AI key (BYOK) so model
 spend runs on your account, your tokens stay yours, and you can export or delete
 everything at any time. Deleting your account wipes everything. There is no
 lock-in.
 
 ## The Company plan
 
-Creed works for one person or a whole team. The Company plan adds one shared
-Company Creed that every member's agents read: the canonical company context,
+Strap works for one person or a whole team. The Company plan adds one shared
+Company Strap that every member's agents read: the canonical company context,
 with member roles (Owner, Admin, Member), section permissions, an activity view
-across every member, and admin controls. A team buyer needs a Creed account but
-not a personal Creed first.
+across every member, and admin controls. A team buyer needs a Strap account but
+not a personal Strap first.
 
 ## Pricing
 
@@ -121,7 +121,7 @@ owner-only.
 ## How to write a good context file
 
 The hard part of a context file is not writing it, it is keeping it worth
-reading. A few principles keep a Creed sharp:
+reading. A few principles keep a Strap sharp:
 
 Be specific, not complete. The goal is not to describe everything about you. It
 is to capture the handful of facts that change how an AI should respond. "I
@@ -129,7 +129,7 @@ prefer terse, direct answers and I already know the basics" changes every reply.
 "I like technology" changes nothing. If a line would not change an answer, cut
 it.
 
-Write it so you would read it aloud. A good Creed reads like a short, honest
+Write it so you would read it aloud. A good Strap reads like a short, honest
 introduction, not a form you filled in. Full sentences, plain language, no
 keyword lists. The people and agents reading it should understand you faster,
 not parse a schema.
@@ -149,9 +149,9 @@ Work, Preferences, and Routines. Beliefs, Constraints, People, Health, and
 Context appear only when you actually have something durable to put in them. An
 empty section is not a gap to fill; it is space you have not needed yet.
 
-## How Creed compares
+## How Strap compares
 
-Creed sits in a crowded space, so it helps to be precise about what it is and is
+Strap sits in a crowded space, so it helps to be precise about what it is and is
 not.
 
 Versus chatbot memory (ChatGPT memory, Claude's project knowledge): built-in
@@ -164,20 +164,20 @@ travel.
 
 Versus agent-memory infrastructure (mem0, Zep, and similar): these are developer
 tools for giving the agents you build a memory layer, usually a vector store or
-API you embed in an application. They are strong at that job. Creed is a
+API you embed in an application. They are strong at that job. Strap is a
 different job: a human-readable profile a person owns and every tool reads, not
 a database an app writes to. If you are building an agent product, you may want
 memory infrastructure. If you are a person who wants every AI to know you, you
 want a context file.
 
 Versus recording and life-logging tools: some products try to capture everything
-you do and recall it later. Creed takes the opposite view. It brags, quietly,
+you do and recall it later. Strap takes the opposite view. It brags, quietly,
 about how little it keeps and how true that little stays. Curation over
 accumulation is the whole point.
 
-## Who Creed is for
+## Who Strap is for
 
-Creed is not developer-only. Developers are a natural wedge because they already
+Strap is not developer-only. Developers are a natural wedge because they already
 live in tools like Claude Code and Cursor, but the structure is identical for
 everyone and only the examples change. A founder captures their company and their
 priorities. A writer captures voice and the projects in flight. A researcher

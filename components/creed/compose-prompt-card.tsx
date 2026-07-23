@@ -48,7 +48,7 @@ export function ComposePromptCard({
         <Plus strokeWidth={2} className="h-8 w-8 shrink-0 p-[7px] text-[var(--creed-text-primary)]" />
       </div>
       <p className="mt-4 text-[13px] leading-6 text-[var(--creed-text-secondary)]">
-        Paste this prompt into any AI. It replies with a markdown Creed you paste back into Creed on
+        Paste this prompt into any AI. It replies with a markdown Strap you paste back into Strap on
         the next page.
       </p>
       <div className="mt-4">

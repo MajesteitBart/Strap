@@ -95,7 +95,7 @@ export default async function InvitePage({ params }: { params: Promise<{ token: 
             href="/file"
             className="mt-5 inline-block text-[14px] text-[var(--creed-text-secondary)] underline underline-offset-2 hover:text-[var(--creed-text-primary)]"
           >
-            Go to your Creed
+            Go to your Strap
           </Link>
         </Message>
       </Shell>

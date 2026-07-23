@@ -756,7 +756,7 @@ export function CreedProvider({
         const data = (await response.json().catch(() => ({}))) as {
           error?: string;
         };
-        throw new Error(data.error ?? "Could not save Creed.");
+        throw new Error(data.error ?? "Could not save Strap.");
       }
     },
     [persistenceEnabled],
@@ -1444,7 +1444,7 @@ export function CreedProvider({
         const data = (await activate.json().catch(() => ({}))) as {
           error?: string;
         };
-        return { ok: false, error: data.error ?? "Could not switch Creed." };
+        return { ok: false, error: data.error ?? "Could not switch Strap." };
       }
 
       const stateResponse = await fetch("/api/app/state", {
@@ -1452,14 +1452,14 @@ export function CreedProvider({
         cache: "no-store",
       });
       if (!stateResponse.ok) {
-        return { ok: false, error: "Could not load that Creed." };
+        return { ok: false, error: "Could not load that Strap." };
       }
       const payload = (await stateResponse.json().catch(() => ({}))) as {
         state?: CreedState;
         hasPersistedCreed?: boolean;
       };
       if (!payload.state) {
-        return { ok: false, error: "Could not load that Creed." };
+        return { ok: false, error: "Could not load that Strap." };
       }
 
       const next = payload.state;
@@ -2670,7 +2670,7 @@ export function CreedProvider({
       });
 
       if (!response.ok) {
-        throw new Error("Could not create your Creed.");
+        throw new Error("Could not create your Strap.");
       }
       // The seed is now persisted server-side, so this is a real backed
       // session. Turn on persistence so subsequent edits save.
@@ -2819,7 +2819,7 @@ export function useCreed() {
   const context = useContext(CreedContext);
 
   if (!context) {
-    throw new Error("useCreed must be used inside a CreedProvider");
+    throw new Error("useStrap must be used inside a StrapProvider");
   }
 
   return context;

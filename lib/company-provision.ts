@@ -74,11 +74,11 @@ export async function provisionCompany(userId: string): Promise<string> {
         error: { message: string } | null;
       };
       if (concurrentError || !concurrentShell) {
-        throw new Error(concurrentError?.message ?? "Could not resume the company Creed.");
+        throw new Error(concurrentError?.message ?? "Could not resume the company Strap.");
       }
       creedId = concurrentShell.id;
     } else if (createError || !created) {
-      throw new Error(createError?.message ?? "Could not create the company Creed.");
+      throw new Error(createError?.message ?? "Could not create the company Strap.");
     } else {
       creedId = created.id;
     }

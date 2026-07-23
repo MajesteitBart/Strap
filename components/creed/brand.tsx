@@ -37,12 +37,12 @@ export function CreedWordmark({
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={brandmark}
-        alt="Creed"
+        alt="Strap"
         width={80}
         height={18}
         decoding="async"
         style={{ shapeRendering: "geometricPrecision" }}
-        className={cn("creed-invert-on-dark block h-full w-auto select-none", imageClassName)}
+        className={cn("block h-full w-auto select-none", imageClassName)}
         draggable={false}
       />
     </div>
@@ -55,11 +55,11 @@ export function CreedMark({ className }: { className?: string }) {
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={logo}
-        alt="Creed"
+        alt="Strap"
         width={18}
         height={18}
         decoding="async"
-        className="creed-invert-on-dark block h-[18px] w-[18px] select-none"
+        className="block h-[18px] w-[18px] select-none"
         draggable={false}
       />
     </div>
@@ -74,7 +74,7 @@ export function CreedAgentGlyph({ className }: { className?: string }) {
   return (
     <span
       role="img"
-      aria-label="Creed"
+      aria-label="Strap"
       className={cn("block shrink-0", className)}
       style={{
         backgroundColor: "var(--creed-accent)",

@@ -18,7 +18,7 @@ export async function GET(request: Request) {
   const creedId = searchParams.get("creedId")?.trim() ?? "";
   if (!icon || !creedId) {
     return NextResponse.json(
-      { error: "Missing agent icon or Creed id." },
+      { error: "Missing agent icon or Strap id." },
       { status: 400 },
     );
   }

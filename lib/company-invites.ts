@@ -107,7 +107,7 @@ export async function createInvite(params: {
     return { ok: false, error: "Only an owner or admin can invite.", code: "forbidden" };
   }
   if (!(await isCompanyCreed(db, creedId))) {
-    return { ok: false, error: "Invites are only available for company Creeds.", code: "forbidden" };
+    return { ok: false, error: "Invites are only available for company Straps.", code: "forbidden" };
   }
 
   // Expire dead invites first so the one-pending-invite-per-email uniqueness

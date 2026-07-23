@@ -9,7 +9,7 @@ export const chatgptCustomInstructionsLimit: Article = {
   datePublished: "2026-07-07",
   dateModified: "2026-07-07",
   lead:
-    "ChatGPT custom instructions are two text boxes in your settings: one for what ChatGPT should know about you, and one for how you want it to respond. They apply to your account inside ChatGPT and quietly prefix your chats, so you do not repeat your role, tone, and preferences every time. They are useful and worth filling in.\n\nThe catch is that they are short. Each box is limited, so they are best for a tight summary, not your whole context. They also live only inside ChatGPT: they do not shape Claude, Cursor, or any other tool, and there is no clean way to move them. Once you have written a crisp version, you tend to hit the ceiling and start trimming.\n\nWhen the boxes run out, you have options. You can tighten what you keep, lean on a Project for scoped context, paste a longer profile at the start of a chat, use ChatGPT memory for durable facts, or move your context into a portable file every tool reads. Creed takes that last approach: one context file you own that your agents read over MCP, so the same profile follows you across tools instead of living in two capped boxes.",
+    "ChatGPT custom instructions are two text boxes in your settings: one for what ChatGPT should know about you, and one for how you want it to respond. They apply to your account inside ChatGPT and quietly prefix your chats, so you do not repeat your role, tone, and preferences every time. They are useful and worth filling in.\n\nThe catch is that they are short. Each box is limited, so they are best for a tight summary, not your whole context. They also live only inside ChatGPT: they do not shape Claude, Cursor, or any other tool, and there is no clean way to move them. Once you have written a crisp version, you tend to hit the ceiling and start trimming.\n\nWhen the boxes run out, you have options. You can tighten what you keep, lean on a Project for scoped context, paste a longer profile at the start of a chat, use ChatGPT memory for durable facts, or move your context into a portable file every tool reads. Strap takes that last approach: one context file you own that your agents read over MCP, so the same profile follows you across tools instead of living in two capped boxes.",
   body: [
     { type: "h2", text: "What custom instructions are" },
     {
@@ -60,7 +60,7 @@ export const chatgptCustomInstructionsLimit: Article = {
     { type: "h2", text: "How a portable file works" },
     {
       type: "p",
-      text: "Creed is one personal context file that every AI reads before it answers. It is plain Markdown you own, organized into short sections such as identity, goals, work, preferences, and constraints, and connected to your agents over MCP. Your custom instructions can then stay short on purpose, because the full, current picture lives in a file that every tool reads, not in two capped boxes in one app.",
+      text: "Strap is one personal context file that every AI reads before it answers. It is plain Markdown you own, organized into short sections such as identity, goals, work, preferences, and constraints, and connected to your agents over MCP. Your custom instructions can then stay short on purpose, because the full, current picture lives in a file that every tool reads, not in two capped boxes in one app.",
     },
     {
       type: "p",

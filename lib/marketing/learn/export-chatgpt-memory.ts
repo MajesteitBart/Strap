@@ -9,7 +9,7 @@ export const exportChatgptMemory: Article = {
   datePublished: "2026-07-07",
   dateModified: "2026-07-07",
   lead:
-    "ChatGPT does not offer a one-click way to export its memory as a tidy profile. What you can do is two things: review and manage the saved memories inside ChatGPT's settings, and request a full export of your account data through data controls. The data export is broad and includes your conversations, so it is a raw archive rather than a neat summary of what ChatGPT knows about you.\n\nThat matters, because the useful thing is not the archive itself. It is the handful of durable facts buried in it: your role, your goals, your preferences, your constraints. The export gives you the raw material; it does not hand you a portable profile, and nothing about it will be read by Claude or Cursor.\n\nSo the real task is to distill what you find into one context file that every tool reads. Skim your saved memories and export, pull out the lines that would change how any AI answers, and write them into a file you own. Creed is one personal context file that every AI reads before it answers, so once you have distilled your ChatGPT memory into it, that context becomes portable across all your tools instead of staying locked in one app.",
+    "ChatGPT does not offer a one-click way to export its memory as a tidy profile. What you can do is two things: review and manage the saved memories inside ChatGPT's settings, and request a full export of your account data through data controls. The data export is broad and includes your conversations, so it is a raw archive rather than a neat summary of what ChatGPT knows about you.\n\nThat matters, because the useful thing is not the archive itself. It is the handful of durable facts buried in it: your role, your goals, your preferences, your constraints. The export gives you the raw material; it does not hand you a portable profile, and nothing about it will be read by Claude or Cursor.\n\nSo the real task is to distill what you find into one context file that every tool reads. Skim your saved memories and export, pull out the lines that would change how any AI answers, and write them into a file you own. Strap is one personal context file that every AI reads before it answers, so once you have distilled your ChatGPT memory into it, that context becomes portable across all your tools instead of staying locked in one app.",
   body: [
     { type: "h2", text: "View and manage saved memories" },
     {
@@ -52,7 +52,7 @@ export const exportChatgptMemory: Article = {
     { type: "h2", text: "Make it portable" },
     {
       type: "p",
-      text: "Write those distilled facts into one context file you own, and connect it to your tools so each reads it before answering. This is the step that turns a locked, in-app memory into portable context. Creed keeps it as plain Markdown, organized into short sections, connected to your agents over MCP. Because it is a file rather than a vendor's memory, it is portable by design, and you can read, edit, export, or delete it whenever you want.",
+      text: "Write those distilled facts into one context file you own, and connect it to your tools so each reads it before answering. This is the step that turns a locked, in-app memory into portable context. Strap keeps it as plain Markdown, organized into short sections, connected to your agents over MCP. Because it is a file rather than a vendor's memory, it is portable by design, and you can read, edit, export, or delete it whenever you want.",
     },
     {
       type: "table",
@@ -95,7 +95,7 @@ export const exportChatgptMemory: Article = {
     {
       question: "Will I have to redo this every time my context changes?",
       answer:
-        "No, if you keep the context in a maintained file. With Creed, connected agents propose small updates as they learn something durable and you approve what stays, so the profile stays current without another full export.",
+        "No, if you keep the context in a maintained file. With Strap, connected agents propose small updates as they learn something durable and you approve what stays, so the profile stays current without another full export.",
     },
   ],
   related: [

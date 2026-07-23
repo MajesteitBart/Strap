@@ -3,7 +3,7 @@ name: Headless Access and API Key Vault
 status: done
 lead: MajesteitBart
 created: 2026-07-22T05:39:38Z
-updated: 2026-07-22T09:42:48Z
+updated: 2026-07-23T01:44:12Z
 linear_project_id:
 risk_level: high
 spec_status_at_plan_time: planned
@@ -31,6 +31,7 @@ The original feature request was separated into credential issuance, encrypted s
 - Device authorization rows store only hashes for device and user codes. Approval records a single Creed and token issuance consumes the authorization atomically. Attempt counts, poll timestamps, and effective intervals are durable database state.
 - Vault values cross the application boundary only through service-role-only `SECURITY DEFINER` functions with an empty search path and fully qualified object names. Each mutation performs the Vault operation and metadata write in one transaction. Application tables contain metadata and a Vault secret UUID.
 - Personal owners and company owners/admins can use the vault. Company members cannot list or reveal vault metadata in this release.
+- `@bvdm/strap` will be a separate Node.js package and `strap` executable rather than a rename or in-place mutation of `creed-cli`. Its exact command and authentication contract must be recorded before implementation.
 
 ## Policy and Contract Checks
 
@@ -47,6 +48,7 @@ The original feature request was separated into credential issuance, encrypted s
 - `workstreams/WS-A-headless-authentication.md`: API keys, device grant, and MCP integration.
 - `workstreams/WS-B-supabase-api-key-vault.md`: Vault schema, APIs, and authorization.
 - `workstreams/WS-C-product-integration-and-release.md`: UI, docs, validation, and PR evidence.
+- `workstreams/WS-D-strap-cli-package.md`: standalone `@bvdm/strap` package definition, implementation boundary, packaging verification, and release evidence.
 - `tasks/`: Atomic executable tasks created after independent review.
 
 ## Complexity Exceptions
@@ -70,6 +72,7 @@ The original feature request was separated into credential issuance, encrypted s
 - WS-A, Headless Authentication: database records and helpers for headless keys and device codes, authenticated management APIs, OAuth device endpoints, MCP integration, metadata, and tests.
 - WS-B, Supabase API Key Vault: Vault migration and restricted functions, server authorization layer, app API routes, audit events, and tests.
 - WS-C, Product Integration and Release: headless Connections UI, Vault screen/navigation, next-forge cleanup, documentation, full quality gates, and PR handoff.
+- WS-D, Strap CLI Package: define and deliver the separate `@bvdm/strap` package and `strap` executable without changing the existing `creed-cli` contract.
 
 ## Milestone Strategy
 
@@ -78,6 +81,7 @@ The original feature request was separated into credential issuance, encrypted s
 3. Protocol gate: API-key MCP and device authorization pass happy-path and denial tests without OAuth regressions.
 4. Product gate: users can manage credentials and vault items through the UI.
 5. Release gate: local migration reset, test, typecheck, lint, build, Delano validation, and diff review complete.
+6. Strap package gate: command and authentication contracts are approved, package checks pass, the packed tarball installs cleanly, and npm publication has explicit operator approval.
 
 ## Rollout Strategy
 
@@ -85,6 +89,7 @@ The original feature request was separated into credential issuance, encrypted s
 - Advertise device authorization only when endpoints are deployed in the same release.
 - New navigation and Connections surfaces become available without migrating existing credentials.
 - Revocation is immediate at request authentication; no token caches are introduced.
+- Publish `@bvdm/strap` independently from the application and `creed-cli`; validate a generated tarball locally before any registry write.
 
 ## Test Strategy
 
@@ -94,15 +99,18 @@ The original feature request was separated into credential issuance, encrypted s
 - Migration verification with `npx supabase db reset`, including execute grants and absence of plaintext metadata.
 - UI smoke test for create/copy/revoke and vault create/reveal/update/delete with secret-clearing behavior.
 - Repository gates: `npm test`, `npx tsc --noEmit -p .`, `npm run lint`, `npm run build`, and `delano validate`.
+- Strap package gates: package-local build, typecheck, and tests; `npm pack --dry-run`; installation from the generated tarball; and external smoke checks for `strap --help` and `strap --version`.
 
 ## Rollback Strategy
 
 - UI and discovery advertisement can be reverted independently while additive database objects remain inert.
 - Revoke all headless keys and deny pending device codes if authentication behavior must be disabled.
 - Do not drop Vault data during application rollback. A later audited migration may remove objects only after secret export/deletion is explicitly approved.
+- Do not depend on npm unpublish as a rollback mechanism. Keep `creed-cli` unchanged, stop promoting a faulty Strap version, and publish a corrected version after review.
 
 ## Remaining Delivery Risks
 
 - Vault extension/function behavior can differ between local and hosted Supabase; both clean-local schema verification and generated API behavior need evidence.
 - Device-code brute force and polling amplification require bounded attempts, expiry, interval enforcement, and existing rate-limit integration.
 - UI reveal state must be short-lived and deliberately cleared to reduce shoulder-surfing and browser-memory exposure.
+- The `@bvdm` scope ownership and Strap's distinction from `creed-cli` must be confirmed before implementation or publication.

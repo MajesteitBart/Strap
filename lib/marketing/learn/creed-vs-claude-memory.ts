@@ -1,7 +1,7 @@
 import type { Article } from "./types";
 
 export const creedVsClaudeMemory: Article = {
-  slug: "creed-vs-claude-memory",
+  slug: "strap-vs-claude-memory",
   title: "Claude Projects and memory vs a portable context file",
   description:
     "Claude Projects scope context to one workspace and do it well. A portable context file is one profile every tool reads. Here is how they compare and when to use each.",
@@ -9,7 +9,7 @@ export const creedVsClaudeMemory: Article = {
   datePublished: "2026-07-07",
   dateModified: "2026-07-07",
   lead:
-    "Claude Projects, project knowledge, and Claude's memory are built to scope context to a workspace inside Claude, and they are good at it. A Project gathers the files, instructions, and knowledge for one body of work, so every chat in that Project starts with the right background loaded. If your goal is to give Claude deep, durable context about one initiative, this is a strong tool and the natural choice.\n\nA portable context file solves a different problem: it is one profile about you that every AI you connect reads, not just Claude. It is plain text you own, organized into short sections, and it travels across ChatGPT, Cursor, and other agents alongside Claude. Where a Project is scoped to a workspace and lives inside Claude, a context file is scoped to you and lives outside any single app.\n\nThe two are complementary more than competing. Use Claude Projects for the depth of one workspace, and use a portable context file for the facts about you that should follow you everywhere. Creed is that context file: it connects to your agents over MCP, including Claude, so the same profile is read before every answer.",
+    "Claude Projects, project knowledge, and Claude's memory are built to scope context to a workspace inside Claude, and they are good at it. A Project gathers the files, instructions, and knowledge for one body of work, so every chat in that Project starts with the right background loaded. If your goal is to give Claude deep, durable context about one initiative, this is a strong tool and the natural choice.\n\nA portable context file solves a different problem: it is one profile about you that every AI you connect reads, not just Claude. It is plain text you own, organized into short sections, and it travels across ChatGPT, Cursor, and other agents alongside Claude. Where a Project is scoped to a workspace and lives inside Claude, a context file is scoped to you and lives outside any single app.\n\nThe two are complementary more than competing. Use Claude Projects for the depth of one workspace, and use a portable context file for the facts about you that should follow you everywhere. Strap is that context file: it connects to your agents over MCP, including Claude, so the same profile is read before every answer.",
   body: [
     { type: "h2", text: "What Claude Projects and memory do well" },
     {
@@ -61,19 +61,19 @@ export const creedVsClaudeMemory: Article = {
         "You want to read and own exactly what an AI knows about you: use a context file.",
       ],
     },
-    { type: "h2", text: "How they fit together with Creed" },
+    { type: "h2", text: "How they fit together with Strap" },
     {
       type: "p",
-      text: "Creed keeps one structured profile with short sections like identity, goals, work, preferences, and constraints: the durable facts that change how any AI should respond. It connects to your agents over MCP, so Claude reads your context file before it answers, and so do ChatGPT and Cursor. Inside Claude you still use Projects for workspace depth; the context file simply makes sure the same you shows up in every one of them.",
+      text: "Strap keeps one structured profile with short sections like identity, goals, work, preferences, and constraints: the durable facts that change how any AI should respond. It connects to your agents over MCP, so Claude reads your context file before it answers, and so do ChatGPT and Cursor. Inside Claude you still use Projects for workspace depth; the context file simply makes sure the same you shows up in every one of them.",
     },
     {
       type: "p",
-      text: "To connect Claude Code, add Creed as a remote MCP server and authorize it in the browser.",
+      text: "To connect Claude Code, add Strap as a remote MCP server and authorize it in the browser.",
     },
     {
       type: "code",
       lang: "bash",
-      code: "claude mcp add -t http creed https://creed.md/mcp\n# then run /mcp in Claude Code to authorize",
+      code: "claude mcp add -t http creed https://strap.bvdm.ai/mcp\n# then run /mcp in Claude Code to authorize",
     },
     {
       type: "p",
@@ -89,7 +89,7 @@ export const creedVsClaudeMemory: Article = {
     {
       question: "Can Claude read a portable context file?",
       answer:
-        "Yes. With Creed you connect Claude over MCP, and it reads your context file before it answers, then can propose updates you approve. You still use Projects for per-workspace knowledge.",
+        "Yes. With Strap you connect Claude over MCP, and it reads your context file before it answers, then can propose updates you approve. You still use Projects for per-workspace knowledge.",
     },
     {
       question: "What should go in the context file versus a Claude Project?",
@@ -103,8 +103,8 @@ export const creedVsClaudeMemory: Article = {
     },
   ],
   related: [
-    { label: "ChatGPT memory vs a personal context file", href: "/learn/creed-vs-chatgpt-memory" },
-    { label: "Connect Creed to Claude Code", href: "/learn/connect-creed-to-claude-code" },
+    { label: "ChatGPT memory vs a personal context file", href: "/learn/strap-vs-chatgpt-memory" },
+    { label: "Connect Strap to Claude Code", href: "/learn/connect-strap-to-claude-code" },
     { label: "What is a personal context file", href: "/learn/what-is-a-personal-context-file" },
   ],
 };

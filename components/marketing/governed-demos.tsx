@@ -260,9 +260,9 @@ function ApprovalToggle({ on }: { on: boolean }) {
 
 // A richer diff (additions + removals, a few lines) so the card fills its space.
 const DIRECT_BASE =
-  "Creed's value depends on keeping the file large and exhaustive, capturing every passing preference so nothing is ever left out, even details that stopped mattering months ago.";
+  "Strap's value depends on keeping the file large and exhaustive, capturing every passing preference so nothing is ever left out, even details that stopped mattering months ago.";
 const DIRECT_NEXT =
-  "Creed's value depends on keeping the file tight and high-signal, pruning stale detail so it stays sharp and self-improving as it grows, and trusting that less is more.";
+  "Strap's value depends on keeping the file tight and high-signal, pruning stale detail so it stays sharp and self-improving as it grows, and trusting that less is more.";
 
 export function DirectEditDemo() {
   const [approval, setApproval] = useState(false);

@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Bricolage_Grotesque, Geist, Geist_Mono, Inter, JetBrains_Mono } from "next/font/google";
 import type { ReactNode } from "react";
 import { ThemeProvider } from "@/components/creed/theme-provider";
 import { WelcomeDevPreview } from "@/components/creed/welcome-dev-preview";
-import { CREED_DESCRIPTION, CREED_META_TITLE } from "@/lib/marketing/brand";
+import { BRAND_DESCRIPTION, BRAND_META_TITLE, BRAND_NAME } from "@/lib/marketing/brand";
 import { getSiteUrl } from "@/lib/supabase/env";
 import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
@@ -18,37 +18,54 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// Share-card / search-result imagery, all via Next's filesystem convention:
-// - `app/opengraph-image.jpg` is wired into `<meta property="og:image">`.
-// - `app/twitter-image.jpg` is wired into `<meta name="twitter:image">`.
-// - `app/favicon.ico` stays the browser-tab favicon. We pin it explicitly
-//   under `icons.icon` so a future `app/icon.png` doesn't silently take over
-//   and the search-result favicon Google reads stays the one users see in tabs.
+const strapDisplay = Bricolage_Grotesque({
+  variable: "--font-strap-display",
+  subsets: ["latin"],
+  weight: ["600", "700"],
+});
+
+const strapSans = Inter({
+  variable: "--font-strap-sans",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+});
+
+const strapMono = JetBrains_Mono({
+  variable: "--font-strap-mono",
+  subsets: ["latin"],
+  weight: ["400", "500"],
+});
+
+// Share-card and search-result imagery use the dynamic Strap `/api/og` route.
+// The browser icon is the canonical local Strap SVG under `icons.icon`.
 // `title.default` is the brand title used by any page that doesn't set its
 // own (the root redirect and /home both fall back to it). `title.template`
 // suffixes per-page titles, so individual pages set a bare title ("Pricing")
-// and get "Pricing | Creed" automatically. A page that wants an exact title
+// and get "Pricing | Strap" automatically. A page that wants an exact title
 // uses `title: { absolute: "..." }`.
 export const metadata: Metadata = {
   metadataBase: new URL(getSiteUrl()),
   title: {
-    default: CREED_META_TITLE,
-    template: "%s | Creed",
+    default: BRAND_META_TITLE,
+    template: `%s | ${BRAND_NAME}`,
   },
-  description: CREED_DESCRIPTION,
+  description: BRAND_DESCRIPTION,
   icons: {
-    icon: "/favicon.ico",
+    icon: "/assets/brand/logo.svg",
+    shortcut: "/assets/brand/logo.svg",
   },
   openGraph: {
     type: "website",
-    siteName: "Creed",
-    title: CREED_META_TITLE,
-    description: CREED_DESCRIPTION,
+    siteName: BRAND_NAME,
+    title: BRAND_META_TITLE,
+    description: BRAND_DESCRIPTION,
+    images: [{ url: "/api/og", width: 1200, height: 630, alt: BRAND_META_TITLE }],
   },
   twitter: {
     card: "summary_large_image",
-    title: CREED_META_TITLE,
-    description: CREED_DESCRIPTION,
+    title: BRAND_META_TITLE,
+    description: BRAND_DESCRIPTION,
+    images: ["/api/og"],
   },
 };
 
@@ -68,7 +85,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${strapDisplay.variable} ${strapSans.variable} ${strapMono.variable} h-full antialiased`}
     >
       <head>
         {/* Apply persisted theme before paint so dark mode doesn't flash.

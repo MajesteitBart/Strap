@@ -14,7 +14,7 @@ export type CompanyInviteEmailInput = {
 };
 
 export function companyInviteSubject(companyName: string): string {
-  return `Join ${companyName} on Creed`;
+  return `Join ${companyName} on Strap`;
 }
 
 export function renderCompanyInviteEmail(input: CompanyInviteEmailInput): string {
@@ -30,12 +30,12 @@ export function renderCompanyInviteEmail(input: CompanyInviteEmailInput): string
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="color-scheme" content="light only" />
     <meta name="supported-color-schemes" content="light" />
-    <title>${company} on Creed</title>
+    <title>${company} on Strap</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" />
   </head>
   <body style="margin:0; padding:0; background-color:#ffffff; -webkit-font-smoothing:antialiased; -webkit-text-size-adjust:100%;">
     <div style="display:none; max-height:0; overflow:hidden; opacity:0; mso-hide:all; color:#ffffff; font-size:1px; line-height:1px;">
-      ${inviter} invited you to the ${company} Creed.
+      ${inviter} invited you to the ${company} Strap.
     </div>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;">
       <tr>
@@ -43,17 +43,17 @@ export function renderCompanyInviteEmail(input: CompanyInviteEmailInput): string
           <table role="presentation" width="460" cellpadding="0" cellspacing="0" border="0" style="width:460px; max-width:460px;">
             <tr>
               <td style="padding-bottom:40px;">
-                <img src="${siteUrl}/assets/brand/brandmark-email.png" alt="Creed" width="85" height="20" style="width:85px; height:20px; display:block; border:0;" />
+                <img src="${siteUrl}/assets/brand/brandmark-email.png" alt="Strap" width="85" height="20" style="width:85px; height:20px; display:block; border:0;" />
               </td>
             </tr>
             <tr>
               <td style="font-family:'Geist',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:24px; font-weight:600; letter-spacing:-0.02em; line-height:1.25; color:#1a1a18; padding-bottom:12px;">
-                Join ${company} on Creed
+                Join ${company} on Strap
               </td>
             </tr>
             <tr>
               <td style="font-family:'Geist',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:1.6; color:#56564f; padding-bottom:28px;">
-                ${inviter} invited you to the ${company} Creed, the shared context file their AI agents read before they work.
+                ${inviter} invited you to the ${company} Strap, the shared context file their AI agents read before they work.
               </td>
             </tr>
             <tr>
@@ -79,7 +79,7 @@ export function renderCompanyInviteEmail(input: CompanyInviteEmailInput): string
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                   <tr>
                     <td style="font-family:'Geist',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:12px; color:#a8a89f;">
-                      &copy; 2026 Creed
+                      &copy; 2026 Strap
                     </td>
                     <td align="right" style="font-family:'Geist',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:12px; color:#a8a89f;">
                       <a href="${siteUrl}/privacy" target="_blank" style="color:#a8a89f; text-decoration:none;">Privacy</a>

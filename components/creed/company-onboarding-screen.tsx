@@ -212,7 +212,7 @@ export function CompanyOnboardingScreen({
         }
         if (!data.ok || !data.matched || !data.sections) {
           setPasteError(
-            "That doesn't look like your Creed. Paste the whole markdown your assistant gave you."
+            "That doesn't look like your Strap. Paste the whole markdown your assistant gave you."
           );
           return;
         }
@@ -248,7 +248,7 @@ export function CompanyOnboardingScreen({
         setBusy(false);
         return;
       }
-      toast.success("Your company Creed is ready.");
+      toast.success("Your company Strap is ready.");
       router.push("/file");
       router.refresh();
     } catch {
@@ -351,7 +351,7 @@ export function CompanyOnboardingScreen({
 
       <div className="flex min-h-[calc(100dvh-2px)] flex-col px-6 py-5 md:h-[calc(100vh-2px)] md:px-10 md:py-6">
         <div className="flex items-center justify-between">
-          <Link href="/home" aria-label="Creed home" className="-ml-2 inline-flex items-center rounded-sm px-2 py-1.5 transition-opacity duration-200 hover:opacity-60">
+          <Link href="/home" aria-label="Strap home" className="-ml-2 inline-flex items-center rounded-sm px-2 py-1.5 transition-opacity duration-200 hover:opacity-60">
             <CreedWordmark className="ml-0" />
           </Link>
           <div className="text-[12px] text-[var(--creed-text-tertiary)]">{`${step + 1} of ${TOTAL_STEPS}`}</div>
@@ -371,7 +371,7 @@ export function CompanyOnboardingScreen({
                   {step === WELCOME ? (
                     <div className="text-center">
                       <AnimatedBlock index={0}>
-                        <AnimatedHeadline text={"Your company's shared Creed."} className="t-section justify-center text-[var(--creed-text-primary)]" />
+                        <AnimatedHeadline text={"Your company's shared Strap."} className="t-section justify-center text-[var(--creed-text-primary)]" />
                       </AnimatedBlock>
                       <AnimatedBlock index={1}>
                         <p className="t-lede mx-auto mt-6 max-w-xl text-[var(--creed-text-tertiary)]">
@@ -385,7 +385,7 @@ export function CompanyOnboardingScreen({
                   ) : null}
 
                   {step === Q_NAME ? (
-                    <QuestionStep title="What's the company called?" subtitle="The name your company and their agents see at the top of the shared Creed.">
+                    <QuestionStep title="What's the company called?" subtitle="The name your company and their agents see at the top of the shared Strap.">
                       <Input
                         value={answers.companyName}
                         onChange={(e) => set("companyName", e.target.value)}
@@ -436,7 +436,7 @@ export function CompanyOnboardingScreen({
 
                   {step === Q_PROJECTS ? (
                     <QuestionStep title="What should it know about?" subtitle="The projects and products in flight.">
-                      <QTextarea value={answers.projects} onChange={(v) => set("projects", v)} placeholder="e.g. Bad Engine, Creed, the Q3 launch" />
+                      <QTextarea value={answers.projects} onChange={(v) => set("projects", v)} placeholder="e.g. Bad Engine, Strap, the Q3 launch" />
                     </QuestionStep>
                   ) : null}
 
@@ -458,7 +458,7 @@ export function CompanyOnboardingScreen({
                   {step === EXP_CONTROL ? (
                     <ExplainerStep
                       title="Start shared, stay controlled."
-                      lede="Your first company Creed is a starting point. Teammates and agents can suggest updates, but owners keep the final say."
+                      lede="Your first company Strap is a starting point. Teammates and agents can suggest updates, but owners keep the final say."
                     >
                       <ControlFlowCard />
                     </ExplainerStep>
@@ -472,7 +472,7 @@ export function CompanyOnboardingScreen({
                       <AnimatedBlock index={1}>
                         <p className="t-lede mx-auto mt-6 max-w-2xl text-[var(--creed-text-tertiary)]">
                           Copy this prompt and paste it into ChatGPT, Claude, or any AI you use. It turns
-                          everything you just shared into your full company Creed.
+                          everything you just shared into your full company Strap.
                         </p>
                       </AnimatedBlock>
                       <AnimatedBlock index={2}>
@@ -482,7 +482,7 @@ export function CompanyOnboardingScreen({
                   ) : null}
 
                   {step === PASTE ? (
-                    <QuestionStep title="Paste your company Creed." subtitle="Paste the markdown your assistant gave you. We'll turn it into your company Creed.">
+                    <QuestionStep title="Paste your company Strap." subtitle="Paste the markdown your assistant gave you. We'll turn it into your company Strap.">
                       <Textarea
                         value={pasted}
                         data-disable-continue="true"
@@ -505,7 +505,7 @@ export function CompanyOnboardingScreen({
                   {step === PREVIEW ? (
                     <div className="text-center">
                       <AnimatedBlock index={0}>
-                        <AnimatedHeadline text="Your company Creed." className="t-section justify-center text-[var(--creed-text-primary)]" />
+                        <AnimatedHeadline text="Your company Strap." className="t-section justify-center text-[var(--creed-text-primary)]" />
                       </AnimatedBlock>
                       <AnimatedBlock index={1}>
                         <p className="t-lede mx-auto mt-6 max-w-2xl text-[var(--creed-text-tertiary)]">
@@ -826,8 +826,8 @@ function AttributionCard() {
 // shape as the personal onboarding's ProposalCard.
 // ──────────────────────────────────────────────────────────────────
 
-const PROPOSAL_EXISTING = "Bad Engine, Creed.";
-const PROPOSAL_PROPOSED = "Bad Engine, Creed, the Q3 launch.";
+const PROPOSAL_EXISTING = "Bad Engine, Strap.";
+const PROPOSAL_PROPOSED = "Bad Engine, Strap, the Q3 launch.";
 
 function ProposalCard() {
   const parts = useMemo(() => computeDiffParts(PROPOSAL_EXISTING, PROPOSAL_PROPOSED), []);
@@ -971,8 +971,8 @@ const CONTROL_ACTIVITY_ITEMS = [
     actor: "Fergus's Claude Code",
     status: "Proposed",
     when: "2m ago",
-    before: "Creed Company is the current priority.",
-    after: "Creed Company is the current priority, with onboarding polish and section permissions next.",
+    before: "Strap Company is the current priority.",
+    after: "Strap Company is the current priority, with onboarding polish and section permissions next.",
     avatar: "F",
     avatarClassName: "bg-[#F3E8FF] text-[#7E22CE] dark:bg-[#581C87]/45 dark:text-[#D8B4FE]",
     agent: { name: "Claude Code", icon: "claudecode" },
@@ -1180,9 +1180,9 @@ function CompanyConstellation() {
 
       <div className="absolute left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-1/2">
         <motion.div initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}>
-          <div className="relative flex h-16 w-16 items-center justify-center rounded-full" style={{ backgroundColor: AMBER }}>
+          <div className="relative flex h-16 w-16 items-center justify-center rounded-full" style={{ backgroundColor: "#fbf6ee", border: `1px solid ${AMBER}` }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/assets/brand/logo.svg" alt="Creed" className="h-8 w-auto select-none" style={{ filter: "brightness(0) invert(1)" }} draggable={false} />
+            <img src="/assets/brand/logo.svg" alt="Strap" className="h-8 w-auto select-none" draggable={false} />
             <motion.span
               className="absolute inset-0 rounded-full border"
               style={{ borderColor: AMBER }}

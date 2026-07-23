@@ -9,7 +9,7 @@ export const personalClaudeMdTemplate: Article = {
   datePublished: "2026-07-07",
   dateModified: "2026-07-07",
   lead:
-    "CLAUDE.md is the file Claude Code reads before it works in a repository. This is a personal version of that file: instead of project conventions, it holds the durable facts about you an AI should never have to ask for. Copy the template below into a CLAUDE.md, replace the placeholders with real facts, and an agent that reads it will start already knowing who you are and how you want to be answered.\n\nKeep it short and specific. The value is in lines that change how an assistant responds, not in completeness. Four sections cover almost everyone: who you are, how you work, your preferences, and your constraints.\n\nA per-file approach works, but it lives in one repository and one tool, and nothing keeps it current except you. Creed is the portable version: one personal context file that every AI you connect reads before it answers, kept sharp by agent proposals you approve. Use the template to start, and upgrade when you get tired of maintaining copies.",
+    "CLAUDE.md is the file Claude Code reads before it works in a repository. This is a personal version of that file: instead of project conventions, it holds the durable facts about you an AI should never have to ask for. Copy the template below into a CLAUDE.md, replace the placeholders with real facts, and an agent that reads it will start already knowing who you are and how you want to be answered.\n\nKeep it short and specific. The value is in lines that change how an assistant responds, not in completeness. Four sections cover almost everyone: who you are, how you work, your preferences, and your constraints.\n\nA per-file approach works, but it lives in one repository and one tool, and nothing keeps it current except you. Strap is the portable version: one personal context file that every AI you connect reads before it answers, kept sharp by agent proposals you approve. Use the template to start, and upgrade when you get tired of maintaining copies.",
   body: [
     { type: "h2", text: "The template" },
     {
@@ -58,7 +58,7 @@ export const personalClaudeMdTemplate: Article = {
     },
     {
       type: "p",
-      text: "Creed keeps the same content this template holds, who you are, how you work, your preferences, your constraints, in one structured profile that every AI you connect reads before it answers. It connects over MCP to Claude Code, ChatGPT, Cursor, and others, so you write yourself down once instead of once per tool. Agents propose narrow updates as they learn something durable, and you approve what stays, so the profile stays sharp instead of drifting across copies. It is plain Markdown you own and can export or delete at any time.",
+      text: "Strap keeps the same content this template holds, who you are, how you work, your preferences, your constraints, in one structured profile that every AI you connect reads before it answers. It connects over MCP to Claude Code, ChatGPT, Cursor, and others, so you write yourself down once instead of once per tool. Agents propose narrow updates as they learn something durable, and you approve what stays, so the profile stays sharp instead of drifting across copies. It is plain Markdown you own and can export or delete at any time.",
     },
     {
       type: "p",
@@ -82,14 +82,14 @@ export const personalClaudeMdTemplate: Article = {
         "No. Keep project build commands and conventions in the project's own CLAUDE.md, and keep facts about you separate. Your identity is not scoped to one repository, so mixing them makes both harder to maintain.",
     },
     {
-      question: "Why move from a CLAUDE.md to Creed?",
+      question: "Why move from a CLAUDE.md to Strap?",
       answer:
-        "A CLAUDE.md is per-repo and Claude Code specific, so you end up maintaining copies across tools that drift apart. Creed keeps one portable context file every agent reads over MCP, and agents propose updates you approve so it stays current.",
+        "A CLAUDE.md is per-repo and Claude Code specific, so you end up maintaining copies across tools that drift apart. Strap keeps one portable context file every agent reads over MCP, and agents propose updates you approve so it stays current.",
     },
   ],
   related: [
     { label: "CLAUDE.md for your life", href: "/learn/claude-md-for-your-life" },
     { label: "Personal context file template", href: "/learn/personal-context-file-template" },
-    { label: "Connect Creed to Claude Code", href: "/learn/connect-creed-to-claude-code" },
+    { label: "Connect Strap to Claude Code", href: "/learn/connect-strap-to-claude-code" },
   ],
 };

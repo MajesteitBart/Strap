@@ -66,7 +66,7 @@ export const CLUSTER_META: Record<
   },
   comparison: {
     title: "Comparisons",
-    blurb: "How Creed sits next to chatbot memory and the memory tools.",
+    blurb: "How Strap sits next to chatbot memory and the memory tools.",
     order: 3,
   },
   integration: {

@@ -136,7 +136,7 @@ export async function exchangeGitHubOAuthCode(args: {
     headers: {
       Accept: "application/json",
       "Content-Type": "application/x-www-form-urlencoded",
-      "User-Agent": "Creed",
+      "User-Agent": "Strap",
     },
     body: new URLSearchParams({
       client_id: args.credentials.clientId,
@@ -177,7 +177,7 @@ async function githubRequest<T>(
     headers: {
       Accept: "application/vnd.github+json",
       Authorization: `Bearer ${accessToken}`,
-      "User-Agent": "Creed",
+      "User-Agent": "Strap",
       ...(init?.headers ?? {}),
     },
     cache: "no-store",
@@ -353,7 +353,7 @@ export async function refreshGitHubAccessToken(
     headers: {
       Accept: "application/json",
       "Content-Type": "application/x-www-form-urlencoded",
-      "User-Agent": "Creed",
+      "User-Agent": "Strap",
     },
     body: new URLSearchParams({
       client_id: clientId,

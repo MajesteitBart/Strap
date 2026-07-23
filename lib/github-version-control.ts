@@ -6,9 +6,11 @@ import {
   upsertGitHubIntegration,
 } from "@/lib/creed-backend";
 import {
+  getGitHubFileSnapshot,
   isGitHubTokenRefreshConfigured,
   refreshGitHubAccessToken,
 } from "@/lib/github";
+import { getProfilePathCandidates, resolveProfilePath } from "@/lib/profile-file";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -201,7 +203,7 @@ export function getConfiguredRepo(versionControl?: {
   const repoOwner = versionControl?.repo_owner?.trim() ?? "";
   const repoName = versionControl?.repo_name?.trim() ?? "";
   const branch = versionControl?.branch?.trim() ?? "";
-  const path = versionControl?.path?.trim() || "creed.md";
+  const path = resolveProfilePath(versionControl?.path);
 
   if (!repoOwner || !repoName || !branch) {
     return null;
@@ -213,6 +215,30 @@ export function getConfiguredRepo(versionControl?: {
     branch,
     path,
   };
+}
+
+export async function resolveGitHubProfileSnapshot(
+  accessToken: string,
+  configuredRepo: {
+    repoOwner: string;
+    repoName: string;
+    branch: string;
+    path: string;
+  },
+) {
+  for (const candidatePath of getProfilePathCandidates(configuredRepo.path)) {
+    const snapshot = await getGitHubFileSnapshot(
+      accessToken,
+      configuredRepo.repoOwner,
+      configuredRepo.repoName,
+      candidatePath,
+      configuredRepo.branch,
+    );
+    if (snapshot) {
+      return { path: candidatePath, snapshot };
+    }
+  }
+  return null;
 }
 
 export function resolveSyncStatus(args: {

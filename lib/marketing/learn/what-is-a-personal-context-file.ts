@@ -9,7 +9,7 @@ export const whatIsAPersonalContextFile: Article = {
   datePublished: "2026-07-07",
   dateModified: "2026-07-12",
   lead:
-    "A personal context file is a single, structured profile that describes who you are and how you want AI to work with you, written once and read by every AI tool you connect. Instead of re-explaining your job, your goals, and your preferences at the start of every chat, you keep them in one file that ChatGPT, Claude, Cursor, and other agents read before they answer.\n\nIt is plain text you own, usually Markdown, organized into short sections like identity, goals, work, preferences, and constraints. A good one is specific and current, not a diary. The point is not to store everything about you; it is to keep the handful of facts that actually change how an AI should respond, in a form any tool can read. Creed is a personal context file that connects to your agents over MCP, so the same profile follows you across every tool, and your agents can propose updates as they learn more about you.",
+    "A personal context file is a single, structured profile that describes who you are and how you want AI to work with you, written once and read by every AI tool you connect. Instead of re-explaining your job, your goals, and your preferences at the start of every chat, you keep them in one file that ChatGPT, Claude, Cursor, and other agents read before they answer.\n\nIt is plain text you own, usually Markdown, organized into short sections like identity, goals, work, preferences, and constraints. A good one is specific and current, not a diary. The point is not to store everything about you; it is to keep the handful of facts that actually change how an AI should respond, in a form any tool can read. Strap is a personal context file that connects to your agents over MCP, so the same profile follows you across every tool, and your agents can propose updates as they learn more about you.",
   body: [
     { type: "h2", text: "Why a context file exists" },
     {
@@ -23,7 +23,7 @@ export const whatIsAPersonalContextFile: Article = {
     { type: "h2", text: "What goes in a personal context file" },
     {
       type: "p",
-      text: "The format is simple on purpose. Creed organizes a context file into ten sections: five always-on core sections that everyone fills in, and five optional ones that appear only when you use them.",
+      text: "The format is simple on purpose. Strap organizes a context file into ten sections: five always-on core sections that everyone fills in, and five optional ones that appear only when you use them.",
     },
     {
       type: "ul",
@@ -43,7 +43,7 @@ export const whatIsAPersonalContextFile: Article = {
     { type: "h2", text: "How it stays current" },
     {
       type: "p",
-      text: "A context file is only worth reading if it stays true. With Creed, connected agents read the file before they answer and propose small updates as they learn something durable about you: a sharper preference, a new routine, a goal that shifted. You approve what stays, or let trusted agents write directly. Session chatter, moods, and one-off tasks are left out by design.",
+      text: "A context file is only worth reading if it stays true. With Strap, connected agents read the file before they answer and propose small updates as they learn something durable about you: a sharper preference, a new routine, a goal that shifted. You approve what stays, or let trusted agents write directly. Session chatter, moods, and one-off tasks are left out by design.",
     },
     { type: "h2", text: "Context file vs chatbot memory" },
     {
@@ -61,7 +61,7 @@ export const whatIsAPersonalContextFile: Article = {
     { type: "h2", text: "Portable, and yours" },
     {
       type: "p",
-      text: "A context file only pays off if it travels. Creed connects to agents like Claude Code, Codex, Cursor, and ChatGPT over MCP, and integrates with GitHub for version control, with Notion and Obsidian on the way. The same profile follows you into every tool instead of living inside one app's memory.",
+      text: "A context file only pays off if it travels. Strap connects to agents like Claude Code, Codex, Cursor, and ChatGPT over MCP, and integrates with GitHub for version control, with Notion and Obsidian on the way. The same profile follows you into every tool instead of living inside one app's memory.",
     },
     {
       type: "p",
@@ -74,7 +74,7 @@ export const whatIsAPersonalContextFile: Article = {
     },
     {
       type: "p",
-      text: "If you want one, you can write a context file by hand in any Markdown editor and paste it into each tool, or use Creed to keep one profile that connects to your agents over MCP and updates itself as you go. Either way, the win is the same: you stop paying the re-explaining tax.",
+      text: "If you want one, you can write a context file by hand in any Markdown editor and paste it into each tool, or use Strap to keep one profile that connects to your agents over MCP and updates itself as you go. Either way, the win is the same: you stop paying the re-explaining tax.",
     },
   ],
   faq: [
@@ -96,12 +96,12 @@ export const whatIsAPersonalContextFile: Article = {
     {
       question: "Which tools does a personal context file work with?",
       answer:
-        "Creed connects to agents like Claude Code, Codex, Cursor, and ChatGPT over MCP, and integrates with GitHub for version control. Support for Notion and Obsidian is on the way.",
+        "Strap connects to agents like Claude Code, Codex, Cursor, and ChatGPT over MCP, and integrates with GitHub for version control. Support for Notion and Obsidian is on the way.",
     },
     {
       question: "Do I own my personal context file?",
       answer:
-        "Yes. Creed is plain Markdown that you control. You bring your own AI key, your tokens stay yours, and deleting your account wipes everything. There is no lock-in.",
+        "Yes. Strap is plain Markdown that you control. You bring your own AI key, your tokens stay yours, and deleting your account wipes everything. There is no lock-in.",
     },
     {
       question: "Do I need to be a developer to use one?",

@@ -36,7 +36,7 @@ const copy: Record<AuthMode, {
   login: {
     heading: "Welcome back",
     submit: "Sign in",
-    switchPrompt: "New to Creed?",
+    switchPrompt: "New to Strap?",
     switchAction: "Create an account",
     switchHref: "/signup",
     topAction: "Sign up",

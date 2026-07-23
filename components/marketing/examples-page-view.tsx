@@ -603,7 +603,7 @@ export function ExamplesPageView() {
           <AnimatedPageTitle text="Examples" />
           <p className="mt-5 max-w-3xl t-lede text-[var(--creed-text-secondary)]">
             What changes when every AI you use reads the same file before it
-            answers. You write your Creed once, each agent reads it before it
+            answers. You write your Strap once, each agent reads it before it
             replies, and it stays plain Markdown you own.
           </p>
         </div>
@@ -800,7 +800,7 @@ function ExamplesCta() {
       onMouseLeave={() => arrowRef.current?.stopAnimation()}
       className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[var(--creed-accent)] pl-4 pr-3 text-[14px] font-medium text-white transition-colors hover:bg-[var(--creed-accent-hover)]"
     >
-      <span className="leading-none">Create your Creed</span>
+      <span className="leading-none">Create your Strap</span>
       <ArrowRightIcon
         ref={arrowRef}
         size={16}

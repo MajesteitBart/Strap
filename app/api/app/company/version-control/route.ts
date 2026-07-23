@@ -4,6 +4,8 @@ import { getCreedRole } from "@/lib/creed-membership";
 import { recordAuditEvent } from "@/lib/audit-log";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import type { SupabaseLikeClient } from "@/lib/supabase/types";
+import { readCompanyVersionControl } from "@/lib/company-version-control";
+import { STRAP_FILE_NAME } from "@/lib/profile-file";
 
 // The company Creed's GitHub sync target (repo/branch). Owner/admin only.
 // Pushes run on the team's GitHub connection via /api/app/github/push; this
@@ -47,12 +49,14 @@ export async function POST(request: Request) {
   }
 
   const db = admin();
+  const existing = await readCompanyVersionControl(b.creedId);
   const now = new Date().toISOString();
   const targetChanged = b.repoOwner !== undefined || b.repoName !== undefined || b.branch !== undefined;
   const row: Record<string, unknown> = {
     creed_id: b.creedId,
     provider: "github",
     configured_by: auth.user.id,
+    path: existing?.path?.trim() || STRAP_FILE_NAME,
     updated_at: now,
   };
   if (b.repoOwner !== undefined) row.repo_owner = b.repoOwner || null;

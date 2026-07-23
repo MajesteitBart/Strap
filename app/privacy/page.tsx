@@ -5,7 +5,7 @@ import { breadcrumbSchema, graph, webPageSchema } from "@/lib/seo/structured-dat
 
 const PATH = "/privacy";
 const TITLE = "Privacy Policy";
-const DESCRIPTION = "How Creed collects, uses, and protects your information.";
+const DESCRIPTION = "How Strap collects, uses, and protects your information.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -20,7 +20,7 @@ export default function PrivacyPage() {
         data={graph(
           webPageSchema({ path: PATH, name: TITLE, description: DESCRIPTION }),
           breadcrumbSchema(PATH, [
-            { name: "Creed", path: "/home" },
+            { name: "Strap", path: "/home" },
             { name: "Privacy", path: PATH },
           ])
         )}

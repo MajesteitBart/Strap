@@ -136,6 +136,7 @@ import {
   resolveSectionPermission,
 } from "@/lib/creed-permissions";
 import { cn } from "@/lib/utils";
+import { STRAP_FILE_NAME } from "@/lib/profile-file";
 
 const activityStatuses: Array<{
   label: string;
@@ -744,6 +745,7 @@ type GitHubVersionStatus = {
 };
 
 type GitHubPullPreview = {
+  path: string;
   syncStatus:
     | "not-configured"
     | "unknown"
@@ -955,7 +957,7 @@ export function FileScreen() {
   const [importBusy, setImportBusy] = useState(false);
   const [pushDialogOpen, setPushDialogOpen] = useState(false);
   const [pullDialogOpen, setPullDialogOpen] = useState(false);
-  const [pushMessage, setPushMessage] = useState("Update Creed");
+  const [pushMessage, setPushMessage] = useState("Update Strap");
   const [pushBusy, setPushBusy] = useState(false);
   const [pullBusy, setPullBusy] = useState(false);
   const [versionStatusBusy, setVersionStatusBusy] = useState(false);
@@ -1796,7 +1798,7 @@ export function FileScreen() {
 
   async function handleOpenPushReview() {
     setSelectedVersionAction("push");
-    setPushMessage("Update Creed");
+    setPushMessage("Update Strap");
     setPushPreview(null);
     setPushDialogOpen(true);
 
@@ -1870,21 +1872,21 @@ export function FileScreen() {
         body: JSON.stringify({
           markdown: localMarkdown,
           localHash,
-          message: pushMessage.trim() || "Update Creed",
+          message: pushMessage.trim() || "Update Strap",
         }),
       });
       const payload = (await response.json()) as { error?: string };
 
       if (!response.ok) {
-        throw new Error(payload.error || "Could not push Creed to GitHub.");
+        throw new Error(payload.error || "Could not push Strap to GitHub.");
       }
 
       await refreshState();
-      toast.success("Pushed Creed to GitHub");
+      toast.success("Pushed Strap to GitHub");
       setPushDialogOpen(false);
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Could not push Creed",
+        error instanceof Error ? error.message : "Could not push Strap",
       );
     } finally {
       setPushBusy(false);
@@ -1953,23 +1955,24 @@ export function FileScreen() {
           remoteMessage: pullPreview.remoteMessage,
           remoteCommittedAt: pullPreview.remoteCommittedAt,
           remoteContentHash: pullPreview.remoteContentHash,
+          remotePath: pullPreview.path,
         }),
       });
       const payload = (await response.json()) as { error?: string };
 
       if (!response.ok) {
-        throw new Error(payload.error || "Could not import Creed from GitHub");
+        throw new Error(payload.error || "Could not import Strap from GitHub");
       }
 
       await refreshState();
-      toast.success("Pulled Creed from GitHub");
+      toast.success("Pulled Strap from GitHub");
       setPullDialogOpen(false);
       setPullPreview(null);
     } catch (error) {
       toast.error(
         error instanceof Error
           ? error.message
-          : "Could not import Creed from GitHub",
+          : "Could not import Strap from GitHub",
       );
     } finally {
       setPullBusy(false);
@@ -2352,8 +2355,8 @@ export function FileScreen() {
                           aria-label={
                             canRunQuality &&
                             (fullQualityDirty || qualityCanRunInitialAnalysis)
-                              ? "Run Creed quality analysis"
-                              : "Show Creed quality"
+                              ? "Run Strap quality analysis"
+                              : "Show Strap quality"
                           }
                         >
                           <QualityRing
@@ -2683,7 +2686,7 @@ export function FileScreen() {
                           onSelect={(event) => {
                             event.preventDefault();
                             downloadFile(
-                              "creed.md",
+                              STRAP_FILE_NAME,
                               exportMarkdown(),
                               "text/markdown;charset=utf-8",
                             );
@@ -2930,7 +2933,7 @@ export function FileScreen() {
                       </div>
                       <div className="max-w-sm text-[13px] leading-6 text-[var(--creed-text-secondary)]">
                         Restore a section from Settings, under Archived, to
-                        bring it back into your Creed.
+                        bring it back into your Strap.
                       </div>
                     </div>
                   ) : null}
@@ -3100,10 +3103,13 @@ export function FileScreen() {
       <Dialog open={pushDialogOpen} onOpenChange={setPushDialogOpen}>
         <DialogContent className="rounded-[var(--radius-xl)] border-[var(--creed-border)] bg-[var(--creed-surface)]">
           <DialogHeader>
-            <DialogTitle>Push Creed</DialogTitle>
+            <DialogTitle>Push Strap</DialogTitle>
             <DialogDescription>
-              This will save your current Creed as{" "}
-              <span className="font-mono text-[13px]">creed.md</span> to GitHub.
+              This will save your current Strap as{" "}
+              <span className="font-mono text-[13px]">
+                {state.settings.versionControl.path || STRAP_FILE_NAME}
+              </span>{" "}
+              to GitHub.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -3154,7 +3160,7 @@ export function FileScreen() {
               onClick={() => void handlePushCreed()}
               disabled={pushBusy || !githubConfigured}
             >
-              {pushBusy ? "Pushing" : "Push Creed"}
+              {pushBusy ? "Pushing" : "Push Strap"}
               {pushBusy ? (
                 <LoaderCircle className="h-4 w-4 animate-spin" />
               ) : null}
@@ -3169,7 +3175,10 @@ export function FileScreen() {
             <DialogTitle>Pull from GitHub</DialogTitle>
             <DialogDescription>
               Review the remote{" "}
-              <span className="font-mono text-[13px]">creed.md</span> before it
+              <span className="font-mono text-[13px]">
+                {pullPreview?.path || state.settings.versionControl.path || STRAP_FILE_NAME}
+              </span>{" "}
+              before it
               replaces your local file.
             </DialogDescription>
           </DialogHeader>
@@ -3210,7 +3219,7 @@ export function FileScreen() {
               onClick={() => void handleApplyPull()}
               disabled={pullBusy || !pullPreview}
             >
-              {pullBusy ? "Importing" : "Import remote Creed"}
+              {pullBusy ? "Importing" : "Import remote Strap"}
               {pullBusy ? (
                 <LoaderCircle className="h-4 w-4 animate-spin" />
               ) : null}
@@ -3320,7 +3329,7 @@ export function FileScreen() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-3">
               <AlertTriangle className="h-5 w-5 text-[#B91C1C]" />
-              Delete Creed file
+              Delete Strap file
             </DialogTitle>
             <DialogDescription>
               Wipes every section, proposal, and activity entry. Your account
@@ -4354,7 +4363,7 @@ function ActivityRail({
             <div className="mt-1 text-[12px] text-[var(--creed-text-tertiary)]">
               {creedType === "company"
                 ? "Audit trail for governed collaboration."
-                : "Agent changes to your Creed."}
+                : "Agent changes to your Strap."}
             </div>
           </div>
           <Button variant="ghost" size="icon-sm" onClick={onClose}>

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { LandingHeroEntry } from "@/components/auth/landing-hero-entry";
+import { StrapHome } from "@/components/marketing/strap-home";
 import { JsonLd } from "@/components/marketing/json-ld";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { homeFaqItems } from "@/lib/marketing/faq";
@@ -32,7 +32,7 @@ export default function HomeLandingPage() {
           faqPageSchema(homeFaqItems)
         )}
       />
-      <LandingHeroEntry configured={isSupabaseConfigured()} />
+      <StrapHome configured={isSupabaseConfigured()} />
     </>
   );
 }

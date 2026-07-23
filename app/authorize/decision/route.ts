@@ -104,7 +104,7 @@ export async function POST(request: Request) {
   if (!target) {
     return redirectWith(redirectUri, {
       error: "access_denied",
-      error_description: "Set up a Creed before connecting an agent.",
+      error_description: "Set up a Strap before connecting an agent.",
       ...(stateValue ? { state: stateValue } : {}),
     });
   }

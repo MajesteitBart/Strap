@@ -1,8 +1,8 @@
 // Ping IndexNow with every public URL so Bing (the index behind ChatGPT
-// search) re-crawls creed.md promptly after a deploy. Self-contained: it reads
+// search) re-crawls strap.bvdm.ai promptly after a deploy. Self-contained: it reads
 // the live sitemap, extracts the URLs, and submits them in one batch.
 //
-// Run:  npm run indexnow            (defaults to https://creed.md)
+// Run:  npm run indexnow            (defaults to https://strap.bvdm.ai)
 //       SITE_URL=https://... npm run indexnow
 //
 // Wire it to run after a production deploy (a deploy hook or a GitHub Action on
@@ -10,7 +10,7 @@
 
 import { INDEXNOW_KEY } from "../lib/indexnow.ts";
 
-const host = (process.env.SITE_URL || "https://creed.md").replace(/\/$/, "");
+const host = (process.env.SITE_URL || "https://strap.bvdm.ai").replace(/\/$/, "");
 const hostname = new URL(host).hostname;
 
 async function main() {

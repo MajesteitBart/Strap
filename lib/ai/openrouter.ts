@@ -124,7 +124,7 @@ export async function streamOpenRouter({
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
         "HTTP-Referer": getSiteUrl(),
-        "X-Title": "Creed",
+        "X-Title": "Strap",
       },
       body: JSON.stringify({
         model: modelId,
@@ -283,7 +283,7 @@ export async function callOpenRouter({
         // OpenRouter dashboard. Derive from the deployed origin so forks
         // get attributed to their own domain, not the upstream Creed.
         "HTTP-Referer": getSiteUrl(),
-        "X-Title": "Creed",
+        "X-Title": "Strap",
       },
       body: JSON.stringify({
         model: modelId,

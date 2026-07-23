@@ -1,41 +1,41 @@
 import type { Article } from "./types";
 
 export const connectCreedToCursor: Article = {
-  slug: "connect-creed-to-cursor",
-  title: "Connect Creed to Cursor",
+  slug: "connect-strap-to-cursor",
+  title: "Connect Strap to Cursor",
   description:
-    "Add Creed as a remote MCP server in Cursor, authorize with OAuth, and Cursor reads your context before it plans or edits. Here are the steps and how to verify.",
+    "Add Strap as a remote MCP server in Cursor, authorize with OAuth, and Cursor reads your context before it plans or edits. Here are the steps and how to verify.",
   cluster: "integration",
   datePublished: "2026-07-07",
   dateModified: "2026-07-07",
   lead:
-    "To connect Creed to Cursor, add it as a remote MCP server in Cursor's settings and authorize it once with OAuth. Point the server at https://creed.md/mcp, then complete authorization in the browser by clicking Allow on the Creed consent screen while signed in to creed.md. There is no key to copy; the handshake is OAuth.\n\nOnce connected, Cursor can read your Creed profile before it plans or edits, so it starts already knowing your role, stack, goals, and preferences rather than working cold. As it learns something durable about you, it can propose a narrow update you approve.\n\nCreed is one personal context file that every AI reads before it answers. In Cursor, that means the same profile your other agents use also shapes how Cursor reasons about your code. You verify the connection by confirming the tools are available and calling read_creed once.",
+    "To connect Strap to Cursor, add it as a remote MCP server in Cursor's settings and authorize it once with OAuth. Point the server at https://strap.bvdm.ai/mcp, then complete authorization in the browser by clicking Allow on the Strap consent screen while signed in to strap.md. There is no key to copy; the handshake is OAuth.\n\nOnce connected, Cursor can read your Strap profile before it plans or edits, so it starts already knowing your role, stack, goals, and preferences rather than working cold. As it learns something durable about you, it can propose a narrow update you approve.\n\nStrap is one personal context file that every AI reads before it answers. In Cursor, that means the same profile your other agents use also shapes how Cursor reasons about your code. You verify the connection by confirming the tools are available and calling read_creed once.",
   body: [
     { type: "h2", text: "Step 1: Add a remote MCP server in Cursor" },
     {
       type: "p",
-      text: "Open Cursor's settings and find the MCP servers section. Add a new remote MCP server and point it at the Creed endpoint:",
+      text: "Open Cursor's settings and find the MCP servers section. Add a new remote MCP server and point it at the Strap endpoint:",
     },
     {
       type: "code",
       lang: "text",
-      code: "https://creed.md/mcp",
+      code: "https://strap.bvdm.ai/mcp",
     },
     {
       type: "p",
-      text: "Cursor supports remote MCP servers, so you are adding Creed as a connector rather than running anything locally. Save the server once the URL is set.",
+      text: "Cursor supports remote MCP servers, so you are adding Strap as a connector rather than running anything locally. Save the server once the URL is set.",
     },
     { type: "h2", text: "Step 2: Authorize in the browser" },
     {
       type: "p",
-      text: "Creed MCP uses OAuth, so there is nothing to paste. When Cursor prompts you to authorize, it opens the Creed consent screen in your browser.",
+      text: "Strap MCP uses OAuth, so there is nothing to paste. When Cursor prompts you to authorize, it opens the Strap consent screen in your browser.",
     },
     {
       type: "ol",
       items: [
-        "Start the authorization for the Creed server from Cursor's MCP settings.",
-        "A browser opens to the Creed consent screen; sign in to creed.md if needed.",
-        "Click Allow to grant Cursor access to your Creed.",
+        "Start the authorization for the Strap server from Cursor's MCP settings.",
+        "A browser opens to the Strap consent screen; sign in to strap.md if needed.",
+        "Click Allow to grant Cursor access to your Strap.",
         "Return to Cursor; the server should now show as connected.",
       ],
     },
@@ -47,14 +47,14 @@ export const connectCreedToCursor: Article = {
     {
       type: "ul",
       items: [
-        "Check that the Creed server appears connected and its tools are listed.",
+        "Check that the Strap server appears connected and its tools are listed.",
         "Ask Cursor to call read_creed once and confirm your profile sections return.",
       ],
     },
     { type: "h2", text: "Cursor reading your context before it works" },
     {
       type: "p",
-      text: "The value of connecting Creed shows up before Cursor writes a line. When Cursor reads your profile at the start of substantive work, it plans and edits with your context in hand: your stack from Work, your current direction from Goals, and how you like things done from Preferences. That means fewer wrong assumptions and less time spent correcting output that ignored what you already know.",
+      text: "The value of connecting Strap shows up before Cursor writes a line. When Cursor reads your profile at the start of substantive work, it plans and edits with your context in hand: your stack from Work, your current direction from Goals, and how you like things done from Preferences. That means fewer wrong assumptions and less time spent correcting output that ignored what you already know.",
     },
     {
       type: "p",
@@ -73,17 +73,17 @@ export const connectCreedToCursor: Article = {
   ],
   faq: [
     {
-      question: "How do I connect Creed to Cursor?",
+      question: "How do I connect Strap to Cursor?",
       answer:
-        "In Cursor's settings, add a remote MCP server pointing to https://creed.md/mcp, then authorize in the browser by clicking Allow on the Creed consent screen while signed in to creed.md.",
+        "In Cursor's settings, add a remote MCP server pointing to https://strap.bvdm.ai/mcp, then authorize in the browser by clicking Allow on the Strap consent screen while signed in to strap.md.",
     },
     {
       question: "Is there a token to paste into Cursor?",
       answer:
-        "No. Creed MCP uses OAuth, so authorization happens through a browser consent screen where you click Allow. There is nothing to copy.",
+        "No. Strap MCP uses OAuth, so authorization happens through a browser consent screen where you click Allow. There is nothing to copy.",
     },
     {
-      question: "When does Cursor read my Creed?",
+      question: "When does Cursor read my Strap?",
       answer:
         "Cursor reads your profile before it plans or edits, so your role, stack, goals, and preferences shape its approach from the start rather than after you correct it. You can confirm the read by asking it to call read_creed once.",
     },
@@ -94,8 +94,8 @@ export const connectCreedToCursor: Article = {
     },
   ],
   related: [
-    { label: "Connect Creed to Claude Code", href: "/learn/connect-creed-to-claude-code" },
-    { label: "Connect Creed to ChatGPT", href: "/learn/connect-creed-to-chatgpt" },
+    { label: "Connect Strap to Claude Code", href: "/learn/connect-strap-to-claude-code" },
+    { label: "Connect Strap to ChatGPT", href: "/learn/connect-strap-to-chatgpt" },
     { label: "Sync AI memory across tools", href: "/learn/sync-ai-memory-across-tools" },
     { label: "Read the docs", href: "/docs" },
   ],

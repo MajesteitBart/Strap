@@ -547,7 +547,7 @@ export function OverallQualityPopover({
         ) : (
           <div className="text-[15px] font-medium leading-none text-[var(--creed-text-secondary)] md:text-[16px]">
             {loading
-              ? "Analyzing your Creed for agent context…"
+              ? "Analyzing your Strap for agent context…"
               : "No analysis yet."}
           </div>
         )}

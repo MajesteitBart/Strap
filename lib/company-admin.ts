@@ -367,7 +367,7 @@ export async function deleteCompany(params: {
   if (actorRole !== "owner") {
     return {
       ok: false,
-      error: "Only the owner can delete the company Creed.",
+      error: "Only the owner can delete the company Strap.",
       status: 403,
     };
   }
@@ -381,7 +381,7 @@ export async function deleteCompany(params: {
     .delete()
     .eq("id", params.creedId);
   if (error) {
-    return { ok: false, error: "Could not delete the company Creed.", status: 500 };
+    return { ok: false, error: "Could not delete the company Strap.", status: 500 };
   }
   return { ok: true };
 }

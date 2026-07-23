@@ -10,10 +10,10 @@
 
 import { GITHUB_URL, INSTAGRAM_URL, TWITTER_URL } from "@/lib/branding";
 import type { FaqItem } from "@/lib/marketing/faq";
-import { CREED_DESCRIPTION, CREED_TAGLINE } from "@/lib/marketing/brand";
+import { BRAND_DESCRIPTION, BRAND_NAME, BRAND_TAGLINE } from "@/lib/marketing/brand";
 import { getSiteUrl } from "@/lib/supabase/env";
 
-const SITE_NAME = "Creed";
+const SITE_NAME = BRAND_NAME;
 
 function base() {
   return getSiteUrl().replace(/\/$/, "");
@@ -39,8 +39,8 @@ export function organizationSchema() {
     "@id": organizationId(),
     name: SITE_NAME,
     url,
-    logo: `${url}/opengraph-image.jpg`,
-    description: CREED_DESCRIPTION,
+    logo: `${url}/assets/brand/logo.svg`,
+    description: BRAND_DESCRIPTION,
     ...(sameAs.length > 0 ? { sameAs } : {}),
   };
 }
@@ -53,7 +53,7 @@ export function websiteSchema() {
     "@id": websiteId(),
     name: SITE_NAME,
     url,
-    description: CREED_TAGLINE,
+    description: BRAND_TAGLINE,
     publisher: { "@id": organizationId() },
   };
 }
@@ -74,10 +74,10 @@ export function softwareApplicationSchema() {
     "@type": "SoftwareApplication",
     name: SITE_NAME,
     url,
-    description: CREED_DESCRIPTION,
+    description: BRAND_DESCRIPTION,
     applicationCategory: "ProductivityApplication",
     operatingSystem: "Web",
-    image: `${url}/opengraph-image.jpg`,
+    image: `${url}/api/og`,
     publisher: { "@id": organizationId() },
     offers: [
       { "@type": "Offer", name: "Free (self-host)", price: "0", priceCurrency: "USD" },
@@ -160,7 +160,7 @@ export function articleSchema({
     isPartOf: { "@id": websiteId() },
     author: { "@id": organizationId() },
     publisher: { "@id": organizationId() },
-    image: `${base()}/opengraph-image.jpg`,
+    image: `${base()}/api/og`,
   };
 }
 

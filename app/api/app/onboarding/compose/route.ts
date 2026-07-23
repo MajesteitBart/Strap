@@ -60,10 +60,10 @@ export async function POST(request: Request) {
       ? (body as { markdown: string }).markdown
       : null;
   if (!markdown || !markdown.trim()) {
-    return NextResponse.json({ error: "Paste your Creed first." }, { status: 400 });
+    return NextResponse.json({ error: "Paste your Strap first." }, { status: 400 });
   }
   if (markdown.length > MAX_MARKDOWN) {
-    return NextResponse.json({ error: "That's too long to be a Creed." }, { status: 400 });
+    return NextResponse.json({ error: "That's too long to be a Strap." }, { status: 400 });
   }
 
   const result = await loadCreedState(auth.supabase, auth.user, {

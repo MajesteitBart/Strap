@@ -6,7 +6,7 @@ import { breadcrumbSchema, graph, webPageSchema } from "@/lib/seo/structured-dat
 const PATH = "/docs";
 const TITLE = "Docs";
 const DESCRIPTION =
-  "What Creed is, what belongs in your profile, how to connect agents over MCP, how they read and improve it, the Company plan, and the full tool and HTTP API reference.";
+  "What Strap is, what belongs in your profile, how to connect agents over MCP, how they read and improve it, the Company plan, and the full tool and HTTP API reference.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -21,7 +21,7 @@ export default function DocsPage() {
         data={graph(
           webPageSchema({ path: PATH, name: TITLE, description: DESCRIPTION }),
           breadcrumbSchema(PATH, [
-            { name: "Creed", path: "/home" },
+            { name: "Strap", path: "/home" },
             { name: "Docs", path: PATH },
           ])
         )}

@@ -4,7 +4,7 @@
 - Next.js 16 App Router with Turbopack, React 19, and strict TypeScript.
 - Tailwind CSS v4, shadcn-style primitives, Tiptap, Framer Motion and `motion/react`.
 - Supabase Auth and Postgres with RLS, realtime, migrations, and scheduled retention.
-- Node 20+ application and `node:test` test suite; a separately published Node CLI lives in `packages/creed-cli/`.
+- Node 20+ application and `node:test` test suite; the new `@bvdm/strap` CLI lives in `packages/strap/`, while `packages/creed-cli/` remains the legacy package.
 
 ## Runtime Constraints
 - `.env.local` is the canonical configuration for this checkout and must never be printed or committed.
@@ -17,6 +17,6 @@
 - Supabase for auth, persistence, RLS, realtime, and scheduled jobs.
 - OpenRouter for AI synthesis and quality features, including encrypted BYOK and platform-credit paths.
 - Stripe for subscriptions, seats, top-ups, and billing webhooks.
-- GitHub OAuth and repository APIs for `creed.md` synchronization.
-- OAuth 2.1, MCP, bearer-token Creed APIs, and `packages/creed-cli/` for agent connectivity.
+- GitHub OAuth and repository APIs for `strap.md` synchronization with stored-path authority and a non-divergent `creed.md` fallback.
+- OAuth 2.1, MCP, bearer-token compatibility APIs, and `packages/strap/` for new agent connectivity.
 - Delano uses `.project/` as delivery truth, `.agents/` as its canonical runtime, and `.codex/hooks.json` as an opt-in session hook.

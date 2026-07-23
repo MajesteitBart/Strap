@@ -16,7 +16,13 @@ Capture architecture and delivery patterns that should be reused.
 
 ## Conservative Installation
 - Initial installation is conflict-safe. Later refreshes exclude repository-owned `.project` state unless replacement is explicit.
-- Do not run a new-project initializer such as next-forge over the established Creed application.
+- Do not run a new-project initializer such as next-forge over the established Strap application.
+
+## Strap-First Compatibility
+- Customer-visible branding, new setup, canonical origin, and default profile filename use Strap, `https://strap.bvdm.ai`, and `strap.md`.
+- Stable Creed schema, module, event, storage, API route, MCP tool/resource, credential-prefix, CSS-token, and legacy-origin identifiers remain in place until a separately approved migration.
+- Existing GitHub paths are authoritative. Read fallback may adopt `creed.md`, but push must never create a competing `strap.md` automatically.
+- New CLI behavior lives in `packages/strap/`; `packages/creed-cli/` is not renamed or used as the implementation source.
 - External tracker writes, deployments, and public GitHub actions require explicit approval.
 
 ## Explicit Agent Credential Grants

@@ -44,7 +44,7 @@ export default async function DevicePage({ searchParams }: { searchParams: Promi
       <Shell>
         <h1 className="text-lg font-medium">{params.result === "approved" ? "Device connected" : "Connection denied"}</h1>
         <p className="mt-3 text-sm leading-6 text-[var(--creed-text-secondary)]">
-          {params.result === "approved" ? "Return to your agent. It can finish connecting now." : "The device was not given access to your Creed."}
+          {params.result === "approved" ? "Return to your agent. It can finish connecting now." : "The device was not given access to your Strap."}
         </p>
       </Shell>
     );
@@ -65,11 +65,11 @@ export default async function DevicePage({ searchParams }: { searchParams: Promi
       <Shell>
         <h1 className="text-lg font-medium">Connect {approval.client.clientName}</h1>
         <p className="mt-3 text-sm leading-6 text-[var(--creed-text-secondary)]">
-          Confirm the app name and choose the single Creed this device may access. Only approve a code you started on your own device.
+          Confirm the app name and choose the single Strap this device may access. Only approve a code you started on your own device.
         </p>
         <form method="post" action="/device/decision" className="mt-6 space-y-4">
           <input type="hidden" name="request_id" value={approval.request.id} />
-          <label className="block text-sm font-medium" htmlFor="creed_id">Creed</label>
+          <label className="block text-sm font-medium" htmlFor="creed_id">Strap</label>
           <select id="creed_id" name="creed_id" className="h-10 w-full rounded-md border border-[var(--creed-border)] bg-transparent px-3 text-sm">
             {approval.creeds.map((creed) => <option key={creed.id} value={creed.id}>{creed.type === "personal" ? "Personal" : creed.name}</option>)}
           </select>

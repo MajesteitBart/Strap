@@ -38,7 +38,7 @@ import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import { log } from "@/lib/observability";
 import type { AgentAction, AgentExecResult } from "@/lib/panel/agent";
 
-export const CREED_AGENT_NAME = "Creed";
+export const CREED_AGENT_NAME = "Strap";
 
 type UpsertTable = {
   upsert: (
@@ -98,7 +98,7 @@ export async function executeAgentActions({
     preloaded ?? (await loadCreedState(admin as never, user, { proposalLimit: 1, activityLimit: 1 })).state;
   const creedId = baseState.creedId ?? (await getPersonalCreedId(admin as never, user.id));
   if (!creedId) {
-    return { ok: false, reason: "Could not resolve Creed for proposal.", results: [] };
+    return { ok: false, reason: "Could not resolve Strap for proposal.", results: [] };
   }
 
   // Route direct-vs-proposal against the ORIGINAL permissions, so a

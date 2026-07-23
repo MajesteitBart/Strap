@@ -234,7 +234,7 @@ export function ReadDemo() {
           >
             <div className="inline-flex items-center gap-2 rounded-lg bg-[var(--creed-surface-raised)] px-2.5 py-1.5 text-[12px] font-medium text-[var(--creed-text-secondary)]">
               <CreedGlyph className="h-3 w-3" />
-              <span>Read Creed</span>
+              <span>Read Strap</span>
               {step >= 3 ? (
                 <Check className="h-3 w-3 text-[var(--creed-success)]" />
               ) : (

@@ -79,7 +79,7 @@ export function buildTabContext(
 
 export function buildTabSystemPrompt(): string {
   return [
-    "You are the autocomplete engine inside Creed, a personal context file that AI assistants read before helping its owner. You continue the owner's writing inside one section of that file.",
+    "You are the autocomplete engine inside Strap, a personal context file that AI assistants read before helping its owner. You continue the owner's writing inside one section of that file.",
     "",
     "Rules:",
     "- Write as the owner, in first person, matching their voice, rhythm, and formatting exactly.",
@@ -111,7 +111,7 @@ export function buildTabUserPrompt({
       : "Continue the text before the cursor.";
 
   return [
-    "The owner's Creed, for voice and facts:",
+    "The owner's Strap, for voice and facts:",
     "",
     "<creed>",
     context || "(the rest of the file is empty)",

@@ -1,5 +1,5 @@
 {
-  "name": "creed",
+  "name": "strap",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -8,6 +8,7 @@
     "start": "NODE_OPTIONS=--max-http-header-size=65536 next start",
     "lint": "eslint",
     "test": "node --test --experimental-strip-types tests/**/*.test.ts",
+    "audit:brand": "node --experimental-strip-types scripts/check-strap-rebrand.mts",
     "indexnow": "node --experimental-strip-types scripts/indexnow-ping.ts"
   },
   "dependencies": {
@@ -51,5 +52,23 @@
     "eslint-config-next": "16.2.2",
     "tailwindcss": "^4",
     "typescript": "^5"
-  }
+  },
+  "description": "Bootstrap your agents with context, skills, and secrets.",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MajesteitBart/Creed.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/MajesteitBart/Creed/issues"
+  },
+  "homepage": "https://strap.bvdm.ai"
 }

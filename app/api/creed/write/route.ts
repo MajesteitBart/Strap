@@ -414,7 +414,7 @@ export async function POST(request: Request) {
     const target = result.state.sections.find((section) => section.id === body.sectionId);
     if (!target) {
       return NextResponse.json(
-        { error: "Target section is not present in this Creed." },
+        { error: "Target section is not present in this Strap." },
         { status: 400 }
       );
     }
@@ -455,7 +455,7 @@ export async function POST(request: Request) {
     const target = result.state.sections.find((section) => section.id === body.sectionId);
     if (!target) {
       return NextResponse.json(
-        { error: "Target section is not present in this Creed." },
+        { error: "Target section is not present in this Strap." },
         { status: 400 }
       );
     }
@@ -511,7 +511,7 @@ export async function POST(request: Request) {
     const target = result.state.sections.find((section) => section.id === body.sectionId);
     if (!target) {
       return NextResponse.json(
-        { error: "Target section is not present in this Creed." },
+        { error: "Target section is not present in this Strap." },
         { status: 400 }
       );
     }
@@ -559,7 +559,7 @@ export async function POST(request: Request) {
     const target = result.state.sections.find((section) => section.id === body.sectionId);
     if (!target) {
       return NextResponse.json(
-        { error: "Target section is not present in this Creed." },
+        { error: "Target section is not present in this Strap." },
         { status: 400 }
       );
     }
@@ -652,7 +652,7 @@ export async function POST(request: Request) {
     const target = result.state.sections.find((section) => section.id === body.sectionId);
     if (!target) {
       return NextResponse.json(
-        { error: "Target section is not present in this Creed." },
+        { error: "Target section is not present in this Strap." },
         { status: 400 }
       );
     }
@@ -716,7 +716,7 @@ export async function POST(request: Request) {
 
     const currentSection = result.state.sections.find((section) => section.id === body.sectionId);
     if (!currentSection) {
-      return NextResponse.json({ error: "Target section is not present in this Creed." }, { status: 400 });
+      return NextResponse.json({ error: "Target section is not present in this Strap." }, { status: 400 });
     }
     const currentDenied = assertDirectAllowed(currentSection);
     if (currentDenied) {
@@ -782,7 +782,7 @@ export async function POST(request: Request) {
 
     const currentSection = result.state.sections.find((section) => section.id === legacySectionId);
     if (!currentSection) {
-      return NextResponse.json({ error: "Target section is not present in this Creed." }, { status: 400 });
+      return NextResponse.json({ error: "Target section is not present in this Strap." }, { status: 400 });
     }
 
     const legacyDenied = assertDirectAllowed(currentSection);

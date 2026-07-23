@@ -17,7 +17,7 @@ export function GET() {
     .map((a) => `- [${a.title}](${base}/learn/${a.slug}): ${a.description}`)
     .join("\n");
 
-  const body = `# Creed
+  const body = `# Strap
 
 > ${CREED_TAGLINE} ${CREED_DESCRIPTION.slice(CREED_TAGLINE.length).trim()}
 
@@ -27,18 +27,18 @@ Full plain-text content: ${base}/llms-full.txt
 
 - [What is a personal context file?](${base}/learn/what-is-a-personal-context-file): The category explained - what goes in the file, how agents keep it current, and how it differs from a chatbot's memory.
 - [Examples](${base}/examples): Concrete moments where one shared file changes the answer, across everyday life, health, boundaries, building, writing, research, and ownership.
-- [Home](${base}/home): What Creed is and how it works.
+- [Home](${base}/home): What Strap is and how it works.
 - [Pricing](${base}/pricing): Plans and access.
-- [Docs](${base}/docs): Setting up Creed, connecting agents, and keeping context useful over time.
-- [Stack](${base}/stack): The technology Creed runs on.
+- [Docs](${base}/docs): Setting up Strap, connecting agents, and keeping context useful over time.
+- [Stack](${base}/stack): The technology Strap runs on.
 
 ## Details
 
-A personal context file is one structured profile that describes who you are and how you want AI to respond. Creed organizes it into ten sections: Identity, Goals, Work, Preferences, and Routines as the always-on core, plus optional Beliefs, Constraints, People, Health, and Context.
+A personal context file is one structured profile that describes who you are and how you want AI to respond. Strap organizes it into ten sections: Identity, Goals, Work, Preferences, and Routines as the always-on core, plus optional Beliefs, Constraints, People, Health, and Context.
 
 Agents connect over MCP (Claude Code, Codex, Cursor, ChatGPT) and read the file before answering, then propose narrowly scoped updates that you approve. The file is plain Markdown you own: bring your own AI key, keep your tokens, and export or delete everything at any time. There is no lock-in.
 
-Creed works for one person or a whole team. The Company plan adds one shared Company Creed that every member's agents read, with member roles, an activity view across the team, and admin controls.
+Strap works for one person or a whole team. The Company plan adds one shared Company Strap that every member's agents read, with member roles, an activity view across the team, and admin controls.
 
 ## Pricing
 

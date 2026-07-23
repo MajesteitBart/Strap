@@ -92,6 +92,7 @@ import {
   type IntegrationConnectionStatus,
 } from "@/lib/creed-data";
 import { cn } from "@/lib/utils";
+import { STRAP_FILE_NAME } from "@/lib/profile-file";
 import { RichTextEditor } from "@/components/creed/rich-text-editor";
 import { EditableProfileAvatar } from "@/components/creed/profile-avatar";
 
@@ -651,7 +652,7 @@ function PersonalSettingsScreen() {
       repoOwner: repo.owner,
       repoName: repo.name,
       branch: repo.defaultBranch,
-      path: "creed.md",
+      path: STRAP_FILE_NAME,
       lastRemoteSha: undefined,
       lastRemoteMessage: undefined,
       lastRemoteCommittedAt: undefined,
@@ -1334,10 +1335,10 @@ function PersonalSettingsScreen() {
                   variant="outline"
                   className="rounded-md border-[var(--creed-border)]"
                   onClick={() =>
-                    downloadFile("creed.md", exportMarkdown(), "text/markdown;charset=utf-8")
+                    downloadFile(STRAP_FILE_NAME, exportMarkdown(), "text/markdown;charset=utf-8")
                   }
                 >
-                  Export Creed as markdown
+                  Export Strap as markdown
                 </AnimatedIconButton>
                 <AnimatedIconButton
                   icon={DownloadIcon}
@@ -1382,7 +1383,7 @@ function PersonalSettingsScreen() {
                 <div className="min-w-0">
                   <div className="text-[15px] font-medium text-[#DC2626] dark:text-[#DC2626]">Account Deletion</div>
                   <div className="mt-2 hidden text-[14px] leading-7 text-[#DC2626] dark:text-[#DC2626] md:block">
-                    This permanently deletes your Creed, tokens, proposals, activity, and account.
+                    This permanently deletes your Strap, tokens, proposals, activity, and account.
                   </div>
                 </div>
                 <Button

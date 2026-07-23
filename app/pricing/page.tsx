@@ -14,7 +14,7 @@ import {
 const PATH = "/pricing";
 const TITLE = "Pricing";
 const DESCRIPTION =
-  "Creed is free: self-host the open source build, or use the hosted app with Personal and Company Creeds at no charge. AI runs on an included key or BYOK.";
+  "Strap is free: self-host the open source build, or use the hosted app with Personal and Company Straps at no charge. AI runs on an included key or BYOK.";
 
 const DATE_MODIFIED = "2026-07-07";
 
@@ -31,12 +31,12 @@ export default function PricingPage() {
         data={graph(
           webPageSchema({
             path: PATH,
-            name: "Creed pricing",
+            name: "Strap pricing",
             description: DESCRIPTION,
             dateModified: DATE_MODIFIED,
           }),
           breadcrumbSchema(PATH, [
-            { name: "Creed", path: "/home" },
+            { name: "Strap", path: "/home" },
             { name: "Pricing", path: PATH },
           ]),
           softwareApplicationSchema(),

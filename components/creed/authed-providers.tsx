@@ -32,7 +32,7 @@ export async function AuthedProviders({ children }: { children: ReactNode }) {
       } catch (error) {
         if (isSupabaseTableMissingError(error)) {
           missingSchemaMessage =
-            error instanceof Error ? error.message : "Creed tables are missing.";
+            error instanceof Error ? error.message : "Strap tables are missing.";
         } else {
           throw error;
         }

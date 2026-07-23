@@ -14,7 +14,8 @@ Document major repository boundaries and ownership.
 - `components/`: product, marketing, auth, and shared UI.
 - `lib/`: domain, persistence, authorization, integrations, AI, crypto, logging, and shared helpers.
 - `supabase/migrations/`: forward-only canonical database schema and policies.
-- `packages/creed-cli/`: independently built and tested first-party MCP terminal client.
+- `packages/strap/`: independently built and tested `@bvdm/strap` MCP terminal client.
+- `packages/creed-cli/`: preserved legacy CLI compatibility package.
 - `tests/`: Node tests for logic, migrations, and contracts.
 
 ## Documentation Areas

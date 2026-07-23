@@ -80,7 +80,7 @@ export default async function Home() {
       return (
         <BackendSetupScreen
           errorMessage={
-            error instanceof Error ? error.message : "Creed tables are missing."
+            error instanceof Error ? error.message : "Strap tables are missing."
           }
         />
       );

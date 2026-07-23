@@ -9,7 +9,7 @@ export default function NotFound() {
         Page not found
       </h1>
       <p className="max-w-md text-[15px] leading-7 text-[var(--creed-text-secondary)]">
-        That URL doesn&apos;t resolve to anything on Creed. Double-check the
+        That URL doesn&apos;t resolve to anything on Strap. Double-check the
         link, or jump back to a page we know exists.
       </p>
       <div className="mt-2 flex items-center gap-3">

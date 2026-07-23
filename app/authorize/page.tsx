@@ -63,7 +63,7 @@ export default async function AuthorizePage({
       <Shell>
         <Message
           title="Connection unavailable"
-          body="Creed is not fully configured on this deployment. Try again later."
+          body="Strap is not fully configured on this deployment. Try again later."
         />
       </Shell>
     );
@@ -126,7 +126,7 @@ export default async function AuthorizePage({
       <Shell>
         <Message
           title="Sign in to connect"
-          body={`Sign in to your Creed account to let ${client.clientName} read and update your Creed.`}
+          body={`Sign in to your Strap account to let ${client.clientName} read and update your Strap.`}
         />
         <div className="mt-6 flex justify-center">
           <Link
@@ -152,15 +152,15 @@ export default async function AuthorizePage({
     return (
       <Shell>
         <Message
-          title="Set up your Creed first"
-          body={`Finish creating your Creed before connecting ${client.clientName}. Then start the connection again from your agent.`}
+          title="Set up your Strap first"
+          body={`Finish creating your Strap before connecting ${client.clientName}. Then start the connection again from your agent.`}
         />
         <div className="mt-6 flex justify-center">
           <Link
             href="/onboarding"
             className="inline-flex h-10 items-center justify-center rounded-md bg-[var(--creed-text-primary)] px-5 text-[14px] font-medium text-[var(--creed-button-primary-fg)] transition-colors hover:bg-[var(--creed-button-primary-hover)]"
           >
-            Set up Creed
+            Set up Strap
           </Link>
         </div>
       </Shell>
@@ -190,10 +190,10 @@ export default async function AuthorizePage({
       </div>
 
       <h1 className="mt-6 text-[18px] font-medium text-[var(--creed-text-primary)]">
-        Connect {client.clientName} to your Creed
+        Connect {client.clientName} to your Strap
       </h1>
       <p className="mt-3 text-[14px] leading-7 text-[var(--creed-text-secondary)]">
-        {client.clientName} can read your Creed and propose updates, and edits a
+        {client.clientName} can read your Strap and propose updates, and edits a
         section directly only where you allow direct edits.
       </p>
       <p className="mt-2 text-[13px] text-[var(--creed-text-tertiary)]">

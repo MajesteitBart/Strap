@@ -136,3 +136,11 @@ test("OAuth discovery and token exchange advertise the RFC device grant", () => 
   assert.match(tokenRoute, /pollDeviceAuthorization\(\{ deviceCode, clientId \}\)/);
   assert.match(tokenRoute, /creedGrants: \[\{ creedId: polled\.creedId, mode: polled\.mode \}\]/);
 });
+
+test("MCP discovery presents Strap while accepting both CLI attribution headers", () => {
+  assert.match(mcpRoute, /serverInfo: \{\s+name: "Strap"/);
+  assert.match(mcpRoute, /X-Strap-CLI-Agent, X-Creed-CLI-Agent/);
+  assert.match(mcpRoute, /request\.headers\.get\("x-strap-cli-agent"\)/);
+  assert.match(mcpRoute, /request\.headers\.get\("x-creed-cli-agent"\)/);
+  assert.match(mcpRoute, /const CREED_RESOURCE_URI = "creed:\/\/profile"/);
+});

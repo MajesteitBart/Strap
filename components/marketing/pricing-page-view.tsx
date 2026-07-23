@@ -21,7 +21,7 @@ import { cn } from "@/lib/utils";
 type Feature = { label: string; included: boolean; star?: boolean };
 
 const SHARED_FEATURES: Feature[] = [
-  { label: "Full Creed editor with rich components", included: true },
+  { label: "Full Strap editor with rich components", included: true },
   { label: "All MCP connections and integrations", included: true },
   { label: "Quality scoring and inline diff review", included: true },
 ];
@@ -43,7 +43,7 @@ const PERSONAL_FEATURES: Feature[] = [
 // lists the company-workspace exclusives as gold stars.
 const COMPANY_FEATURES: Feature[] = [
   { label: "Everything in Personal", included: true },
-  { label: "Shared Company Creed", included: true, star: true },
+  { label: "Shared Company Strap", included: true, star: true },
   { label: "See activity across every member", included: true, star: true },
   { label: "Invite your whole team", included: true, star: true },
   { label: "Admin controls for members", included: true, star: true },
@@ -73,7 +73,7 @@ export function PricingPageView({ reference }: { reference?: ReactNode }) {
           <div>
             <AnimatedPageTitle text="Pricing" />
             <p className="t-lede mt-5 max-w-2xl text-[var(--creed-text-secondary)]">
-              Creed is free. Run it yourself, or skip the setup and use the
+              Strap is free. Run it yourself, or skip the setup and use the
               hosted app.
             </p>
           </div>
@@ -103,7 +103,7 @@ export function PricingPageView({ reference }: { reference?: ReactNode }) {
               nameClassName="text-[var(--creed-accent)]"
               price="$0"
               cadence="forever"
-              tagline="Your hosted Creed, synced everywhere."
+              tagline="Your hosted Strap, synced everywhere."
               features={PERSONAL_FEATURES}
               cta={<PersonalCta />}
             />
@@ -112,7 +112,7 @@ export function PricingPageView({ reference }: { reference?: ReactNode }) {
               nameClassName="text-[#F59E0B] dark:text-[#F5A623]"
               price="$0"
               cadence="forever"
-              tagline="One shared Creed for your whole team."
+              tagline="One shared Strap for your whole team."
               features={COMPANY_FEATURES}
               cta={<CompanyCta />}
             />
@@ -281,7 +281,7 @@ function CompanyCta() {
         error?: string;
       };
       if (!res.ok || !data.creedId) {
-        throw new Error(data.error || "Could not create the company Creed.");
+        throw new Error(data.error || "Could not create the company Strap.");
       }
       router.push("/onboarding/company");
     } catch {

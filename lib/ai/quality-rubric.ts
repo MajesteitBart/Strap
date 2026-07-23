@@ -2,6 +2,7 @@ import "server-only";
 
 import type { CreedSection } from "@/lib/creed-data";
 import { buildVisibleCreedMarkdown } from "@/lib/creed-data";
+import { STRAP_FILE_NAME } from "@/lib/profile-file";
 
 export const CREED_QUALITY_RUBRIC_VERSION = "2026-06-10-personal-profile-v5";
 
@@ -120,8 +121,8 @@ export function buildQualityPrompt(
 
   return [
     `Rubric version: ${CREED_QUALITY_RUBRIC_VERSION}`,
-    "You are a strict evaluator of creed.md files.",
-    `creed.md is a ${subject.noun} that every AI reads before talking to its ${subject.owner}.`,
+    `You are a strict evaluator of ${STRAP_FILE_NAME} files.`,
+    `${STRAP_FILE_NAME} is a ${subject.noun} that every AI reads before talking to its ${subject.owner}.`,
     `Your job is to judge how well this file ${subject.purpose}. Be demanding and consistent: the same content must always earn the same score.`,
     "",
     "The five best practices (this is the whole basis - judge every section on these, and nothing else):",
@@ -155,10 +156,10 @@ export function buildQualityPrompt(
     "- A weak section should usually carry 1–2 red/amber tags; an excellent section can be tag-less or only green.",
     "- `strength` is the single most-important thing this section gives agents. Omit (set null) if nothing is genuinely strong.",
     "- `gap` is the one thing keeping this section from full marks. It is REQUIRED for any score below 90. Only a genuinely flawless section (90+) may set it null.",
-    "- Each note has a `title` (2–5 words, sentence case, no trailing period) and a `detail` (one sentence, ≤22 words, specific to THIS Creed - never templated).",
+    "- Each note has a `title` (2–5 words, sentence case, no trailing period) and a `detail` (one sentence, ≤22 words, specific to THIS Strap - never templated).",
     "- Keep `focus` as one crisp action sentence.",
     "- `overall` judges the WHOLE profile (every section, not only the ones scored this run). Do not return an overall score - it is computed from the section scores.",
-    "- Generated prose should be specific to this Creed, not templated.",
+    "- Generated prose should be specific to this Strap, not templated.",
     "",
     "JSON shape:",
     JSON.stringify(

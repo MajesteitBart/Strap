@@ -9,7 +9,7 @@ export const stopRepeatingYourselfToAi: Article = {
   datePublished: "2026-07-07",
   dateModified: "2026-07-07",
   lead:
-    "If you use AI often, you pay a re-explaining tax. Every new chat starts cold, so you retype your role, your project, your tone, and the constraints you have already stated a dozen times. Then you open a second tool and do it all again, because what you told ChatGPT never reaches Claude or Cursor. The cost per message is small. Over a year, across tools, it is enormous.\n\nMost people try to patch it. They fill in custom instructions, paste a blurb at the top of important chats, or lean on built-in memory. Each helps a little, and none of it sticks. Instructions are capped and app-bound. Pasted blurbs are manual and go stale. Memory is opaque and trapped inside one vendor. So the tax keeps getting charged.\n\nThe fix is to write yourself down once and have every tool read the same page. Keep one structured context file that describes who you are and how you want AI to work, and connect it to the agents you use so it is read before every answer. Creed is that file: one personal context file that every AI reads before it answers, so you explain yourself once instead of forever.",
+    "If you use AI often, you pay a re-explaining tax. Every new chat starts cold, so you retype your role, your project, your tone, and the constraints you have already stated a dozen times. Then you open a second tool and do it all again, because what you told ChatGPT never reaches Claude or Cursor. The cost per message is small. Over a year, across tools, it is enormous.\n\nMost people try to patch it. They fill in custom instructions, paste a blurb at the top of important chats, or lean on built-in memory. Each helps a little, and none of it sticks. Instructions are capped and app-bound. Pasted blurbs are manual and go stale. Memory is opaque and trapped inside one vendor. So the tax keeps getting charged.\n\nThe fix is to write yourself down once and have every tool read the same page. Keep one structured context file that describes who you are and how you want AI to work, and connect it to the agents you use so it is read before every answer. Strap is that file: one personal context file that every AI reads before it answers, so you explain yourself once instead of forever.",
   body: [
     { type: "h2", text: "The re-explaining tax" },
     {
@@ -44,7 +44,7 @@ export const stopRepeatingYourselfToAi: Article = {
     },
     {
       type: "p",
-      text: "Creed does this with one structured Markdown profile, organized into short sections: identity, goals, work, preferences, routines, plus optional constraints and more. Your agents connect over MCP and read the file before meaningful work, then propose small updates as they learn something durable, which you approve. You write yourself down once; every tool starts from the same page.",
+      text: "Strap does this with one structured Markdown profile, organized into short sections: identity, goals, work, preferences, routines, plus optional constraints and more. Your agents connect over MCP and read the file before meaningful work, then propose small updates as they learn something durable, which you approve. You write yourself down once; every tool starts from the same page.",
     },
     {
       type: "table",
@@ -95,7 +95,7 @@ export const stopRepeatingYourselfToAi: Article = {
     {
       question: "Won't a context file also go stale?",
       answer:
-        "It can, unless it is maintained. With Creed, connected agents propose small updates as they learn something durable, and you approve what stays, so the file tracks your real life instead of drifting.",
+        "It can, unless it is maintained. With Strap, connected agents propose small updates as they learn something durable, and you approve what stays, so the file tracks your real life instead of drifting.",
     },
   ],
   related: [

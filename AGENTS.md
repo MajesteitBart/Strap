@@ -1,6 +1,6 @@
 # AGENTS.md
 
-You're an AI coding agent picking up the Creed codebase. This file is the
+You're an AI coding agent picking up the Strap codebase. This file is the
 short version of `README.md` + `CONTRIBUTING.md` written for you.
 
 If a human is reading this, the document you want is [`README.md`](./README.md).
@@ -33,7 +33,7 @@ Keep one compact, curated personal context profile useful and safe across every 
 
 ## Current Implementation Goal
 
-Use Delano as Creed's local delivery contract and runtime without changing the product architecture or turning `.project` into product data. The first tracked project is `.project/projects/delano-bootstrap/`.
+Use Delano as Strap's local delivery contract and runtime without changing the product architecture or turning `.project` into product data. The active rebrand contract is `.project/projects/strap-rebrand/`; earlier projects remain historical delivery truth.
 
 ## Source Of Truth
 
@@ -42,18 +42,18 @@ Use Delano as Creed's local delivery contract and runtime without changing the p
 - `.project/context/`: distilled product, technical, testing, and delivery context.
 - `.project/projects/`: Delano specs, plans, decisions, workstreams, tasks, research, and updates.
 - `openwiki/`: generated architecture and workflow reference; regenerate it rather than hand-editing generated pages.
-- `app/`, `components/`, `lib/`, `supabase/`, `packages/creed-cli/`, and `tests/`: implemented behavior and canonical executable truth.
+- `app/`, `components/`, `lib/`, `supabase/`, `packages/strap/`, `packages/creed-cli/`, and `tests/`: implemented behavior and canonical executable truth. `packages/creed-cli/` is a preserved compatibility package.
 - `.agents/`: canonical Delano runtime and repo-local skills. `.claude/` is compatibility only.
 
 ---
 
-## What Creed is
+## What Strap is
 
 One personal context profile every AI reads before answering the user.
 10 sections (5 always-on, 5 optional). Plain Markdown content. Connected
 agents read it and propose updates; users approve.
 
-Creed is **not** a notes app, journal, chat memory store, or generic AI
+Strap is **not** a notes app, journal, chat memory store, or generic AI
 wrapper. If a change would make it feel like one of those, it's the
 wrong change.
 
@@ -306,7 +306,7 @@ If all three are "no", just stop. Don't add a postscript.
 
 ## A word on legacy paths
 
-Creed pivoted from a developer-context product to a personal-context
+The codebase pivoted from a developer-context product to Strap's personal-context
 product. Some legacy code paths still reference the old framing —
 `conventions` section ID, "operating principles" naming, chips/rules/
 focus payload variants in the markdown parser.

@@ -7,7 +7,7 @@
 ## Documentation Conventions
 - Avoid hard-wrapping Markdown prose added to Delano artifacts.
 - Use ISO 8601 UTC timestamps in contract frontmatter and dated evidence.
-- Refer to Personal Creed and Company Creed explicitly when behavior differs.
+- Refer to Personal Strap and Company Strap explicitly in customer-visible copy when behavior differs. Internal Creed type, route, schema, event, storage, CSS-token, and tool identifiers remain stable compatibility names.
 - No em dashes in product copy. Documentation may quote established source wording but should prefer plain punctuation.
 - Update context only for durable facts; use task evidence and updates for transient execution detail.
 

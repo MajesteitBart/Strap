@@ -64,7 +64,7 @@ export default async function LearnArticlePage({
             dateModified: article.dateModified,
           }),
           breadcrumbSchema(path, [
-            { name: "Creed", path: "/home" },
+            { name: "Strap", path: "/home" },
             { name: "Learn", path: "/learn" },
             { name: CLUSTER_META[article.cluster].title, path: "/learn" },
             { name: article.title, path },

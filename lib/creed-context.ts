@@ -174,7 +174,7 @@ export async function ensurePersonalCreedId(
       };
     };
   };
-  const name = getDisplayName(user, "Your Creed");
+  const name = getDisplayName(user, "Your Strap");
 
   const { data, error } = await admin
     .from("creeds")
@@ -182,7 +182,7 @@ export async function ensurePersonalCreedId(
     .select("id")
     .single();
   if (error || !data) {
-    throw new Error("Could not provision a personal Creed.");
+    throw new Error("Could not provision a personal Strap.");
   }
 
   // Owner membership row (best-effort; the unique index makes a retry safe).

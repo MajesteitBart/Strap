@@ -3,6 +3,7 @@ import type { CreedSection } from "@/lib/creed-data";
 import { loadCreedState, persistCreedState } from "@/lib/creed-backend";
 import { requireAuthenticatedUser } from "@/lib/github-version-control";
 import { resolveManagedCompanyCreedId } from "@/lib/creed-context";
+import { canAdoptResolvedProfilePath } from "@/lib/profile-file";
 
 type ApplyBody = {
   sections?: CreedSection[];
@@ -10,6 +11,7 @@ type ApplyBody = {
   remoteMessage?: string | null;
   remoteCommittedAt?: string | null;
   remoteContentHash?: string | null;
+  remotePath?: string | null;
 };
 
 export async function POST(request: Request) {
@@ -19,7 +21,7 @@ export async function POST(request: Request) {
     // persist, which is blocked for company Creeds; guard it explicitly.
     if (await resolveManagedCompanyCreedId(supabase, user)) {
       return NextResponse.json(
-        { error: "Pulling from GitHub into a company Creed isn't supported yet. You can push to GitHub." },
+        { error: "Pulling from GitHub into a company Strap isn't supported yet. You can push to GitHub." },
         { status: 400 }
       );
     }
@@ -30,6 +32,13 @@ export async function POST(request: Request) {
     }
 
     const result = await loadCreedState(supabase, user);
+    const remotePath = body.remotePath?.trim();
+    if (
+      remotePath &&
+      !canAdoptResolvedProfilePath(result.state.settings.versionControl.path, remotePath)
+    ) {
+      return NextResponse.json({ error: "Invalid remote profile path." }, { status: 400 });
+    }
     // Pull is authoritative. Force every imported section to be
     // agent-writable so connected agents (Codex / Claude / MCP clients)
     // can edit them post-pull. Without this, sections inherit the
@@ -70,6 +79,7 @@ export async function POST(request: Request) {
         ...result.state.settings,
         versionControl: {
           ...result.state.settings.versionControl,
+          path: remotePath || result.state.settings.versionControl.path,
           lastRemoteSha: body.remoteSha ?? undefined,
           lastRemoteMessage: body.remoteMessage ?? undefined,
           lastRemoteCommittedAt: body.remoteCommittedAt ?? undefined,
@@ -94,7 +104,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ ok: true });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Could not import Creed from GitHub.";
+    const message = error instanceof Error ? error.message : "Could not import Strap from GitHub.";
     return NextResponse.json(
       { error: message },
       { status: message === "Unauthorized" ? 401 : 400 }

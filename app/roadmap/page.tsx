@@ -7,7 +7,7 @@ import { breadcrumbSchema, graph, webPageSchema } from "@/lib/seo/structured-dat
 const PATH = "/roadmap";
 const TITLE = "Roadmap";
 const DESCRIPTION =
-  "A live view of what we're building, straight from Creed's task board.";
+  "A live view of what we're building, straight from Strap's task board.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -33,7 +33,7 @@ export default async function RoadmapPage() {
         data={graph(
           webPageSchema({ path: PATH, name: TITLE, description: DESCRIPTION }),
           breadcrumbSchema(PATH, [
-            { name: "Creed", path: "/home" },
+            { name: "Strap", path: "/home" },
             { name: "Roadmap", path: PATH },
           ])
         )}

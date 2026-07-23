@@ -1,34 +1,34 @@
 import type { Article } from "./types";
 
 export const connectCreedToClaudeCode: Article = {
-  slug: "connect-creed-to-claude-code",
-  title: "Connect Creed to Claude Code",
+  slug: "connect-strap-to-claude-code",
+  title: "Connect Strap to Claude Code",
   description:
-    "Add Creed to Claude Code as an MCP server, authorize with OAuth, and Claude Code reads your context before it works. Here is the full setup and the read-and-propose loop.",
+    "Add Strap to Claude Code as an MCP server, authorize with OAuth, and Claude Code reads your context before it works. Here is the full setup and the read-and-propose loop.",
   cluster: "integration",
   datePublished: "2026-07-07",
   dateModified: "2026-07-07",
   lead:
-    "To connect Creed to Claude Code, add it as an HTTP MCP server and authorize it once with OAuth. From a terminal, run the add command, then run the authorize step inside Claude Code and click Allow on the Creed consent screen while signed in to creed.md. There is no key to copy; the whole handshake is OAuth.\n\nOnce connected, Claude Code reads your Creed profile before meaningful work, so it starts already knowing your identity, goals, stack, and preferences. As it learns something durable about you, it proposes a narrow update you can approve, or writes directly if you have granted that. You verify the connection by listing the MCP tools and calling read_creed once.\n\nCreed is one personal context file that every AI reads before it answers. Wiring it into Claude Code means your coding agent stops working cold and starts from the same profile your other tools use.",
+    "To connect Strap to Claude Code, add it as an HTTP MCP server and authorize it once with OAuth. From a terminal, run the add command, then run the authorize step inside Claude Code and click Allow on the Strap consent screen while signed in to strap.md. There is no key to copy; the whole handshake is OAuth.\n\nOnce connected, Claude Code reads your Strap profile before meaningful work, so it starts already knowing your identity, goals, stack, and preferences. As it learns something durable about you, it proposes a narrow update you can approve, or writes directly if you have granted that. You verify the connection by listing the MCP tools and calling read_creed once.\n\nStrap is one personal context file that every AI reads before it answers. Wiring it into Claude Code means your coding agent stops working cold and starts from the same profile your other tools use.",
   body: [
-    { type: "h2", text: "Step 1: Add Creed as an MCP server" },
+    { type: "h2", text: "Step 1: Add Strap as an MCP server" },
     {
       type: "p",
-      text: "In your terminal, add Creed to Claude Code as an HTTP MCP server. The server URL is https://creed.md/mcp.",
+      text: "In your terminal, add Strap to Claude Code as an HTTP MCP server. The server URL is https://strap.bvdm.ai/mcp.",
     },
     {
       type: "code",
       lang: "bash",
-      code: "claude mcp add -t http creed https://creed.md/mcp",
+      code: "claude mcp add -t http creed https://strap.bvdm.ai/mcp",
     },
     {
       type: "p",
-      text: "This registers a server named creed pointing at the Creed MCP endpoint. Nothing is authorized yet; that happens next.",
+      text: "This registers a server named creed pointing at the Strap MCP endpoint. Nothing is authorized yet; that happens next.",
     },
     { type: "h2", text: "Step 2: Authorize with OAuth" },
     {
       type: "p",
-      text: "Creed MCP uses OAuth, so there is no token to paste. Trigger the authorization from inside Claude Code:",
+      text: "Strap MCP uses OAuth, so there is no token to paste. Trigger the authorization from inside Claude Code:",
     },
     {
       type: "code",
@@ -39,8 +39,8 @@ export const connectCreedToClaudeCode: Article = {
       type: "ol",
       items: [
         "Run /mcp in Claude Code and choose to authorize the creed server.",
-        "A browser opens to the Creed consent screen. Make sure you are signed in to creed.md.",
-        "Click Allow to grant Claude Code access to your Creed.",
+        "A browser opens to the Strap consent screen. Make sure you are signed in to strap.md.",
+        "Click Allow to grant Claude Code access to your Strap.",
         "Return to Claude Code; the server now shows as connected.",
       ],
     },
@@ -59,7 +59,7 @@ export const connectCreedToClaudeCode: Article = {
     { type: "h2", text: "How the read and propose loop works" },
     {
       type: "p",
-      text: "Once connected, Claude Code reads Creed before meaningful work rather than starting from nothing. It uses your Identity, Goals, Work, Preferences, and Routines to shape how it plans and writes. When it learns something durable, a sharper preference or a changed goal, it proposes a narrow update instead of silently rewriting your profile.",
+      text: "Once connected, Claude Code reads Strap before meaningful work rather than starting from nothing. It uses your Identity, Goals, Work, Preferences, and Routines to shape how it plans and writes. When it learns something durable, a sharper preference or a changed goal, it proposes a narrow update instead of silently rewriting your profile.",
     },
     {
       type: "ul",
@@ -81,22 +81,22 @@ export const connectCreedToClaudeCode: Article = {
     { type: "h2", text: "What you get" },
     {
       type: "p",
-      text: "With Creed connected, Claude Code no longer needs you to re-explain your role, stack, and preferences each session. It reads the same profile your other connected agents read, so your context is consistent across tools. It is plain Markdown you own, with export and delete anytime and no lock-in.",
+      text: "With Strap connected, Claude Code no longer needs you to re-explain your role, stack, and preferences each session. It reads the same profile your other connected agents read, so your context is consistent across tools. It is plain Markdown you own, with export and delete anytime and no lock-in.",
     },
   ],
   faq: [
     {
-      question: "How do I connect Creed to Claude Code?",
+      question: "How do I connect Strap to Claude Code?",
       answer:
-        "Run claude mcp add -t http creed https://creed.md/mcp in your terminal, then run /mcp in Claude Code to authorize. A browser opens to the Creed consent screen; click Allow while signed in to creed.md.",
+        "Run claude mcp add -t http creed https://strap.bvdm.ai/mcp in your terminal, then run /mcp in Claude Code to authorize. A browser opens to the Strap consent screen; click Allow while signed in to strap.md.",
     },
     {
       question: "Is there an API key to copy?",
       answer:
-        "No. Creed MCP uses OAuth, so there is nothing to paste. You authorize through a browser consent screen where you click Allow, and Claude Code handles the rest.",
+        "No. Strap MCP uses OAuth, so there is nothing to paste. You authorize through a browser consent screen where you click Allow, and Claude Code handles the rest.",
     },
     {
-      question: "How do I verify Creed is connected?",
+      question: "How do I verify Strap is connected?",
       answer:
         "List the MCP tools in Claude Code to confirm read_creed and the creed_* tools are present, then call read_creed once. Your profile sections should come back.",
     },
@@ -107,8 +107,8 @@ export const connectCreedToClaudeCode: Article = {
     },
   ],
   related: [
-    { label: "Connect Creed to ChatGPT", href: "/learn/connect-creed-to-chatgpt" },
-    { label: "Connect Creed to Cursor", href: "/learn/connect-creed-to-cursor" },
+    { label: "Connect Strap to ChatGPT", href: "/learn/connect-strap-to-chatgpt" },
+    { label: "Connect Strap to Cursor", href: "/learn/connect-strap-to-cursor" },
     { label: "Share context between ChatGPT and Claude", href: "/learn/share-context-between-chatgpt-and-claude" },
     { label: "Read the docs", href: "/docs" },
   ],

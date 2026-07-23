@@ -484,7 +484,7 @@ export function McpHealthDashboard() {
             Health
           </h2>
           <p className="mt-2 text-[14px] leading-7 text-[var(--creed-text-secondary)]">
-            How your connected agents read and improve your Creed.
+            How your connected agents read and improve your Strap.
           </p>
         </div>
         {/* min-w-0 lets the agent chip shrink and ellipsize its label instead
@@ -553,7 +553,7 @@ export function McpHealthDashboard() {
             No MCP activity yet
           </div>
           <p className="mx-auto mt-2 max-w-sm text-[13px] leading-6 text-[var(--creed-text-secondary)]">
-            Connect an agent with the prompt above. Once it reads your Creed,
+            Connect an agent with the prompt above. Once it reads your Strap,
             its activity shows up here.
           </p>
         </div>

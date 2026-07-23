@@ -9,7 +9,7 @@ export const syncAiMemoryAcrossTools: Article = {
   datePublished: "2026-07-07",
   dateModified: "2026-07-07",
   lead:
-    "AI memory does not sync across tools, because each tool keeps its own private store. ChatGPT's memory, Claude's context, and Cursor's settings are separate, and none of them can read the others. So there is no built-in switch that makes them consistent, and trying to keep three in-app memories aligned by hand is a losing game.\n\nThe way to actually sync is to stop relying on per-tool memory and keep one context file that every tool reads instead. Put your durable facts in a file you own, connect each tool to it, and every agent loads the same profile before it answers. Change the file once, and all of them see the update.\n\nCreed works this way. It is one personal context file that every AI reads before it answers, connected to your agents over MCP. Rather than syncing three memories, you give ChatGPT, Claude, and Cursor a single source of truth, so they stay consistent because they are all reading the same page.",
+    "AI memory does not sync across tools, because each tool keeps its own private store. ChatGPT's memory, Claude's context, and Cursor's settings are separate, and none of them can read the others. So there is no built-in switch that makes them consistent, and trying to keep three in-app memories aligned by hand is a losing game.\n\nThe way to actually sync is to stop relying on per-tool memory and keep one context file that every tool reads instead. Put your durable facts in a file you own, connect each tool to it, and every agent loads the same profile before it answers. Change the file once, and all of them see the update.\n\nStrap works this way. It is one personal context file that every AI reads before it answers, connected to your agents over MCP. Rather than syncing three memories, you give ChatGPT, Claude, and Cursor a single source of truth, so they stay consistent because they are all reading the same page.",
   body: [
     { type: "h2", text: "Why per-tool memory does not sync" },
     {
@@ -27,7 +27,7 @@ export const syncAiMemoryAcrossTools: Article = {
     },
     {
       type: "p",
-      text: "Creed is that file: plain Markdown you own, organized into short sections like identity, goals, work, preferences, and constraints. Tools connect over MCP, an open way for agents to read external context, and the Creed server uses OAuth, so there is nothing to copy. You add the server, click Allow on the consent screen while signed in to creed.md, and the tool can read your profile.",
+      text: "Strap is that file: plain Markdown you own, organized into short sections like identity, goals, work, preferences, and constraints. Tools connect over MCP, an open way for agents to read external context, and the Strap server uses OAuth, so there is nothing to copy. You add the server, click Allow on the consent screen while signed in to strap.md, and the tool can read your profile.",
     },
     { type: "h2", text: "How each tool connects" },
     {
@@ -37,17 +37,17 @@ export const syncAiMemoryAcrossTools: Article = {
       rows: [
         [
           "ChatGPT",
-          "Settings > Connectors > add a custom or remote MCP server at https://creed.md/mcp",
-          "Click Allow on the Creed consent screen",
+          "Settings > Connectors > add a custom or remote MCP server at https://strap.bvdm.ai/mcp",
+          "Click Allow on the Strap consent screen",
         ],
         [
           "Claude Code",
-          "Run claude mcp add -t http creed https://creed.md/mcp",
+          "Run claude mcp add -t http creed https://strap.bvdm.ai/mcp",
           "Run /mcp in Claude Code, then Allow in the browser",
         ],
         [
           "Cursor",
-          "Add a remote MCP server in Cursor settings pointing to https://creed.md/mcp",
+          "Add a remote MCP server in Cursor settings pointing to https://strap.bvdm.ai/mcp",
           "Authorize in the browser with Allow",
         ],
       ],
@@ -57,8 +57,8 @@ export const syncAiMemoryAcrossTools: Article = {
       type: "ol",
       items: [
         "Write your durable context into one file: who you are, current goals, how you work, your preferences, hard constraints.",
-        "Add the Creed MCP server to each tool using https://creed.md/mcp.",
-        "Authorize each connection with OAuth: sign in to creed.md and click Allow.",
+        "Add the Strap MCP server to each tool using https://strap.bvdm.ai/mcp.",
+        "Authorize each connection with OAuth: sign in to strap.md and click Allow.",
         "Verify by listing the MCP tools in each app and calling read_creed once.",
         "Let each agent read the file before meaningful work and propose small updates as your work shifts.",
       ],
@@ -70,12 +70,12 @@ export const syncAiMemoryAcrossTools: Article = {
     {
       type: "code",
       lang: "bash",
-      code: "claude mcp add -t http creed https://creed.md/mcp",
+      code: "claude mcp add -t http creed https://strap.bvdm.ai/mcp",
     },
     { type: "h2", text: "Keeping every tool current" },
     {
       type: "p",
-      text: "Once all three read the same file, staying in sync is automatic: you update the file once and every connected tool picks it up on its next read. With Creed, agents propose narrow updates as they learn something durable, and you approve what stays. The get_write_policy tool reports whether an edit applies directly or arrives as a proposal, so you keep control.",
+      text: "Once all three read the same file, staying in sync is automatic: you update the file once and every connected tool picks it up on its next read. With Strap, agents propose narrow updates as they learn something durable, and you approve what stays. The get_write_policy tool reports whether an edit applies directly or arrives as a proposal, so you keep control.",
     },
     {
       type: "p",
@@ -91,7 +91,7 @@ export const syncAiMemoryAcrossTools: Article = {
     {
       question: "Do I need API keys to connect the tools?",
       answer:
-        "No. The Creed MCP connection uses OAuth. You add the server at https://creed.md/mcp in each tool, click Allow on the consent screen while signed in to creed.md, and the tool can read your profile.",
+        "No. The Strap MCP connection uses OAuth. You add the server at https://strap.bvdm.ai/mcp in each tool, click Allow on the consent screen while signed in to strap.md, and the tool can read your profile.",
     },
     {
       question: "What happens when I update my context?",
@@ -110,8 +110,8 @@ export const syncAiMemoryAcrossTools: Article = {
       href: "/learn/share-context-between-chatgpt-and-claude",
     },
     {
-      label: "Connect Creed to Cursor",
-      href: "/learn/connect-creed-to-cursor",
+      label: "Connect Strap to Cursor",
+      href: "/learn/connect-strap-to-cursor",
     },
     {
       label: "Browser extension vs MCP context",

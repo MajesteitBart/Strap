@@ -9,7 +9,7 @@ export const rewindLimitlessAlternatives: Article = {
   datePublished: "2026-07-07",
   dateModified: "2026-07-07",
   lead:
-    "If you used a life-logging tool like Rewind or Limitless to record and recall everything, you are probably looking for an alternative as those consumer recorders wind down or change hands. The useful shift is not finding another tool that records everything. It is moving from capturing your whole day to curating the small set of facts about you that actually change how AI responds.\n\nAlways-on recording promised total recall: capture every screen, meeting, and word, then search it later. In practice most of that data is noise, it raises real privacy questions, and it still lives inside one app. The value you wanted was rarely the raw archive. It was an assistant that knows you.\n\nThere are a few alternative approaches, from lighter recorders to note systems to owned context profiles. Creed is the owned-context option: one structured Markdown profile you write and control, that every AI you connect reads before it answers. Instead of recording everything and searching later, you keep a short, current profile and every tool starts already knowing who you are.",
+    "If you used a life-logging tool like Rewind or Limitless to record and recall everything, you are probably looking for an alternative as those consumer recorders wind down or change hands. The useful shift is not finding another tool that records everything. It is moving from capturing your whole day to curating the small set of facts about you that actually change how AI responds.\n\nAlways-on recording promised total recall: capture every screen, meeting, and word, then search it later. In practice most of that data is noise, it raises real privacy questions, and it still lives inside one app. The value you wanted was rarely the raw archive. It was an assistant that knows you.\n\nThere are a few alternative approaches, from lighter recorders to note systems to owned context profiles. Strap is the owned-context option: one structured Markdown profile you write and control, that every AI you connect reads before it answers. Instead of recording everything and searching later, you keep a short, current profile and every tool starts already knowing who you are.",
   body: [
     { type: "h2", text: "Why the always-on recording category is shifting" },
     {
@@ -60,7 +60,7 @@ export const rewindLimitlessAlternatives: Article = {
     { type: "h2", text: "What an owned context profile gives you" },
     {
       type: "p",
-      text: "Creed is one personal context file that every AI reads before it answers. Rather than a searchable recording of your life, it is a curated profile: ten sections covering Identity, Goals, Work, Preferences, and Routines, plus optional Beliefs, Constraints, People, Health, and Context. It is plain Markdown you own, with export and delete anytime and no lock-in.",
+      text: "Strap is one personal context file that every AI reads before it answers. Rather than a searchable recording of your life, it is a curated profile: ten sections covering Identity, Goals, Work, Preferences, and Routines, plus optional Beliefs, Constraints, People, Health, and Context. It is plain Markdown you own, with export and delete anytime and no lock-in.",
     },
     {
       type: "ul",
@@ -78,7 +78,7 @@ export const rewindLimitlessAlternatives: Article = {
     },
     {
       type: "p",
-      text: "You can write this profile by hand in any Markdown editor, or use Creed to keep one profile that connects to your agents and updates itself as you go. Either way, you trade a fragile, app-bound archive for a small, durable context that every AI you use reads first.",
+      text: "You can write this profile by hand in any Markdown editor, or use Strap to keep one profile that connects to your agents and updates itself as you go. Either way, you trade a fragile, app-bound archive for a small, durable context that every AI you use reads first.",
     },
   ],
   faq: [
@@ -95,7 +95,7 @@ export const rewindLimitlessAlternatives: Article = {
     {
       question: "Is a context profile private compared to a recorder?",
       answer:
-        "A context profile is intentional: you decide what goes in, and with Creed it is plain Markdown you own, export, or delete anytime. It is not a continuous capture of your screen or conversations.",
+        "A context profile is intentional: you decide what goes in, and with Strap it is plain Markdown you own, export, or delete anytime. It is not a continuous capture of your screen or conversations.",
     },
     {
       question: "Do I lose my old recordings if I switch?",

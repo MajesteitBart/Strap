@@ -1,6 +1,6 @@
-# Creed Context Pack
+# Strap Context Pack
 
-This folder is the durable, evidence-backed context layer for Creed delivery. Current source and migrations remain canonical for executable behavior; update these notes when product direction, architecture, constraints, testing policy, or delivery state changes materially.
+This folder is the durable, evidence-backed context layer for Strap delivery. Current source and migrations remain canonical for executable behavior; update these notes when product direction, architecture, compatibility constraints, testing policy, or delivery state changes materially.
 
 Read by task area:
 

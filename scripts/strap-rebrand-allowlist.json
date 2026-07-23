@@ -1,0 +1,178 @@
+[
+  {
+    "file": "AGENTS.md",
+    "term": "legacy-cli",
+    "context": "- `app/`, `components/`, `lib/`, `supabase/`, `packages/strap/`, `packages/creed-cli/`, and `tests/`: implemented behavior and canonical executable truth. `packages/creed-cli/` is a preserved compatibility package.",
+    "occurrences": 2,
+    "category": "D-004/D-011:legacy-package-path",
+    "rationale": "Repository instructions must distinguish the new package from the preserved legacy package."
+  },
+  {
+    "file": "BOOTSTRAP.md",
+    "term": "brand-name",
+    "context": "- Remote: `https://github.com/MajesteitBart/Creed.git`, retained until an explicitly approved repository rename.",
+    "occurrences": 1,
+    "category": "D-004/D-011:repository-remote",
+    "rationale": "The configured Git remote still uses the legacy repository name and external rename is operator-gated."
+  },
+  {
+    "file": "CONTRIBUTING.md",
+    "term": "brand-name",
+    "context": "5. Preserve stable internal Creed identifiers unless the change includes an approved compatibility migration.",
+    "occurrences": 1,
+    "category": "D-004/D-011:internal-identifiers",
+    "rationale": "Contributor guidance explicitly protects the compatibility boundary."
+  },
+  {
+    "file": "CONTRIBUTING.md",
+    "term": "brand-name",
+    "context": "- Prefer existing CSS tokens such as `var(--creed-text-primary)` over one-off colors. Creed CSS tokens remain internal compatibility identifiers.",
+    "occurrences": 1,
+    "category": "D-004/D-011:css-token",
+    "rationale": "CSS custom properties are stable internal identifiers, not customer copy."
+  },
+  {
+    "file": "CONTRIBUTING.md",
+    "term": "legacy-cli",
+    "context": "- `packages/creed-cli/**`: legacy CLI compatibility package.",
+    "occurrences": 1,
+    "category": "D-004/D-011:legacy-package-path",
+    "rationale": "The architecture map names the preserved compatibility package exactly."
+  },
+  {
+    "file": "README.md",
+    "term": "brand-name",
+    "context": "git clone https://github.com/MajesteitBart/Creed.git strap",
+    "occurrences": 1,
+    "category": "D-004/D-011:repository-remote",
+    "rationale": "The documented clone URL must match the currently configured GitHub repository until an approved rename."
+  },
+  {
+    "file": "README.md",
+    "term": "brand-name",
+    "context": "`CREED_ENCRYPTION_SECRET`, `/api/creed/**`, `creed_*` MCP tools, and other lower-level Creed identifiers are retained compatibility contracts. Customer-facing product, site, file defaults, and new connection setup use Strap.",
+    "occurrences": 1,
+    "category": "D-004/D-011:compatibility-explanation",
+    "rationale": "Operator documentation explicitly distinguishes stable protocol identifiers from the Strap brand."
+  },
+  {
+    "file": "README.md",
+    "term": "legacy-cli",
+    "context": "The CLI discovers tools, resources, and prompts from the live MCP server. Its configuration is isolated from the legacy `creed-cli` package.",
+    "occurrences": 1,
+    "category": "D-004/D-011:legacy-package",
+    "rationale": "The new package's isolation guarantee must name the legacy package."
+  },
+  {
+    "file": "README.md",
+    "term": "legacy-filename",
+    "context": "- Existing integrations keep their stored path, including `creed.md`.",
+    "occurrences": 1,
+    "category": "D-004/D-011:legacy-profile-file",
+    "rationale": "Migration documentation must explain stored legacy profile paths."
+  },
+  {
+    "file": "README.md",
+    "term": "legacy-filename",
+    "context": "- Reads can fall back from `strap.md` to `creed.md` for legacy repositories.",
+    "occurrences": 1,
+    "category": "D-004/D-011:legacy-profile-file",
+    "rationale": "Migration documentation must explain the ordered compatibility fallback."
+  },
+  {
+    "file": "README.md",
+    "term": "legacy-origin",
+    "context": "- `https://creed.md` remains an MCP/OAuth compatibility origin during the migration window. It must serve protocol endpoints directly, not rely on blanket redirects.",
+    "occurrences": 1,
+    "category": "D-004/D-011:legacy-origin",
+    "rationale": "Release guidance must keep the old protocol origin explicit."
+  },
+  {
+    "file": "README.md",
+    "term": "legacy-cli",
+    "context": "packages/creed-cli/ legacy CLI compatibility package",
+    "occurrences": 1,
+    "category": "D-004/D-011:legacy-package-path",
+    "rationale": "The repository map names the preserved package."
+  },
+  {
+    "file": "SECURITY.md",
+    "term": "legacy-origin",
+    "context": "6. Keep `https://creed.md` serving MCP/OAuth directly if you operate the legacy compatibility origin; some MCP POST clients do not safely follow redirects.",
+    "occurrences": 1,
+    "category": "D-004/D-011:legacy-origin",
+    "rationale": "Security guidance must explain why the protocol origin cannot be a blind redirect."
+  },
+  {
+    "file": "app/mcp/route.ts",
+    "term": "brand-name",
+    "context": "Authorization, Content-Type, Mcp-Session-Id, Mcp-Protocol-Version, X-Strap-CLI-Agent, X-Creed-CLI-Agent",
+    "occurrences": 1,
+    "category": "D-004/D-011:legacy-header",
+    "rationale": "CORS must continue allowing the header sent by installed legacy CLI clients."
+  },
+  {
+    "file": "app/mcp/route.ts",
+    "term": "legacy-cli",
+    "context": "x-creed-cli-agent",
+    "occurrences": 1,
+    "category": "D-004/D-011:legacy-header",
+    "rationale": "Runtime attribution accepts the legacy header as an additive fallback."
+  },
+  {
+    "file": "lib/agent-icon.ts",
+    "term": "legacy-cli",
+    "context": "creed-cli",
+    "occurrences": 1,
+    "category": "D-004/D-011:legacy-client-detection",
+    "rationale": "Existing OAuth client registrations still identify the legacy CLI by this name."
+  },
+  {
+    "file": "lib/marketing/brand.ts",
+    "term": "brand-name",
+    "context": "Creed",
+    "occurrences": 1,
+    "category": "D-004/D-011:legacy-brand-constant",
+    "rationale": "The exact old name is retained only for compatibility tests and migration messaging."
+  },
+  {
+    "file": "lib/marketing/brand.ts",
+    "term": "legacy-origin",
+    "context": "https://creed.md",
+    "occurrences": 1,
+    "category": "D-004/D-011:legacy-origin-constant",
+    "rationale": "The legacy protocol origin is represented as an explicit compatibility constant."
+  },
+  {
+    "file": "lib/profile-file.ts",
+    "term": "legacy-filename",
+    "context": "creed.md",
+    "occurrences": 1,
+    "category": "D-004/D-011:legacy-profile-file-constant",
+    "rationale": "Ordered read fallback and non-divergent push logic require the exact legacy filename."
+  },
+  {
+    "file": "package.json",
+    "term": "brand-name",
+    "context": "\"url\": \"git+https://github.com/MajesteitBart/Creed.git\"",
+    "occurrences": 1,
+    "category": "D-004/D-011:repository-remote",
+    "rationale": "Package metadata reflects the actual repository until an approved GitHub rename."
+  },
+  {
+    "file": "package.json",
+    "term": "brand-name",
+    "context": "\"url\": \"https://github.com/MajesteitBart/Creed/issues\"",
+    "occurrences": 1,
+    "category": "D-004/D-011:repository-remote",
+    "rationale": "The issue URL must remain real until an approved GitHub rename."
+  },
+  {
+    "file": "packages/strap/README.md",
+    "term": "legacy-cli",
+    "context": "Strap keeps its configuration and credentials separate from `creed-cli`. It does not read or migrate legacy CLI credentials automatically.",
+    "occurrences": 1,
+    "category": "D-004/D-011:legacy-package",
+    "rationale": "The package security contract explicitly guarantees separation from the legacy CLI."
+  }
+]

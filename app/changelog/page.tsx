@@ -12,7 +12,7 @@ import { changelog } from "@/lib/marketing/changelog";
 const PATH = "/changelog";
 const TITLE = "Changelog";
 const DESCRIPTION =
-  "What's new in Creed: recent releases and improvements, newest first.";
+  "What's new in Strap: recent releases and improvements, newest first.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -45,7 +45,7 @@ export default function ChangelogPage() {
             ...(latest ? { dateModified: latest } : {}),
           }),
           breadcrumbSchema(PATH, [
-            { name: "Creed", path: "/home" },
+            { name: "Strap", path: "/home" },
             { name: "Changelog", path: PATH },
           ])
         )}
@@ -57,7 +57,7 @@ export default function ChangelogPage() {
           <header className="border-b border-[var(--creed-border)] pb-8">
             <AnimatedPageTitle text="Changelog" />
             <p className="mt-4 max-w-2xl text-[18px] leading-8 text-[var(--creed-text-secondary)]">
-              What&apos;s new in Creed, newest first.
+              What&apos;s new in Strap, newest first.
             </p>
           </header>
 

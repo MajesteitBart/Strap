@@ -9,7 +9,7 @@ export const teamContextFile: Article = {
   datePublished: "2026-07-07",
   dateModified: "2026-07-07",
   lead:
-    "A team context file is one shared profile that describes how your company works, which every member's AI reads before it answers. Instead of each teammate re-explaining the same company context to their own assistant, and each assistant guessing differently, the whole team points its agents at one page: how you ship, what you name things, who owns what, the constraints that never change.\n\nIt is short and curated, not a document dump. The point is not to store everything the company knows; it is to keep the handful of durable facts that change how an AI should respond for anyone on the team. Because every agent reads the same file, answers stop drifting from how the team actually operates. Creed's Company plan is a team context file: one shared Company Creed every member's agents read, with roles for who can edit what, an activity view of every change, and admin controls, all built on the same plain Markdown a personal Creed uses.",
+    "A team context file is one shared profile that describes how your company works, which every member's AI reads before it answers. Instead of each teammate re-explaining the same company context to their own assistant, and each assistant guessing differently, the whole team points its agents at one page: how you ship, what you name things, who owns what, the constraints that never change.\n\nIt is short and curated, not a document dump. The point is not to store everything the company knows; it is to keep the handful of durable facts that change how an AI should respond for anyone on the team. Because every agent reads the same file, answers stop drifting from how the team actually operates. Strap's Company plan is a team context file: one shared Company Strap every member's agents read, with roles for who can edit what, an activity view of every change, and admin controls, all built on the same plain Markdown a personal Strap uses.",
   body: [
     { type: "h2", text: "The problem it solves" },
     {
@@ -32,20 +32,20 @@ export const teamContextFile: Article = {
     { type: "h2", text: "Roles, permissions, and control" },
     {
       type: "p",
-      text: "A shared file that anyone can silently rewrite is a liability. Creed's Company plan puts structure around it so a team context file stays trustworthy as it grows.",
+      text: "A shared file that anyone can silently rewrite is a liability. Strap's Company plan puts structure around it so a team context file stays trustworthy as it grows.",
     },
     {
       type: "ul",
       items: [
         "Roles: Owner, Admin, and Member, so it is clear who can change the shared profile and who reads it.",
         "Section permissions: control which roles can edit which sections, so sensitive parts are not open to everyone.",
-        "Activity view: every change to the shared Creed is visible, so edits are reviewable rather than invisible.",
+        "Activity view: every change to the shared Strap is visible, so edits are reviewable rather than invisible.",
         "Admin controls: manage members and who has write access as the team changes.",
       ],
     },
     {
       type: "p",
-      text: "Members' agents can propose narrow updates the same way they do on a personal Creed, and an Owner or Admin approves what stays. The shared page improves as the team works, without becoming a free-for-all.",
+      text: "Members' agents can propose narrow updates the same way they do on a personal Strap, and an Owner or Admin approves what stays. The shared page improves as the team works, without becoming a free-for-all.",
     },
     { type: "h2", text: "How it differs from a wiki or knowledge base" },
     {
@@ -71,11 +71,11 @@ export const teamContextFile: Article = {
     { type: "h2", text: "What it costs" },
     {
       type: "p",
-      text: "Nothing. Creed's Company Creed is a team context file with roles, an activity view, and admin controls, free for as many members as you need. AI features run on the deployment's included key or on the company's own OpenRouter key (BYOK).",
+      text: "Nothing. Strap's Company Strap is a team context file with roles, an activity view, and admin controls, free for as many members as you need. AI features run on the deployment's included key or on the company's own OpenRouter key (BYOK).",
     },
     {
       type: "p",
-      text: "It is built on the same plain Markdown as a personal Creed, so a team owns its context file the same way an individual owns theirs: read it, edit it, export it, or delete it, with no lock-in. You can start from a personal context file you already understand and add the shared team layer on top.",
+      text: "It is built on the same plain Markdown as a personal Strap, so a team owns its context file the same way an individual owns theirs: read it, edit it, export it, or delete it, with no lock-in. You can start from a personal context file you already understand and add the shared team layer on top.",
     },
   ],
   faq: [
@@ -92,12 +92,12 @@ export const teamContextFile: Article = {
     {
       question: "Who can edit a shared team context file?",
       answer:
-        "In Creed's Company plan, members have roles of Owner, Admin, or Member, and section permissions control which roles can edit which parts. Agents can propose narrow updates, and an Owner or Admin approves what stays. Every change is visible in the activity view.",
+        "In Strap's Company plan, members have roles of Owner, Admin, or Member, and section permissions control which roles can edit which parts. Agents can propose narrow updates, and an Owner or Admin approves what stays. Every change is visible in the activity view.",
     },
     {
-      question: "How much does a team context file cost with Creed?",
+      question: "How much does a team context file cost with Strap?",
       answer:
-        "Nothing. A Company Creed is free, with as many members as you need. AI features run on the deployment's included key or on the company's own OpenRouter key (BYOK).",
+        "Nothing. A Company Strap is free, with as many members as you need. AI features run on the deployment's included key or on the company's own OpenRouter key (BYOK).",
     },
     {
       question: "Does it work for teams that are not engineering teams?",
@@ -109,6 +109,6 @@ export const teamContextFile: Article = {
     { label: "A CLAUDE.md for your whole team", href: "/learn/team-claude-md" },
     { label: "What is a personal context file", href: "/learn/what-is-a-personal-context-file" },
     { label: "Memory MCP servers compared", href: "/learn/memory-mcp-servers-compared" },
-    { label: "Creed for teams", href: "/company" },
+    { label: "Strap for teams", href: "/company" },
   ],
 };

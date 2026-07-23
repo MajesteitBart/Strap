@@ -3,7 +3,7 @@ import type { ConnectionAction, McpClient } from "@/lib/creed-data";
 // Per-agent connect buttons + hint, computed on the client from the MCP URL.
 //
 // These deliberately do NOT live in the server-built connection definitions:
-// the Creed provider snapshots server state once per page load
+// the profile provider snapshots server state once per page load
 // (useState(initialState)) and ignores later props, so anything static baked
 // into that payload goes stale in an open tab until a full reload with fresh
 // server state. Deriving the presentation here keeps the cards on the normal
@@ -25,13 +25,13 @@ export function getCliConnectionPresentation(
   connectionId: string,
   connectionName: string,
 ): ConnectionPresentation {
-  const command = `npx creed-cli --agent ${connectionId} call read_creed --json`;
+  const command = `npx @bvdm/strap --agent ${connectionId} call read_creed --json`;
   return {
-    hint: `Use Creed CLI with ${connectionName}. The first run opens the Creed OAuth screen, then the same command reads your live context whenever the agent needs it.`,
+    hint: `Use Strap CLI with ${connectionName}. The first run opens the Strap OAuth screen, then the same command reads your live context whenever the agent needs it.`,
     primary: {
       kind: "copy",
       label: "Copy prompt",
-      value: `Use the Creed CLI for my personal context. Before meaningful work, run \`${command}\`, complete the browser authorization if prompted, and use the returned Creed to shape your response.`,
+      value: `Use the Strap CLI for my personal context. Before meaningful work, run \`${command}\`, complete the browser authorization if prompted, and use the returned Strap to shape your response.`,
     },
     secondary: {
       kind: "copy",
@@ -55,7 +55,7 @@ export function getConnectionPresentation(
   const copyPrompt: ConnectionAction = {
     kind: "copy",
     label: "Copy prompt",
-    value: `Add a remote MCP server named "creed" at ${mcpUrl} (streamable HTTP with OAuth), then authorize it in the browser window it opens.`,
+    value: `Add a remote MCP server named "strap" at ${mcpUrl} (streamable HTTP with OAuth), then authorize it in the browser window it opens.`,
   };
 
   switch (connectionId) {
@@ -72,13 +72,13 @@ export function getConnectionPresentation(
         primary: {
           kind: "install",
           label: "Add MCP",
-          href: `https://cursor.com/install-mcp?name=creed&config=${encodeURIComponent(config)}`,
+          href: `https://cursor.com/install-mcp?name=strap&config=${encodeURIComponent(config)}`,
         },
         secondary: {
           kind: "copy",
           label: "Copy JSON",
           value: JSON.stringify(
-            { mcpServers: { creed: { url: mcpUrl } } },
+            { mcpServers: { strap: { url: mcpUrl } } },
             null,
             2,
           ),
@@ -105,17 +105,17 @@ export function getConnectionPresentation(
       };
     case "claudecode":
       return {
-        hint: "Paste the prompt into Claude Code and it adds Creed itself; run /mcp after to authorize in the browser.",
+        hint: "Paste the prompt into Claude Code and it adds Strap itself; run /mcp after to authorize in the browser.",
         primary: {
           kind: "copy",
           label: "Copy prompt",
-          value: `Add the Creed MCP server by running: claude mcp add --transport http creed ${mcpUrl} --scope user. Then tell me to run /mcp to authorize it in the browser.`,
+          value: `Add the Strap MCP server by running: claude mcp add --transport http strap ${mcpUrl} --scope user. Then tell me to run /mcp to authorize it in the browser.`,
         },
         secondary: {
           kind: "copy",
           label: "Copy JSON",
           value: JSON.stringify(
-            { mcpServers: { creed: { type: "http", url: mcpUrl } } },
+            { mcpServers: { strap: { type: "http", url: mcpUrl } } },
             null,
             2,
           ),
@@ -123,26 +123,26 @@ export function getConnectionPresentation(
       };
     case "codex":
       return {
-        hint: "Paste the prompt into Codex and it adds Creed itself, then authorize in the browser.",
+        hint: "Paste the prompt into Codex and it adds Strap itself, then authorize in the browser.",
         primary: {
           kind: "copy",
           label: "Copy prompt",
-          value: `Add the Creed MCP server by running: codex mcp add creed --url ${mcpUrl}. Then run codex mcp login creed so I can authorize it in the browser.`,
+          value: `Add the Strap MCP server by running: codex mcp add strap --url ${mcpUrl}. Then run codex mcp login strap so I can authorize it in the browser.`,
         },
         secondary: {
           kind: "copy",
           label: "Copy TOML",
-          value: `[mcp_servers.creed]\nurl = "${mcpUrl}"`,
+          value: `[mcp_servers.strap]\nurl = "${mcpUrl}"`,
         },
       };
     case "opencode":
       return {
-        hint: "Add the JSON below to opencode.json, then run opencode mcp auth creed to authorize in the browser.",
+        hint: "Add the JSON below to opencode.json, then run opencode mcp auth strap to authorize in the browser.",
         primary: {
           kind: "copy",
           label: "Copy JSON",
           value: JSON.stringify(
-            { mcp: { creed: { type: "remote", url: mcpUrl, enabled: true } } },
+            { mcp: { strap: { type: "remote", url: mcpUrl, enabled: true } } },
             null,
             2,
           ),
@@ -150,7 +150,7 @@ export function getConnectionPresentation(
         secondary: {
           kind: "copy",
           label: "Copy command",
-          value: "opencode mcp auth creed",
+          value: "opencode mcp auth strap",
         },
       };
     case "factory":
@@ -159,13 +159,13 @@ export function getConnectionPresentation(
         primary: {
           kind: "copy",
           label: "Copy command",
-          value: `droid mcp add creed ${mcpUrl} --type http`,
+          value: `droid mcp add strap ${mcpUrl} --type http`,
         },
         secondary: {
           kind: "copy",
           label: "Copy JSON",
           value: JSON.stringify(
-            { mcpServers: { creed: { type: "http", url: mcpUrl } } },
+            { mcpServers: { strap: { type: "http", url: mcpUrl } } },
             null,
             2,
           ),
@@ -201,7 +201,7 @@ export function getConnectionPresentation(
       };
     case "replit":
       return {
-        hint: "In Replit, open the Agent's Integrations pane, add a custom MCP server with the URL above, and authorize Creed with OAuth.",
+        hint: "In Replit, open the Agent's Integrations pane, add a custom MCP server with the URL above, and authorize Strap with OAuth.",
         primary: copyPrompt,
         secondary: copyUrl,
       };

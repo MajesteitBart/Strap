@@ -79,6 +79,7 @@ import {
   type SettingsPanelIntent,
 } from "@/lib/panel/settings-intent";
 import { cn } from "@/lib/utils";
+import { STRAP_FILE_NAME } from "@/lib/profile-file";
 
 export const PANEL_OPEN_EVENT = "creed:panel-open";
 
@@ -128,7 +129,7 @@ const GROUP_ORDER: Command["group"][] = [
 const PLACEHOLDER: Record<Mode, string> = {
   search: "Search or jump to…",
   ask: "Ask about your creed…",
-  agent: "Tell Creed what to change…",
+  agent: "Tell Strap what to change…",
 };
 const AGENT_STAGES: AgentStage[] = ["reading", "planning", "writing", "filing"];
 const AGENT_RESULT_REFRESH_DELAYS_MS = [400, 1200] as const;
@@ -581,7 +582,7 @@ export function CreedPanel({
         icon: DownloadIcon as AnimatedIconComponent,
         run: () =>
           downloadFile(
-            "creed.md",
+            STRAP_FILE_NAME,
             exportMarkdown(),
             "text/markdown;charset=utf-8",
           ),
@@ -714,7 +715,7 @@ export function CreedPanel({
           case "export":
             if (action.target === "creed")
               downloadFile(
-                "creed.md",
+                STRAP_FILE_NAME,
                 exportMarkdown(),
                 "text/markdown;charset=utf-8",
               );
@@ -1287,7 +1288,7 @@ export function CreedPanel({
                   <div className="space-y-2.5">
                     {agentRun.status === "idle" ? (
                       <div className="px-0.5 py-1 text-[13px] leading-[1.55] text-[var(--creed-text-tertiary)]">
-                        Tell Creed what to change. It follows your agent
+                        Tell Strap what to change. It follows your agent
                         permissions. Type # to mention a section.
                       </div>
                     ) : null}

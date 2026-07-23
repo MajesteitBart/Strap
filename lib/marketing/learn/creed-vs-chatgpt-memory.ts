@@ -1,7 +1,7 @@
 import type { Article } from "./types";
 
 export const creedVsChatgptMemory: Article = {
-  slug: "creed-vs-chatgpt-memory",
+  slug: "strap-vs-chatgpt-memory",
   title: "ChatGPT memory vs a personal context file",
   description:
     "ChatGPT memory is automatic inside ChatGPT. A personal context file is portable and owned, read by every tool. Here is when each one is the right choice.",
@@ -9,7 +9,7 @@ export const creedVsChatgptMemory: Article = {
   datePublished: "2026-07-07",
   dateModified: "2026-07-07",
   lead:
-    "ChatGPT memory and a personal context file solve overlapping problems in different ways. ChatGPT memory is built into ChatGPT: it quietly notes things about you as you chat and reuses them later, with no setup and no file to maintain. That is its real strength. If ChatGPT is the only AI tool you use, its memory is often enough on its own.\n\nA personal context file is the opposite trade. You write yourself down once in one structured, plain-text profile, and every tool you connect reads it before it answers. It is portable across ChatGPT, Claude, Cursor, and other agents. You own it, you can read and edit every line, and you can export or delete it at any time. The cost is a little more intent: you keep the file rather than letting an app keep opaque notes.\n\nThe honest summary is that ChatGPT memory is effortless but trapped in one app, while a context file is portable and legible but asks you to own it. Creed is a personal context file that connects to your agents over MCP, so the same profile follows you everywhere and your agents propose small updates you approve.",
+    "ChatGPT memory and a personal context file solve overlapping problems in different ways. ChatGPT memory is built into ChatGPT: it quietly notes things about you as you chat and reuses them later, with no setup and no file to maintain. That is its real strength. If ChatGPT is the only AI tool you use, its memory is often enough on its own.\n\nA personal context file is the opposite trade. You write yourself down once in one structured, plain-text profile, and every tool you connect reads it before it answers. It is portable across ChatGPT, Claude, Cursor, and other agents. You own it, you can read and edit every line, and you can export or delete it at any time. The cost is a little more intent: you keep the file rather than letting an app keep opaque notes.\n\nThe honest summary is that ChatGPT memory is effortless but trapped in one app, while a context file is portable and legible but asks you to own it. Strap is a personal context file that connects to your agents over MCP, so the same profile follows you everywhere and your agents propose small updates you approve.",
   body: [
     { type: "h2", text: "What ChatGPT memory does well" },
     {
@@ -55,7 +55,7 @@ export const creedVsChatgptMemory: Article = {
     { type: "h2", text: "How a context file works in practice" },
     {
       type: "p",
-      text: "You keep one structured profile with short sections like identity, goals, work, preferences, and constraints. Specific beats complete: the file holds the handful of durable facts that change how an AI should respond, not a diary. Creed organizes this into ten sections, five always-on and five optional, and connects to your agents over MCP so each one reads the file before it answers.",
+      text: "You keep one structured profile with short sections like identity, goals, work, preferences, and constraints. Specific beats complete: the file holds the handful of durable facts that change how an AI should respond, not a diary. Strap organizes this into ten sections, five always-on and five optional, and connects to your agents over MCP so each one reads the file before it answers.",
     },
     {
       type: "ul",
@@ -85,7 +85,7 @@ export const creedVsChatgptMemory: Article = {
     {
       question: "Does a context file work inside ChatGPT?",
       answer:
-        "Yes. With Creed you connect ChatGPT as an MCP connector, and it reads your context file before it answers, then can propose updates you approve. So ChatGPT still benefits, and so does every other tool you connect.",
+        "Yes. With Strap you connect ChatGPT as an MCP connector, and it reads your context file before it answers, then can propose updates you approve. So ChatGPT still benefits, and so does every other tool you connect.",
     },
     {
       question: "Why can I not move ChatGPT memory to Claude?",
@@ -94,7 +94,7 @@ export const creedVsChatgptMemory: Article = {
     },
   ],
   related: [
-    { label: "Claude memory vs a portable context file", href: "/learn/creed-vs-claude-memory" },
+    { label: "Claude memory vs a portable context file", href: "/learn/strap-vs-claude-memory" },
     { label: "Why ChatGPT forgets you", href: "/learn/why-chatgpt-forgets-you" },
     { label: "What is a personal context file", href: "/learn/what-is-a-personal-context-file" },
   ],

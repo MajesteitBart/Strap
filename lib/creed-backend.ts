@@ -49,6 +49,7 @@ import type { SupabaseLikeClient } from "@/lib/supabase/types";
 import { richTextContentEquivalent } from "@/lib/rich-text";
 import type { CreedSummary } from "@/lib/creed-membership";
 import { getPersonalCreedId } from "@/lib/creed-membership";
+import { STRAP_FILE_NAME } from "@/lib/profile-file";
 
 type SectionRow = {
   user_id: string;
@@ -220,7 +221,7 @@ async function readTokenRow(client: SupabaseLikeClient, userId: string) {
     .eq("user_id", userId)
     .maybeSingle();
 
-  assertNoError(error, "Could not load Creed tokens.");
+  assertNoError(error, "Could not load Strap tokens.");
   const row = (data as TokenRow | null) ?? null;
   return row ? resolveTokenRow(row) : null;
 }
@@ -384,7 +385,7 @@ function buildVersionControlSettings(
     repoOwner: row?.repo_owner ?? "",
     repoName: row?.repo_name ?? "",
     branch: row?.branch ?? "",
-    path: "creed.md",
+    path: row?.path?.trim() || STRAP_FILE_NAME,
     lastRemoteSha: row?.last_remote_sha ?? undefined,
     lastRemoteMessage: row?.last_remote_message ?? undefined,
     lastRemoteCommittedAt: row?.last_remote_committed_at ?? undefined,
@@ -730,7 +731,7 @@ function buildConnectionDefinitions() {
   // from lib/connection-actions.ts instead; these definitions carry identity,
   // status, and fallback copy only.
   const remoteHint =
-    "Add a custom MCP server pointing at the URL above, then authorize Creed in the browser window your client opens.";
+    "Add a custom MCP server pointing at the URL above, then authorize Strap in the browser window your client opens.";
 
   return {
     definitions: [
@@ -739,7 +740,7 @@ function buildConnectionDefinitions() {
         name: "ChatGPT",
         icon: "chatgpt",
         description:
-          "Add Creed as a connector so ChatGPT starts from your context.",
+          "Add Strap as a connector so ChatGPT starts from your context.",
         connectHint:
           "In ChatGPT, open Settings > Apps & Connectors, turn on Developer mode, then Create a connector with the URL.",
       },
@@ -747,7 +748,7 @@ function buildConnectionDefinitions() {
         id: "claude",
         name: "Claude",
         icon: "claude",
-        description: "Connect Creed as a custom connector in Claude.",
+        description: "Connect Strap as a custom connector in Claude.",
         connectHint:
           "In Claude, open Settings > Connectors > Add custom connector, paste the URL above, then Connect to authorize in the browser.",
       },
@@ -756,7 +757,7 @@ function buildConnectionDefinitions() {
         name: "Codex",
         icon: "codex",
         description:
-          "Add Creed as a remote MCP server for agentic coding runs.",
+          "Add Strap as a remote MCP server for agentic coding runs.",
         connectHint:
           "Run the command below, then codex mcp login creed to authorize in the browser.",
       },
@@ -765,7 +766,7 @@ function buildConnectionDefinitions() {
         name: "Claude Code",
         icon: "claudecode",
         description:
-          "Connect Creed so every Claude Code session starts with your context.",
+          "Connect Strap so every Claude Code session starts with your context.",
         connectHint:
           "Run the command below (user scope, so every project gets it), then /mcp to authorize in the browser.",
       },
@@ -773,21 +774,21 @@ function buildConnectionDefinitions() {
         id: "openclaw",
         name: "OpenClaw",
         icon: "openclaw",
-        description: "Add Creed to OpenClaw as a remote MCP server.",
+        description: "Add Strap to OpenClaw as a remote MCP server.",
         connectHint: remoteHint,
       },
       {
         id: "hermes",
         name: "Hermes",
         icon: "hermes",
-        description: "Add Creed to Hermes as a remote MCP server.",
+        description: "Add Strap to Hermes as a remote MCP server.",
         connectHint: remoteHint,
       },
       {
         id: "manus",
         name: "Manus",
         icon: "manus",
-        description: "Add Creed to Manus as a remote MCP server.",
+        description: "Add Strap to Manus as a remote MCP server.",
         connectHint:
           "In Manus, open Settings > Connectors > Add custom MCP, enter the URL above with transport HTTP, then authorize.",
       },
@@ -795,7 +796,7 @@ function buildConnectionDefinitions() {
         id: "grok",
         name: "Grok",
         icon: "grok",
-        description: "Add Creed to Grok as a custom connector.",
+        description: "Add Strap to Grok as a custom connector.",
         connectHint:
           "In Grok, go to grok.com/connectors, create a New Connector > Custom, paste the URL above, and authorize.",
       },
@@ -803,7 +804,7 @@ function buildConnectionDefinitions() {
         id: "opencode",
         name: "OpenCode",
         icon: "opencode",
-        description: "Add Creed to OpenCode as a remote MCP server.",
+        description: "Add Strap to OpenCode as a remote MCP server.",
         connectHint:
           "Add the JSON below to opencode.json, then run opencode mcp auth creed to authorize in the browser.",
       },
@@ -811,15 +812,15 @@ function buildConnectionDefinitions() {
         id: "cursor",
         name: "Cursor",
         icon: "cursor",
-        description: "One-click install Creed into Cursor, then authorize.",
+        description: "One-click install Strap into Cursor, then authorize.",
         connectHint:
-          "Use the one-click button to add Creed to Cursor as a remote MCP server, then authorize Creed in the browser window Cursor opens.",
+          "Use the one-click button to add Strap to Cursor as a remote MCP server, then authorize Strap in the browser window Cursor opens.",
       },
       {
         id: "devin",
         name: "Devin",
         icon: "devin",
-        description: "Add Creed to Devin from the MCP Marketplace.",
+        description: "Add Strap to Devin from the MCP Marketplace.",
         connectHint:
           "In Devin, open Settings > Connections > MCP servers, add a custom MCP with the URL above then transport HTTP and OAuth.",
       },
@@ -827,23 +828,23 @@ function buildConnectionDefinitions() {
         id: "replit",
         name: "Replit",
         icon: "replit",
-        description: "Add Creed to Replit as a remote MCP server.",
+        description: "Add Strap to Replit as a remote MCP server.",
         connectHint:
-          "In Replit, open the Agent's Integrations pane, add a custom MCP server with the URL above, and authorize Creed with OAuth.",
+          "In Replit, open the Agent's Integrations pane, add a custom MCP server with the URL above, and authorize Strap with OAuth.",
       },
       {
         id: "whirl",
         name: "Whirl",
         icon: "whirl",
-        description: "Add Creed to Whirl as a custom MCP connection.",
+        description: "Add Strap to Whirl as a custom MCP connection.",
         connectHint:
-          "In Whirl, open Settings and add a custom MCP server with the URL above, then authorize Creed with OAuth.",
+          "In Whirl, open Settings and add a custom MCP server with the URL above, then authorize Strap with OAuth.",
       },
       {
         id: "factory",
         name: "Factory",
         icon: "factory",
-        description: "Add Creed to Factory's droid as a remote MCP server.",
+        description: "Add Strap to Factory's droid as a remote MCP server.",
         connectHint:
           "Run the command below, then /mcp inside droid to authorize in the browser.",
       },
@@ -851,7 +852,7 @@ function buildConnectionDefinitions() {
         id: "v0",
         name: "v0",
         icon: "v0",
-        description: "Add Creed to v0 as a custom MCP connection.",
+        description: "Add Strap to v0 as a custom MCP connection.",
         connectHint:
           "In v0, open MCP Connections (or Add MCP in the prompt bar), add a custom server with the URL above, and choose OAuth.",
       },
@@ -1064,7 +1065,7 @@ async function ensureTokenRow(client: unknown, userId: string) {
         .select("*")
         .single();
 
-      assertNoError(upgradeError, "Could not upgrade Creed tokens.");
+      assertNoError(upgradeError, "Could not upgrade Strap tokens.");
       return resolveTokenRow(upgradedRow as TokenRow);
     }
 
@@ -1100,7 +1101,7 @@ async function ensureTokenRow(client: unknown, userId: string) {
     ignoreDuplicates: true,
   });
 
-  assertNoError(upsertError, "Could not create Creed tokens.");
+  assertNoError(upsertError, "Could not create Strap tokens.");
 
   for (const delayMs of [0, 30]) {
     if (delayMs > 0) {
@@ -1132,7 +1133,7 @@ async function ensureTokenRow(client: unknown, userId: string) {
 
     assertNoError(
       adminError,
-      "Could not create Creed tokens with admin client.",
+      "Could not create Strap tokens with admin client.",
     );
     return createdRow as TokenRow;
   } catch (error) {
@@ -1140,7 +1141,7 @@ async function ensureTokenRow(client: unknown, userId: string) {
       error instanceof Error &&
       /Supabase admin client is not configured/i.test(error.message)
     ) {
-      throw new Error("Could not load Creed tokens after creation.");
+      throw new Error("Could not load Strap tokens after creation.");
     }
 
     throw error;
@@ -1331,10 +1332,10 @@ async function loadCreedStateImpl(
       .order("updated_at", { ascending: false }),
   ]);
 
-  assertNoError(sectionError, "Could not load Creed sections.");
-  assertNoError(proposalError, "Could not load Creed proposals.");
-  assertNoError(activityError, "Could not load Creed activity.");
-  assertNoError(connectionError, "Could not load Creed connections.");
+  assertNoError(sectionError, "Could not load Strap sections.");
+  assertNoError(proposalError, "Could not load Strap proposals.");
+  assertNoError(activityError, "Could not load Strap activity.");
+  assertNoError(connectionError, "Could not load Strap connections.");
 
   // No early return when the section list is empty: a creed row with zero
   // sections is a real, onboarded Creed whose sections were all deleted or
@@ -1848,7 +1849,7 @@ export async function persistCreedState(
   const db = client as SupabaseLikeClient;
   const creedId = await getPersonalCreedId(db, userId);
   if (!creedId) {
-    throw new Error("Could not resolve the personal Creed.");
+    throw new Error("Could not resolve the personal Strap.");
   }
   const [currentSectionsResult, existingProposalsResult] = await Promise.all([
     db
@@ -2005,21 +2006,21 @@ export async function persistCreedState(
     const { error } = await db
       .from("creed_sections")
       .upsert(sectionRows, { onConflict: "creed_id,section_id" });
-    assertNoError(error, "Could not persist Creed sections.");
+    assertNoError(error, "Could not persist Strap sections.");
   }
 
   if (proposalRows.length > 0) {
     const { error } = await db
       .from("creed_proposals")
       .upsert(proposalRows, { onConflict: "id" });
-    assertNoError(error, "Could not persist Creed proposals.");
+    assertNoError(error, "Could not persist Strap proposals.");
   }
 
   if (activityRows.length > 0) {
     const { error } = await db
       .from("creed_activity")
       .upsert(activityRows, { onConflict: "id" });
-    assertNoError(error, "Could not persist Creed activity.");
+    assertNoError(error, "Could not persist Strap activity.");
   }
 
   const versionControlRow = {
@@ -2110,7 +2111,7 @@ export async function persistCreedState(
       updated_at: now,
     })
     .eq("user_id", userId);
-  assertNoError(tokenError, "Could not persist Creed settings.");
+  assertNoError(tokenError, "Could not persist Strap settings.");
 }
 
 export async function recordConnectionUsage(
@@ -2124,7 +2125,7 @@ export async function recordConnectionUsage(
   const db = client as SupabaseLikeClient;
   const targetCreedId = creedId ?? (await getPersonalCreedId(db, userId));
   if (!targetCreedId) {
-    throw new Error("Could not resolve Creed for connection usage.");
+    throw new Error("Could not resolve Strap for connection usage.");
   }
   const connectionId = normalizeIntegrationId(
     integrationId ?? inferIntegrationId(agentName),
@@ -2146,7 +2147,7 @@ export async function recordConnectionUsage(
     { onConflict: "creed_id,connection_id" },
   );
 
-  assertNoError(error, "Could not record Creed connection usage.");
+  assertNoError(error, "Could not record Strap connection usage.");
 }
 
 async function findUserIdByTokenHash(
@@ -2216,7 +2217,7 @@ export async function recordMcpClientUsage(
   const db = client as SupabaseLikeClient;
   const targetCreedId = creedId ?? (await getPersonalCreedId(db, userId));
   if (!targetCreedId) {
-    throw new Error("Could not resolve Creed for MCP usage.");
+    throw new Error("Could not resolve Strap for MCP usage.");
   }
   const now = new Date().toISOString();
   const normalizedClientName = clientName?.trim() || null;
@@ -2290,7 +2291,7 @@ export async function recordCliAgentUsage(
       creed_id: creedId,
       user_id: userId,
       client_id: `cli-${tokenId}-${agentIcon}`,
-      client_name: `Creed CLI via ${agentIcon}`,
+      client_name: `Strap CLI via ${agentIcon}`,
       last_seen_at: now,
       updated_at: now,
     },

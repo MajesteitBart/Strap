@@ -314,7 +314,7 @@ async function writeTokenCreedGrants(
   }));
   const { error } = await admin.from("oauth_token_creeds").insert(rows);
   if (error) {
-    log.warn("Could not persist OAuth Creed grants", { tokenId, message: error.message });
+    log.warn("Could not persist OAuth Strap grants", { tokenId, message: error.message });
   }
 }
 

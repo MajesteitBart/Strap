@@ -68,7 +68,7 @@ export function CreedSwitcher() {
           });
           if (!response.ok) {
             const data = (await response.json().catch(() => ({}))) as { error?: string };
-            toast.error(data.error ?? "Could not switch Creed.");
+            toast.error(data.error ?? "Could not switch Strap.");
             setOptimisticId(null);
             setSwitching(false);
             return;
@@ -81,12 +81,12 @@ export function CreedSwitcher() {
         // route refresh.
         const result = await switchCreed(creed.id);
         if (!result.ok) {
-          toast.error(result.error ?? "Could not switch Creed.");
+          toast.error(result.error ?? "Could not switch Strap.");
           setOptimisticId(null);
         }
         setSwitching(false);
       } catch {
-        toast.error("Could not switch Creed.");
+        toast.error("Could not switch Strap.");
         setOptimisticId(null);
         setSwitching(false);
       }
@@ -148,7 +148,7 @@ export function CreedSwitcher() {
 
   // One Creed (or none loaded): plain title, no dropdown.
   if (creeds.length <= 1) {
-    return <div className={TITLE_CLASS}>{displayName} / Creed</div>;
+    return <div className={TITLE_CLASS}>{displayName} / Strap</div>;
   }
 
   return (
@@ -157,14 +157,14 @@ export function CreedSwitcher() {
         <DropdownMenuTrigger asChild>
           <button
             type="button"
-            aria-label="Switch Creed"
+            aria-label="Switch Strap"
             disabled={switching}
             // No card: aligned like the plain title, greyed on hover the same way
             // the brand mark dims (opacity), and the arrow points down by default,
             // flipping up while the menu is open.
             className="group/switcher inline-flex items-center gap-2 text-left transition-opacity duration-[160ms] hover:opacity-60 disabled:opacity-70"
           >
-            <span className={TITLE_CLASS}>{displayName} / Creed</span>
+            <span className={TITLE_CLASS}>{displayName} / Strap</span>
             <ChevronDown
               className="h-4 w-4 shrink-0 text-[var(--creed-text-primary)] transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] group-data-[state=open]/switcher:rotate-180"
               strokeWidth={2}

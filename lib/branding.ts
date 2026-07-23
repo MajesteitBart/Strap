@@ -15,7 +15,7 @@
 // Fallback contact address surfaced in legal pages, footer, and the
 // feedback menu when NEXT_PUBLIC_CONTACT_EMAIL isn't set. Forks can
 // override via the env var.
-const fallbackContactEmail = "connor@hpbrn.com";
+const fallbackContactEmail = "hello@strap.bvdm.ai";
 
 export const CONTACT_EMAIL =
   process.env.NEXT_PUBLIC_CONTACT_EMAIL?.trim() || fallbackContactEmail;
@@ -25,14 +25,10 @@ export const CONTACT_MAILTO = `mailto:${CONTACT_EMAIL}`;
 // Default social URLs surface on the deployed site without needing env
 // vars set. Forks can override via NEXT_PUBLIC_*_URL or set the env var
 // to an empty string to hide the icon entirely.
-export const TWITTER_URL =
-  process.env.NEXT_PUBLIC_TWITTER_URL?.trim() || "https://x.com/connorhpbrn";
-export const INSTAGRAM_URL =
-  process.env.NEXT_PUBLIC_INSTAGRAM_URL?.trim() || "https://instagram.com/connorhpbrn";
-export const GITHUB_URL =
-  process.env.NEXT_PUBLIC_GITHUB_URL?.trim() || "https://github.com/connorhpbrn/creed";
-export const HPBRN_URL =
-  process.env.NEXT_PUBLIC_HPBRN_URL?.trim() || "https://hpbrn.cc";
+export const TWITTER_URL = process.env.NEXT_PUBLIC_TWITTER_URL?.trim() || "";
+export const INSTAGRAM_URL = process.env.NEXT_PUBLIC_INSTAGRAM_URL?.trim() || "";
+export const GITHUB_URL = process.env.NEXT_PUBLIC_GITHUB_URL?.trim() || "";
+export const HPBRN_URL = process.env.NEXT_PUBLIC_HPBRN_URL?.trim() || "";
 
 // Discord invite. No hardcoded fallback: until a permanent invite is set via
 // NEXT_PUBLIC_DISCORD_URL, surfaces that need the actual invite can hide their

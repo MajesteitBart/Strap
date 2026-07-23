@@ -380,7 +380,7 @@ export function ConnectionCard({
                 onSelect={() => {
                   window.open(
                     mode === "cli"
-                      ? "/docs#creed-cli"
+                      ? "/docs#strap-cli"
                       : `/docs#${AGENT_DOCS_ANCHORS[connection.id] ?? "connect-mcp"}`,
                     "_blank",
                     "noopener,noreferrer",
@@ -462,7 +462,7 @@ export function ConnectionCard({
               </DialogTitle>
               <DialogDescription>
                 Disconnects {connection.name} and revokes its MCP tokens. It
-                stops reading your Creed until you reconnect and authorize it
+                stops reading your Strap until you reconnect and authorize it
                 again.
               </DialogDescription>
             </DialogHeader>

@@ -31,6 +31,7 @@ import {
   compileOnboardingDraft,
 } from "@/lib/onboarding/compile";
 import { cn } from "@/lib/utils";
+import { STRAP_FILE_NAME } from "@/lib/profile-file";
 
 // 10-step flow indexed 0-9: welcome / Q1 identity / explainer / Q2 goals /
 // explainer / Q3 preferences / explainer / prompt / paste / preview. Three open
@@ -87,7 +88,7 @@ export function OnboardingScreen({
   // clean one, falling back to a plain greeting otherwise.
   const welcomeHeadline = useMemo(() => {
     const first = (state.user.name || "").trim().split(/\s+/)[0];
-    return first && first.length <= 24 ? `Welcome to Creed, ${first}.` : "Welcome to Creed.";
+    return first && first.length <= 24 ? `Welcome to Strap, ${first}.` : "Welcome to Strap.";
   }, [state.user.name]);
 
   // Paste-compose result: set from the /api/app/onboarding/compose response when
@@ -166,7 +167,7 @@ export function OnboardingScreen({
         }
         if (!data.ok || !data.matched || !data.sections) {
           setPasteError(
-            "That doesn't look like your Creed. Paste the whole markdown your assistant gave you."
+            "That doesn't look like your Strap. Paste the whole markdown your assistant gave you."
           );
           return;
         }
@@ -243,7 +244,7 @@ export function OnboardingScreen({
         <div className="flex items-center justify-between">
           <Link
             href="/home"
-            aria-label="Creed home"
+            aria-label="Strap home"
             className="-ml-2 inline-flex items-center rounded-sm px-2 py-1.5 transition-opacity duration-200 hover:opacity-60"
           >
             <CreedWordmark className="ml-0" />
@@ -294,7 +295,7 @@ export function OnboardingScreen({
                           value={state.onboarding.identity}
                           onChange={(event) => updateOnboarding({ identity: event.target.value })}
                           className="min-h-[220px] rounded-xl border-[var(--creed-border)] px-4 py-4 text-[15px] leading-7"
-                          placeholder="e.g. Founder and engineer building Creed end to end. Strong product taste, allergic to bloated process. Live in Figma, Linear, and the terminal all day."
+                          placeholder="e.g. Founder and engineer building Strap end to end. Strong product taste, allergic to bloated process. Live in Figma, Linear, and the terminal all day."
                         />
                       </AnimatedBlock>
                     </OnboardingStep>
@@ -333,7 +334,7 @@ export function OnboardingScreen({
                           value={state.onboarding.goals}
                           onChange={(event) => updateOnboarding({ goals: event.target.value })}
                           className="min-h-[200px] rounded-xl border-[var(--creed-border)] px-4 py-4 text-[15px] leading-7"
-                          placeholder="e.g. Ship the Creed v2 onboarding this quarter. Hit $20k MRR before summer. Long term, make Creed the file every AI reads first."
+                          placeholder="e.g. Ship the Strap v2 onboarding this quarter. Hit $20k MRR before summer. Long term, make Strap the file every AI reads first."
                         />
                       </AnimatedBlock>
                     </OnboardingStep>
@@ -392,7 +393,7 @@ export function OnboardingScreen({
                       </AnimatedBlock>
                       <AnimatedBlock index={1}>
                         <p className="t-lede mx-auto mt-6 max-w-xl text-[var(--creed-text-tertiary)]">
-                          Your Creed is plain markdown you own. Export it anytime, take it anywhere,
+                          Your Strap is plain markdown you own. Export it anytime, take it anywhere,
                           no lock-in.
                         </p>
                       </AnimatedBlock>
@@ -414,7 +415,7 @@ export function OnboardingScreen({
                       <AnimatedBlock index={1}>
                         <p className="t-lede mx-auto mt-6 max-w-2xl text-[var(--creed-text-tertiary)]">
                           Copy this prompt and paste it into ChatGPT, Claude, or any AI you use. It
-                          turns everything you just shared into your full Creed.
+                          turns everything you just shared into your full Strap.
                         </p>
                       </AnimatedBlock>
                       <AnimatedBlock index={2}>
@@ -426,8 +427,8 @@ export function OnboardingScreen({
                   {/* Step 8 - Paste the markdown the assistant produced */}
                   {step === PASTE_STEP ? (
                     <OnboardingStep
-                      title="Paste your Creed."
-                      subtitle="Paste the markdown your assistant gave you - we'll turn it into your Creed."
+                      title="Paste your Strap."
+                      subtitle="Paste the markdown your assistant gave you - we'll turn it into your Strap."
                     >
                       <AnimatedBlock index={0}>
                         <Textarea
@@ -457,7 +458,7 @@ export function OnboardingScreen({
                     <div className="text-center">
                       <AnimatedBlock index={0}>
                         <AnimatedHeadline
-                          text="Your Creed."
+                          text="Your Strap."
                           className="t-section justify-center text-[var(--creed-text-primary)]"
                         />
                       </AnimatedBlock>
@@ -536,7 +537,7 @@ export function OnboardingScreen({
               className="bg-[var(--creed-text-primary)] px-5 text-[var(--creed-button-primary-fg)] hover:bg-[var(--creed-button-primary-hover)]"
               onClick={handleFinish}
             >
-              Go to my Creed
+              Go to my Strap
               <ArrowRightIcon className="h-4 w-4" size={16} />
             </Button>
           )}
@@ -680,14 +681,13 @@ function WelcomeConstellation() {
         >
           <div
             className="relative flex h-16 w-16 items-center justify-center rounded-full"
-            style={{ backgroundColor: CREED_BLUE }}
+            style={{ backgroundColor: "#fbf6ee", border: `1px solid ${CREED_BLUE}` }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/assets/brand/logo.svg"
-              alt="Creed"
+              alt="Strap"
               className="h-8 w-auto select-none"
-              style={{ filter: "brightness(0) invert(1)" }}
               draggable={false}
             />
             <motion.span
@@ -831,7 +831,7 @@ const OWNERSHIP_LINES: { heading: string; accent: keyof typeof accentColorMap; b
   {
     heading: "## Goals",
     accent: "projects",
-    body: "Ship Creed v2 this quarter. $20k MRR by summer.",
+    body: "Ship Strap v2 this quarter. $20k MRR by summer.",
   },
   {
     heading: "## Preferences",
@@ -856,7 +856,7 @@ function OwnershipCard() {
       <div className="flex items-center justify-between border-b border-[var(--creed-border)] px-4 py-2.5">
         <div className="flex items-center gap-2 text-[12px] text-[var(--creed-text-secondary)]">
           <FileText className="h-3.5 w-3.5 text-[var(--creed-text-tertiary)]" />
-          <span className="font-mono">creed.md</span>
+          <span className="font-mono">{STRAP_FILE_NAME}</span>
         </div>
         <div className="flex items-center gap-2 text-[12px] text-[var(--creed-text-secondary)]">
           <Download className="h-3.5 w-3.5 text-[var(--creed-text-tertiary)]" />

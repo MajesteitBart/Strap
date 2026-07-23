@@ -9,7 +9,7 @@ export const browserExtensionVsMcpContext: Article = {
   datePublished: "2026-07-07",
   dateModified: "2026-07-07",
   lead:
-    "There are two common ways to give an AI your context without retyping it. A browser-extension memory tool watches the chat you type into a web page and injects saved context into the prompt before you send it. An MCP-connected context file lets the agent itself read a structured file over a protocol, before it answers, in whatever tool you are using.\n\nThe difference is where the context enters. An extension works at the surface, in the browser, editing what goes into a web chat box. MCP works underneath, giving the agent a tool it can call to read your profile directly. That changes coverage, reliability, and portability in ways worth understanding before you pick one.\n\nExtensions are easy to start with and work in the chat UIs you already open in a browser. MCP context reaches beyond the browser into coding agents and terminal tools, and does not depend on a page layout staying the same. Creed is an MCP-connected context file: one Markdown profile that every agent you connect reads before it answers, whether that agent runs in a browser or not.",
+    "There are two common ways to give an AI your context without retyping it. A browser-extension memory tool watches the chat you type into a web page and injects saved context into the prompt before you send it. An MCP-connected context file lets the agent itself read a structured file over a protocol, before it answers, in whatever tool you are using.\n\nThe difference is where the context enters. An extension works at the surface, in the browser, editing what goes into a web chat box. MCP works underneath, giving the agent a tool it can call to read your profile directly. That changes coverage, reliability, and portability in ways worth understanding before you pick one.\n\nExtensions are easy to start with and work in the chat UIs you already open in a browser. MCP context reaches beyond the browser into coding agents and terminal tools, and does not depend on a page layout staying the same. Strap is an MCP-connected context file: one Markdown profile that every agent you connect reads before it answers, whether that agent runs in a browser or not.",
   body: [
     { type: "h2", text: "How a browser-extension memory tool works" },
     {
@@ -23,7 +23,7 @@ export const browserExtensionVsMcpContext: Article = {
     { type: "h2", text: "How MCP-connected context works" },
     {
       type: "p",
-      text: "MCP is a protocol that lets an agent call tools. An MCP-connected context file exposes a read tool the agent invokes on its own, before meaningful work, to load your profile. The context does not depend on any page; the agent asks for it directly and factors it into the answer. Creed works this way: you connect it once, and the agent reads the file over MCP.",
+      text: "MCP is a protocol that lets an agent call tools. An MCP-connected context file exposes a read tool the agent invokes on its own, before meaningful work, to load your profile. The context does not depend on any page; the agent asks for it directly and factors it into the answer. Strap works this way: you connect it once, and the agent reads the file over MCP.",
     },
     {
       type: "p",
@@ -64,7 +64,7 @@ export const browserExtensionVsMcpContext: Article = {
     },
     {
       type: "p",
-      text: "With Creed, the profile is one structured Markdown file you own, organized into sections like Identity, Goals, Work, Preferences, and Routines. Connected agents read it before they answer and propose small updates as they learn something durable, which you approve or let trusted agents write directly.",
+      text: "With Strap, the profile is one structured Markdown file you own, organized into sections like Identity, Goals, Work, Preferences, and Routines. Connected agents read it before they answer and propose small updates as they learn something durable, which you approve or let trusted agents write directly.",
     },
     { type: "h2", text: "Which to choose" },
     {
@@ -81,7 +81,7 @@ export const browserExtensionVsMcpContext: Article = {
     {
       question: "Do browser extensions work in coding agents like Cursor?",
       answer:
-        "Usually not, because coding agents are not web pages an extension can inject into. Those agents speak MCP, so an MCP-connected context file like Creed reaches them while a browser extension typically cannot.",
+        "Usually not, because coding agents are not web pages an extension can inject into. Those agents speak MCP, so an MCP-connected context file like Strap reaches them while a browser extension typically cannot.",
     },
     {
       question: "Is MCP context more reliable than a browser extension?",
@@ -91,7 +91,7 @@ export const browserExtensionVsMcpContext: Article = {
     {
       question: "Can I use both at once?",
       answer:
-        "Yes. An extension can cover a web chat site that lacks MCP support while MCP context covers coding agents and portability. Creed is the MCP-connected option, giving you one owned profile every connected agent reads.",
+        "Yes. An extension can cover a web chat site that lacks MCP support while MCP context covers coding agents and portability. Strap is the MCP-connected option, giving you one owned profile every connected agent reads.",
     },
   ],
   related: [

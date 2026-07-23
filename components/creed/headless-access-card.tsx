@@ -101,7 +101,7 @@ export function HeadlessAccessCard() {
 
       <div className="mt-5 grid gap-4 lg:grid-cols-2">
         <div className="rounded-xl border border-[var(--creed-border)] p-5">
-          <div className="flex items-center gap-2 text-[15px] font-medium"><KeyRound className="h-4 w-4" /> Creed API key</div>
+          <div className="flex items-center gap-2 text-[15px] font-medium"><KeyRound className="h-4 w-4" /> Strap API key</div>
           <p className="mt-2 text-[13px] leading-6 text-[var(--creed-text-secondary)]">Use as the bearer token for the MCP URL above. The complete key is shown once.</p>
           <div className="mt-4 space-y-3">
             <Input value={name} onChange={(event) => setName(event.target.value)} maxLength={120} placeholder="Hermes production server" />
@@ -125,7 +125,7 @@ export function HeadlessAccessCard() {
         <div className="rounded-xl border border-[var(--creed-border)] p-5">
           <div className="flex items-center gap-2 text-[15px] font-medium"><Link2 className="h-4 w-4" /> Device authorization</div>
           <p className="mt-2 text-[13px] leading-6 text-[var(--creed-text-secondary)]">
-            Agents that support OAuth device authorization show a short code. Enter it here, verify the client name, and choose one Creed.
+            Agents that support OAuth device authorization show a short code. Enter it here, verify the client name, and choose one Strap.
           </p>
           <Button asChild variant="secondary" className="mt-4"><Link href="/device">Enter a device code</Link></Button>
           <p className="mt-3 text-[12px] leading-5 text-[var(--creed-text-tertiary)]">Never approve a code you did not start on your own agent.</p>

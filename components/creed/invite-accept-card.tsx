@@ -120,7 +120,7 @@ export function InviteAcceptCard({
         Join {companyName}
       </h1>
       <p className="mt-3 text-[14px] leading-7 text-[var(--creed-text-secondary)]">
-        {inviter.name ?? "A teammate"} invited you to the {companyName} Creed as{" "}
+        {inviter.name ?? "A teammate"} invited you to the {companyName} Strap as{" "}
         {role === "admin" ? "an admin" : "a member"}. It is the shared context file this company&apos;s AI
         agents read before they work.
       </p>

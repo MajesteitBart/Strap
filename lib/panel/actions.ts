@@ -165,14 +165,14 @@ const fenceSafe = (text: string) => text.replace(/(BEGIN|END) USER CREED DATA/gi
 // What Ask needs to be an expert on Creed itself, not just the user's content.
 // Kept compact and only asserting things that are true of the product.
 const CREED_KNOWLEDGE = [
-  "About Creed (the product):",
-  "- Creed is one personal context profile that every AI you connect reads before answering. You keep it; agents help keep it sharp.",
+  "About Strap (the product):",
+  "- Strap is one personal context profile that every AI you connect reads before answering. You keep it; agents help keep it sharp.",
   "- It is made of sections (rich markdown). Five core sections ship (Identity, Goals, Work, Preferences, Routines); more are optional (Beliefs, Constraints, People, Health, Context).",
   "- Each section has an agent permission: read-only (agents read only), propose (agents suggest diffs you accept/reject), direct (agents edit without approval), or hidden (agents can't see it).",
   "- Editing: you edit sections directly; connected agents propose changes or, on direct sections, edit immediately. Proposals are reviewed on the File page and accepted or rejected. In Personal, Activity is for agent changes; Company uses it as a collaboration audit trail.",
   "- Connections: external AI agents connect over MCP and appear on the Connections page.",
-  "- AI features: Analysis scores how complete, concrete and current your creed is (per section + overall). Panel is this command bar with three modes - Search (jump anywhere), Ask (this: questions about your creed and the app), and Agent (Command: makes reversible edits to your creed as proposals from 'Creed'). Tab (planned) is inline autocomplete.",
-  "- Settings covers: Profile, Agent edit behaviour (per-section permissions), Integrations (Google, X, GitHub), Model usage (AI spend chart, BYOK key), Version control (GitHub sync of creed.md), Archived (restore sections), Data (export), Danger zone (delete account).",
+  "- AI features: Analysis scores how complete, concrete and current your creed is (per section + overall). Panel is this command bar with three modes - Search (jump anywhere), Ask (this: questions about your creed and the app), and Agent (Command: makes reversible edits to your creed as proposals from 'Strap'). Tab (planned) is inline autocomplete.",
+  "- Settings covers: Profile, Agent edit behaviour (per-section permissions), Integrations (Google, X, GitHub), Model usage (AI spend chart, BYOK key), Version control (GitHub sync of strap.md), Archived (restore sections), Data (export), Danger zone (delete account).",
   "- AI runs on the deployment's included OpenRouter key or on BYOK (your own OpenRouter key). The spend chart breaks usage down by feature over 7/30/90 days.",
   "- Shortcuts: K opens Panel, F find & replace, A activity log, S collapse sidebar, M theme.",
 ].join("\n");
@@ -180,7 +180,7 @@ const CREED_KNOWLEDGE = [
 export function buildPanelSystemPrompt(mode: PanelMode) {
   if (mode === "search") {
     return [
-      "You are Panel's smart search inside Creed (a personal context profile app).",
+      "You are Panel's smart search inside Strap (a personal context profile app).",
       "The user typed something the local list didn't match. Resolve it to the single best place or view in the app and take them there with the shortest plan of navigation actions.",
       "You do not chat and you do not answer questions here - you navigate. Leave answer empty.",
       "Set ok=false only when nothing in the app fits.",
@@ -188,8 +188,8 @@ export function buildPanelSystemPrompt(mode: PanelMode) {
     ].join(" ");
   }
   return [
-    "You are Ask, the assistant inside Creed (a personal context profile app). You are an expert on Creed and on this user's profile content.",
-    "Answer in one to three friendly, direct sentences using the Creed product knowledge and the user's profile content you are given. Preserve the user's own wording when quoting their creed.",
+    "You are Ask, the assistant inside Strap (a personal context profile app). You are an expert on Strap and on this user's profile content.",
+    "Answer in one to three friendly, direct sentences using the Strap product knowledge and the user's profile content you are given. Preserve the user's own wording when quoting their creed.",
     "Only include navigation action(s) when GOING somewhere is the actual point of the request - e.g. 'take me to my spend', 'open my goals', 'where do I add credits'. For a plain informational question ('what is the Analysis feature?', 'what are my goals?'), just answer; do NOT attach a navigation action, because there is nowhere the user asked to go. When you do include actions, never claim you navigated - the app shows a 'take me there' button and the user decides.",
     "You answer and navigate; you never change the user's creed (that is Agent, on Command). If they ask to edit, rename, recolor, delete, or archive, tell them Agent does that.",
     "Return valid JSON only: answer plus any actions.",
@@ -222,7 +222,7 @@ function renderSharedContext({
 
   return [
     "App map (the only places and controls that exist):",
-    '- Pages (kind "navigate", target): /file (the Creed editor: sections + pending proposals), /connections (connected agents), /settings.',
+    '- Pages (kind "navigate", target): /file (the Strap editor: sections + pending proposals), /connections (connected agents), /settings.',
     '- Settings sections (kind "settings-section", target): profile, agent-edits, integrations, model-usage (spend chart, BYOK key), version-control, archived, data, danger.',
     '- Controls (each implies navigating to model-usage): kind "usage-range" (value 7d|30d|90d; "this week"=7d, "this month"=30d, longer=90d); kind "usage-mode" (value credits|byok; BYOK spend needs byok).',
     '- File targets: kind "file-section" (target = a section id below), kind "file-proposal" (target = a proposal id below), kind "compose-section" (start a new section).',

@@ -24,97 +24,97 @@ const sections: PrivacySection[] = [
     id: "scope",
     title: "Who this policy applies to",
     paragraphs: [
-      "This policy applies to people who use Creed, including people who create an account, complete onboarding, connect agents, submit or review proposals, or otherwise use the service.",
+      "This policy applies to people who use Strap, including people who create an account, complete onboarding, connect agents, submit or review proposals, or otherwise use the service.",
     ],
   },
   {
     id: "controller",
     title: "Who controls your information",
     paragraphs: [
-      "For the purposes of UK data protection law, Creed is the controller of the personal information described in this policy.",
-      `If you have questions about how Creed handles personal information, you can contact ${contactEmail}.`,
+      "For the purposes of UK data protection law, Strap is the controller of the personal information described in this policy.",
+      `If you have questions about how Strap handles personal information, you can contact ${contactEmail}.`,
     ],
   },
   {
     id: "collected-data",
-    title: "What information Creed collects",
+    title: "What information Strap collects",
     paragraphs: [
-      "Creed currently stores and processes the following categories of information as part of operating the service.",
+      "Strap currently stores and processes the following categories of information as part of operating the service.",
     ],
     bullets: [
       "name",
       "email address",
       "profile picture",
-      "Creed file contents",
+      "Strap file contents",
       "onboarding answers",
       "proposal history",
       "activity history",
       "connection metadata",
       "connection tokens",
     ],
-    note: "Creed does not process payments and does not store payment card details.",
+    note: "Strap does not process payments and does not store payment card details.",
   },
   {
     id: "collection",
-    title: "How Creed collects information",
+    title: "How Strap collects information",
     bullets: [
-      "directly from you when you sign in, complete onboarding, edit your Creed, manage connections, or use account features",
+      "directly from you when you sign in, complete onboarding, edit your Strap, manage connections, or use account features",
       "from Google Auth when basic account information is provided during sign-in, such as your name, email address, and profile image",
-      "from connected agent activity when an agent reads Creed through a tokenised endpoint or submits a proposal back through a tokenised endpoint",
+      "from connected agent activity when an agent reads Strap through a tokenised endpoint or submits a proposal back through a tokenised endpoint",
     ],
     paragraphs: [
-      "When you run an AI feature such as quality analysis, the relevant parts of your Creed are sent to OpenRouter to generate the result. On credits this runs on Creed's platform key; with your own key (BYOK) it runs on your key.",
+      "When you run an AI feature such as quality analysis, the relevant parts of your Strap are sent to OpenRouter to generate the result. On credits this runs on Strap's platform key; with your own key (BYOK) it runs on your key.",
     ],
   },
   {
     id: "use",
-    title: "Why Creed uses information",
+    title: "Why Strap uses information",
     paragraphs: [
-      "Creed uses personal information to provide and run the service, including to create and manage accounts, authenticate users, generate and maintain Creed files, run AI features such as quality analysis, support connected agent reads and proposals, store proposal and activity history, manage tokens and connections, respond to support requests, and comply with legal obligations.",
-      "Under UK GDPR, the main lawful bases Creed is likely to rely on are performance of a contract where processing is needed to provide the service you asked for, legitimate interests where processing is needed to run and secure the service in a proportionate way, and legal obligation where processing is needed to comply with applicable law.",
-      "Where a specific activity depends on consent, Creed will rely on consent for that activity.",
+      "Strap uses personal information to provide and run the service, including to create and manage accounts, authenticate users, generate and maintain Strap files, run AI features such as quality analysis, support connected agent reads and proposals, store proposal and activity history, manage tokens and connections, respond to support requests, and comply with legal obligations.",
+      "Under UK GDPR, the main lawful bases Strap is likely to rely on are performance of a contract where processing is needed to provide the service you asked for, legitimate interests where processing is needed to run and secure the service in a proportionate way, and legal obligation where processing is needed to comply with applicable law.",
+      "Where a specific activity depends on consent, Strap will rely on consent for that activity.",
     ],
   },
   {
     id: "agents",
     title: "Agent access and proposal endpoints",
     paragraphs: [
-      "Creed provides tokenised endpoints that let connected agents interact with a user's Creed.",
+      "Strap provides tokenised endpoints that let connected agents interact with a user's Strap.",
     ],
     bullets: [
-      "A valid read token allows an agent to read the relevant Creed payload.",
-      "A valid proposal token allows an agent to submit a proposal back to Creed.",
+      "A valid read token allows an agent to read the relevant Strap payload.",
+      "A valid proposal token allows an agent to submit a proposal back to Strap.",
       "Proposal submissions may include the agent name, section information, the reason for the proposed change, and draft content.",
-      "Connection metadata may be recorded so Creed can show connection status and recent activity.",
+      "Connection metadata may be recorded so Strap can show connection status and recent activity.",
     ],
-    note: "These tokens are secrets and should be treated carefully. Creed currently stores connection tokens in plain text so the service can verify and use them. Users can rotate tokens, and rotating a token will break existing agent connections that depend on them.",
+    note: "These tokens are secrets and should be treated carefully. Strap currently stores connection tokens in plain text so the service can verify and use them. Users can rotate tokens, and rotating a token will break existing agent connections that depend on them.",
   },
   {
     id: "sharing",
     title: "Sharing with service providers",
     paragraphs: [
-      "Creed uses third-party service providers to operate the service. At the time of writing, these include Supabase for database and auth-related backend services, Vercel for hosting, Google Auth for sign-in, and OpenRouter for AI features such as quality analysis.",
-      "Creed shares information with these providers only as needed to operate the service.",
-      "Creed does not sell your personal information. Creed does not use your content to train models.",
+      "Strap uses third-party service providers to operate the service. At the time of writing, these include Supabase for database and auth-related backend services, Vercel for hosting, Google Auth for sign-in, and OpenRouter for AI features such as quality analysis.",
+      "Strap shares information with these providers only as needed to operate the service.",
+      "Strap does not sell your personal information. Strap does not use your content to train models.",
     ],
   },
   {
     id: "cookies",
     title: "Cookies and sessions",
     paragraphs: [
-      "Creed currently uses only cookies or similar technologies that are necessary for core service operation, such as authentication and session handling.",
-      "Creed does not currently use analytics cookies or marketing cookies.",
+      "Strap currently uses only cookies or similar technologies that are necessary for core service operation, such as authentication and session handling.",
+      "Strap does not currently use analytics cookies or marketing cookies.",
     ],
   },
   {
     id: "retention",
     title: "Retention",
     paragraphs: [
-      "Creed keeps personal information for as long as it is reasonably needed to provide the service, maintain the account, keep proposal and activity history available to the user, and meet legal or operational requirements.",
+      "Strap keeps personal information for as long as it is reasonably needed to provide the service, maintain the account, keep proposal and activity history available to the user, and meet legal or operational requirements.",
     ],
     bullets: [
-      "Account and Creed data are normally kept while your account remains active.",
-      "If you ask for deletion, Creed will delete your account and associated data, subject to any limited retention that may be required for legal, security, fraud-prevention, or administrative reasons.",
+      "Account and Strap data are normally kept while your account remains active.",
+      "If you ask for deletion, Strap will delete your account and associated data, subject to any limited retention that may be required for legal, security, fraud-prevention, or administrative reasons.",
       "If you want a copy of your data before deletion, you can request export first.",
     ],
   },
@@ -133,14 +133,14 @@ const sections: PrivacySection[] = [
       "ask for processing to be restricted",
       "withdraw consent where processing depends on consent",
     ],
-    note: `To make a privacy request, contact ${contactEmail}. Creed also provides account deletion and data export functionality as part of the service.`,
+    note: `To make a privacy request, contact ${contactEmail}. Strap also provides account deletion and data export functionality as part of the service.`,
   },
   {
     id: "contact",
     title: "Contact and complaints",
     paragraphs: [
-      `If you have questions about this policy or how Creed handles personal information, contact ${contactEmail}.`,
-      "If you are unhappy with how Creed handles your personal information, please contact Creed first so there is a chance to help.",
+      `If you have questions about this policy or how Strap handles personal information, contact ${contactEmail}.`,
+      "If you are unhappy with how Strap handles your personal information, please contact Strap first so there is a chance to help.",
       "You also have the right to complain to the UK Information Commissioner's Office (ICO). Information about how to do that is available at ico.org.uk.",
     ],
   },
@@ -148,7 +148,7 @@ const sections: PrivacySection[] = [
     id: "changes",
     title: "Changes to this policy",
     paragraphs: [
-      "Creed may update this Privacy Policy from time to time to reflect changes to the service, legal requirements, or how personal information is handled.",
+      "Strap may update this Privacy Policy from time to time to reflect changes to the service, legal requirements, or how personal information is handled.",
     ],
   },
 ];
@@ -174,15 +174,15 @@ export function PrivacyPageView() {
         <div className="border-b border-[var(--creed-border)] pb-8">
           <AnimatedPageTitle text="Privacy Policy" />
           <p className="t-lede mt-5 max-w-2xl text-[var(--creed-text-secondary)]">
-            How Creed collects, uses, and protects your information.
+            How Strap collects, uses, and protects your information.
           </p>
         </div>
 
         <div className="border-b border-[var(--creed-border)] pb-8 pt-8 text-[var(--creed-text-secondary)]">
           <p className="text-[16px] leading-8 md:text-[17px]">
-            Creed is a service that helps people create and maintain a structured personal context
+            Strap is a service that helps people create and maintain a structured personal context
             file for use with connected AI agents. This notice explains what personal information
-            Creed collects, how it is used, who it is shared with, and the choices you have under
+            Strap collects, how it is used, who it is shared with, and the choices you have under
             UK GDPR.
           </p>
         </div>

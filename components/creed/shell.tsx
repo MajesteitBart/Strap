@@ -152,11 +152,11 @@ export function CreedShell({
   // while working, green when the last run succeeded, red when it failed, and
   // back to the plain "K" badge when idle.
   const agentTile = agentBusy
-    ? { bg: "var(--creed-accent)", label: "Creed is working" }
+    ? { bg: "var(--creed-accent)", label: "Strap is working" }
     : agentRun.status === "result"
-      ? { bg: "#16A34A", label: "Creed finished" }
+      ? { bg: "#16A34A", label: "Strap finished" }
       : agentRun.status === "error"
-        ? { bg: "#DC2626", label: "Creed hit an error" }
+        ? { bg: "#DC2626", label: "Strap hit an error" }
         : null;
   // Desktop sidebar collapse (S key). Collapsed drops every lg: sidebar style
   // so desktop renders the same 48px icon rail as mobile. Persisted so the
@@ -366,7 +366,7 @@ export function CreedShell({
           <div className="flex h-full flex-col">
             <Link
               href="/home"
-              aria-label="Creed home"
+              aria-label="Strap home"
               className={cn(
                 "mx-auto flex h-8 w-8 items-center justify-center rounded-sm transition-opacity duration-200 hover:opacity-60",
                 !collapsed && "lg:hidden"
@@ -378,7 +378,7 @@ export function CreedShell({
             <div className={cn("hidden", !collapsed && "lg:flex lg:items-center lg:justify-between lg:gap-3 lg:pr-2")}>
               <Link
                 href="/home"
-                aria-label="Creed home"
+                aria-label="Strap home"
                 className="flex min-w-0 items-center rounded-sm px-2 py-1.5 transition-opacity duration-200 hover:opacity-60"
               >
                 <CreedWordmark className="ml-0" />

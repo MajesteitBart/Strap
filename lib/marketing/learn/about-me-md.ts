@@ -9,7 +9,7 @@ export const aboutMeMd: Article = {
   datePublished: "2026-07-07",
   dateModified: "2026-07-07",
   lead:
-    "about-me.md is a short Markdown introduction to yourself that you paste into an AI tool so it stops treating you like a stranger. Instead of re-explaining your job, your goals, and how you like answers at the start of every chat, you keep a few lines in one file and drop them into each tool's custom instructions or memory. It is the simplest form of a personal context file, and it takes five minutes to write.\n\nA good about-me.md is short and specific: who you are, what you are working on, how you want to be answered, and any hard limits. If a line would not change how an assistant responds, it does not belong.\n\nThe convention has three real limits. It is static, so it goes stale unless you edit it. It is manual, so you paste it into each tool by hand. And it is per-tool, so every app keeps its own copy and they drift apart. Creed automates all three: it is one personal context file that every AI you connect reads before it answers, kept current by agent proposals you approve.",
+    "about-me.md is a short Markdown introduction to yourself that you paste into an AI tool so it stops treating you like a stranger. Instead of re-explaining your job, your goals, and how you like answers at the start of every chat, you keep a few lines in one file and drop them into each tool's custom instructions or memory. It is the simplest form of a personal context file, and it takes five minutes to write.\n\nA good about-me.md is short and specific: who you are, what you are working on, how you want to be answered, and any hard limits. If a line would not change how an assistant responds, it does not belong.\n\nThe convention has three real limits. It is static, so it goes stale unless you edit it. It is manual, so you paste it into each tool by hand. And it is per-tool, so every app keeps its own copy and they drift apart. Strap automates all three: it is one personal context file that every AI you connect reads before it answers, kept current by agent proposals you approve.",
   body: [
     { type: "h2", text: "What about-me.md is" },
     {
@@ -77,10 +77,10 @@ export const aboutMeMd: Article = {
       type: "p",
       text: "The two are not opposites; a connected context file is what about-me.md wants to be once the manual parts hurt. You keep the same idea, a written introduction an AI reads before it answers, and remove the copying and the drift.",
     },
-    { type: "h2", text: "How Creed automates it" },
+    { type: "h2", text: "How Strap automates it" },
     {
       type: "p",
-      text: "Creed is one personal context file that every AI you connect reads before it answers. Instead of pasting an about-me.md into each app, you connect your agents over MCP, Claude Code, ChatGPT, Cursor, and others, and they read the same profile automatically. As they learn something durable about you, a shifted focus, a sharper preference, they propose a narrow update, and you approve what stays, so the file keeps up with you instead of going stale.",
+      text: "Strap is one personal context file that every AI you connect reads before it answers. Instead of pasting an about-me.md into each app, you connect your agents over MCP, Claude Code, ChatGPT, Cursor, and others, and they read the same profile automatically. As they learn something durable about you, a shifted focus, a sharper preference, they propose a narrow update, and you approve what stays, so the file keeps up with you instead of going stale.",
     },
     {
       type: "p",
@@ -104,9 +104,9 @@ export const aboutMeMd: Article = {
         "It is static, so it goes stale unless you edit it; manual, so you paste it into each tool by hand; and per-tool, so every app keeps its own copy and they drift apart over time.",
     },
     {
-      question: "How is Creed different from pasting an about-me.md?",
+      question: "How is Strap different from pasting an about-me.md?",
       answer:
-        "Creed connects one context file to your agents over MCP so each reads it automatically instead of from a pasted copy, and agents propose updates you approve so it stays current. It is still plain Markdown you own and can export anytime.",
+        "Strap connects one context file to your agents over MCP so each reads it automatically instead of from a pasted copy, and agents propose updates you approve so it stays current. It is still plain Markdown you own and can export anytime.",
     },
   ],
   related: [

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-const STATUS_URL = "https://status.creed.md/api/summary";
+const STATUS_URL = process.env.STATUS_API_URL?.trim();
 
 type StatusColor = "green" | "yellow" | "red";
 
@@ -12,6 +12,13 @@ const CACHE_HEADERS = {
 } as const;
 
 export async function GET() {
+  if (!STATUS_URL) {
+    return NextResponse.json(
+      { label: "Status unavailable", color: "yellow" satisfies StatusColor },
+      { status: 200, headers: CACHE_HEADERS },
+    );
+  }
+
   try {
     const response = await fetch(STATUS_URL, { next: { revalidate: 60 } });
 

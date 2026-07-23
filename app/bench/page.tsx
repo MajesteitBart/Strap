@@ -11,7 +11,7 @@ import { breadcrumbSchema, graph, webPageSchema } from "@/lib/seo/structured-dat
 const PATH = "/bench";
 const TITLE = "Benchmarks";
 const DESCRIPTION =
-  "How well frontier models perform when using Creed: reading a personal context file, respecting it, and proposing good updates. Coming soon.";
+  "How well frontier models perform when using Strap: reading a personal context file, respecting it, and proposing good updates. Coming soon.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -31,7 +31,7 @@ export default function BenchPage() {
         data={graph(
           webPageSchema({ path: PATH, name: TITLE, description: DESCRIPTION }),
           breadcrumbSchema(PATH, [
-            { name: "Creed", path: "/home" },
+            { name: "Strap", path: "/home" },
             { name: "Benchmarks", path: PATH },
           ])
         )}
@@ -43,7 +43,7 @@ export default function BenchPage() {
           <div className="border-b border-[var(--creed-border)] pb-8">
             <AnimatedPageTitle text={TITLE} />
             <p className="mt-5 max-w-2xl text-[18px] leading-8 text-[var(--creed-text-secondary)]">
-              How well frontier models perform when using Creed: reading your
+              How well frontier models perform when using Strap: reading your
               context file, respecting what it says, and proposing updates
               worth keeping. Measured the same way for every model, published
               here soon.

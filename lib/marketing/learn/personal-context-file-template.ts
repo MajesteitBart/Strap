@@ -9,7 +9,7 @@ export const personalContextFileTemplate: Article = {
   datePublished: "2026-07-07",
   dateModified: "2026-07-07",
   lead:
-    "A personal context file is one structured Markdown profile that every AI you connect reads before it answers. This is a full template you can copy today. It has ten sections: five always-on core sections that everyone fills in, Identity, Goals, Work, Preferences, and Routines, plus five optional ones, Beliefs, Constraints, People, Health, and Context, that you add only when they earn their place.\n\nCopy the template below, delete the placeholder lines, and replace them with facts that actually change how an AI should respond to you. The guiding rule is specific over complete: a short profile that changes answers beats a long one that reads like a resume. If a line would not change what an assistant says, leave it out.\n\nYou can keep this file anywhere and paste it into each tool by hand. Creed keeps the same ten-section profile live, connects it to your agents over MCP, and lets them propose narrow updates you approve, so the file follows you across every tool and stays current without manual copying.",
+    "A personal context file is one structured Markdown profile that every AI you connect reads before it answers. This is a full template you can copy today. It has ten sections: five always-on core sections that everyone fills in, Identity, Goals, Work, Preferences, and Routines, plus five optional ones, Beliefs, Constraints, People, Health, and Context, that you add only when they earn their place.\n\nCopy the template below, delete the placeholder lines, and replace them with facts that actually change how an AI should respond to you. The guiding rule is specific over complete: a short profile that changes answers beats a long one that reads like a resume. If a line would not change what an assistant says, leave it out.\n\nYou can keep this file anywhere and paste it into each tool by hand. Strap keeps the same ten-section profile live, connects it to your agents over MCP, and lets them propose narrow updates you approve, so the file follows you across every tool and stays current without manual copying.",
   body: [
     { type: "h2", text: "The template" },
     {
@@ -101,7 +101,7 @@ export const personalContextFileTemplate: Article = {
     { type: "h2", text: "Keeping the template alive" },
     {
       type: "p",
-      text: "A template is a starting point; the value is in keeping it true. Written by hand, that means editing the file and repasting it into each tool whenever something changes. Creed keeps this same ten-section profile in one place, lets every connected agent read it before it answers, and has agents propose narrow updates as they learn something durable about you, so the file stays sharp instead of just longer.",
+      text: "A template is a starting point; the value is in keeping it true. Written by hand, that means editing the file and repasting it into each tool whenever something changes. Strap keeps this same ten-section profile in one place, lets every connected agent read it before it answers, and has agents propose narrow updates as they learn something durable about you, so the file stays sharp instead of just longer.",
     },
   ],
   faq: [
@@ -118,7 +118,7 @@ export const personalContextFileTemplate: Article = {
     {
       question: "Can I just copy this template and use it everywhere?",
       answer:
-        "Yes. Fill it in, save it as Markdown, and paste it into each tool's custom instructions or memory. To skip the manual copying and keep it current, use Creed, which connects the same ten-section profile to your agents over MCP.",
+        "Yes. Fill it in, save it as Markdown, and paste it into each tool's custom instructions or memory. To skip the manual copying and keep it current, use Strap, which connects the same ten-section profile to your agents over MCP.",
     },
     {
       question: "What should I leave out of a context file?",

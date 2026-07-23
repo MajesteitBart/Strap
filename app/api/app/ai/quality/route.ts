@@ -41,7 +41,7 @@ export async function POST(request: Request) {
     const companyId = companyEntry ? active!.creedId : undefined;
     const reportCreedId = companyId ?? (await getPersonalCreedId(admin, auth.user.id));
     if (!reportCreedId) {
-      return NextResponse.json({ error: "No Creed found for this account." }, { status: 400 });
+      return NextResponse.json({ error: "No Strap found for this account." }, { status: 400 });
     }
 
     if (body.readOnly) {
@@ -84,7 +84,7 @@ export async function POST(request: Request) {
     return NextResponse.json(result);
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Could not analyze Creed quality." },
+      { error: error instanceof Error ? error.message : "Could not analyze Strap quality." },
       { status: 400 }
     );
   }

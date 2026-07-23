@@ -6,7 +6,7 @@ import { breadcrumbSchema, graph, webPageSchema } from "@/lib/seo/structured-dat
 const PATH = "/stack";
 const TITLE = "Stack";
 const DESCRIPTION =
-  "The technology Creed uses to run, store, and process your data.";
+  "The technology Strap uses to run, store, and process your data.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -21,7 +21,7 @@ export default function StackPage() {
         data={graph(
           webPageSchema({ path: PATH, name: TITLE, description: DESCRIPTION }),
           breadcrumbSchema(PATH, [
-            { name: "Creed", path: "/home" },
+            { name: "Strap", path: "/home" },
             { name: "Stack", path: PATH },
           ])
         )}

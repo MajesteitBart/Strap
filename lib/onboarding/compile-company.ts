@@ -42,12 +42,12 @@ export const EMPTY_COMPANY_ONBOARDING: CompanyOnboardingState = {
 const ETHOS_STUB =
   "Add what this company believes and how it wants AI to reason on its behalf.";
 const CLIENTS_STUB =
-  "Add the clients or partners this Creed should know about.";
+  "Add the clients or partners this Strap should know about.";
 const TOOLS_STUB = "Add the tools, systems, and stack the company works in.";
 const PEOPLE_STUB =
   "Add the people on the team and what each is responsible for.";
 const PROJECTS_STUB =
-  "Add the projects and products this Creed should know about.";
+  "Add the projects and products this Strap should know about.";
 
 function normalizeWhitespace(value: string) {
   return value
@@ -188,7 +188,7 @@ export function buildCompanyOnboardingSections(
   const contentById: Record<string, string> = {
     company: `${
       paragraphContent(companyBody) ||
-      `<p>${escapeHtml("Add what the company does and who this Creed is for.")}</p>`
+      `<p>${escapeHtml("Add what the company does and who this Strap is for.")}</p>`
     }${graphTags(["Ethos", "Projects", "People"])}`,
     ethos: `${paragraphContent(ETHOS_STUB)}${graphTags(["Company", "Operating Rules", "Agent Rules"])}`,
     "operating-rules": `${bulletList(
@@ -214,7 +214,7 @@ export function buildCompanyOnboardingSections(
       toRuleLines(state.agentsGetWrong, 6).length
         ? toRuleLines(state.agentsGetWrong, 6)
         : [
-            "Read this Creed before acting. Propose changes; do not overwrite canonical context.",
+            "Read this Strap before acting. Propose changes; do not overwrite canonical context.",
           ],
     )}${graphTags(["Company", "Operating Rules", "Tools"])}`,
   };

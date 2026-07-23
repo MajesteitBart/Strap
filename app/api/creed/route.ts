@@ -21,7 +21,7 @@ export async function GET(request: Request) {
 
   if (!token) {
     return new NextResponse(
-      "Missing bearer token. Send the Creed token in an `Authorization: Bearer <token>` header.",
+      "Missing bearer token. Send the Strap token in an `Authorization: Bearer <token>` header.",
       { status: 401 }
     );
   }

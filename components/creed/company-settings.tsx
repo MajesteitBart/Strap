@@ -70,6 +70,7 @@ import {
 } from "@/lib/creed-data";
 import { permissionsUpTo } from "@/lib/creed-permissions";
 import { cn } from "@/lib/utils";
+import { STRAP_FILE_NAME } from "@/lib/profile-file";
 
 // A section's accent chip colour, tolerating custom/unknown accents the same
 // way the connections charts do.
@@ -906,7 +907,7 @@ export function CompanySettings() {
 
   async function doDelete() {
     if (await post("/api/app/company", { creedId }, "DELETE")) {
-      toast.success("Company Creed deleted.");
+      toast.success("Company Strap deleted.");
       router.push("/file");
       router.refresh();
     }
@@ -1213,7 +1214,7 @@ export function CompanySettings() {
             All sections
           </div>
           <div className="mt-2 hidden max-w-xl text-[14px] leading-7 text-[var(--creed-text-secondary)] md:block">
-            What your connected agents may do across this company Creed.
+            What your connected agents may do across this company Strap.
           </div>
         </div>
         <SectionPermissionControl
@@ -1754,13 +1755,13 @@ export function CompanySettings() {
           className="rounded-md border-[var(--creed-border)]"
           onClick={() =>
             downloadFile(
-              "creed.md",
+              STRAP_FILE_NAME,
               exportMarkdown(),
               "text/markdown;charset=utf-8",
             )
           }
         >
-          Export Creed as markdown
+          Export Strap as markdown
         </AnimatedIconButton>
         <AnimatedIconButton
           icon={DownloadIcon}
@@ -1842,10 +1843,10 @@ export function CompanySettings() {
           <div className="flex items-center justify-between gap-5">
             <div className="min-w-0">
               <div className="text-[15px] font-medium text-[#DC2626]">
-                Delete company Creed
+                Delete company Strap
               </div>
               <div className="mt-2 hidden text-[14px] leading-7 text-[#DC2626] md:block">
-                Permanently deletes the company Creed and all its content for
+                Permanently deletes the company Strap and all its content for
                 every member.
               </div>
             </div>
@@ -1963,11 +1964,11 @@ export function CompanySettings() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-3">
               <AlertTriangle className="h-5 w-5 text-[#B91C1C]" />
-              Delete company Creed
+              Delete company Strap
             </DialogTitle>
           </DialogHeader>
           <p className="text-[14px] leading-7 text-[var(--creed-text-secondary)]">
-            This permanently deletes the company Creed and all its content for
+            This permanently deletes the company Strap and all its content for
             everyone. This cannot be undone. Type the company name to confirm.
           </p>
           <Input

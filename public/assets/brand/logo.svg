@@ -1,3 +1,22 @@
-<svg width="157" height="244" viewBox="0 0 157 244" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path fill-rule="evenodd" clip-rule="evenodd" d="M156.933 25.8912C156.933 20.7784 154.195 16.6983 150.393 15.8682L50.9658 0.803271C44.5184 -0.207948 40.9037 -0.418287 34.4571 1.07663C21.983 4.53448 19.5 5.55155 7.17942 9.52026C1.74415 10.8567 0 14.8659 0 20.1608L0.111545 226.189C0.111545 231.049 3.30578 234.218 7.6763 235.676C14.085 237.863 21.4368 240.262 28.6264 242.489C33.5546 244.038 38.9088 244.038 45.3885 243.664C52.3144 243.259 92.9167 236.617 149.835 229.044C154.347 228.447 156.913 224.772 156.913 221.087L156.964 25.8912H156.933ZM132.87 192.425C134.736 192.222 139.37 190.127 139.37 184.639V59.9491C139.502 57.4788 137.747 52.9533 132.657 52.5382L75.9822 44.5097C70.8917 44.297 68.1639 47.9924 68.1639 51.4043V194.055C68.3769 196.525 70.2731 200.362 75.3535 199.542L132.87 192.425Z" fill="black"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 207 220" role="img" aria-labelledby="strap-mark-title strap-mark-desc">
+  <title id="strap-mark-title">Strap</title>
+  <desc id="strap-mark-desc">The Strap symbol in blue, orange, purple, and yellow.</desc>
+  <defs>
+    <linearGradient id="strap-blue" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2852DB"/><stop offset="1" stop-color="#223CC8"/>
+    </linearGradient>
+    <linearGradient id="strap-orange" x1="0" y1="0" x2="0.9" y2="1">
+      <stop offset="0" stop-color="#F47621"/><stop offset="1" stop-color="#EA631F"/>
+    </linearGradient>
+    <linearGradient id="strap-purple" x1="0" y1="0" x2="1" y2="0.8">
+      <stop offset="0" stop-color="#805FE7"/><stop offset="1" stop-color="#684ECB"/>
+    </linearGradient>
+    <linearGradient id="strap-yellow" x1="0" y1="0" x2="0.9" y2="1">
+      <stop offset="0" stop-color="#F8B132"/><stop offset="1" stop-color="#FFC842"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#strap-blue)" d="M0 52C0 23.28 23.28 0 52 0H97V52C97 80.72 73.72 104 45 104H0Z"/>
+  <path fill="url(#strap-orange)" d="M115 0H160C185.96 0 207 21.04 207 47V104H115Z"/>
+  <path fill="url(#strap-purple)" d="M0 124H97V220H52C23.28 220 0 196.72 0 168Z"/>
+  <path fill="url(#strap-yellow)" d="M96 220C96 167 123 124 165 124H207V220Z"/>
 </svg>

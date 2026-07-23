@@ -14,7 +14,7 @@ export async function GET(request: Request) {
 
   const creedId = new URL(request.url).searchParams.get("creedId")?.trim();
   if (!creedId) {
-    return NextResponse.json({ error: "Missing Creed id." }, { status: 400 });
+    return NextResponse.json({ error: "Missing Strap id." }, { status: 400 });
   }
 
   const admin = getSupabaseAdminClient();

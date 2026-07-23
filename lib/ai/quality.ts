@@ -815,7 +815,7 @@ export async function analyzeCreedQuality({
     messages: [
       {
         role: "system",
-        content: `Score how well this Creed (${qualitySubjectText.noun}) ${qualitySubjectText.purpose}. Use rubric ${CREED_QUALITY_RUBRIC_VERSION}. Be strict, specific, and consistent. Judge how complete, accurate, current, and concrete the file is - not how it would help engineering. Return valid JSON only.`,
+        content: `Score how well this Strap (${qualitySubjectText.noun}) ${qualitySubjectText.purpose}. Use rubric ${CREED_QUALITY_RUBRIC_VERSION}. Be strict, specific, and consistent. Judge how complete, accurate, current, and concrete the file is - not how it would help engineering. Return valid JSON only.`,
       },
       {
         role: "user",

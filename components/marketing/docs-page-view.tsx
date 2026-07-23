@@ -99,9 +99,9 @@ const sections: DocsSection[] = [
     id: "overview",
     label: "Overview",
     group: "Start here",
-    title: "What Creed is",
+    title: "What Strap is",
     paragraphs: [
-      "Creed is your personal context profile. One file that captures who you are: values, goals, work, preferences, constraints, people, health, routines. Any AI you talk to knows you instantly instead of starting from zero every conversation.",
+      "Strap is your personal context profile. One file that captures who you are: values, goals, work, preferences, constraints, people, health, routines. Any AI you talk to knows you instantly instead of starting from zero every conversation.",
       "It is not a journal, scratchpad, or chat log. The value comes from keeping the profile concise, current, and specific enough that every section actually changes how AI replies to you.",
       "It works the same whether you write code all day or never touch a terminal. The structure is identical for everyone; only the examples shift to match how you work.",
     ],
@@ -110,18 +110,18 @@ const sections: DocsSection[] = [
     id: "how-it-works",
     label: "How it works",
     group: "Start here",
-    title: "How Creed works",
+    title: "How Strap works",
     paragraphs: [
-      "Creed runs on a simple loop: you write yourself down once, connected agents read that file before they answer you, and they propose small updates as they learn. You approve the good ones and the profile sharpens over time.",
+      "Strap runs on a simple loop: you write yourself down once, connected agents read that file before they answer you, and they propose small updates as they learn. You approve the good ones and the profile sharpens over time.",
     ],
   },
   {
     id: "anatomy",
-    label: "What goes in a Creed",
+    label: "What goes in a Strap",
     group: "Start here",
-    title: "What goes in a Creed",
+    title: "What goes in a Strap",
     paragraphs: [
-      "A Creed has ten sections: five always-on core sections everyone fills in, and five optional ones that appear only once you use them. The whole thing is plain Markdown, sized to read end to end in under a minute.",
+      "A Strap has ten sections: five always-on core sections everyone fills in, and five optional ones that appear only once you use them. The whole thing is plain Markdown, sized to read end to end in under a minute.",
       "Aim for specific over complete. A short profile that changes how AI replies beats a long one that reads like a resume.",
     ],
   },
@@ -139,17 +139,17 @@ const sections: DocsSection[] = [
   },
   {
     id: "company-creed",
-    label: "Company Creed",
+    label: "Company Strap",
     group: "Company plan",
-    title: "Company Creed",
+    title: "Company Strap",
     paragraphs: [
-      "The Company plan adds one shared Company Creed on top of your personal one. It is the same structured file, owned by the team instead of a person, so every member's agents read the same company context before they act: how the team works, what it is building, the conventions and constraints that apply to everyone.",
-      "Members switch between their personal Creed and any Company Creed they belong to from the workspace dropdown. Roles decide what each person and their agents can do. Owners manage members and company settings, admins manage members and content, and members read and propose. Section permissions can loosen or tighten who edits what, and every change is attributed and visible in the team activity view.",
-      "A Company Creed is free. Invite as many members as you need, and run AI on the deployment's included key or on your company's own OpenRouter key (BYOK).",
+      "The Company plan adds one shared Company Strap on top of your personal one. It is the same structured file, owned by the team instead of a person, so every member's agents read the same company context before they act: how the team works, what it is building, the conventions and constraints that apply to everyone.",
+      "Members switch between their personal Strap and any Company Strap they belong to from the workspace dropdown. Roles decide what each person and their agents can do. Owners manage members and company settings, admins manage members and content, and members read and propose. Section permissions can loosen or tighten who edits what, and every change is attributed and visible in the team activity view.",
+      "A Company Strap is free. Invite as many members as you need, and run AI on the deployment's included key or on your company's own OpenRouter key (BYOK).",
     ],
     bullets: [
-      "Create one from the pricing page. You do not need a personal Creed first, only a Creed account.",
-      "Invite members by email. They join, connect their own agents over MCP, and read the shared Company Creed.",
+      "Create one from the pricing page. You do not need a personal Strap first, only a Strap account.",
+      "Invite members by email. They join, connect their own agents over MCP, and read the shared Company Strap.",
       "Roles: Owner (company settings, members, content), Admin (members, content), Member (read and propose).",
       "Section permissions control who can edit each section directly versus by proposal.",
       "The activity view shows reads, proposals, and edits across every member and agent.",
@@ -161,35 +161,35 @@ const sections: DocsSection[] = [
     group: "Connect your agents",
     title: "Connecting over MCP",
     paragraphs: [
-      "Creed MCP uses OAuth, so there is nothing to copy. You add the Creed server URL to your agent as a custom MCP connector; the agent opens a browser, you click Allow on the Creed consent screen while signed in to creed.md, and it stays connected. The exact URL is on your Connections page (https://creed.md/mcp on the hosted app).",
-      "After connecting, the agent reads Creed once to confirm access, then reads it before meaningful work and proposes narrow updates as it learns. You should not need a second setup prompt.",
+      "Strap MCP uses OAuth, so there is nothing to copy. You add the Strap server URL to your agent as a custom MCP connector; the agent opens a browser, you click Allow on the Strap consent screen while signed in to strap.bvdm.ai, and it stays connected. The exact URL is on your Connections page (https://strap.bvdm.ai/mcp on the hosted app).",
+      "After connecting, the agent reads Strap once to confirm access, then reads it before meaningful work and proposes narrow updates as it learns. You should not need a second setup prompt.",
     ],
     bullets: [
       "Connect from the Connections page: copy the server URL, or use the per-agent command or one-click button.",
-      "The first time the agent calls Creed it runs the OAuth flow and opens a browser. Approve while signed in to creed.md. Tokens refresh automatically after that.",
+      "The first time the agent calls Strap it runs the OAuth flow and opens a browser. Approve while signed in to strap.bvdm.ai. Tokens refresh automatically after that.",
       "Verify by listing the MCP tools and calling read_creed once. Do not claim connected unless read_creed succeeds.",
       "Update sections with the flat creed_* tools. The server applies the edit directly or as a proposal based on each section's permission; get_write_policy reports what's allowed.",
-      "If anything is unclear during setup, read https://creed.md/docs once and follow it.",
+      "If anything is unclear during setup, read https://strap.bvdm.ai/docs once and follow it.",
     ],
   },
   {
-    id: "creed-cli",
-    label: "Creed CLI",
+    id: "strap-cli",
+    label: "Strap CLI",
     group: "Connect your agents",
-    title: "Creed CLI",
+    title: "Strap CLI",
     paragraphs: [
-      "Creed CLI brings the complete live MCP surface into your terminal. Install it from npm, run creed, approve the same OAuth consent screen used by other agents, and then call any Creed tool directly or use the interactive terminal.",
-      "The CLI discovers tools, resources, prompts, descriptions, and input schemas from the live Creed MCP server. New MCP capabilities appear automatically without a second implementation in the CLI.",
+      "Strap CLI brings the complete live MCP surface into your terminal. Install it from npm, run strap, approve the same OAuth consent screen used by other agents, and then call any Strap tool directly or use the interactive terminal.",
+      "The CLI discovers tools, resources, prompts, descriptions, and input schemas from the live Strap MCP server. New MCP capabilities appear automatically without a second implementation in the CLI.",
     ],
     bullets: [
-      "Install globally with npm install --global creed-cli, then run creed.",
-      "Run without installing with npx creed-cli.",
-      "Check the connection and live capability counts with creed doctor.",
-      "Use creed status for local credential state; use creed doctor when you need a live server check.",
-      "List exact tool names with creed tools, or call one with creed call read_creed.",
+      "Install globally with npm install --global @bvdm/strap, then run strap.",
+      "Run without installing with npx @bvdm/strap.",
+      "Check the connection and live capability counts with strap doctor.",
+      "Use strap status for local credential state; use strap doctor when you need a live server check.",
+      "List exact tool names with strap tools, or call one with strap call read_creed.",
       "Use the per-agent --agent ID from the Connections page for attributed CLI status and last-seen times.",
       "Use --json for scripts and coding agents. Diagnostics stay on stderr and structured output stays on stdout.",
-      "Run creed logout to revoke the OAuth grant and remove local credentials.",
+      "Run strap logout to revoke the OAuth grant and remove local credentials.",
     ],
   },
   {
@@ -202,11 +202,11 @@ const sections: DocsSection[] = [
     ],
     bullets: [
       "No browser popup: re-run the agent's connect or auth action (/mcp in Claude Code, codex mcp login creed, opencode mcp auth creed). It opens your default browser.",
-      "Stuck on sign-in: authorize while signed in to creed.md in that browser. Signed out, the consent screen signs you in first, then returns to Allow.",
+      "Stuck on sign-in: authorize while signed in to strap.md in that browser. Signed out, the consent screen signs you in first, then returns to Allow.",
       "401 or 'unauthorized' from the MCP endpoint: the client isn't authorized yet or the token expired. Reconnect or re-run the auth step to get a fresh token.",
-      "An old connection stopped working: Creed moved from static tokens to OAuth. Remove the old server entry, re-add it by URL, and authorize again.",
+      "An old connection stopped working: Strap moved from static tokens to OAuth. Remove the old server entry, re-add it by URL, and authorize again.",
       "Registration fails on connect: make sure the client supports OAuth-based remote MCP (Claude, Cursor, Codex, OpenCode, ChatGPT connectors all do).",
-      "You must have an active, set-up Creed to authorize. Finish onboarding first if the consent screen asks you to.",
+      "You must have an active, set-up Strap to authorize. Finish onboarding first if the consent screen asks you to.",
     ],
   },
   {
@@ -215,7 +215,7 @@ const sections: DocsSection[] = [
     group: "Agent guides",
     title: "Chatbots",
     paragraphs: [
-      "Connect Creed to the assistants you chat with. Each one reads your profile before it answers and can propose updates you approve.",
+      "Connect Strap to the assistants you chat with. Each one reads your profile before it answers and can propose updates you approve.",
     ],
   },
   {
@@ -224,7 +224,7 @@ const sections: DocsSection[] = [
     group: "Agent guides",
     title: "Assistant agents",
     paragraphs: [
-      "Long-running assistants can keep your profile current on their own. Point them at Creed and let them review it on a cadence you trust.",
+      "Long-running assistants can keep your profile current on their own. Point them at Strap and let them review it on a cadence you trust.",
     ],
   },
   {
@@ -233,7 +233,7 @@ const sections: DocsSection[] = [
     group: "Agent guides",
     title: "Coding agents",
     paragraphs: [
-      "Coding agents read Creed before they plan or write, so they match your stack, your conventions, and how you like to work.",
+      "Coding agents read Strap before they plan or write, so they match your stack, your conventions, and how you like to work.",
     ],
   },
   {
@@ -247,11 +247,11 @@ const sections: DocsSection[] = [
   },
   {
     id: "how-agents-should-use-creed",
-    label: "How AI uses Creed",
-    group: "How agents use Creed",
-    title: "How AI should use Creed",
+    label: "How AI uses Strap",
+    group: "How agents use Strap",
+    title: "How AI should use Strap",
     paragraphs: [
-      "Connected agents read Creed before answering you, let it shape how they reply, and propose narrow updates as they learn new things about you. You approve the good ones and the profile sharpens over time.",
+      "Connected agents read Strap before answering you, let it shape how they reply, and propose narrow updates as they learn new things about you. You approve the good ones and the profile sharpens over time.",
     ],
     bullets: [
       "Read the visible profile before answering, planning, recommending, or scheduling anything.",
@@ -259,13 +259,13 @@ const sections: DocsSection[] = [
       "Respect constraints and routines without being asked to repeat them.",
       "When something new is learned about the user, propose a small focused update to the right section.",
       "Keep the profile concise. Propose tightening or pruning when a section is stale or bloated.",
-      "Never use Creed as a session log, mood tracker, or place for things only true today.",
+      "Never use Strap as a session log, mood tracker, or place for things only true today.",
     ],
   },
   {
     id: "when-to-propose",
     label: "When to propose",
-    group: "How agents use Creed",
+    group: "How agents use Strap",
     title: "When to propose",
     paragraphs: [
       "Propose an update when you learn something durable about the user, something that would change how a future AI should reply to them, not just a one-time mood or task. The test is: would this make every next AI conversation better?",
@@ -275,7 +275,7 @@ const sections: DocsSection[] = [
   {
     id: "how-each-section-works",
     label: "How each section works",
-    group: "How agents use Creed",
+    group: "How agents use Strap",
     title: "How each section works",
     paragraphs: [
       "Each section captures a different kind of context about the user. Good agents aim updates at the section that best matches what they learned instead of dumping everything into one bucket.",
@@ -284,16 +284,16 @@ const sections: DocsSection[] = [
   {
     id: "good-and-bad-proposal-examples",
     label: "Good vs bad examples",
-    group: "How agents use Creed",
+    group: "How agents use Strap",
     title: "Good and bad proposal examples",
     paragraphs: [
-      "Examples are often more useful than abstract rules. These are the kinds of updates Creed should accept and the kinds it should keep out.",
+      "Examples are often more useful than abstract rules. These are the kinds of updates Strap should accept and the kinds it should keep out.",
     ],
   },
   {
     id: "maintaining",
     label: "Keeping it current",
-    group: "How agents use Creed",
+    group: "How agents use Strap",
     title: "Keeping your profile current",
     paragraphs: [
       "When you finish helping the user with something real, ask: did I learn something durable about them? Did anything in the profile look stale or wrong? Only then decide whether to propose an update.",
@@ -319,9 +319,9 @@ const sections: DocsSection[] = [
     id: "quality",
     label: "Quality scoring",
     group: "Keep it sharp",
-    title: "How Creed measures quality",
+    title: "How Strap measures quality",
     paragraphs: [
-      "Creed can score how good your profile is, section by section, and surface where to sharpen it. Quality analysis runs on a monthly AI allowance included with your plan, with prepaid top-ups when you need more, or on your own OpenRouter key at cost.",
+      "Strap can score how good your profile is, section by section, and surface where to sharpen it. Quality analysis runs on a monthly AI allowance included with your plan, with prepaid top-ups when you need more, or on your own OpenRouter key at cost.",
       "It judges how context is written, never what it is about. A section on work and a section on LEGO are held to the same bar. The only question is whether it helps the next AI know you better.",
     ],
   },
@@ -331,7 +331,7 @@ const sections: DocsSection[] = [
     group: "Reference",
     title: "MCP tools, prompts, and resources",
     paragraphs: [
-      "Once connected, an agent has a focused set of tools for reading and improving your Creed. The flat creed_ tools are the recommended path: each one applies your change directly when that section allows direct edits, or files it as a proposal when approval is on. You never pick the mode; the server does, and every call reports what happened.",
+      "Once connected, an agent has a focused set of tools for reading and improving your Strap. The flat creed_ tools are the recommended path: each one applies your change directly when that section allows direct edits, or files it as a proposal when approval is on. You never pick the mode; the server does, and every call reports what happened.",
     ],
   },
   {
@@ -349,7 +349,7 @@ const sections: DocsSection[] = [
     group: "Reference",
     title: "Your data and privacy",
     paragraphs: [
-      "Creed is built so the file stays yours: portable, encrypted, and only ever visible to you.",
+      "Strap is built so the file stays yours: portable, encrypted, and only ever visible to you.",
     ],
     bullets: [
       "One file, plain Markdown. It stays portable, and you can push or pull it to your own GitHub repo from Settings.",
@@ -371,7 +371,7 @@ const loopSteps: LoopStep[] = [
   {
     step: "2",
     title: "Agents read it",
-    body: "Every connected agent reads your Creed before it answers, so it starts knowing your role, goals, and preferences instead of guessing.",
+    body: "Every connected agent reads your Strap before it answers, so it starts knowing your role, goals, and preferences instead of guessing.",
   },
   {
     step: "3",
@@ -466,10 +466,10 @@ const perClientIntro =
   "Every MCP client connects from the same server URL. These are the per-client steps; each one ends with a browser approval.";
 
 const perClientSteps: string[] = [
-  "Claude Code: run claude mcp add -t http creed https://creed.md/mcp, then /mcp to authorize in the browser.",
-  "Codex: run codex mcp add creed --url https://creed.md/mcp, then codex mcp login creed to authorize.",
+  "Claude Code: run claude mcp add -t http creed https://strap.bvdm.ai/mcp, then /mcp to authorize in the browser.",
+  "Codex: run codex mcp add creed --url https://strap.bvdm.ai/mcp, then codex mcp login creed to authorize.",
   "Cursor: use the one-click Add MCP button on the Connections page, then authorize in the browser.",
-  "OpenCode: add Creed to opencode.json as a remote server (type remote, the server URL), then run opencode mcp auth creed to authorize.",
+  "OpenCode: add Strap to opencode.json as a remote server (type remote, the server URL), then run opencode mcp auth creed to authorize.",
   "ChatGPT and other MCP chatbots: add a custom connector with the server URL and approve in the browser.",
   "Any other MCP client: add the server URL as a custom or remote MCP server and approve when prompted. Non-MCP clients can fall back to the HTTP read API.",
 ];
@@ -494,12 +494,12 @@ const afterWorkBullets: string[] = [
   "Check whether any section now reads as stale, vague, duplicated, or contradicted.",
   "Prefer one sharp refinement or prune over several loose additions.",
   "If yes, propose it proactively without asking what to propose.",
-  "If no, do nothing and leave Creed unchanged.",
+  "If no, do nothing and leave Strap unchanged.",
   "If you spot a problem in the profile itself, propose the fix and flag it clearly.",
 ];
 
 const recurringIntro: string[] = [
-  "The best Creed setups also revisit the file on a cadence. A small recurring review compares the profile with what's actually true now, sharpens what belongs, and prunes what's gone stale.",
+  "The best Strap setups also revisit the file on a cadence. A small recurring review compares the profile with what's actually true now, sharpens what belongs, and prunes what's gone stale.",
   "Recurring maintenance should improve quality, not volume. The goal is to keep the profile concise and current.",
 ];
 
@@ -624,13 +624,13 @@ const referenceItems: ReferenceItem[] = [
     kind: "Prompt",
     name: "introduce-me",
     description:
-      "Read my Creed and introduce me the way a sharp collaborator would.",
+      "Read my Strap and introduce me the way a sharp collaborator would.",
   },
   {
     kind: "Prompt",
     name: "tighten-my-creed",
     description:
-      "Review my Creed and propose tightening or pruning where it has drifted.",
+      "Review my Strap and propose tightening or pruning where it has drifted.",
   },
   {
     kind: "Resource",
@@ -780,7 +780,7 @@ const exampleGroups: ExampleGroup[] = [
   {
     title: "Goals",
     good: [
-      "Ship Creed v1 to public launch by end of June; current focus is onboarding polish.",
+      "Ship Strap v1 to public launch by end of June; current focus is onboarding polish.",
       "Move to Lisbon in Q4. Researching neighborhoods and visa paths now.",
     ],
     bad: [
@@ -837,25 +837,25 @@ const agentCardsBySection: Record<string, AgentCard[]> = {
       name: "Claude",
       glyph: "claude",
       blurb:
-        "Add Creed as a connector in Claude. It reads your profile before replying and proposes refinements as it learns about you.",
+        "Add Strap as a connector in Claude. It reads your profile before replying and proposes refinements as it learns about you.",
     },
     {
       name: "ChatGPT",
       glyph: "chatgpt",
       blurb:
-        "Add Creed as a connector. ChatGPT picks up your context at the start of a chat and can suggest updates you approve in Creed.",
+        "Add Strap as a connector. ChatGPT picks up your context at the start of a chat and can suggest updates you approve in Strap.",
     },
     {
       name: "Grok",
       glyph: "grok",
       blurb:
-        "Connect Creed in Grok so it starts every chat with your context and suggests refinements as it learns.",
+        "Connect Strap in Grok so it starts every chat with your context and suggests refinements as it learns.",
     },
     {
       name: "Whirl",
       glyph: "whirl",
       blurb:
-        "Connect Creed in Whirl so it answers with your context from the first message and proposes updates over time.",
+        "Connect Strap in Whirl so it answers with your context from the first message and proposes updates over time.",
     },
   ],
   "agents-assistants": [
@@ -869,7 +869,7 @@ const agentCardsBySection: Record<string, AgentCard[]> = {
       name: "Hermes",
       glyph: "hermes",
       blurb:
-        "Keep Creed in a stable bootstrap path and use scheduled scripts to revisit durable context on a cadence you trust.",
+        "Keep Strap in a stable bootstrap path and use scheduled scripts to revisit durable context on a cadence you trust.",
     },
   ],
   "agents-coding": [
@@ -883,19 +883,19 @@ const agentCardsBySection: Record<string, AgentCard[]> = {
       name: "Codex",
       glyph: "codex",
       blurb:
-        "Add Creed with codex mcp add, then codex mcp login. Schedule a periodic review that proposes tightening when goals or preferences shift.",
+        "Add Strap with codex mcp add, then codex mcp login. Schedule a periodic review that proposes tightening when goals or preferences shift.",
     },
     {
       name: "OpenCode",
       glyph: "opencode",
       blurb:
-        "Add Creed as a remote server in opencode.json, then opencode mcp auth creed. Reference it from your bootstrap instructions to keep it current.",
+        "Add Strap as a remote server in opencode.json, then opencode mcp auth creed. Reference it from your bootstrap instructions to keep it current.",
     },
     {
       name: "Cursor",
       glyph: "cursor",
       blurb:
-        "Use the one-click Add MCP button on Connections, then authorize. Creed shapes Cursor's answers around how you actually work.",
+        "Use the one-click Add MCP button on Connections, then authorize. Strap shapes Cursor's answers around how you actually work.",
     },
   ],
   "agents-custom": [
@@ -1082,7 +1082,7 @@ export function DocsPageView() {
         <div className="border-b border-[var(--creed-border)] pb-8">
           <AnimatedPageTitle text="Docs" />
           <p className="mt-5 max-w-5xl t-lede text-[var(--creed-text-secondary)]">
-            What Creed is, what goes in it, how to connect your agents, how they
+            What Strap is, what goes in it, how to connect your agents, how they
             read and improve it, and the full tool and API reference.
           </p>
         </div>
@@ -1343,7 +1343,7 @@ export function DocsPageView() {
                         </div>
                       </div>
                     </div>
-                    <FileBlock label="creed.md">{exampleCreed}</FileBlock>
+                    <FileBlock label="strap.md">{exampleCreed}</FileBlock>
                   </>
                 ) : null}
 

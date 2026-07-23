@@ -762,7 +762,7 @@ export async function createCompanySection(params: {
 
   const role = await getCreedRole(db, user.id, creedId);
   if (!role)
-    return { ok: false, code: "forbidden", error: "You are not a member of this Creed." };
+    return { ok: false, code: "forbidden", error: "You are not a member of this Strap." };
   if (role !== "owner" && role !== "admin") {
     return { ok: false, code: "forbidden", error: "Only an owner or admin can add sections." };
   }
@@ -839,7 +839,7 @@ export async function updateCompanySection(params: {
 
   const role = await getCreedRole(db, user.id, creedId);
   if (!role)
-    return { ok: false, code: "forbidden", error: "You are not a member of this Creed." };
+    return { ok: false, code: "forbidden", error: "You are not a member of this Strap." };
 
   const permission = await effectivePermission(creedId, user.id, sectionId, role, false);
   if (permission === "hidden" || permission === "read-only") {
@@ -967,7 +967,7 @@ export async function companyMcpWrite(params: {
 
   const role = await getCreedRole(db, user.id, creedId);
   if (!role)
-    return { ok: false, code: "forbidden", error: "You are not a member of this Creed." };
+    return { ok: false, code: "forbidden", error: "You are not a member of this Strap." };
 
   const actor = describeActor(user, params.agentName);
 
@@ -1197,7 +1197,7 @@ export async function setCompanySectionArchived(params: {
 
   const role = await getCreedRole(db, user.id, creedId);
   if (!role)
-    return { ok: false, code: "forbidden", error: "You are not a member of this Creed." };
+    return { ok: false, code: "forbidden", error: "You are not a member of this Strap." };
   if (!canManageSectionsLifecycle(role)) {
     return {
       ok: false,
@@ -1268,7 +1268,7 @@ export async function reviewCompanyProposal(params: {
   const db = admin();
   const role = await getCreedRole(db, user.id, creedId);
   if (!role)
-    return { ok: false, code: "forbidden", error: "You are not a member of this Creed." };
+    return { ok: false, code: "forbidden", error: "You are not a member of this Strap." };
 
   const { data: proposal } = (await db
     .from("creed_proposals")
@@ -1768,7 +1768,7 @@ export async function reorderCompanySections(params: {
     return {
       ok: false,
       code: "forbidden",
-      error: "You are not a member of this Creed.",
+      error: "You are not a member of this Strap.",
     };
   if (!canManageSectionsLifecycle(role)) {
     return {

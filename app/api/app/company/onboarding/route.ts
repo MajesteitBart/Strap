@@ -67,7 +67,7 @@ export async function POST(request: Request) {
       actor_user_id: auth.user.id,
       actor: "You",
       actor_type: "user",
-      summary: "Set up the company Creed",
+      summary: "Set up the company Strap",
       status: "direct",
       event_kind: "edit",
     });
@@ -84,10 +84,10 @@ export async function POST(request: Request) {
   if (action === "compose") {
     const markdown = typeof body.markdown === "string" ? body.markdown : "";
     if (!markdown.trim()) {
-      return NextResponse.json({ error: "Paste your Creed first." }, { status: 400 });
+      return NextResponse.json({ error: "Paste your Strap first." }, { status: 400 });
     }
     if (markdown.length > MAX_MARKDOWN) {
-      return NextResponse.json({ error: "That's too long to be a Creed." }, { status: 400 });
+      return NextResponse.json({ error: "That's too long to be a Strap." }, { status: 400 });
     }
     const { data: sectionRows } = (await db
       .from("creed_sections")
@@ -177,7 +177,7 @@ export async function POST(request: Request) {
     .from("creed_sections")
     .upsert(sectionRows, { onConflict: "creed_id,section_id" });
   if (sectionsError) {
-    return NextResponse.json({ error: "Could not seed the company Creed." }, { status: 500 });
+    return NextResponse.json({ error: "Could not seed the company Strap." }, { status: 500 });
   }
 
   await db
