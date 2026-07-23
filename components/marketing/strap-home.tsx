@@ -10,32 +10,27 @@ const resources = [
   {
     key: "context",
     label: "Context",
-    body: "Briefs, conventions, and current state. Everything an agent reads before it starts.",
-    sample: "context/project.md",
+    body: "Project instructions, conventions, identity, and operating rules.",
   },
   {
     key: "skills",
     label: "Skills",
-    body: "Proven procedures, installed only on the agents that need them.",
-    sample: "skill://deploy",
+    body: "Reusable workflows and capability packages.",
   },
   {
     key: "secrets",
-    label: "Secrets",
-    body: "Approved credentials with scope and health. References, never raw values.",
-    sample: "secret://prod/deploy",
+    label: "Keys",
+    body: "Secure credentials, available only when needed.",
   },
   {
     key: "environments",
     label: "Environments",
     body: "Named places to work, so every agent knows where it stands.",
-    sample: "env: staging",
   },
   {
     key: "agents",
     label: "Agents",
     body: "Every agent shows what it carries and what it's allowed to use.",
-    sample: "agent: clark · 6 skills",
   },
 ] as const;
 
@@ -56,7 +51,7 @@ const chapters = [
     key: "secrets",
     title: "Connect agents to approved credentials without scattering secrets across machines.",
     body: "Every secret is a reference with a scope. Strap shows what it opens, who can use it, and when it was last resolved.",
-    action: "Manage secrets",
+    action: "Manage keys",
   },
 ] as const;
 
@@ -169,7 +164,7 @@ export function StrapHome({ configured }: { configured: boolean }) {
             <a href="#resources">Resources</a>
             <a href="#context">Context</a>
             <a href="#skills">Skills</a>
-            <a href="#secrets">Secrets</a>
+            <a href="#secrets">Keys</a>
             <Link href="/docs">Docs</Link>
           </div>
           <Link className="strap-button strap-button-primary strap-nav-cta" href={appHref}>{appLabel}</Link>
@@ -194,7 +189,6 @@ export function StrapHome({ configured }: { configured: boolean }) {
               <div className="strap-manifest">
                 <span className="strap-chip strap-chip-ready">Ready</span>
                 <div className="strap-manifest-head">
-                  <strong><span className="strap-swatch strap-bg-agents" aria-hidden="true" />agent: clark</strong>
                   <span className="strap-mono">env: <b>production</b> · synced 2m ago</span>
                 </div>
                 <ManifestLine kind="context" label="context · 4 packs" source="strap.md +3" />
@@ -210,15 +204,14 @@ export function StrapHome({ configured }: { configured: boolean }) {
         <section className="strap-section" id="resources">
           <div className="strap-wrap">
             <div className="strap-section-head">
-              <h2>Everything on the table, colour-coded.</h2>
-              <p>Each resource keeps its colour across Strap. Learn it once, read every manifest at a glance.</p>
+              <h2>Everything on the table.</h2>
+              <p>Five resource types. Read any agent&apos;s manifest at a glance.</p>
             </div>
             <div className="strap-resource-grid">
               {resources.map((resource) => (
                 <article className={`strap-resource strap-resource-${resource.key}`} key={resource.key}>
                   <span className="strap-chip">{resource.label}</span>
                   <p>{resource.body}</p>
-                  <span className="strap-resource-sample strap-mono">{resource.sample}</span>
                 </article>
               ))}
             </div>
@@ -276,7 +269,7 @@ export function StrapHome({ configured }: { configured: boolean }) {
 
       <footer className="strap-footer">
         <div className="strap-wrap strap-footer-row">
-          <span>Strap · context, skills, and secrets for every agent</span>
+          <span>Strap · context, skills, and keys for every agent</span>
           <span className="strap-footer-links"><Link href="/docs">Docs</Link><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link><Link href="/changelog">Changelog</Link></span>
         </div>
       </footer>

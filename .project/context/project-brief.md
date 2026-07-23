@@ -5,7 +5,7 @@
 - Delivery problem: the public Creed identity, canonical `creed.md` filename, original site, and legacy CLI no longer match the Strap product direction, while existing protocol clients and stored files must continue to work.
 
 ## Target Outcome
-- Strap is the canonical product at `https://strap.bvdm.ai`, positioned as "Bootstrap your agents with context, skills, and secrets."
+- Strap is the canonical product at `https://strap.bvdm.ai`, positioned as "Bootstrap your agents with context, skills, and keys." (public messaging uses "keys"; the technical model keeps "secrets").
 - New files and GitHub integrations default to `strap.md`; old stored paths remain safe and non-divergent.
 - New terminal workflows use the separate `@bvdm/strap` package while `creed-cli` remains unchanged.
 - Delano remains the evidence-backed local delivery contract.

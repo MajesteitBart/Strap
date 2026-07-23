@@ -6,9 +6,9 @@ import { LEGACY_CREED_FILE_NAME, STRAP_FILE_NAME } from "../profile-file.ts";
 // for compatibility and should not be derived from these values.
 export const BRAND_NAME = "Strap";
 export const BRAND_LEGACY_NAME = "Creed";
-export const BRAND_TAGLINE = "Bootstrap your agents with context, skills, and secrets.";
+export const BRAND_TAGLINE = "Bootstrap your agents with context, skills, and keys.";
 export const BRAND_DESCRIPTION =
-  "Strap bootstraps every agent with the context, skills, and secrets it needs to start useful work.";
+  "Strap gives agents the context, skills, and keys they need to get to work.";
 export const BRAND_META_TITLE = `${BRAND_NAME} - ${BRAND_TAGLINE}`;
 export const BRAND_SITE_URL = "https://strap.bvdm.ai";
 export const BRAND_LEGACY_SITE_URL = "https://creed.md";

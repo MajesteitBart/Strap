@@ -1009,13 +1009,11 @@
 .strap-chip { position: absolute; top: -.82rem; left: 1.5rem; border: 1px solid var(--strap-ink-strong); background: var(--strap-surface); padding: .18rem .62rem; color: var(--strap-ink-strong); font-family: var(--font-strap-mono), monospace; font-size: .68rem; font-weight: 500; letter-spacing: .04em; text-transform: uppercase; }
 .strap-chip-ready { background: var(--strap-ready); }
 .strap-manifest-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .5rem; border-bottom: 1px solid var(--strap-ink-strong); padding-bottom: .85rem; }
-.strap-manifest-head strong { color: var(--strap-ink-strong); font-family: var(--font-strap-display), sans-serif; font-size: 1.15rem; }
 .strap-manifest-head b { color: var(--strap-environments); font-weight: 500; }
 .strap-swatch { display: inline-block; width: .78rem; height: .78rem; margin-right: .5rem; border: 1px solid var(--strap-ink-strong); vertical-align: baseline; }
 .strap-bg-context { background: var(--strap-context); }
 .strap-bg-skills { background: var(--strap-skills); }
 .strap-bg-secrets { background: var(--strap-secrets); }
-.strap-bg-agents { background: var(--strap-agents); }
 .strap-manifest-line { display: grid; grid-template-columns: .85rem 1fr auto auto; align-items: center; gap: .75rem; border-bottom: 1px solid var(--strap-line); padding-block: .85rem; font-family: var(--font-strap-mono), monospace; font-size: .75rem; }
 .strap-manifest-source { color: var(--strap-ink-soft); text-align: right; }
 .strap-check { background: var(--strap-ready); padding-inline: .32rem; color: var(--strap-ink-strong); }
@@ -1027,20 +1025,14 @@
 .strap-section-head { max-width: 62ch; margin-bottom: 2.25rem; }
 .strap-section-head > p { margin-top: .75rem; color: var(--strap-ink-soft); font-size: 1.05rem; }
 .strap-resource-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border: 1px solid var(--strap-ink-strong); background: var(--strap-surface); }
-.strap-resource { position: relative; display: flex; min-height: 13rem; flex-direction: column; border-right: 1px solid var(--strap-ink-strong); padding: 1.65rem 1.25rem 1.25rem; }
+.strap-resource { position: relative; display: flex; flex-direction: column; border-right: 1px solid var(--strap-ink-strong); padding: 1.65rem 1.25rem 1.25rem; }
 .strap-resource:last-child { border-right: 0; }
 .strap-resource > p { margin-top: .3rem; color: var(--strap-ink-soft); font-size: .82rem; }
-.strap-resource-sample { align-self: flex-start; margin-top: auto; padding: .18rem .45rem; color: var(--strap-ink-strong); }
 .strap-resource-context .strap-chip { background: var(--strap-context); color: #fff; }
 .strap-resource-skills .strap-chip { background: var(--strap-skills); color: #fff; }
 .strap-resource-secrets .strap-chip { background: var(--strap-secrets); color: #fff; }
 .strap-resource-environments .strap-chip { background: var(--strap-environments); color: #fff; }
 .strap-resource-agents .strap-chip { background: var(--strap-agents); }
-.strap-resource-context .strap-resource-sample { background: var(--strap-context-tint); }
-.strap-resource-skills .strap-resource-sample { background: var(--strap-skills-tint); }
-.strap-resource-secrets .strap-resource-sample { background: var(--strap-secrets-tint); }
-.strap-resource-environments .strap-resource-sample { background: var(--strap-environments-tint); }
-.strap-resource-agents .strap-resource-sample { background: var(--strap-agents-tint); }
 
 .strap-chapter-grid { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); align-items: center; gap: clamp(2rem, 5vw, 4.5rem); }
 .strap-chapter-copy h2 { max-width: 22ch; }

@@ -16,8 +16,8 @@ import {
 
 test("Strap brand constants define the public contract", () => {
   assert.equal(BRAND_NAME, "Strap");
-  assert.equal(BRAND_TAGLINE, "Bootstrap your agents with context, skills, and secrets.");
-  assert.match(BRAND_DESCRIPTION, /^Strap bootstraps every agent/);
+  assert.equal(BRAND_TAGLINE, "Bootstrap your agents with context, skills, and keys.");
+  assert.match(BRAND_DESCRIPTION, /^Strap gives agents/);
   assert.equal(BRAND_META_TITLE, `${BRAND_NAME} - ${BRAND_TAGLINE}`);
   assert.equal(BRAND_SITE_URL, "https://strap.bvdm.ai");
   assert.equal(BRAND_LEGACY_SITE_URL, "https://creed.md");

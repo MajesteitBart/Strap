@@ -18,7 +18,7 @@
 ## Strap Brand Handoff
 
 - The user-supplied Strap handoff provided the logo package, merged worktable homepage reference, palette, typography, and resource-card visual system used by the `strap-rebrand` project.
-- The user-supplied positioning line "Bootstrap your agents with context, skills, and secrets." is authoritative when it differs from exploratory copy in the visual handoff.
+- The user-supplied positioning line "Bootstrap your agents with context, skills, and secrets." was authoritative for the rebrand handoff. On 2026-07-23 the user revised public messaging to "keys" ("Bootstrap your agents with context, skills, and keys."), keeping "secrets" in the technical model.
 - External source paths are provenance only. The repository-owned assets under `public/assets/brand/` are the shipped source of truth.
 
 ## Evidence Boundary

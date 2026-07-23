@@ -7,7 +7,7 @@
   </picture>
 </h1>
 
-**Bootstrap your agents with context, skills, and secrets.**
+**Bootstrap your agents with context, skills, and keys.**
 
 Pack durable context once. Every connected agent reads it before meaningful work and proposes focused improvements as it learns.
 

@@ -53,7 +53,7 @@
     "tailwindcss": "^4",
     "typescript": "^5"
   },
-  "description": "Bootstrap your agents with context, skills, and secrets.",
+  "description": "Bootstrap your agents with context, skills, and keys.",
   "main": "index.js",
   "directories": {
     "lib": "lib",
