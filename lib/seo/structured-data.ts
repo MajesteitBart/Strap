@@ -2,7 +2,7 @@
 //
 // These power rich results in classic search and, more importantly, give
 // answer engines (AI Overviews, Perplexity, ChatGPT) a machine-readable
-// description of what Creed is, what it costs, and the questions it answers.
+// description of what Strap is, what it costs, and the questions it answers.
 // Everything is first-party constant data resolved against the deploy origin,
 // so it stays accurate without per-request work.
 //
@@ -28,7 +28,7 @@ function websiteId() {
 }
 
 // The brand entity. `sameAs` ties the site to its off-site profiles, which is
-// one of the signals engines use to resolve "Creed" to a real organization
+// one of the signals engines use to resolve "Strap" to a real organization
 // rather than a common noun.
 export function organizationSchema() {
   const url = base();
@@ -131,7 +131,7 @@ export function webPageSchema({
   };
 }
 
-// An Article node for a /learn guide. Authored and published by the Creed
+// An Article node for a /learn guide. Authored and published by the Strap
 // organization; datePublished/dateModified drive the freshness signal that AI
 // engines weight, so keep dateModified in step with the article's registry.
 export function articleSchema({

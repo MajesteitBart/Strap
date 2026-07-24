@@ -116,7 +116,8 @@ export function getFeatureModelId(feature: AiFeature, options?: { byok?: boolean
 // feels awful for simple edits, so it defaults to a strong open-weights model
 // that Groq and Cerebras serve at very high tokens/sec (the route requests
 // throughput-sorted routing to land on that fast silicon). Override with
-// CREED_AGENT_MODEL if you want to trade speed for a heavier model.
+// STRAP_AGENT_MODEL if you want to trade speed for a heavier model.
+// CREED_AGENT_MODEL remains the compatibility fallback.
 export function getAgentModelId(options?: { byok?: boolean }): string {
   if (options?.byok) {
     // Same provider-restriction story as FEATURE_MODEL_BYOK_DEFAULT: gpt-oss's
@@ -124,7 +125,11 @@ export function getAgentModelId(options?: { byok?: boolean }): string {
     // agent runs stay on a first-party OpenAI model.
     return process.env.BYOK_AGENT_MODEL?.trim() || "openai/gpt-5";
   }
-  return process.env.CREED_AGENT_MODEL?.trim() || "openai/gpt-oss-120b";
+  return (
+    process.env.STRAP_AGENT_MODEL?.trim() ||
+    process.env.CREED_AGENT_MODEL?.trim() ||
+    "openai/gpt-oss-120b"
+  );
 }
 
 const OPENROUTER_MODELS_URL = "https://openrouter.ai/api/v1/models";

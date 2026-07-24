@@ -10,7 +10,10 @@ export async function POST(request: Request) {
   const form = await request.formData();
   const requestId = String(form.get("request_id") ?? "");
   const decision = form.get("decision") === "allow" ? "allow" : "deny";
-  const creedId = decision === "allow" ? String(form.get("creed_id") ?? "") : null;
+  const creedId =
+    decision === "allow"
+      ? String(form.get("strap_id") ?? form.get("creed_id") ?? "")
+      : null;
   const rawMode = form.get("mode");
   const mode = isHeadlessKeyMode(rawMode) ? rawMode : "proposal-only";
   if (!requestId || requestId.length > 64) {

@@ -281,7 +281,7 @@ export async function callOpenRouter({
         "Content-Type": "application/json",
         // OpenRouter uses HTTP-Referer for usage attribution on the user's
         // OpenRouter dashboard. Derive from the deployed origin so forks
-        // get attributed to their own domain, not the upstream Creed.
+        // get attributed to their own domain, not the upstream Strap.
         "HTTP-Referer": getSiteUrl(),
         "X-Title": "Strap",
       },

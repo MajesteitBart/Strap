@@ -1,9 +1,9 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { BackendSetupScreen } from "@/components/auth/backend-setup-screen";
-import { hasPersistedCreed } from "@/lib/creed-backend";
-import { isSupabaseTableMissingError } from "@/lib/creed-backend-errors";
-import { hasCompanyMembership } from "@/lib/creed-membership";
+import { hasPersistedStrap } from "@/lib/strap-backend";
+import { isSupabaseTableMissingError } from "@/lib/strap-backend-errors";
+import { hasCompanyMembership } from "@/lib/strap-membership";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { log } from "@/lib/observability";
@@ -12,13 +12,13 @@ export const dynamic = "force-dynamic";
 
 // Root-page router. Branches on two signals: Supabase configured?
 // (otherwise marketing-only) and signed in?. Only then do we ask
-// whether a personal Creed row exists to decide `/file` vs `/onboarding`
-// (the row, not the section count - an emptied Creed is still onboarded).
+// whether a personal Strap row exists to decide `/file` vs `/onboarding`
+// (the row, not the section count - an emptied Strap is still onboarded).
 //
-// We deliberately use the lightweight `hasPersistedCreed` probe rather
-// than the full `loadCreedState` fan-out - this route is a redirect, not
+// We deliberately use the lightweight `hasPersistedStrap` probe rather
+// than the full `loadStrapState` fan-out - this route is a redirect, not
 // a render, so any extra round-trips are pure overhead and the
-// (creed-app) layout will load real state on the next request.
+// (strap-app) layout will load real state on the next request.
 export default async function Home() {
   if (!isSupabaseConfigured()) {
     redirect("/home");
@@ -57,8 +57,8 @@ export default async function Home() {
     redirect("/home");
   }
 
-  // A company member goes straight into the app; the (creed-app) layout resolves
-  // their active (company) Creed, and - for an owner who hasn't finished company
+  // A company member goes straight into the app; the (strap-app) layout resolves
+  // their active (company) Strap, and - for an owner who hasn't finished company
   // setup - resumes company onboarding. They must never be routed through the
   // personal first-run flow. Only a personal-only user gets the section probe
   // below (personal onboarding when they have no sections yet).
@@ -74,7 +74,7 @@ export default async function Home() {
   // the redirect OUTSIDE the try; only the DB probe is wrapped.
   let hasCreed: boolean;
   try {
-    hasCreed = await hasPersistedCreed(supabase, user.id);
+    hasCreed = await hasPersistedStrap(supabase, user.id);
   } catch (error) {
     if (isSupabaseTableMissingError(error)) {
       return (

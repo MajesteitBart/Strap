@@ -2,6 +2,8 @@ import type { NextConfig } from "next";
 import { createRequire } from "node:module";
 
 const isDev = process.env.NODE_ENV !== "production";
+const enforceCsp =
+  (process.env.STRAP_CSP_ENFORCE ?? process.env.CREED_CSP_ENFORCE) === "1";
 
 // CSP — kept reasonable: blocks framing + restricts script origins. Inline
 // styles are allowed because Tailwind v4 + framer-motion both set them. To
@@ -19,7 +21,7 @@ const csp = [
   "base-uri 'self'",
   "form-action 'self'",
   "object-src 'none'",
-  "upgrade-insecure-requests",
+  ...(enforceCsp ? ["upgrade-insecure-requests"] : []),
 ]
   .filter(Boolean)
   .join("; ");
@@ -34,7 +36,7 @@ const baseSecurityHeaders = [
 
 // Run CSP in Report-Only first so we can verify nothing breaks before enforcing.
 // Flip to "Content-Security-Policy" when you've watched the console for a release cycle.
-const cspHeader = process.env.CREED_CSP_ENFORCE === "1"
+const cspHeader = enforceCsp
   ? { key: "Content-Security-Policy", value: csp }
   : { key: "Content-Security-Policy-Report-Only", value: csp };
 
@@ -67,11 +69,17 @@ const withBundleAnalyzer = process.env.ANALYZE === "true"
   : (config: NextConfig) => config;
 
 const nextConfig: NextConfig = {
-  // Dev builds to .next-runtime (not .next). CREED_DIST_DIR lets a second dev
+  // Dev builds to .next-runtime (not .next). STRAP_DIST_DIR lets a second dev
   // server (e.g. an agent preview) run from an isolated build dir so it doesn't
-  // race the primary dev server's artifacts.
+  // race the primary dev server's artifacts. CREED_DIST_DIR remains a fallback.
   ...(process.env.NODE_ENV === "development"
-    ? { distDir: process.env.CREED_DIST_DIR || ".next-runtime" }
+    ? {
+        allowedDevOrigins: ["127.0.0.1", "localhost"],
+        distDir:
+          process.env.STRAP_DIST_DIR ||
+          process.env.CREED_DIST_DIR ||
+          ".next-runtime",
+      }
     : {}),
   reactStrictMode: true,
   poweredByHeader: false,

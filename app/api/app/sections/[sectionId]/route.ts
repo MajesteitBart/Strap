@@ -6,6 +6,7 @@ import {
   setCompanySectionArchived,
   type SectionWriteResult,
 } from "@/lib/company-sections";
+import { readStrapId } from "@/lib/strap-api";
 
 type Ctx = { params: Promise<{ sectionId: string }> };
 
@@ -37,6 +38,7 @@ export async function PUT(request: Request, ctx: Ctx) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
   const b = (body ?? {}) as {
+    strapId?: unknown;
     creedId?: unknown;
     baseRevision?: unknown;
     content?: unknown;
@@ -44,15 +46,16 @@ export async function PUT(request: Request, ctx: Ctx) {
     accent?: unknown;
     archived?: unknown;
   };
-  if (typeof b.creedId !== "string") {
-    return NextResponse.json({ error: "creedId is required." }, { status: 400 });
+  const strapId = readStrapId(b);
+  if (!strapId) {
+    return NextResponse.json({ error: "strapId is required." }, { status: 400 });
   }
 
   // Archive / restore is a metadata-only lifecycle change (owner/admin), so it
   // takes its own path: no baseRevision, no content write.
   if (typeof b.archived === "boolean") {
     const result = await setCompanySectionArchived({
-      creedId: b.creedId,
+      creedId: strapId,
       user: auth.user,
       sectionId,
       archived: b.archived,
@@ -64,11 +67,11 @@ export async function PUT(request: Request, ctx: Ctx) {
   }
 
   if (typeof b.baseRevision !== "number") {
-    return NextResponse.json({ error: "creedId and baseRevision are required." }, { status: 400 });
+    return NextResponse.json({ error: "strapId and baseRevision are required." }, { status: 400 });
   }
 
   const result = await updateCompanySection({
-    creedId: b.creedId,
+    creedId: strapId,
     user: auth.user,
     sectionId,
     baseRevision: b.baseRevision,
@@ -98,9 +101,13 @@ export async function DELETE(request: Request, ctx: Ctx) {
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
-  const creedId = body && typeof body === "object" && "creedId" in body ? (body as { creedId: unknown }).creedId : null;
-  if (typeof creedId !== "string") {
-    return NextResponse.json({ error: "creedId is required." }, { status: 400 });
+  const creedId = readStrapId(
+    body && typeof body === "object"
+      ? (body as { strapId?: unknown; creedId?: unknown })
+      : null,
+  );
+  if (!creedId) {
+    return NextResponse.json({ error: "strapId is required." }, { status: 400 });
   }
 
   const result = await deleteCompanySection({ creedId, user: auth.user, sectionId });

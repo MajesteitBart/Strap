@@ -136,7 +136,7 @@ export function fireConfetti(x: number, y: number, color: string) {
 }
 
 // Bright, multicoloured palette for the welcome celebration - all pulled from
-// the app's section accent palette (see lib/creed-data.ts accentColorMap).
+// the app's section accent palette (see lib/strap-data.ts accentColorMap).
 const WELCOME_COLORS = [
   "#DC2626", // red
   "#EAB308", // yellow

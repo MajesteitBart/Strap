@@ -12,9 +12,10 @@ export async function GET(request: Request, ctx: Ctx) {
   if (auth instanceof NextResponse) return auth;
   const { sectionId } = await ctx.params;
 
-  const creedId = new URL(request.url).searchParams.get("creedId");
+  const params = new URL(request.url).searchParams;
+  const creedId = params.get("strapId") ?? params.get("creedId");
   if (!creedId) {
-    return NextResponse.json({ error: "creedId is required." }, { status: 400 });
+    return NextResponse.json({ error: "strapId is required." }, { status: 400 });
   }
 
   const result = await listSectionVersions({

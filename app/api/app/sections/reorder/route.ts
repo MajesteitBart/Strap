@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { requireApiAuth } from "@/lib/api-auth";
 import { reorderCompanySections } from "@/lib/company-sections";
+import { readStrapId } from "@/lib/strap-api";
 
 // POST /api/app/sections/reorder { creedId, sectionIds } - owner/admin reorder
-// of a company Creed's sections. The order persists (section positions) so every
+// of a Company Strap's sections. The order persists (section positions) so every
 // member picks it up on their next sync. Role is re-checked in the lib.
 export async function POST(request: Request) {
   const auth = await requireApiAuth();
@@ -15,20 +16,25 @@ export async function POST(request: Request) {
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
-  const b = (body ?? {}) as { creedId?: unknown; sectionIds?: unknown };
+  const b = (body ?? {}) as {
+    strapId?: unknown;
+    creedId?: unknown;
+    sectionIds?: unknown;
+  };
+  const strapId = readStrapId(b);
   if (
-    typeof b.creedId !== "string" ||
+    !strapId ||
     !Array.isArray(b.sectionIds) ||
     !b.sectionIds.every((id) => typeof id === "string")
   ) {
     return NextResponse.json(
-      { error: "creedId and sectionIds are required." },
+      { error: "strapId and sectionIds are required." },
       { status: 400 },
     );
   }
 
   const result = await reorderCompanySections({
-    creedId: b.creedId,
+    creedId: strapId,
     user: auth.user,
     sectionIds: b.sectionIds as string[],
   });

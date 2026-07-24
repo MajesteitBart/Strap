@@ -21,7 +21,7 @@ const DISALLOW = [
 
 // AI search and answer engines each ship several named crawlers. We list them
 // explicitly with the same allow/disallow as `*` for two reasons: it documents
-// that Creed welcomes them (search + on-demand fetch bots are what make a page
+// that Strap welcomes them (search + on-demand fetch bots are what make a page
 // citation-eligible in ChatGPT, Claude, Perplexity, and Google/Gemini), and it
 // guards the intent against a future default-deny edit. Keeping them on the
 // same rule set means the public marketing surface stays fully readable while

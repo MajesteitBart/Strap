@@ -22,7 +22,7 @@ const mcpUsage = readFileSync(
   "utf8",
 );
 const creedBackend = readFileSync(
-  new URL("../lib/creed-backend.ts", import.meta.url),
+  new URL("../lib/strap-backend.ts", import.meta.url),
   "utf8",
 );
 const mcpRoute = readFileSync(
@@ -81,14 +81,14 @@ test("mcp read usage increments by creed scope after company keying", () => {
 
 test("mcp usage app writes carry the active creed scope", () => {
   assert.match(mcpRoute, /recordMcpClientUsage\(admin as never, userId, clientName, state\.creedId\)/);
-  assert.match(creedBackend, /const targetCreedId = creedId \?\? \(await getPersonalCreedId\(db, userId\)\)/);
+  assert.match(creedBackend, /const targetCreedId = creedId \?\? \(await getPersonalStrapId\(db, userId\)\)/);
   assert.match(creedBackend, /onConflict: "creed_id,client_id"/);
   assert.match(creedBackend, /onConflict: "creed_id,connection_id"/);
   assert.match(creedBackend, /"increment_mcp_read_for_creed"/);
 });
 
 test("personal state loading is scoped to the personal creed id", () => {
-  assert.match(creedBackend, /getPersonalCreedId\(db, user\.id\)/);
+  assert.match(creedBackend, /getPersonalStrapId\(db, user\.id\)/);
   assert.match(creedBackend, /\.from\("creed_sections"\)[\s\S]+\.eq\("creed_id", personalCreedId\)/);
   assert.match(creedBackend, /\.from\("creed_proposals"\)[\s\S]+\.eq\("creed_id", personalCreedId\)/);
   assert.match(creedBackend, /\.from\("creed_activity"\)[\s\S]+\.eq\("creed_id", personalCreedId\)/);

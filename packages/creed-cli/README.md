@@ -1,8 +1,12 @@
 # Creed CLI
 
-The first-party terminal client for [Creed](https://creed.md). It connects to
-the same OAuth-protected MCP server as Claude, Codex, ChatGPT, Cursor, and every
-other Creed integration.
+The legacy compatibility terminal client for [Creed](https://creed.md). Existing
+`creed` and `creed-cli` commands remain supported. New installations should use
+[`@bvdm/strap`](https://www.npmjs.com/package/@bvdm/strap) and the `strap`
+executable.
+
+It connects to the same OAuth-protected MCP server as Claude, Codex, ChatGPT,
+Cursor, and every other Creed integration.
 
 The CLI discovers tools, resources, and prompts from the live MCP server. New
 Creed tools therefore appear automatically without a matching CLI release.

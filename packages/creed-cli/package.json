@@ -1,7 +1,7 @@
 {
   "name": "creed-cli",
   "version": "0.2.2",
-  "description": "The first-party terminal client for Creed.",
+  "description": "Legacy Creed CLI compatibility package. New installations should use @bvdm/strap.",
   "license": "MIT",
   "type": "module",
   "bin": {
@@ -22,10 +22,10 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "clean": "rm -rf dist",
+    "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
     "prepack": "npm run clean && npm run build",
     "prepublishOnly": "npm test",
-    "test": "npm run build && node --test 'dist/tests/**/*.test.js'",
+    "test": "npm run build && node --test \"dist/tests/*.test.js\"",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {

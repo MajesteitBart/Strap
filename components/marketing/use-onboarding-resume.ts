@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
-// True when the signed-in user has already started onboarding (a Creed exists
+// True when the signed-in user has already started onboarding (a profile exists
 // server-side: seed claimed or composed), so marketing CTAs can offer "Resume"
 // instead of "Get Started". Server-backed via /api/app/onboarding-status, so
 // it's correct on any device. Mirrors useLandingAuthState / usePaidStatus: a

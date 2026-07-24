@@ -1,8 +1,14 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { validateAgentActions, AGENT_ACCENT_KEYS } from "../lib/panel/agent.ts";
+import {
+  AGENT_ACCENT_KEYS,
+  AGENT_STAGE_LABEL,
+  buildAgentSystemPrompt,
+  buildAgentUserPrompt,
+  validateAgentActions,
+} from "../lib/panel/agent.ts";
 
-// The Agent validator is the safety boundary for the in-app Creed agent: it
+// The Agent validator is the safety boundary for the in-app Strap agent: it
 // enforces every rule the MCP proposals API enforces (target existence, accent
 // validity, reorder XOR anchor) plus the app's own guardrails. Whole-plan-or-
 // nothing, and no action outside the fixed set survives.
@@ -36,6 +42,22 @@ test("a multi-section edit plan passes through typed", () => {
   assert.equal(actions?.length, 2);
   assert.equal(actions?.[0].kind, "edit");
   assert.equal(actions?.[1].kind, "recolor-section");
+});
+
+test("model-facing Agent prose and progress use Strap", () => {
+  const systemPrompt = buildAgentSystemPrompt();
+  const userPrompt = buildAgentUserPrompt({
+    query: "tighten my goals",
+    sections: [],
+    archived: [],
+    mentioned: [],
+  });
+
+  assert.equal(AGENT_STAGE_LABEL.reading, "Reading your Strap");
+  assert.match(systemPrompt, /Strap profile/);
+  assert.doesNotMatch(systemPrompt, /change their creed/i);
+  assert.match(userPrompt, /BEGIN USER STRAP PROFILE DATA/);
+  assert.doesNotMatch(userPrompt, /BEGIN USER CREED DATA/);
 });
 
 test("unknown kinds reject the whole plan", () => {

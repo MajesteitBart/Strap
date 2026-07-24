@@ -12,7 +12,7 @@ import {
 
 const PERSONAL_DRAFT: OnboardingPreviewDraft = {
   identityText: "I build small products with AI.",
-  goalsText: "Ship Creed.",
+  goalsText: "Ship Strap.",
   preferences: ["Lead with the answer."],
 };
 
@@ -35,7 +35,7 @@ test("personal seed includes graph tags in every starter section", () => {
 
 test("compose prompts instruct assistants to create section-only graph tags", () => {
   const source = readFileSync(
-    new URL("../lib/creed-prompts.ts", import.meta.url),
+    new URL("../lib/strap-prompts.ts", import.meta.url),
     "utf8",
   );
 

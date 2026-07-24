@@ -34,12 +34,22 @@ The resource model extends beyond context:
 
 Personal Strap is the core one-user product. Company Strap applies the same model to a governed workspace with roles, per-section permissions, attribution, and invites.
 
+## Current capabilities
+
+- `/file` keeps Personal and Company profiles compact, reviewable, permission-aware, and exportable as Markdown.
+- `/connections` supports browser OAuth and device authorization. Headless workflows can create a scoped `strap_key_` key whose plaintext is shown once; each key is bound to one Personal or Company profile and a maximum access mode. Existing `creed_key_` credentials remain accepted.
+- `/vault` stores secret values in Supabase Vault. Ordinary lists, logs, and agent context expose metadata or `secret://` references only; plaintext is returned solely through an explicit, audited reveal.
+- `@bvdm/strap` is the primary terminal client. It discovers the live MCP contract and supports interactive browser login, device login, and scoped API-key authentication.
+- The current product has no paid plans. Self-hosted operation still requires the configured Supabase services and any optional provider credentials used by enabled integrations.
+
+Live product and protocol guidance is available in [Docs](https://strap.bvdm.ai/docs).
+
 ## Quickstart
 
 Prerequisites: Node.js 20+ and a Supabase project. OpenRouter is optional and only required for AI features.
 
 ```bash
-git clone https://github.com/MajesteitBart/Creed.git strap
+git clone https://github.com/MajesteitBart/Strap.git strap
 cd strap
 npm install
 cp .env.example .env.local
@@ -55,10 +65,10 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 NEXT_PUBLIC_SUPABASE_URL=https://<project>.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<publishable-key>
 SUPABASE_SECRET_KEY=<service-role-key>
-CREED_ENCRYPTION_SECRET=<32-byte-base64-secret>
+STRAP_ENCRYPTION_SECRET=<32-byte-base64-secret>
 ```
 
-`CREED_ENCRYPTION_SECRET`, `/api/creed/**`, `creed_*` MCP tools, and other lower-level Creed identifiers are retained compatibility contracts. Customer-facing product, site, file defaults, and new connection setup use Strap.
+New configuration uses `STRAP_ENCRYPTION_SECRET` and `STRAP_AGENT_MODEL`; existing `CREED_ENCRYPTION_SECRET` and `CREED_AGENT_MODEL` values remain lower-priority fallbacks. Canonical direct APIs live under `/api/strap/**`, and MCP discovery uses Strap tools, prompts, and `strap://profile`. `/api/creed/**`, `creed_*`, `creed://profile`, and other lower-level Creed identifiers remain compatibility contracts.
 
 Every optional variable is documented in [`.env.example`](./.env.example). Never commit `.env.local`.
 
@@ -66,11 +76,13 @@ Every optional variable is documented in [`.env.example`](./.env.example). Never
 
 Open `/connections` and add `https://strap.bvdm.ai/mcp` as a custom MCP server. Strap provides OAuth 2.1 authorization and first-class setup for Claude Code, Codex, Cursor, ChatGPT, Devin, OpenClaw, Hermes, OpenCode, Factory, Manus, and custom agents.
 
+Connections never inherit broader access than their user. OAuth tokens and modern API keys resolve one explicit Personal or Company profile, then the selected connection mode can only narrow live membership and per-section permissions. Hidden sections are omitted server-side.
+
 For terminal and coding-agent workflows, use the separate Strap CLI package:
 
 ```bash
 npx @bvdm/strap
-npx @bvdm/strap --agent codex call read_creed --json
+npx @bvdm/strap --agent codex call read_strap --json
 ```
 
 The CLI discovers tools, resources, and prompts from the live MCP server. Its configuration is isolated from the legacy `creed-cli` package.
@@ -109,7 +121,7 @@ tests/                  Node contract and logic tests
 .project/               Delano delivery contracts and durable context
 ```
 
-Internal paths such as `components/creed`, `lib/creed-data.ts`, and `app/api/creed` remain stable until a separately approved compatibility migration.
+Canonical implementation paths use `components/strap`, `app/(strap-app)`, and `lib/strap-*`. Narrow `lib/creed-*` re-export shims and the `/api/creed` alias routes remain where source or protocol compatibility requires them.
 
 ## Commands
 
@@ -122,7 +134,7 @@ npm run build
 
 npm --prefix packages/strap run typecheck
 npm --prefix packages/strap test
-npm --prefix packages/strap pack --dry-run
+npm pack ./packages/strap --dry-run
 ```
 
 ## Contributing and security

@@ -46,7 +46,7 @@ test("company seed: answers land in the right sections", () => {
     whatItDoes: "We build the Bad Engine.",
     whoFor: "The founding team.",
     people: "Connor, Fergus, Sascha",
-    projects: "Bad Engine, Creed",
+    projects: "Bad Engine, Strap",
     agentsGetWrong: "They assume we ship on Fridays",
     neverChange: "Never touch finance without the owner",
   });
@@ -54,7 +54,7 @@ test("company seed: answers land in the right sections", () => {
   assert.match(byId.company, /Bad Engine/);
   assert.match(byId.people, /Connor/);
   assert.match(byId.people, /Fergus/);
-  assert.match(byId.projects, /Creed/);
+  assert.match(byId.projects, /Strap/);
   assert.match(byId["operating-rules"], /finance/i);
   assert.match(byId["agent-rules"], /Friday/i);
 });

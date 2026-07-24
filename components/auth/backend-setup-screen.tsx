@@ -1,4 +1,4 @@
-import { CreedWordmark } from "@/components/creed/brand";
+import { StrapWordmark } from "@/components/strap/brand";
 
 export function BackendSetupScreen({
   errorMessage,
@@ -6,43 +6,43 @@ export function BackendSetupScreen({
   errorMessage?: string;
 }) {
   return (
-    <div className="min-h-screen bg-[var(--creed-surface)] px-6 py-8 md:px-10">
+    <div className="min-h-screen bg-[var(--strap-surface)] px-6 py-8 md:px-10">
       <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-5xl flex-col">
-        <CreedWordmark />
+        <StrapWordmark />
 
         <div className="flex flex-1 items-center">
           <div className="grid w-full gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(320px,460px)] lg:items-center">
             <div className="max-w-2xl">
-              <div className="text-[12px] font-medium text-[var(--creed-text-tertiary)]">
+              <div className="text-[12px] font-medium text-[var(--strap-text-tertiary)]">
                 Backend setup needed
               </div>
-              <h1 className="mt-4 font-heading text-[3.4rem] leading-none tracking-[-0.06em] text-[var(--creed-text-primary)]">
+              <h1 className="mt-4 font-heading text-[3.4rem] leading-none tracking-[-0.06em] text-[var(--strap-text-primary)]">
                 Auth is working. The Strap tables just aren&apos;t live yet.
               </h1>
-              <p className="mt-6 max-w-xl text-[18px] leading-8 text-[var(--creed-text-secondary)]">
+              <p className="mt-6 max-w-xl text-[18px] leading-8 text-[var(--strap-text-secondary)]">
                 Your Supabase project is connected, but the schema migration still needs to be run
                 once before Strap can persist sections, proposals, activity, connections, and
                 tokens.
               </p>
             </div>
 
-            <div className="rounded-[24px] border border-[var(--creed-border)] bg-[var(--creed-surface)] p-6 shadow-[0_24px_70px_rgba(18,18,17,0.06)]">
-              <div className="text-[20px] font-medium tracking-[-0.02em] text-[var(--creed-text-primary)]">
+            <div className="rounded-[24px] border border-[var(--strap-border)] bg-[var(--strap-surface)] p-6 shadow-[0_24px_70px_rgba(18,18,17,0.06)]">
+              <div className="text-[20px] font-medium tracking-[-0.02em] text-[var(--strap-text-primary)]">
                 Run the first Supabase migration
               </div>
-              <p className="mt-3 text-[14px] leading-7 text-[var(--creed-text-secondary)]">
+              <p className="mt-3 text-[14px] leading-7 text-[var(--strap-text-secondary)]">
                 Apply the SQL in{" "}
-                <span className="font-medium text-[var(--creed-text-primary)]">
+                <span className="font-medium text-[var(--strap-text-primary)]">
                   supabase/migrations/20260403190000_init_creed.sql
                 </span>{" "}
                 to your Supabase project, then reload.
               </p>
 
-              <div className="mt-5 rounded-xl border border-[var(--creed-border)] bg-[var(--creed-background)] px-4 py-4">
-                <div className="text-[12px] font-medium text-[var(--creed-text-tertiary)]">
+              <div className="mt-5 rounded-xl border border-[var(--strap-border)] bg-[var(--strap-background)] px-4 py-4">
+                <div className="text-[12px] font-medium text-[var(--strap-text-tertiary)]">
                   Missing right now
                 </div>
-                <div className="mt-2 text-[13px] leading-6 text-[var(--creed-text-secondary)]">
+                <div className="mt-2 text-[13px] leading-6 text-[var(--strap-text-secondary)]">
                   <div>`creed_sections`</div>
                   <div>`creed_proposals`</div>
                   <div>`creed_activity`</div>

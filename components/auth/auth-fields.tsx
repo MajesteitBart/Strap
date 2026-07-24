@@ -9,7 +9,7 @@ import { useState, type ReactNode, type Ref } from "react";
 import { Check, LoaderCircle } from "lucide-react";
 import { ArrowRightIcon } from "@/components/ui/arrow-right";
 import { EyeToggleIcon } from "@/components/ui/eye-toggle";
-import { useAnimatedIconControls } from "@/components/creed/animated-icon-controls";
+import { useAnimatedIconControls } from "@/components/strap/animated-icon-controls";
 import { cn } from "@/lib/utils";
 
 type AuthFieldProps = {
@@ -49,11 +49,11 @@ export function AuthField({
           disabled={disabled}
           onChange={(event) => onChange(event.target.value)}
           className={cn(
-            "h-12 w-full rounded-[var(--radius-md)] border bg-[var(--creed-surface)] px-4 text-[15px] text-[var(--creed-text-primary)] outline-none transition-colors placeholder:text-[var(--creed-text-tertiary)] focus:ring-2 disabled:cursor-not-allowed disabled:opacity-60",
+            "h-12 w-full rounded-[var(--radius-md)] border bg-[var(--strap-surface)] px-4 text-[15px] text-[var(--strap-text-primary)] outline-none transition-colors placeholder:text-[var(--strap-text-tertiary)] focus:ring-2 disabled:cursor-not-allowed disabled:opacity-60",
             trailing ? "pr-12" : "",
             error
               ? "border-[#DC2626] focus:border-[#DC2626] focus:ring-[#DC2626]/15"
-              : "border-[var(--creed-border)] focus:border-[var(--creed-accent)] focus:ring-[var(--creed-accent)]/15"
+              : "border-[var(--strap-border)] focus:border-[var(--strap-accent)] focus:ring-[var(--strap-accent)]/15"
           )}
         />
         {trailing ? (
@@ -103,7 +103,7 @@ export function PasswordField({
           onClick={() => setShow((v) => !v)}
           onMouseEnter={eyeShake.start}
           onMouseLeave={eyeShake.settle}
-          className="flex h-8 w-8 items-center justify-center rounded-[8px] text-[var(--creed-text-tertiary)] transition-colors hover:text-[var(--creed-accent)]"
+          className="flex h-8 w-8 items-center justify-center rounded-[8px] text-[var(--strap-text-tertiary)] transition-colors hover:text-[var(--strap-accent)]"
         >
           <EyeToggleIcon
             ref={eyeShake.iconRef}
@@ -127,8 +127,8 @@ export function AuthCheckbox({ checked, onChange }: { checked: boolean; onChange
       className={cn(
         "flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[5px] border transition-colors",
         checked
-          ? "border-[var(--creed-accent)] bg-[var(--creed-accent)] text-white"
-          : "border-[var(--creed-border-strong)] bg-[var(--creed-surface)] hover:border-[var(--creed-text-tertiary)]"
+          ? "border-[var(--strap-accent)] bg-[var(--strap-accent)] text-white"
+          : "border-[var(--strap-border-strong)] bg-[var(--strap-surface)] hover:border-[var(--strap-text-tertiary)]"
       )}
     >
       {checked ? <Check className="h-3 w-3" strokeWidth={3} /> : null}
@@ -156,7 +156,7 @@ export function AuthSubmitButton({
       onPointerDown={(event) => {
         if (event.pointerType !== "mouse") arrow.start();
       }}
-      className="mt-2 inline-flex h-12 w-full items-center justify-center gap-2 rounded-[var(--radius-md)] bg-[var(--creed-accent)] text-[15px] font-medium text-white transition-colors hover:bg-[var(--creed-accent-hover)] disabled:cursor-not-allowed disabled:opacity-50"
+      className="mt-2 inline-flex h-12 w-full items-center justify-center gap-2 rounded-[var(--radius-md)] bg-[var(--strap-accent)] text-[15px] font-medium text-white transition-colors hover:bg-[var(--strap-accent-hover)] disabled:cursor-not-allowed disabled:opacity-50"
     >
       {label}
       {loading ? (

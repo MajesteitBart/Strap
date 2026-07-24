@@ -14,9 +14,9 @@ import {
   type AgentStreamEvent,
 } from "@/lib/panel/agent";
 import { executeAgentActions, executeCompanyAgentActions } from "@/lib/panel/agent-execute";
-import { loadActiveCreedState } from "@/lib/creed-backend";
-import { resolveActiveCreed } from "@/lib/creed-context";
-import { sectionBodyMarkdown } from "@/lib/creed-data";
+import { loadActiveStrapState } from "@/lib/strap-backend";
+import { resolveActiveStrap } from "@/lib/strap-context";
+import { sectionBodyMarkdown } from "@/lib/strap-data";
 
 export const maxDuration = 300;
 
@@ -24,11 +24,11 @@ export async function POST(request: Request) {
   const auth = await requireApiAuth();
   if (auth instanceof NextResponse) return auth;
 
-  // The in-app "Creed" agent works on personal AND company Creeds. On a company
-  // Creed it behaves identically, attributed to the acting member as "[member]'s
-  // Creed", and every edit is enforced per section by companyMcpWrite (Direct
+  // The in-app "Strap" agent works on Personal and Company Straps. On a Company
+  // Strap it behaves identically, attributed to the acting member as "[member]'s
+  // Strap", and every edit is enforced per section by companyMcpWrite (Direct
   // applies immediately, otherwise a proposal) - see executeCompanyAgentActions.
-  const activeCreed = await resolveActiveCreed(auth.supabase, auth.user);
+  const activeCreed = await resolveActiveStrap(auth.supabase, auth.user);
   const companyEntry = activeCreed?.creeds.find(
     (c) => c.id === activeCreed.creedId && c.type === "company"
   );
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
     mentioned: string[];
     sections: Array<{ id: string; name: string; content: string; agentPermission: AgentPermissionValue }>;
     archived: Array<{ id: string; name: string }>;
-    state: Awaited<ReturnType<typeof loadActiveCreedState>>["state"];
+    state: Awaited<ReturnType<typeof loadActiveStrapState>>["state"];
     apiKey: string;
     modelId: string;
     mode: "credits" | "byok";
@@ -56,7 +56,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing or oversized request." }, { status: 400 });
     }
 
-    const { state } = await loadActiveCreedState(auth.supabase, auth.user, activeCreed);
+    const { state } = await loadActiveStrapState(auth.supabase, auth.user, activeCreed);
     // The in-app agent is the user's own tool, so it works over every live
     // section it can see (personal: all, including hidden; company: the member's
     // visible sections). How each edit lands (direct vs proposal) is decided
@@ -228,7 +228,7 @@ export async function POST(request: Request) {
 
         // The user stopped between the model reply and here: don't apply or
         // persist edits they cancelled. The model spend already happened, but
-        // nothing touches the creed.
+        // nothing touches the Strap.
         if (request.signal.aborted) return;
 
         send({ type: "stage", stage: "filing" });

@@ -5,14 +5,14 @@ Document major repository boundaries and ownership.
 ## Canonical Boundaries
 - `HANDBOOK.md`: installed Delano operating model; repository-specific rules in `AGENTS.md` take precedence where they are narrower.
 - `.project/`: repository-owned delivery context, projects, templates, and registries. It is not application data.
-- `.agents/`: canonical Delano runtime, validation scripts, rules, hooks, and repo-local skills, including `creed-repo`.
+- `.agents/`: canonical Delano runtime, validation scripts, rules, hooks, and repo-local skills, including `strap-repo`.
 - `.claude/`: compatibility links only; `CLAUDE.md` points to `AGENTS.md`.
 - `.delano/`: optional local viewer assets, never source of truth.
 
 ## Runtime Areas
-- `app/`: public, authenticated, OAuth, API, and MCP routes.
-- `components/`: product, marketing, auth, and shared UI.
-- `lib/`: domain, persistence, authorization, integrations, AI, crypto, logging, and shared helpers.
+- `app/`: public, authenticated, OAuth, API, and MCP routes; the signed-in route group is `app/(strap-app)/`.
+- `components/`: product UI under `components/strap/`, plus marketing, auth, and shared UI.
+- `lib/`: domain, persistence, authorization, integrations, AI, crypto, logging, and shared helpers. Canonical shared domain modules use `lib/strap-*`; `lib/creed-*` re-export shims preserve source compatibility where required.
 - `supabase/migrations/`: forward-only canonical database schema and policies.
 - `packages/strap/`: independently built and tested `@bvdm/strap` MCP terminal client.
 - `packages/creed-cli/`: preserved legacy CLI compatibility package.

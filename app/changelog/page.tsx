@@ -50,13 +50,13 @@ export default function ChangelogPage() {
           ])
         )}
       />
-      <div className="min-h-screen bg-[var(--creed-background)] text-[var(--creed-text-primary)]">
+      <div className="min-h-screen bg-[var(--strap-background)] text-[var(--strap-text-primary)]">
         <MarketingHeroBanner configured={isSupabaseConfigured()} scrolled={false} />
 
         <main className="mx-auto max-w-3xl px-6 pb-20 pt-8 md:px-10 md:pb-24 md:pt-10">
-          <header className="border-b border-[var(--creed-border)] pb-8">
+          <header className="border-b border-[var(--strap-border)] pb-8">
             <AnimatedPageTitle text="Changelog" />
-            <p className="mt-4 max-w-2xl text-[18px] leading-8 text-[var(--creed-text-secondary)]">
+            <p className="mt-4 max-w-2xl text-[18px] leading-8 text-[var(--strap-text-secondary)]">
               What&apos;s new in Strap, newest first.
             </p>
           </header>
@@ -66,14 +66,14 @@ export default function ChangelogPage() {
               <article key={entry.date} className="flex flex-col gap-3">
                 <time
                   dateTime={entry.date}
-                  className="text-[13px] font-medium text-[var(--creed-text-tertiary)]"
+                  className="text-[13px] font-medium text-[var(--strap-text-tertiary)]"
                 >
                   {formatDate(entry.date)}
                 </time>
-                <h2 className="text-[22px] font-medium tracking-[-0.01em] text-[var(--creed-text-primary)] md:text-[24px]">
+                <h2 className="text-[22px] font-medium tracking-[-0.01em] text-[var(--strap-text-primary)] md:text-[24px]">
                   {entry.title}
                 </h2>
-                <p className="text-[16px] leading-8 text-[var(--creed-text-secondary)]">
+                <p className="text-[16px] leading-8 text-[var(--strap-text-secondary)]">
                   {entry.body}
                 </p>
                 {entry.highlights ? (
@@ -81,7 +81,7 @@ export default function ChangelogPage() {
                     {entry.highlights.map((h, i) => (
                       <li
                         key={i}
-                        className="relative pl-5 text-[15px] leading-7 text-[var(--creed-text-secondary)] before:absolute before:left-0 before:top-[10px] before:h-2 before:w-2 before:rounded-[3px] before:bg-[var(--creed-accent)]"
+                        className="relative pl-5 text-[15px] leading-7 text-[var(--strap-text-secondary)] before:absolute before:left-0 before:top-[10px] before:h-2 before:w-2 before:rounded-[3px] before:bg-[var(--strap-accent)]"
                       >
                         {h}
                       </li>

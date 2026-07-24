@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import type { CreedSection } from "@/lib/creed-data";
-import { createBlankCreedState, persistCreedState } from "@/lib/creed-backend";
-import { ensurePersonalCreedId } from "@/lib/creed-context";
+import type { StrapSection } from "@/lib/strap-data";
+import { createBlankStrapState, persistStrapState } from "@/lib/strap-backend";
+import { ensurePersonalStrapId } from "@/lib/strap-context";
 import { requireApiAuth } from "@/lib/api-auth";
 import { recordAuditEvent } from "@/lib/audit-log";
 
@@ -35,7 +35,7 @@ function isString(value: unknown, max = 5000): value is string {
   return typeof value === "string" && value.length <= max;
 }
 
-function validateSections(value: unknown): CreedSection[] | null {
+function validateSections(value: unknown): StrapSection[] | null {
   if (!Array.isArray(value) || value.length === 0 || value.length > 200) {
     return null;
   }
@@ -49,7 +49,7 @@ function validateSections(value: unknown): CreedSection[] | null {
     if (typeof section.accent !== "string" || !ALLOWED_ACCENTS.has(section.accent)) return null;
   }
 
-  return value as CreedSection[];
+  return value as StrapSection[];
 }
 
 export async function POST(request: Request) {
@@ -75,13 +75,13 @@ export async function POST(request: Request) {
     );
   }
 
-  const nextState = createBlankCreedState(auth.user);
+  const nextState = createBlankStrapState(auth.user);
   nextState.sections = sections;
   nextState.proposals = [];
   nextState.activity = [];
 
-  await ensurePersonalCreedId(auth.supabase, auth.user);
-  await persistCreedState(auth.supabase, auth.user.id, nextState);
+  await ensurePersonalStrapId(auth.supabase, auth.user);
+  await persistStrapState(auth.supabase, auth.user.id, nextState);
 
   void recordAuditEvent({
     userId: auth.user.id,

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { clearGitHubIntegration, upsertGitHubIntegration } from "@/lib/creed-backend";
+import { clearGitHubIntegration, upsertGitHubIntegration } from "@/lib/strap-backend";
 import { getGitHubViewer } from "@/lib/github";
 import { requireAuthenticatedUser } from "@/lib/github-version-control";
 import { recordAuditEvent } from "@/lib/audit-log";

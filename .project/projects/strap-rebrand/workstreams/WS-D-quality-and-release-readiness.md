@@ -2,9 +2,9 @@
 id: WS-D
 name: WS-D Quality and Release Readiness
 owner: MajesteitBart
-status: active
+status: done
 created: 2026-07-23T02:05:37Z
-updated: 2026-07-23T02:58:35Z
+updated: 2026-07-24T12:36:02Z
 operating_mode: multi-stream
 ---
 

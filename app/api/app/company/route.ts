@@ -2,10 +2,11 @@ import { NextResponse } from "next/server";
 import { requireApiAuth } from "@/lib/api-auth";
 import { deleteCompany } from "@/lib/company-admin";
 import { provisionCompany } from "@/lib/company-provision";
-import { setActiveCreed } from "@/lib/creed-context";
+import { setActiveCreed } from "@/lib/strap-context";
 import { recordAuditEvent } from "@/lib/audit-log";
+import { readStrapId } from "@/lib/strap-api";
 
-// POST /api/app/company - create (or resume) the caller's company Creed and
+// POST /api/app/company - create (or resume) the caller's Company Strap and
 // make it active. Idempotent per owner: one owned company per user, so a
 // retry returns the existing shell. Onboarding continues in the app.
 export async function POST(request: Request) {
@@ -21,7 +22,7 @@ export async function POST(request: Request) {
       metadata: { creedId },
       request,
     });
-    return NextResponse.json({ ok: true, creedId });
+    return NextResponse.json({ ok: true, strapId: creedId, creedId });
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Could not create the company Strap." },
@@ -30,15 +31,19 @@ export async function POST(request: Request) {
   }
 }
 
-// DELETE /api/app/company { creedId } - delete the company Creed (owner-only).
+// DELETE /api/app/company { creedId } - delete the Company Strap (owner-only).
 export async function DELETE(request: Request) {
   const auth = await requireApiAuth();
   if (auth instanceof NextResponse) return auth;
-  const b = (await request.json().catch(() => ({}))) as { creedId?: unknown };
-  if (typeof b.creedId !== "string") {
-    return NextResponse.json({ error: "creedId is required." }, { status: 400 });
+  const b = (await request.json().catch(() => ({}))) as {
+    strapId?: unknown;
+    creedId?: unknown;
+  };
+  const strapId = readStrapId(b);
+  if (!strapId) {
+    return NextResponse.json({ error: "strapId is required." }, { status: 400 });
   }
-  const result = await deleteCompany({ creedId: b.creedId, actor: auth.user });
+  const result = await deleteCompany({ creedId: strapId, actor: auth.user });
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: result.status });
   return NextResponse.json({ ok: true });
 }

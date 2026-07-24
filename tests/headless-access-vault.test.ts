@@ -142,5 +142,8 @@ test("MCP discovery presents Strap while accepting both CLI attribution headers"
   assert.match(mcpRoute, /X-Strap-CLI-Agent, X-Creed-CLI-Agent/);
   assert.match(mcpRoute, /request\.headers\.get\("x-strap-cli-agent"\)/);
   assert.match(mcpRoute, /request\.headers\.get\("x-creed-cli-agent"\)/);
-  assert.match(mcpRoute, /const CREED_RESOURCE_URI = "creed:\/\/profile"/);
+  assert.match(
+    mcpRoute,
+    /const LEGACY_CREED_RESOURCE_URI = "creed:\/\/profile"/,
+  );
 });

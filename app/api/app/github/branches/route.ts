@@ -4,7 +4,7 @@ import {
   requireAuthenticatedUser,
   withAuthenticatedGitHubAccess,
 } from "@/lib/github-version-control";
-import { resolveManagedCompanyCreedId } from "@/lib/creed-context";
+import { resolveManagedCompanyCreedId } from "@/lib/strap-context";
 import { withCompanyGitHubAccess } from "@/lib/company-github";
 
 export async function GET(request: Request) {

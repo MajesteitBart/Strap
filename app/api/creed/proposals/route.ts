@@ -9,9 +9,9 @@ import {
   normalizeLegacySectionId,
   normalizeProposalForSection,
   type Proposal,
-} from "@/lib/creed-data";
-import { findUserIdByProposalToken, loadCreedState, recordConnectionUsage } from "@/lib/creed-backend";
-import { getPersonalCreedId } from "@/lib/creed-membership";
+} from "@/lib/strap-data";
+import { findUserIdByProposalToken, loadCreedState, recordConnectionUsage } from "@/lib/strap-backend";
+import { getPersonalCreedId } from "@/lib/strap-membership";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import { isSupabaseAdminConfigured } from "@/lib/supabase/env";

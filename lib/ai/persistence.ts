@@ -9,7 +9,7 @@ import type { SupabaseLikeClient } from "@/lib/supabase/types";
 
 const MICRO_PER_USD = 1_000_000;
 
-// Which key pays for first-party AI. 'credits' runs on Creed's platform key and
+// Which key pays for first-party AI. 'credits' runs on Strap's platform key and
 // bills the user's prepaid balance; 'byok' runs on the user's own key at no
 // markup. The toggle lives in Settings; default is 'credits'. The model itself
 // is server-selected per feature and hidden from the user in both modes.
@@ -222,7 +222,7 @@ export async function recordAiUsage({
 }: {
   client: unknown;
   userId: string;
-  // The Creed the spend belongs to. Set to the company Creed id for company AI
+  // The Strap the spend belongs to. Set to the Company Strap id for company AI
   // so the company spend chart (readCompanyAiUsageSummary) can attribute it;
   // left null for personal usage (read by user_id), preserving personal charts.
   creedId?: string | null;
@@ -294,7 +294,7 @@ export async function readAiUsageSummary(
 }
 
 // The company spend chart, keyed by creed_id (company usage is stamped with the
-// company Creed id by recordAiUsage). Read via the admin client since company AI
+// Company Strap id by recordAiUsage). Read via the admin client since company AI
 // usage is visible to every member. Owner-only detail lives in the credit
 // history ledger, not this aggregate chart. Mirrors the personal summary exactly
 // so the same UsageCard renders it.

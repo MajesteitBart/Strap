@@ -1,7 +1,7 @@
 import "server-only";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import type { SupabaseLikeClient } from "@/lib/supabase/types";
-import { listUserCreeds } from "@/lib/creed-membership";
+import { listUserStraps } from "@/lib/strap-membership";
 import { recordAuditEvent, recordRequiredAuditEvent } from "@/lib/audit-log";
 
 type VaultItemRow = {
@@ -57,7 +57,7 @@ function toItem(row: VaultItemRow): VaultItem {
 }
 
 async function requireVaultCreedAccess(userId: string, creedId: string): Promise<void> {
-  const match = (await listUserCreeds(adminDb(), userId)).find((creed) => creed.id === creedId);
+  const match = (await listUserStraps(adminDb(), userId)).find((strap) => strap.id === creedId);
   if (!match) throw new VaultAccessError("Forbidden", 403);
   if (match.type === "company" && match.role !== "owner" && match.role !== "admin") {
     throw new VaultAccessError("Vault access requires a company owner or admin.", 403);

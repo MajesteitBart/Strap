@@ -1,4 +1,4 @@
-import type { McpHealthSummary } from "../components/creed/mcp-health-preload.ts";
+import type { McpHealthSummary } from "../components/strap/mcp-health-preload.ts";
 import { getAgentCategory, type AgentCategory } from "./agent-icon.ts";
 
 export function filterMcpHealthSummary(

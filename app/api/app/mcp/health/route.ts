@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireApiAuth } from "@/lib/api-auth";
 import { isMcpHealthRange, loadMcpHealth } from "@/lib/mcp-health";
-import { resolveActiveCreed } from "@/lib/creed-context";
+import { resolveActiveCreed } from "@/lib/strap-context";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 
 export async function GET(request: Request) {
@@ -11,9 +11,9 @@ export async function GET(request: Request) {
   const rangeParam = new URL(request.url).searchParams.get("range") ?? "30d";
   const range = isMcpHealthRange(rangeParam) ? rangeParam : "30d";
 
-  // Scope the dashboard to the active Creed. A company Creed reads its own
+  // Scope the dashboard to the active Strap. A Company Strap reads its own
   // telemetry (creed_id-scoped) through the admin client after resolveActiveCreed
-  // has confirmed membership; personal Creeds keep the original user-scoped read
+  // has confirmed membership; Personal Straps keep the original user-scoped read
   // on the session client, so personal behaviour is unchanged.
   const active = await resolveActiveCreed(auth.supabase, auth.user);
   const activeType = active?.creeds.find((c) => c.id === active.creedId)?.type;

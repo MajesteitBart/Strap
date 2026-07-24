@@ -1,10 +1,10 @@
 import type { User } from "@supabase/supabase-js";
-import type { GitHubSyncStatus } from "@/lib/creed-data";
+import type { GitHubSyncStatus } from "@/lib/strap-data";
 import {
   readGitHubIntegration,
   readVersionControlConfig,
   upsertGitHubIntegration,
-} from "@/lib/creed-backend";
+} from "@/lib/strap-backend";
 import {
   getGitHubFileSnapshot,
   isGitHubTokenRefreshConfigured,

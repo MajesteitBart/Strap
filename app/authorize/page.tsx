@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { CreedWordmark, IntegrationGlyph } from "@/components/creed/brand";
-import { AuthorizeSpacePicker, type SpaceOption } from "@/components/creed/authorize-space-picker";
+import { IntegrationGlyph, StrapWordmark } from "@/components/strap/brand";
+import { AuthorizeSpacePicker, type SpaceOption } from "@/components/strap/authorize-space-picker";
 import { Button } from "@/components/ui/button";
 import { getAgentIconKind } from "@/lib/agent-icon";
 import { getOAuthClient, isAllowedRedirectUri } from "@/lib/oauth";
@@ -8,12 +8,12 @@ import {
   getAvatarInitials,
   getAvatarUrl,
   getUserName,
-} from "@/lib/creed-backend";
-import { listUserCreeds } from "@/lib/creed-membership";
+} from "@/lib/strap-backend";
+import { listUserStraps } from "@/lib/strap-membership";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-// Creed-branded OAuth consent screen. A signed-in, set-up user sees a single
+// Strap-branded OAuth consent screen. A signed-in, set-up user sees a single
 // Allow / Deny choice with the connecting client's icon. The page renders only;
 // the Allow / Deny POST is handled by ./decision/route.ts, which re-resolves the
 // user from the session and re-validates the client before issuing a code.
@@ -31,10 +31,10 @@ type SearchParams = {
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-[var(--creed-background)] text-[var(--creed-text-primary)]">
+    <div className="min-h-screen bg-[var(--strap-background)] text-[var(--strap-text-primary)]">
       <div className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-6 py-16">
-        <CreedWordmark className="mb-10 h-[20px]" />
-        <div className="w-full rounded-[var(--radius-xl)] bg-[var(--creed-surface)] p-7 text-center">
+        <StrapWordmark className="mb-10 h-[20px]" />
+        <div className="w-full rounded-[var(--radius-xl)] bg-[var(--strap-surface)] p-7 text-center">
           {children}
         </div>
       </div>
@@ -45,8 +45,8 @@ function Shell({ children }: { children: React.ReactNode }) {
 function Message({ title, body }: { title: string; body: string }) {
   return (
     <>
-      <h1 className="text-[18px] font-medium text-[var(--creed-text-primary)]">{title}</h1>
-      <p className="mt-3 text-[14px] leading-7 text-[var(--creed-text-secondary)]">{body}</p>
+      <h1 className="text-[18px] font-medium text-[var(--strap-text-primary)]">{title}</h1>
+      <p className="mt-3 text-[14px] leading-7 text-[var(--strap-text-secondary)]">{body}</p>
     </>
   );
 }
@@ -131,7 +131,7 @@ export default async function AuthorizePage({
         <div className="mt-6 flex justify-center">
           <Link
             href={`/login?next=${encodeURIComponent(returnTo)}`}
-            className="inline-flex h-10 items-center justify-center rounded-md bg-[var(--creed-text-primary)] px-5 text-[14px] font-medium text-[var(--creed-button-primary-fg)] transition-colors hover:bg-[var(--creed-button-primary-hover)]"
+            className="inline-flex h-10 items-center justify-center rounded-md bg-[var(--strap-text-primary)] px-5 text-[14px] font-medium text-[var(--strap-button-primary-fg)] transition-colors hover:bg-[var(--strap-button-primary-hover)]"
           >
             Log in
           </Link>
@@ -142,12 +142,12 @@ export default async function AuthorizePage({
 
   const iconKind = getAgentIconKind(client.clientName);
 
-  // The spaces the user can grant this agent. A solo user (personal Creed only)
+  // The spaces the user can grant this agent. A solo user (Personal Strap only)
   // sees no picker - the decision route grants their one space by default, which
-  // keeps the connect flow a single click. A user in one or more company Creeds
+  // keeps the connect flow a single click. A user in one or more Company Straps
   // gets the picker so they can scope the agent to personal or one company (a
-  // connection reaches exactly one Creed).
-  const creeds = await listUserCreeds(supabase, user.id);
+  // connection reaches exactly one Strap).
+  const creeds = await listUserStraps(supabase, user.id);
   if (creeds.length === 0) {
     return (
       <Shell>
@@ -158,7 +158,7 @@ export default async function AuthorizePage({
         <div className="mt-6 flex justify-center">
           <Link
             href="/onboarding"
-            className="inline-flex h-10 items-center justify-center rounded-md bg-[var(--creed-text-primary)] px-5 text-[14px] font-medium text-[var(--creed-button-primary-fg)] transition-colors hover:bg-[var(--creed-button-primary-hover)]"
+            className="inline-flex h-10 items-center justify-center rounded-md bg-[var(--strap-text-primary)] px-5 text-[14px] font-medium text-[var(--strap-button-primary-fg)] transition-colors hover:bg-[var(--strap-button-primary-hover)]"
           >
             Set up Strap
           </Link>
@@ -167,7 +167,7 @@ export default async function AuthorizePage({
     );
   }
   // Show each space by its real name - the person's name for their personal
-  // Creed (mirroring the app switcher), the company name for a company Creed -
+  // Strap (mirroring the app switcher), the company name for a Company Strap -
   // never a generic "Personal"/"Company" label, since the owner knows which is
   // which.
   const spaces: SpaceOption[] = creeds.map((creed) => ({
@@ -185,18 +185,18 @@ export default async function AuthorizePage({
     <Shell>
       <div className="flex items-center justify-center gap-4">
         <IntegrationGlyph kind="mcp" framed={false} className="h-14 w-14" />
-        <span className="text-[18px] text-[var(--creed-text-tertiary)]">+</span>
+        <span className="text-[18px] text-[var(--strap-text-tertiary)]">+</span>
         <IntegrationGlyph kind={iconKind} framed={false} className="h-14 w-14" />
       </div>
 
-      <h1 className="mt-6 text-[18px] font-medium text-[var(--creed-text-primary)]">
+      <h1 className="mt-6 text-[18px] font-medium text-[var(--strap-text-primary)]">
         Connect {client.clientName} to your Strap
       </h1>
-      <p className="mt-3 text-[14px] leading-7 text-[var(--creed-text-secondary)]">
+      <p className="mt-3 text-[14px] leading-7 text-[var(--strap-text-secondary)]">
         {client.clientName} can read your Strap and propose updates, and edits a
         section directly only where you allow direct edits.
       </p>
-      <p className="mt-2 text-[13px] text-[var(--creed-text-tertiary)]">
+      <p className="mt-2 text-[13px] text-[var(--strap-text-tertiary)]">
         Signed in as {user.email}
       </p>
 
@@ -221,7 +221,7 @@ export default async function AuthorizePage({
             type="submit"
             name="decision"
             value="allow"
-            className="h-9 flex-1 rounded-md bg-[var(--creed-accent)] text-white hover:bg-[var(--creed-accent-hover)]"
+            className="h-9 flex-1 rounded-md bg-[var(--strap-accent)] text-white hover:bg-[var(--strap-accent-hover)]"
           >
             Allow
           </Button>

@@ -3,11 +3,11 @@ import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import type { SupabaseLikeClient } from "@/lib/supabase/types";
 
 // Company provisioning. Billing was removed from the product, so a company
-// Creed is created directly by its signed-in owner instead of by a Stripe
+// Strap is created directly by its signed-in owner instead of by a Stripe
 // checkout webhook: a company shell in onboarding stage plus the owner
 // membership. The company onboarding flow takes it from there.
 
-/** Does the user already own a company Creed? One owned company per user. */
+/** Does the user already own a Company Strap? One owned company per user. */
 export async function userOwnsCompany(userId: string): Promise<boolean> {
   const admin = getSupabaseAdminClient() as unknown as SupabaseLikeClient;
   const { data } = (await admin
@@ -21,15 +21,15 @@ export async function userOwnsCompany(userId: string): Promise<boolean> {
 }
 
 /**
- * Create (or resume) the caller's company Creed shell. Idempotent per owner:
+ * Create (or resume) the caller's Company Strap shell. Idempotent per owner:
  * an existing owned company is returned as-is, so a retry never creates a
- * second one. Returns the company Creed id.
+ * second one. Returns the Company Strap id.
  */
 export async function provisionCompany(userId: string): Promise<string> {
   const admin = getSupabaseAdminClient() as unknown as SupabaseLikeClient;
 
   // Reuse an in-flight company shell for this owner if one exists, else create
-  // the Creed in onboarding stage.
+  // the Strap in onboarding stage.
   let creedId: string;
   const { data: shell, error: shellError } = (await admin
     .from("creeds")

@@ -1,9 +1,9 @@
-import { accentColorMap, type CreedSection } from "./creed-data.ts";
+import { accentColorMap, type StrapSection } from "./strap-data.ts";
 
 export type NexusGraphNode = {
   id: string;
   name: string;
-  accent: CreedSection["accent"];
+  accent: StrapSection["accent"];
   color: string;
   score?: number;
   characterCount: number;
@@ -78,7 +78,7 @@ function aliasPattern(alias: string) {
   return tokens.map(escapeRegExp).join("[\\s_-]*");
 }
 
-function buildTargets(sections: CreedSection[]) {
+function buildTargets(sections: StrapSection[]) {
   const targets = sections.map<SectionTarget>((section) => ({
     id: section.id,
     name: section.name,
@@ -150,7 +150,7 @@ function extractPlainReferences(html: string, targets: SectionTarget[]) {
 }
 
 export function buildNexusGraph(
-  sections: CreedSection[],
+  sections: StrapSection[],
   scoresBySectionId: ReadonlyMap<string, number> = new Map(),
 ): NexusGraph {
   const visibleSections = sections.filter((section) => !section.archived);

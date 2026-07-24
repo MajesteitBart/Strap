@@ -6,8 +6,8 @@ import {
   PREFERENCES_SECTION_ID,
   ROUTINES_SECTION_ID,
   WORK_SECTION_ID,
-  type CreedSection,
-} from "@/lib/creed-data";
+  type StrapSection,
+} from "@/lib/strap-data";
 import { callOpenRouter, parseJsonObject } from "@/lib/ai/openrouter";
 import { recordAiUsage } from "@/lib/ai/persistence";
 import { resolveAiCredential, resolveCompanyAiCredential } from "@/lib/ai/credits";
@@ -15,7 +15,7 @@ import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import {
   buildQualityPrompt,
   buildQualityResponseFormat,
-  CREED_QUALITY_RUBRIC_VERSION,
+  STRAP_QUALITY_RUBRIC_VERSION,
   qualitySubject,
   type QualityScope,
 } from "@/lib/ai/quality-rubric";
@@ -27,7 +27,7 @@ import type { SupabaseLikeClient } from "@/lib/supabase/types";
 // collapsed quality popover; the detail expands on demand.
 export type QualityNote = { title: string; detail: string };
 
-export type CreedQualityReport = {
+export type StrapQualityReport = {
   contentHash: string;
   overall: {
     score: number;
@@ -56,6 +56,9 @@ export type CreedQualityReport = {
   }>;
   generatedAt: string;
 };
+
+/** @deprecated Use StrapQualityReport. */
+export type CreedQualityReport = StrapQualityReport;
 
 // Controlled tag vocabulary. The AI only picks from this set so the UI can
 // reliably colour-code every tag. Order matches narrative weight.
@@ -111,21 +114,28 @@ function assertNoError(error: { message: string } | null, fallback: string) {
   }
 }
 
-export function hashCreedSections(sections: CreedSection[]) {
+export function hashStrapSections(sections: StrapSection[]) {
   return createHash("sha256")
     .update(JSON.stringify(sections, (key, value) => QUALITY_HASH_IGNORED_KEYS.has(key) ? undefined : value))
     .digest("hex");
 }
 
-export function hashCreedSection(section: CreedSection) {
+export function hashStrapSection(section: StrapSection) {
   return createHash("sha256")
     .update(JSON.stringify(section, (key, value) => QUALITY_HASH_IGNORED_KEYS.has(key) ? undefined : value))
     .digest("hex");
 }
 
-export function hashCreedSectionsById(sections: CreedSection[]) {
-  return Object.fromEntries(sections.map((section) => [section.id, hashCreedSection(section)]));
+export function hashStrapSectionsById(sections: StrapSection[]) {
+  return Object.fromEntries(sections.map((section) => [section.id, hashStrapSection(section)]));
 }
+
+/** @deprecated Use hashStrapSections. */
+export const hashCreedSections = hashStrapSections;
+/** @deprecated Use hashStrapSection. */
+export const hashCreedSection = hashStrapSection;
+/** @deprecated Use hashStrapSectionsById. */
+export const hashCreedSectionsById = hashStrapSectionsById;
 
 function clampScore(value: unknown) {
   const numeric = typeof value === "number" ? value : Number(value);
@@ -269,7 +279,7 @@ function deriveLegacyNote(items: string[] | undefined, fallbackTitle: string): Q
   };
 }
 
-type SectionReport = CreedQualityReport["sections"][number];
+type SectionReport = StrapQualityReport["sections"][number];
 
 // The whole-file qualitative judgment (everything on `overall` except the
 // computed score). Shared by the model-parse path and the carry-forward path.
@@ -286,7 +296,7 @@ type OverallQualitative = {
 // `raw === undefined` (a section the model skipped, or one with no stored
 // entry) yields a neutral fallback the caller can choose to override with a
 // carried-forward score instead of showing a phantom zero.
-function normalizeSectionReport(raw: Record<string, unknown> | undefined, section: CreedSection): SectionReport {
+function normalizeSectionReport(raw: Record<string, unknown> | undefined, section: StrapSection): SectionReport {
   const strengths = normalizeStringArray(raw?.strengths, []).slice(0, 3);
   const gaps = normalizeStringArray(
     raw?.gaps,
@@ -353,12 +363,12 @@ function assembleReport({
   overall,
   contentHash,
 }: {
-  sections: CreedSection[];
+  sections: StrapSection[];
   gradedById: Map<string, SectionReport>;
   priorById: Map<string, SectionReport>;
   overall: OverallQualitative;
   contentHash: string;
-}): CreedQualityReport {
+}): StrapQualityReport {
   const sectionReports = sections.map(
     (section) =>
       gradedById.get(section.id) ?? priorById.get(section.id) ?? normalizeSectionReport(undefined, section)
@@ -386,7 +396,7 @@ function assembleReport({
 // model-response path uses `normalizeSectionReport` + `assembleReport` instead.
 export function validateQualityReport(
   value: unknown,
-  sections: CreedSection[],
+  sections: StrapSection[],
   contentHash: string,
   // A company report is one shared report, generated over ALL sections and keyed
   // by creed_id, but each member reads it scoped to the sections they can see.
@@ -397,7 +407,7 @@ export function validateQualityReport(
   // the owner. Personal reads (companyRead=false) recompute the score from the
   // owner's own sections, which they always see in full - byte-identical to before.
   companyRead = false,
-): CreedQualityReport {
+): StrapQualityReport {
   const root = value && typeof value === "object" ? (value as Record<string, unknown>) : {};
   const rawOverall = root.overall && typeof root.overall === "object" ? (root.overall as Record<string, unknown>) : {};
   const rawSections = Array.isArray(root.sections) ? root.sections : [];
@@ -439,7 +449,7 @@ function findRawSection(rawSections: unknown[], sectionId: string) {
   ) as Record<string, unknown> | undefined;
 }
 
-function overallQualitativeFromReport(report: CreedQualityReport): OverallQualitative {
+function overallQualitativeFromReport(report: StrapQualityReport): OverallQualitative {
   return {
     summary: report.overall.summary,
     tags: report.overall.tags,
@@ -468,7 +478,7 @@ async function readCachedReport(
   assertNoError(error, "Could not load quality report.");
   return data as {
     section_hashes?: Record<string, string>;
-    report?: CreedQualityReport & { sectionHashes?: Record<string, string> };
+    report?: StrapQualityReport & { sectionHashes?: Record<string, string> };
   } | null;
 }
 
@@ -525,13 +535,13 @@ export async function readQualityBaseline({
   userId: string;
   // The report key (personal creed or shared company creed). Always set.
   creedId: string;
-  sections: CreedSection[];
+  sections: StrapSection[];
   // True for company reads: show the shared stored overall score + full narrative
   // to every member, not a per-viewer recompute (see validateQualityReport).
   companyRead?: boolean;
 }) {
-  const contentHash = hashCreedSections(sections);
-  const sectionHashes = hashCreedSectionsById(sections);
+  const contentHash = hashStrapSections(sections);
+  const sectionHashes = hashStrapSectionsById(sections);
   const latest = await readLatestQualityReport(client, userId, creedId);
   if (!latest?.report) {
     return {
@@ -559,8 +569,8 @@ export async function readQualityBaseline({
   };
 }
 
-type StoredReport = CreedQualityReport & { rubricVersion?: string };
-type ReportWithHashes = CreedQualityReport & { sectionHashes: Record<string, string>; rubricVersion: string };
+type StoredReport = StrapQualityReport & { rubricVersion?: string };
+type ReportWithHashes = StrapQualityReport & { sectionHashes: Record<string, string>; rubricVersion: string };
 
 // Merge a freshly-graded (possibly partial) company report into the stored
 // shared report so a run never drops sections the runner couldn't see. The
@@ -707,15 +717,15 @@ export async function analyzeCreedQuality({
   // hold propose/direct on. Targets are capped to this set, so a member run only
   // re-scores their editable sections and merges into the shared report.
   allowedTargetIds?: string[];
-  sections: CreedSection[];
+  sections: StrapSection[];
   force?: boolean;
   targetSectionIds?: string[];
 }) {
   // Archived sections are not part of the live file, so they are excluded from
   // scoring entirely (hashing, targets, prompt, and report all see live only).
   const sections = allSections.filter((section) => !section.archived);
-  const contentHash = hashCreedSections(sections);
-  const sectionHashes = hashCreedSectionsById(sections);
+  const contentHash = hashStrapSections(sections);
+  const sectionHashes = hashStrapSectionsById(sections);
 
   if (!force) {
     const cached = await readCachedReport(client, userId, contentHash, creedId);
@@ -742,7 +752,7 @@ export async function analyzeCreedQuality({
   // a different scoring method, so regrade the whole file once to bring it onto
   // the new rubric instead of mixing old and new numbers.
   const storedRubricVersion = (latest?.report as { rubricVersion?: string } | null | undefined)?.rubricVersion;
-  const rubricStale = Boolean(priorReport) && storedRubricVersion !== CREED_QUALITY_RUBRIC_VERSION;
+  const rubricStale = Boolean(priorReport) && storedRubricVersion !== STRAP_QUALITY_RUBRIC_VERSION;
 
   // Decide which sections to (re)grade. With no prior report (or a stale rubric)
   // we grade them all; otherwise the caller's explicit targets, falling back to
@@ -771,7 +781,7 @@ export async function analyzeCreedQuality({
       overall: overallQualitativeFromReport(priorReport),
       contentHash,
     });
-    const reportWithHashes = { ...report, sectionHashes, rubricVersion: CREED_QUALITY_RUBRIC_VERSION };
+    const reportWithHashes = { ...report, sectionHashes, rubricVersion: STRAP_QUALITY_RUBRIC_VERSION };
     if (latest?.content_hash !== contentHash) {
       await persistQualityReport({
         userId,
@@ -808,14 +818,14 @@ export async function analyzeCreedQuality({
     maxTokens: 8000,
     // Zero temperature so the same content earns the same score run to run.
     temperature: 0,
-    // GPT-class reasoning over a full Creed can take 60-150s; the default 90s
+    // GPT-class reasoning over a full Strap can take 60-150s; the default 90s
     // abort surfaces mid-stream as "empty response". The route allows 300s.
     timeoutMs: 240000,
     responseFormat: buildQualityResponseFormat(),
     messages: [
       {
         role: "system",
-        content: `Score how well this Strap (${qualitySubjectText.noun}) ${qualitySubjectText.purpose}. Use rubric ${CREED_QUALITY_RUBRIC_VERSION}. Be strict, specific, and consistent. Judge how complete, accurate, current, and concrete the file is - not how it would help engineering. Return valid JSON only.`,
+        content: `Score how well this Strap (${qualitySubjectText.noun}) ${qualitySubjectText.purpose}. Use rubric ${STRAP_QUALITY_RUBRIC_VERSION}. Be strict, specific, and consistent. Judge how complete, accurate, current, and concrete the file is - not how it would help engineering. Return valid JSON only.`,
       },
       {
         role: "user",
@@ -858,7 +868,7 @@ export async function analyzeCreedQuality({
     overall: parseOverallQualitative(root.overall),
     contentHash,
   });
-  const reportWithHashes = { ...report, sectionHashes, rubricVersion: CREED_QUALITY_RUBRIC_VERSION };
+  const reportWithHashes = { ...report, sectionHashes, rubricVersion: STRAP_QUALITY_RUBRIC_VERSION };
 
   await persistQualityReport({
     userId,

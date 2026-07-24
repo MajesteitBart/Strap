@@ -120,7 +120,7 @@ export function markdownToRichHtml(markdown: string) {
 
   function flushQuote() {
     if (quoteLines.length > 0) {
-      // Render markdown blockquotes as Creed callouts, which is how the
+      // Render markdown blockquotes as Strap callouts, which is how the
       // editor styles `<blockquote>` via the `creed-callout` class.
       blocks.push(
         `<blockquote class="creed-callout"><p>${inline(quoteLines.join(" "))}</p></blockquote>`

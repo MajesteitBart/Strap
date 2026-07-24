@@ -20,12 +20,12 @@ const section = (id: string, name: string, content: string) => ({
 test("buildTabContext: excludes the target section body", () => {
   const context = buildTabContext(
     [
-      section("identity", "Identity", "I build Creed."),
+      section("identity", "Identity", "I build Strap."),
       section("goals", "Goals", "Ship Tab autocomplete."),
     ],
     "goals",
   );
-  assert.ok(context.includes("I build Creed."));
+  assert.ok(context.includes("I build Strap."));
   assert.ok(!context.includes("Ship Tab autocomplete."));
 });
 
@@ -67,6 +67,8 @@ test("buildTabUserPrompt: draft mode carries the section name and empty-file fal
   assert.ok(prompt.includes('The "Constraints" section is empty.'));
   assert.ok(prompt.includes("(the rest of the file is empty)"));
   assert.ok(prompt.includes("(none)"));
+  assert.match(prompt, /<strap_profile>[\s\S]*<\/strap_profile>/);
+  assert.doesNotMatch(prompt, /<creed>/);
 });
 
 test("sanitizeTabCompletion: cuts at the first line break", () => {

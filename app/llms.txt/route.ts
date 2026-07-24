@@ -1,11 +1,11 @@
 import { getSiteUrl } from "@/lib/supabase/env";
-import { CREED_DESCRIPTION, CREED_TAGLINE } from "@/lib/marketing/brand";
+import { BRAND_DESCRIPTION, BRAND_TAGLINE } from "@/lib/marketing/brand";
 import { PRICING_ONE_LINER } from "@/lib/marketing/pricing";
 import { learnArticles } from "@/lib/marketing/learn";
 
 // Serves /llms.txt - the emerging convention that gives AI crawlers a clean,
 // plain-text map of the site's most citable pages and a one-paragraph summary
-// of what Creed is. Built from the deploy origin so links resolve correctly.
+// of what Strap is. Built from the deploy origin so links resolve correctly.
 // The full plain-text content lives at /llms-full.txt (linked below); coding
 // agents like Claude Code and Cursor fetch these directly.
 export const dynamic = "force-static";
@@ -19,7 +19,7 @@ export function GET() {
 
   const body = `# Strap
 
-> ${CREED_TAGLINE} ${CREED_DESCRIPTION.slice(CREED_TAGLINE.length).trim()}
+> ${BRAND_TAGLINE} ${BRAND_DESCRIPTION.slice(BRAND_TAGLINE.length).trim()}
 
 Full plain-text content: ${base}/llms-full.txt
 
@@ -36,7 +36,9 @@ Full plain-text content: ${base}/llms-full.txt
 
 A personal context file is one structured profile that describes who you are and how you want AI to respond. Strap organizes it into ten sections: Identity, Goals, Work, Preferences, and Routines as the always-on core, plus optional Beliefs, Constraints, People, Health, and Context.
 
-Agents connect over MCP (Claude Code, Codex, Cursor, ChatGPT) and read the file before answering, then propose narrowly scoped updates that you approve. The file is plain Markdown you own: bring your own AI key, keep your tokens, and export or delete everything at any time. There is no lock-in.
+Agents connect over MCP with browser OAuth, device authorization, or a scoped headless API key. They read the file before answering, then propose narrowly scoped updates that you approve. The Strap CLI exposes the same live MCP tools in a terminal.
+
+Strap also ships a per-profile Vault for external API keys. Secret values remain server-side and are revealed only through an explicit authorized action. Skills, environments, and agent manifests are roadmap resources, not shipped product features.
 
 Strap works for one person or a whole team. The Company plan adds one shared Company Strap that every member's agents read, with member roles, an activity view across the team, and admin controls.
 

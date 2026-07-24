@@ -4,9 +4,10 @@ import {
   reviewCompanyProposal,
   reviewPersonalProposal,
 } from "@/lib/company-sections";
-import { getPersonalCreedId } from "@/lib/creed-membership";
+import { getPersonalCreedId } from "@/lib/strap-membership";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import type { SupabaseLikeClient } from "@/lib/supabase/types";
+import { readStrapId } from "@/lib/strap-api";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -30,30 +31,35 @@ export async function POST(request: Request, ctx: Ctx) {
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
-  const b = (body ?? {}) as { creedId?: unknown; decision?: unknown };
+  const b = (body ?? {}) as {
+    strapId?: unknown;
+    creedId?: unknown;
+    decision?: unknown;
+  };
+  const strapId = readStrapId(b);
   if (
-    typeof b.creedId !== "string" ||
+    !strapId ||
     (b.decision !== "accept" &&
       b.decision !== "reject" &&
       b.decision !== "withdraw")
   ) {
     return NextResponse.json(
-      { error: "creedId and decision are required." },
+      { error: "strapId and decision are required." },
       { status: 400 },
     );
   }
 
   // Personal-vs-company dispatch: creed-membership owns the ownership
-  // semantics. A creedId that is the caller's own personal Creed goes down
+  // semantics. A creedId that is the caller's own Personal Strap goes down
   // the personal path; anything else (a company, or someone else's personal
-  // Creed) goes through reviewCompanyProposal, whose role check rejects
+  // Strap) goes through reviewCompanyProposal, whose role check rejects
   // non-members.
   const admin = getSupabaseAdminClient() as unknown as SupabaseLikeClient;
   const personalCreedId = await getPersonalCreedId(admin, auth.user.id);
   const result =
-    personalCreedId && personalCreedId === b.creedId
+    personalCreedId && personalCreedId === strapId
       ? await reviewPersonalProposal({
-          creedId: b.creedId,
+          creedId: strapId,
           user: auth.user,
           proposalId: id,
           // Personal has no separate withdraw flow; deleting your own
@@ -61,7 +67,7 @@ export async function POST(request: Request, ctx: Ctx) {
           decision: b.decision === "accept" ? "accept" : "reject",
         })
       : await reviewCompanyProposal({
-          creedId: b.creedId,
+          creedId: strapId,
           user: auth.user,
           proposalId: id,
           decision: b.decision,

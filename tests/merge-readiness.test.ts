@@ -23,7 +23,7 @@ const authorizeDecision = readFileSync(
   "utf8",
 );
 const membershipSource = readFileSync(
-  new URL("../lib/creed-membership.ts", import.meta.url),
+  new URL("../lib/strap-membership.ts", import.meta.url),
   "utf8",
 );
 const inviteSource = readFileSync(

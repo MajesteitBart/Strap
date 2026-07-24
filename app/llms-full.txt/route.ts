@@ -1,5 +1,5 @@
 import { getSiteUrl } from "@/lib/supabase/env";
-import { CREED_DESCRIPTION, CREED_TAGLINE } from "@/lib/marketing/brand";
+import { BRAND_DESCRIPTION, BRAND_TAGLINE } from "@/lib/marketing/brand";
 import { PLAN_FACTS } from "@/lib/marketing/pricing";
 import {
   homeFaqItems,
@@ -9,7 +9,7 @@ import {
 } from "@/lib/marketing/faq";
 import { learnArticles } from "@/lib/marketing/learn";
 
-// Serves /llms-full.txt - the full plain-text content of Creed's most citable
+// Serves /llms-full.txt - the full plain-text content of Strap's most citable
 // pages in one document. Generated from the same content modules the site
 // renders from (FAQ arrays, pricing facts, the learn registry) so it can never
 // drift. The audience that actually fetches this is coding agents (Claude Code,
@@ -37,8 +37,8 @@ export function GET() {
 
   const body = `# Strap
 
-${CREED_TAGLINE}
-${CREED_DESCRIPTION.slice(CREED_TAGLINE.length).trim()} Site: ${base}
+${BRAND_TAGLINE}
+${BRAND_DESCRIPTION.slice(BRAND_TAGLINE.length).trim()} Site: ${base}
 
 ## What Strap is
 
@@ -87,21 +87,32 @@ narrow update to the right section, and you approve what stays or let trusted
 agents edit directly. Session chatter, moods, and one-off tasks are left out by
 design.
 
-Agents connect over MCP (Model Context Protocol) using OAuth, so there is
-nothing to copy. You add the Strap server URL (${base}/mcp) to your agent, click
-Allow on the consent screen while signed in, and it stays connected. Clients
-that cannot speak MCP can use the HTTP API instead. Strap also integrates with
-GitHub for manual version control of your file.
+Agents connect over MCP (Model Context Protocol) using browser OAuth, RFC 8628
+device authorization, or a scoped headless API key. You add the Strap server
+URL (${base}/mcp) to your agent and authorize the connection. Clients that
+cannot speak MCP can use the HTTP API instead. The Strap CLI discovers and
+calls the same live MCP surface. Strap also integrates with GitHub for manual
+version control of your file.
 
 Supported agents include Claude Code, Codex, Cursor, and ChatGPT, plus any
 custom agent that speaks MCP.
 
 ## Ownership and privacy
 
-Your Strap is plain Markdown you own. You bring your own AI key (BYOK) so model
-spend runs on your account, your tokens stay yours, and you can export or delete
-everything at any time. Deleting your account wipes everything. There is no
-lock-in.
+Your Strap is portable Markdown you can export. AI features can use the
+deployment's included OpenRouter key or your own encrypted OpenRouter key
+(BYOK). OAuth credentials are hashed or encrypted according to their purpose.
+External API keys stored in Vault remain server-side and are revealed only
+through an explicit authorized action. Hidden sections do not enter agent
+payloads. Account deletion removes active product records, while qualified
+security and audit records may remain for their documented retention period.
+
+## Shipped resources and roadmap
+
+Context profiles, MCP connections, scoped headless access, the Strap CLI,
+GitHub synchronization, and the per-profile API-key Vault are shipped today.
+Reusable skills, named environments, and per-agent manifests are roadmap
+resources. They are not available as current Strap product flows.
 
 ## The Company plan
 
@@ -115,8 +126,7 @@ not a personal Strap first.
 
 ${pricing}
 
-All hosted plans support BYOK. Billing on the Company plan is per workspace and
-owner-only.
+All hosted plans are free and support the deployment's included key or BYOK.
 
 ## How to write a good context file
 

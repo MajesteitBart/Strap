@@ -13,6 +13,8 @@ import {
   BRAND_SITE_URL,
   BRAND_TAGLINE,
 } from "../lib/marketing/brand.ts";
+import * as publicBrand from "../lib/marketing/brand.ts";
+import { contextFileFaqItems, homeFaqItems } from "../lib/marketing/faq.ts";
 
 test("Strap brand constants define the public contract", () => {
   assert.equal(BRAND_NAME, "Strap");
@@ -25,4 +27,19 @@ test("Strap brand constants define the public contract", () => {
   assert.equal(BRAND_LEGACY_FILE_NAME, "creed.md");
   assert.equal(BRAND_CLI_PACKAGE, "@bvdm/strap");
   assert.equal(BRAND_CLI_COMMAND, "strap");
+});
+
+test("public brand exports do not expose transitional Creed aliases", () => {
+  assert.equal("CREED_TAGLINE" in publicBrand, false);
+  assert.equal("CREED_DESCRIPTION" in publicBrand, false);
+  assert.equal("CREED_META_TITLE" in publicBrand, false);
+});
+
+test("public FAQ describes shipped integrations without stale roadmap promises", () => {
+  const answers = [...homeFaqItems, ...contextFileFaqItems]
+    .map((item) => item.answer)
+    .join("\n");
+
+  assert.match(answers, /scoped headless API keys/);
+  assert.doesNotMatch(answers, /Notion|Obsidian|coming|on the way/i);
 });

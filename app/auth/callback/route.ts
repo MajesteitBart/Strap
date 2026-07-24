@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { upsertGitHubIntegration } from "@/lib/creed-backend";
+import { upsertGitHubIntegration } from "@/lib/strap-backend";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export async function GET(request: Request) {

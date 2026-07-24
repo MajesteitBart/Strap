@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import type { CreedSection } from "@/lib/creed-data";
-import { loadCreedState, persistCreedState } from "@/lib/creed-backend";
+import type { CreedSection } from "@/lib/strap-data";
+import { loadCreedState, persistCreedState } from "@/lib/strap-backend";
 import { requireAuthenticatedUser } from "@/lib/github-version-control";
-import { resolveManagedCompanyCreedId } from "@/lib/creed-context";
+import { resolveManagedCompanyCreedId } from "@/lib/strap-context";
 import { canAdoptResolvedProfilePath } from "@/lib/profile-file";
 
 type ApplyBody = {
@@ -18,7 +18,7 @@ export async function POST(request: Request) {
   try {
     const { supabase, user } = await requireAuthenticatedUser();
     // Applying a GitHub import overwrites sections via the personal full-state
-    // persist, which is blocked for company Creeds; guard it explicitly.
+    // persist, which is blocked for Company Straps; guard it explicitly.
     if (await resolveManagedCompanyCreedId(supabase, user)) {
       return NextResponse.json(
         { error: "Pulling from GitHub into a company Strap isn't supported yet. You can push to GitHub." },

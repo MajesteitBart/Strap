@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
 import { requireApiAuth } from "@/lib/api-auth";
-import { getCreedRole } from "@/lib/creed-membership";
+import { getCreedRole } from "@/lib/strap-membership";
 import {
   buildGitHubAuthorizeUrl,
   getGitHubOAuthAppCredentials,
@@ -47,7 +47,10 @@ export async function GET(request: Request) {
 
   let creedId: string | undefined;
   if (mode === "company") {
-    creedId = url.searchParams.get("creedId")?.trim() || undefined;
+    creedId =
+      url.searchParams.get("strapId")?.trim() ||
+      url.searchParams.get("creedId")?.trim() ||
+      undefined;
     if (!creedId) return backToSettings(origin, param, "invalid");
     const role = await getCreedRole(auth.supabase, auth.user.id, creedId);
     if (role !== "owner" && role !== "admin") {

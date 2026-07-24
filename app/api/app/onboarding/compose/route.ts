@@ -1,17 +1,17 @@
 import { NextResponse } from "next/server";
-import type { CreedSection } from "@/lib/creed-data";
-import { loadCreedState, persistCreedState } from "@/lib/creed-backend";
+import type { CreedSection } from "@/lib/strap-data";
+import { loadCreedState, persistCreedState } from "@/lib/strap-backend";
 import { requireApiAuth } from "@/lib/api-auth";
-import { parseCreedMarkdown } from "@/lib/creed-markdown";
+import { parseCreedMarkdown } from "@/lib/strap-markdown";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { recordAuditEvent } from "@/lib/audit-log";
 
 // Onboarding compose via copy-paste (replaces the old MCP compose_creed). The
-// user pastes the markdown Creed their assistant produced; we parse it and map
+// user pastes the Markdown Strap their assistant produced; we parse it and map
 // the bodies onto their seed sections. Session-authed (not the MCP write token):
 // onboarding never touches MCP, which stays a paid-only feature.
 //
-// Initialize-only: it runs only while the Creed is still the pristine seed (no
+// Initialize-only: it runs only while the Strap is still the pristine seed (no
 // section is agent-authored yet), so it can never wipe real edits. Parsing reuse
 // is parseCreedMarkdown, which already runs markdownToRichHtml per body, so the
 // resulting `content` is normalized, XSS-safe HTML - do NOT normalize it again.
@@ -23,7 +23,7 @@ const MAX_MARKDOWN = 100_000;
 // as "no content" so an empty heading keeps the seed draft rather than blanking.
 const EMPTY_PLACEHOLDER = "Start shaping this section.";
 
-// The prompt asks the assistant to wrap the Creed in one fenced code block. If
+// The prompt asks the assistant to wrap the Strap in one fenced code block. If
 // the user pastes the whole reply (fence + any preamble), pull the fenced body
 // so stray ``` markers don't get parsed as a code block; otherwise use as-is
 // (covers users who copied just the code block, which drops the fences).
@@ -109,7 +109,7 @@ export async function POST(request: Request) {
       content,
       // Stays "propose": ongoing edits need approval; this paste is the one
       // allowed initialize. Marked agent-authored so resume/composed detection
-      // treats the Creed as composed.
+      // treats the Strap as composed.
       lastEditedBy: "Your assistant",
       lastEditedType: "agent" as const,
       lastEditedLabel: "just now",

@@ -1,18 +1,17 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { sectionToMarkdown } from "../lib/creed-data.ts";
-import { parseCreedMarkdown } from "../lib/creed-markdown.ts";
+import { sectionToMarkdown, type StrapSection } from "../lib/strap-data.ts";
+import { parseStrapMarkdown } from "../lib/strap-markdown.ts";
 import { markdownToRichHtml } from "../lib/rich-text.ts";
-import type { CreedSection } from "../lib/creed-data.ts";
 
 // Round-trip the push → pull pipeline. Each test pushes a section through
 // `sectionToMarkdown` (the editor → markdown serializer used on push), then
-// glues the section heading on top the same way `buildVisibleCreedMarkdown`
-// does for a single section, then runs `parseCreedMarkdown` (the pull-side
+// glues the section heading on top the same way `buildVisibleStrapMarkdown`
+// does for a single section, then runs `parseStrapMarkdown` (the pull-side
 // parser) and verifies the resulting rich-text HTML matches the original
 // editor content.
 
-function makeSection(overrides: Partial<CreedSection> & { content: string }): CreedSection {
+function makeSection(overrides: Partial<StrapSection> & { content: string }): StrapSection {
   return {
     id: "test-section",
     kind: "rich-text",
@@ -31,7 +30,7 @@ function makeSection(overrides: Partial<CreedSection> & { content: string }): Cr
 function roundtripContent(content: string): string {
   const section = makeSection({ content });
   const markdown = sectionToMarkdown(section);
-  const { sections } = parseCreedMarkdown(markdown);
+  const { sections } = parseStrapMarkdown(markdown);
   assert.equal(sections.length, 1, "round-trip should yield exactly one section");
   return sections[0].content;
 }

@@ -10,13 +10,13 @@ const eslintConfig = defineConfig([
     // Default ignores of eslint-config-next:
     ".next/**",
     ".next-runtime/**",
-    // Isolated dist dir for the `creed-preview` launch config (gitignored as
+    // Isolated dist dir for the local preview launch config (gitignored as
     // `.next-preview*`); ignore it here too so linting after a preview run
     // doesn't drown in generated-file errors.
     ".next-preview/**",
     // Generated deployment and delivery runtimes are validated by their own
     // tools. They include bundled and CommonJS JavaScript that is not part of
-    // Creed's TypeScript application lint surface.
+    // Strap's TypeScript application lint surface.
     ".netlify/**",
     ".agents/**",
     ".claude/**",

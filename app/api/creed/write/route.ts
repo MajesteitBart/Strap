@@ -4,7 +4,7 @@ import type {
   ActivityEntry,
   AgentPermission,
   CreedSection,
-} from "@/lib/creed-data";
+} from "@/lib/strap-data";
 import {
   ACCENT_KEYS,
   accentLabelMap,
@@ -16,13 +16,13 @@ import {
   normalizeLegacyProposalDraft,
   normalizeLegacySectionId,
   permissionToWritable,
-} from "@/lib/creed-data";
+} from "@/lib/strap-data";
 import {
   findUserIdByDirectEditToken,
   loadCreedState,
   persistCreedState,
   recordConnectionUsage,
-} from "@/lib/creed-backend";
+} from "@/lib/strap-backend";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { markdownToRichHtml, normalizeRichTextInput, richTextContentEquivalent } from "@/lib/rich-text";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";

@@ -48,31 +48,31 @@ const STATUS_VARIANTS: Record<SystemStatus, StatusVariant> = {
     label: DEFAULT_LABEL,
     dot: "bg-[#22C55E]",
     pulse: "bg-[#22C55E]/60",
-    text: "text-[var(--creed-text-secondary)]",
+    text: "text-[var(--strap-text-secondary)]",
   },
   degraded: {
     label: "Degraded performance",
     dot: "bg-[#F59E0B]",
     pulse: "bg-[#F59E0B]/60",
-    text: "text-[var(--creed-text-secondary)]",
+    text: "text-[var(--strap-text-secondary)]",
   },
   maintenance: {
     label: "Scheduled maintenance",
-    dot: "bg-[var(--creed-accent)]",
-    pulse: "bg-[var(--creed-accent)]/60",
-    text: "text-[var(--creed-text-secondary)]",
+    dot: "bg-[var(--strap-accent)]",
+    pulse: "bg-[var(--strap-accent)]/60",
+    text: "text-[var(--strap-text-secondary)]",
   },
   outage: {
     label: "Service disruption",
     dot: "bg-[#DC2626]",
     pulse: "bg-[#DC2626]/60",
-    text: "text-[var(--creed-text-secondary)]",
+    text: "text-[var(--strap-text-secondary)]",
   },
   unknown: {
     label: "Status unavailable",
-    dot: "bg-[var(--creed-text-tertiary)]",
+    dot: "bg-[var(--strap-text-tertiary)]",
     pulse: "bg-transparent",
-    text: "text-[var(--creed-text-tertiary)]",
+    text: "text-[var(--strap-text-tertiary)]",
   },
 };
 
@@ -142,7 +142,7 @@ export function SystemStatusPill({
     <Tag
       {...(href ? { href, target: "_blank", rel: "noreferrer" } : {})}
       className={cn(
-        "t-meta inline-flex items-center gap-2 rounded-sm bg-[var(--creed-surface-raised)] px-3 py-2 font-medium leading-none transition-colors hover:bg-[var(--creed-border)] hover:text-[var(--creed-text-primary)]",
+        "t-meta inline-flex items-center gap-2 rounded-sm bg-[var(--strap-surface-raised)] px-3 py-2 font-medium leading-none transition-colors hover:bg-[var(--strap-border)] hover:text-[var(--strap-text-primary)]",
         variant.text,
         className
       )}

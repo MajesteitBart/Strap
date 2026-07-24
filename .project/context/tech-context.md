@@ -3,11 +3,12 @@
 ## Stack
 - Next.js 16.2.11 App Router, React 19, and strict TypeScript. Development uses Turbopack; production builds use Webpack so Netlify can package the generated middleware runtime reliably.
 - Tailwind CSS v4, shadcn-style primitives, Tiptap, Framer Motion and `motion/react`.
-- Supabase Auth and Postgres with RLS, realtime, migrations, and scheduled retention.
+- Supabase Auth and Postgres with RLS, Vault, realtime, migrations, and scheduled retention.
 - Node 20+ application and `node:test` test suite; the new `@bvdm/strap` CLI lives in `packages/strap/`, while `packages/creed-cli/` remains the legacy package.
 
 ## Runtime Constraints
 - `.env.local` is the canonical configuration for this checkout and must never be printed or committed.
+- New deployments use `STRAP_ENCRYPTION_SECRET` and `STRAP_AGENT_MODEL`; existing `CREED_ENCRYPTION_SECRET` and `CREED_AGENT_MODEL` values remain lower-priority compatibility fallbacks.
 - The root web-app TypeScript project excludes `packages/strap/` and `packages/creed-cli/`; each independent CLI package owns its dependency install, build, tests, and type-check.
 - Use `npx supabase`; confirm the project reference before remote management commands.
 - Default to server components. Client components require a hook, browser API, or interactive event.
@@ -20,4 +21,6 @@
 - Stripe for subscriptions, seats, top-ups, and billing webhooks.
 - GitHub OAuth and repository APIs for `strap.md` synchronization with stored-path authority and a non-divergent `creed.md` fallback.
 - OAuth 2.1, MCP, bearer-token compatibility APIs, and `packages/strap/` for new agent connectivity.
+- OAuth browser and device grants plus scoped `strap_key_` API keys resolve one explicit profile and a maximum access mode before MCP dispatch; `creed_key_` remains an accepted compatibility prefix.
+- Supabase Vault stores secret plaintext behind signed-in, authorized, audited reveal operations; lists and ordinary context expose metadata or references only.
 - Delano uses `.project/` as delivery truth, `.agents/` as its canonical runtime, and `.codex/hooks.json` as an opt-in session hook.

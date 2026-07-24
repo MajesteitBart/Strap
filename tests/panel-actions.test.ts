@@ -1,6 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { validatePanelActions } from "../lib/panel/actions.ts";
+import {
+  buildPanelResponseFormat,
+  buildPanelSystemPrompt,
+  buildPanelUserPrompt,
+  validatePanelActions,
+} from "../lib/panel/actions.ts";
 
 // The navigator validator (Search + Ask). It is read/navigate only: it must
 // never surface a mutation kind, must reject phantom targets, and fails a whole
@@ -30,9 +35,41 @@ test("mutation kinds are NOT in the navigator vocabulary", () => {
   }
 });
 
-test("copy-creed, compose-section, open-push, toggle-theme need no target", () => {
+test("Strap copy, compose-section, open-push, and toggle-theme need no target", () => {
+  assert.deepEqual(validatePanelActions([action("copy-strap")], KNOWN), [{ kind: "copy-creed" }]);
   assert.deepEqual(validatePanelActions([action("copy-creed")], KNOWN), [{ kind: "copy-creed" }]);
   assert.deepEqual(validatePanelActions([action("compose-section")], KNOWN), [{ kind: "compose-section" }]);
+  assert.deepEqual(validatePanelActions([action("open-push")], KNOWN), [{ kind: "open-push" }]);
+  assert.deepEqual(validatePanelActions([action("toggle-theme")], KNOWN), [{ kind: "toggle-theme" }]);
+});
+
+test("Strap export targets are canonical while Creed targets remain compatible", () => {
+  assert.deepEqual(validatePanelActions([action("export", "strap")], KNOWN), [
+    { kind: "export", target: "creed" },
+  ]);
+  assert.deepEqual(validatePanelActions([action("export", "creed")], KNOWN), [
+    { kind: "export", target: "creed" },
+  ]);
+});
+
+test("model-facing Panel contracts use Strap vocabulary", () => {
+  const responseFormat = JSON.stringify(buildPanelResponseFormat());
+  const systemPrompt = buildPanelSystemPrompt("ask");
+  const userPrompt = buildPanelUserPrompt({
+    mode: "ask",
+    query: "copy my profile",
+    page: "/file",
+    sections: [],
+    proposals: [],
+    mentioned: [],
+  });
+
+  assert.match(responseFormat, /copy-strap/);
+  assert.doesNotMatch(responseFormat, /copy-creed/);
+  assert.match(systemPrompt, /user's profile/);
+  assert.doesNotMatch(systemPrompt, /user's creed/i);
+  assert.match(userPrompt, /BEGIN USER STRAP PROFILE DATA/);
+  assert.doesNotMatch(userPrompt, /BEGIN USER CREED DATA/);
 });
 
 test("targets must exist across the right namespace", () => {

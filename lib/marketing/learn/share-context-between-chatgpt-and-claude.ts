@@ -37,14 +37,14 @@ export const shareContextBetweenChatgptAndClaude: Article = {
     {
       type: "code",
       lang: "bash",
-      code: "claude mcp add -t http creed https://strap.bvdm.ai/mcp",
+      code: "claude mcp add -t http strap https://strap.bvdm.ai/mcp",
     },
     {
       type: "ol",
       items: [
         "Run the command above to register the Strap server.",
         "In Claude Code, run /mcp to start authorization.",
-        "Your browser opens the Strap consent screen; while signed in to strap.md, click Allow.",
+        "Your browser opens the Strap consent screen; while signed in to strap.bvdm.ai, click Allow.",
         "Verify by listing the MCP tools and calling read_creed once.",
       ],
     },
@@ -54,7 +54,7 @@ export const shareContextBetweenChatgptAndClaude: Article = {
       items: [
         "In ChatGPT, open Settings and go to Connectors.",
         "Add a custom or remote MCP server pointing to https://strap.bvdm.ai/mcp.",
-        "When prompted, authorize it: sign in to strap.md and click Allow on the Strap consent screen.",
+        "When prompted, authorize it: sign in to strap.bvdm.ai and click Allow on the Strap consent screen.",
         "Confirm ChatGPT can see the Strap tools, then let it read your profile before meaningful work.",
       ],
     },
@@ -97,7 +97,7 @@ export const shareContextBetweenChatgptAndClaude: Article = {
     {
       question: "Is there anything to copy or paste with MCP?",
       answer:
-        "No. The Strap MCP connection uses OAuth, so you add the server, click Allow on the consent screen while signed in to strap.md, and the tool can read your profile. There are no keys to copy.",
+        "No. The Strap MCP connection uses OAuth, so you add the server, click Allow on the consent screen while signed in to strap.bvdm.ai, and the tool can read your profile. There are no keys to copy.",
     },
     {
       question: "Will the shared context stay up to date?",

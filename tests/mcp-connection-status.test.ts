@@ -6,24 +6,24 @@ import {
   resolveCliAgentStatuses,
 } from "../lib/mcp-connection-status.ts";
 
-test("connection status includes only tokens granted to the active Creed", () => {
+test("connection status includes only Strap CLI tokens granted to the active Creed", () => {
   const clients = getGrantedClientIds(
     [
-      { id: "personal-token", client_id: "creed-cli-personal" },
-      { id: "company-token", client_id: "creed-cli-company" },
-      { id: "duplicate-token", client_id: "creed-cli-personal" },
+      { id: "personal-token", client_id: "strap-cli-personal" },
+      { id: "company-token", client_id: "strap-cli-company" },
+      { id: "duplicate-token", client_id: "strap-cli-personal" },
     ],
     new Set(["personal-token", "duplicate-token"]),
   );
 
-  assert.deepEqual(clients, ["creed-cli-personal"]);
+  assert.deepEqual(clients, ["strap-cli-personal"]);
 });
 
-test("a specifically named active OAuth client connects its own icon", () => {
+test("a specifically named active Strap CLI client connects its own icon", () => {
   assert.equal(
     hasActiveConnectionIcon({
       icon: "cli",
-      oauthClientNames: ["Creed CLI"],
+      oauthClientNames: ["Strap CLI"],
     }),
     true,
   );
@@ -34,9 +34,19 @@ test("historical roster rows cannot revive an expired named client", () => {
     hasActiveConnectionIcon({
       icon: "cli",
       oauthClientNames: [],
-      rosterClientNames: ["Creed CLI"],
+      rosterClientNames: ["Strap CLI"],
     }),
     false,
+  );
+});
+
+test("a specifically named legacy Creed CLI client remains connected", () => {
+  assert.equal(
+    hasActiveConnectionIcon({
+      icon: "cli",
+      oauthClientNames: ["Creed CLI"],
+    }),
+    true,
   );
 });
 

@@ -2,94 +2,86 @@
 
 ## System boundaries
 
-Creed is one Next.js deployment backed by Supabase and several external services. The code is organized by trust boundary more than by a formal layered framework.
+Strap is a Next.js deployment backed by Supabase, OpenRouter, and GitHub. The code is organized mainly by trust boundary. Creed-named modules and routes remain where they are stable internal or compatibility contracts.
 
 ```text
 Browser
   ├─ public pages and onboarding ───────────────┐
-  └─ authenticated app (/file, /connections,   │
-      /vault, /settings) → session APIs         │
+  └─ signed-in app (/file, /connections,        │
+      /vault, /settings) → app/api/app/**        │
                                                 ▼
-Agent or creed-cli → OAuth 2.1 → /mcp → Next.js route handlers
-Headless agent → device OAuth or Creed API key ─┘
-Legacy agent client → capability bearer token → /api/creed/**
+Agent or Strap CLI → browser/device OAuth → /mcp → Next.js route handlers
+Headless agent → scoped Strap API key ──────────┘
+Compatibility client → capability bearer → /api/creed/**
                                                 │
-                       ┌────────────────────────┼───────────────────────┐
-                       ▼                        ▼                       ▼
-                  Supabase                 OpenRouter                 GitHub
-             auth, Postgres, RLS,       model inference,         file synchronization
-             Vault, realtime            usage and cost
+                    ┌───────────────────────────┼──────────────────┐
+                    ▼                           ▼                  ▼
+                Supabase                   OpenRouter            GitHub
+        Auth, Postgres, RLS, Vault,       model inference      profile sync
+             and realtime
 ```
 
-`proxy.ts` runs before dynamic routes. It assigns or forwards a bounded request ID, forwards `x-pathname`, and refreshes Supabase sessions only outside marketing routes. `app/layout.tsx` can use that pathname to avoid loading account state for public pages. Security and cache headers are configured in `next.config.ts`; user-specific HTML is `private, no-store`, while versioned assets are immutable.
+`proxy.ts` forwards a bounded request ID and `x-pathname`, and refreshes Supabase sessions only outside marketing routes. `app/layout.tsx` uses the pathname to avoid loading account state on public pages. `next.config.ts` sets security and cache headers; user-specific HTML is private/no-store.
 
-## Web application flow
+## Signed-in application
 
-`app/(creed-app)/layout.tsx` is the authenticated product boundary. It:
+`app/(strap-app)/layout.tsx` is the authenticated product boundary. It resolves the Supabase user, a persisted Personal Strap or live Company membership, unfinished Company onboarding, and one-time welcome state before mounting `AuthedProviders` and the product shell. There is no paid-plan or Stripe gate.
 
-1. Resolves the current Supabase user.
-2. Requires either a Personal entitlement or Company Creed membership.
-3. Requires a persisted Personal Creed for personal-only users.
-4. Resumes unfinished company onboarding for company owners.
-5. Loads the one-time welcome state for the active Creed.
-6. Mounts `AuthedProviders`, the shell, and `/file`, `/connections`, `/vault`, or `/settings`.
+The route pages are thin. Product orchestration is concentrated in `components/strap/strap-provider.tsx`, `file-screen.tsx`, `connections-screen.tsx`, and settings components. Domain mapping and persistence live in canonical `lib/strap-*` implementations; old `lib/creed-*` modules are deprecated compatibility re-export shims.
 
-The route pages are intentionally thin. Product orchestration is mostly in `components/creed/creed-provider.tsx`, `file-screen.tsx`, `connections-screen.tsx`, and settings components. Domain mapping and persistence live in `lib/`.
+### Active Strap resolution
 
-### Active Creed resolution
+A user can own a Personal Strap and belong to Company Straps. `lib/strap-context.ts` resolves one active record from the HTTP-only `creed_active` cookie, but revalidates live membership and falls back to Personal or the first accessible Company. The cookie is advisory, not authorization.
 
-A user can own a Personal Creed and belong to Company Creeds. `lib/creed-context.ts` resolves one active Creed from the HTTP-only `creed_active` cookie, but treats the cookie as advisory. It revalidates live membership, then falls back to the Personal Creed or first available company. This prevents a stale cookie from retaining access after removal.
-
-Use the specific helpers that match the operation:
-
-- `resolveActiveCreed`: any active Creed and role.
-- `resolveOwnedCompanyCreedId`: owner-only AI and company-management mutation paths.
-- `resolveManagedCompanyCreedId`: owner/admin management such as GitHub.
-- `resolveMemberCompanyCreed`: read-only company data for any member.
-- `resolveMemberCompanyCreedById`: settings reads that must not depend on cookie timing.
+Use the operation-specific helpers (`resolveActiveCreed`, `resolveOwnedCompanyCreedId`, `resolveManagedCompanyCreedId`, and member resolvers) rather than trusting a caller-provided ID.
 
 ## Persistence split
 
-Personal and Company Creeds share domain shapes but not write mechanics.
+Personal and Company share domain shapes but not write mechanics.
 
-### Personal
+- **Personal:** the client keeps optimistic full state; human edits are debounced through `lib/strap-backend.ts`. Some structural proposal results become durable through the next full-state save.
+- **Company:** `lib/company-sections.ts` and `app/api/app/sections/**` perform per-section, server-authoritative writes after membership, role, permission, and base-revision checks. Realtime plus bounded polling reconcile collaborators; versions support restore.
 
-The client maintains an optimistic full state. Human edits are debounced and persisted through the Personal backend in `lib/creed-backend.ts`. Proposal resolution is partly server-durable and partly applied through the client’s subsequent full-state save, especially for structural changes.
+Reusing Personal full-state persistence for Company can overwrite concurrent work and bypass policy.
 
-### Company
-
-Company writes are per-section, server-authoritative operations in `lib/company-sections.ts` and `app/api/app/sections/**`. The server checks live membership, role, section permission, and base revision before a service-role write. Realtime broadcasts plus bounded polling reconcile collaborators and agent-originated changes. Section versions support restore.
-
-This separation is intentional. Reusing Personal full-state persistence for a Company Creed risks overwriting concurrent changes and bypassing application-level policy.
-
-## API surfaces
+## API and protocol surfaces
 
 | Surface | Authentication | Responsibility |
 |---|---|---|
-| `app/api/app/**` | Supabase session (`auth.getUser`) | Browser product operations, including headless-key and Vault management |
-| `app/mcp/route.ts` | OAuth access token or `creed_key_` bearer | MCP tools, resources, prompts, scoped mutation, and usage attribution |
-| `app/api/creed/**` | Hashed capability bearer tokens | Direct HTTP read, proposal, and write integrations |
-| OAuth routes | Session during consent/device approval; PKCE or device-code exchange afterward | Discovery, registration, authorization, token rotation/revocation |
+| `app/api/app/**` | Supabase session (`auth.getUser`) | Browser product operations, including headless keys and Vault |
+| `app/mcp/route.ts` | OAuth, new `strap_key_`, or accepted legacy `creed_key_` bearer | MCP tools/resources/prompts and permission-scoped mutations |
+| `app/api/strap/**` | Hashed capability bearer | Canonical direct HTTP read, proposal, and write APIs |
+| `app/api/creed/**` | Hashed capability bearer | Compatibility API shims for direct HTTP clients |
+| OAuth/device routes | Session for approval; PKCE or device code for exchange | Registration, consent, grants, token rotation/revocation |
 
-Browser route handlers should use `requireApiAuth()` or an equivalent helper that calls `auth.getUser()`. Service-role code bypasses RLS and must follow an explicit authorization check. Agent routes look up token hashes rather than comparing or querying plaintext credentials.
+MCP discovery is Strap-first: tools are returned as `strap_*`/`read_strap` names and the canonical profile resource is `strap://profile`. Exact Creed tool names and `creed://profile` remain callable/readable compatibility aliases.
 
-## Data and external service flow
+## Authorization flow
 
-- **Supabase session clients** perform user-scoped reads/writes under RLS.
-- **Supabase admin clients** perform OAuth, company, and sensitive integration operations after app-level checks; Supabase Vault payload access is additionally confined to service-role-only definer RPCs.
-- **OpenRouter** receives bounded Creed context and prompts for AI features. Responses are untrusted until parsed and validated.
-- **GitHub** stores `creed.md`; tokens are encrypted, and push uses remote SHA optimistic concurrency.
+Modern OAuth tokens and API keys resolve exactly one explicit Personal or Company grant. Browser consent writes a `direct` grant but still depends on live section permissions. Device OAuth and API-key creation expose `read-only`, `proposal-only`, and `direct` maximum modes. The mode is only a ceiling:
 
-See [Platform integrations](../integrations/platform-services.md) and [Schema and security](../data/schema-and-security.md) for these boundaries.
+- read-only removes mutation capability and clamps visible sections to read;
+- proposal-only removes direct edits and clamps to propose;
+- direct still cannot exceed live membership, member agent ceiling, or section permission.
 
-## Where to start for a change
+If a modern explicit grant becomes inaccessible, MCP produces an empty write-less state. Only tokens positively marked as legacy and lacking grant rows may use historical Personal fallback.
 
-- App access or switching: `app/(creed-app)/layout.tsx`, `lib/creed-context.ts`, `lib/creed-membership.ts`.
-- Editor behavior: `components/creed/file-screen.tsx`, `rich-text-editor.tsx`, `creed-provider.tsx`, `lib/rich-text.ts`.
-- Personal persistence: `lib/creed-backend.ts` and `app/api/app/state/route.ts`.
-- Company mutation: `lib/company-sections.ts`, `lib/creed-permissions.ts`, section/proposal routes.
-- Agent behavior and headless authentication: `lib/creed-data.ts`, `app/mcp/route.ts`, `lib/oauth.ts`, `lib/headless-access.ts`, `lib/oauth-device.ts`.
-- Secret Vault: `lib/api-key-vault.ts`, `app/api/app/vault/**`, `components/creed/api-key-vault-screen.tsx`, and the latest migration.
-- Public performance: `lib/marketing-routes.ts`, `proxy.ts`, root layout, `next.config.ts`.
+## Data and external-service boundaries
 
-Large orchestration files encode race handling and cross-feature assumptions. Follow their top-down types/helpers/consumer layout, and avoid local simplifications until the Personal/Company, optimistic/server, and human/agent paths are all understood.
+- Session Supabase clients operate under RLS.
+- Admin clients perform OAuth, Company, and sensitive integration operations only after application authorization.
+- `/vault` metadata lives in `public.creed_vault_items`; payloads are at rest in Supabase Vault. Plaintext crosses Next.js/server memory only for create or rotation inputs and explicit reveal output through service-role-only RPCs.
+- OpenRouter receives bounded profile context and prompts; outputs are untrusted until parsed and validated.
+- GitHub defaults new integrations to `strap.md`. Reading configured `strap.md` may fall back to `creed.md`, but push never creates a competing new file beside that fallback.
+
+## Where to start for changes
+
+- App access/switching: `app/(strap-app)/layout.tsx`, `components/strap/strap-switcher.tsx`, `lib/strap-context.ts`, `lib/strap-membership.ts`, and `app/api/app/straps/**`.
+- Editing: `components/strap/file-screen.tsx`, `components/strap/strap-provider.tsx`, `lib/rich-text.ts`.
+- Company mutation: `lib/company-sections.ts`, `lib/strap-permissions.ts`, section/proposal routes.
+- Agent access: `app/mcp/route.ts`, `lib/oauth.ts`, `lib/oauth-device.ts`, `lib/headless-access.ts`.
+- Vault: `lib/api-key-vault.ts`, `app/api/app/vault/**`, `components/strap/api-key-vault-screen.tsx`, relevant migrations.
+- Profile files: `lib/profile-file.ts`, GitHub version-control modules/routes, `20260724120000_strap_profile_defaults.sql`.
+- Public product/pricing: `lib/marketing/brand.ts`, `lib/marketing/pricing.ts`, marketing components.
+
+Large orchestration files encode race handling and cross-feature assumptions. Read the complete Personal/Company, human/agent, and optimistic/server flow before simplifying them.

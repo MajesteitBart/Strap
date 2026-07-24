@@ -27,7 +27,7 @@ export const syncAiMemoryAcrossTools: Article = {
     },
     {
       type: "p",
-      text: "Strap is that file: plain Markdown you own, organized into short sections like identity, goals, work, preferences, and constraints. Tools connect over MCP, an open way for agents to read external context, and the Strap server uses OAuth, so there is nothing to copy. You add the server, click Allow on the consent screen while signed in to strap.md, and the tool can read your profile.",
+      text: "Strap is that file: plain Markdown you own, organized into short sections like identity, goals, work, preferences, and constraints. Tools connect over MCP, an open way for agents to read external context, and the Strap server uses OAuth, so there is nothing to copy. You add the server, click Allow on the consent screen while signed in to strap.bvdm.ai, and the tool can read your profile.",
     },
     { type: "h2", text: "How each tool connects" },
     {
@@ -42,7 +42,7 @@ export const syncAiMemoryAcrossTools: Article = {
         ],
         [
           "Claude Code",
-          "Run claude mcp add -t http creed https://strap.bvdm.ai/mcp",
+          "Run claude mcp add -t http strap https://strap.bvdm.ai/mcp",
           "Run /mcp in Claude Code, then Allow in the browser",
         ],
         [
@@ -58,7 +58,7 @@ export const syncAiMemoryAcrossTools: Article = {
       items: [
         "Write your durable context into one file: who you are, current goals, how you work, your preferences, hard constraints.",
         "Add the Strap MCP server to each tool using https://strap.bvdm.ai/mcp.",
-        "Authorize each connection with OAuth: sign in to strap.md and click Allow.",
+        "Authorize each connection with OAuth: sign in to strap.bvdm.ai and click Allow.",
         "Verify by listing the MCP tools in each app and calling read_creed once.",
         "Let each agent read the file before meaningful work and propose small updates as your work shifts.",
       ],
@@ -70,7 +70,7 @@ export const syncAiMemoryAcrossTools: Article = {
     {
       type: "code",
       lang: "bash",
-      code: "claude mcp add -t http creed https://strap.bvdm.ai/mcp",
+      code: "claude mcp add -t http strap https://strap.bvdm.ai/mcp",
     },
     { type: "h2", text: "Keeping every tool current" },
     {
@@ -91,7 +91,7 @@ export const syncAiMemoryAcrossTools: Article = {
     {
       question: "Do I need API keys to connect the tools?",
       answer:
-        "No. The Strap MCP connection uses OAuth. You add the server at https://strap.bvdm.ai/mcp in each tool, click Allow on the consent screen while signed in to strap.md, and the tool can read your profile.",
+        "No. The Strap MCP connection uses OAuth. You add the server at https://strap.bvdm.ai/mcp in each tool, click Allow on the consent screen while signed in to strap.bvdm.ai, and the tool can read your profile.",
     },
     {
       question: "What happens when I update my context?",

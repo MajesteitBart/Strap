@@ -7,7 +7,7 @@ import {
   issueAuthorizationCode,
   type CreedGrant,
 } from "@/lib/oauth";
-import { listUserCreeds } from "@/lib/creed-membership";
+import { listUserStraps } from "@/lib/strap-membership";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 // Handles the Allow / Deny POST from the consent screen. The user is
@@ -87,16 +87,18 @@ export async function POST(request: Request) {
     : allowedScopes;
   const scope = (grantedScopes.length ? grantedScopes : allowedScopes).join(" ");
 
-  // Which Creed this agent may reach. One connection reaches exactly one Creed
+  // Which Strap this agent may reach. One connection reaches exactly one Strap
   // (single-select, like scoping a Supabase token to one project). The consent
   // form posts the chosen id, but hidden fields are attacker-controllable, so we
-  // re-derive the user's real Creeds and keep the chosen one only if they belong
-  // to it. Fall back to the personal Creed, then the first Creed, so an entitled
+  // re-derive the user's real Straps and keep the chosen one only if they belong
+  // to it. Fall back to the Personal Strap, then the first Strap, so an entitled
   // user (solo, with no picker) always gets a grant for a space they belong to.
   // The coarse per-connection mode is not enforced - edit rights are decided per
   // section at write time - so grant "direct" and let the section rules govern.
-  const requestedCreedId = String(form.get("creed_grant") ?? "").trim();
-  const creeds = await listUserCreeds(supabase, user.id);
+  const requestedCreedId = String(
+    form.get("strap_grant") ?? form.get("creed_grant") ?? "",
+  ).trim();
+  const creeds = await listUserStraps(supabase, user.id);
   const target =
     creeds.find((c) => c.id === requestedCreedId) ??
     creeds.find((c) => c.type === "personal") ??

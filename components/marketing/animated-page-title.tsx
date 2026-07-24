@@ -15,7 +15,7 @@ type AnimatedHeadingProps = {
 export function AnimatedPageTitle({ text, className }: AnimatedHeadingProps) {
   const lines = text.split("\n");
   return (
-    <h1 className={cn("t-section text-[var(--creed-text-primary)]", className)}>
+    <h1 className={cn("t-section text-[var(--strap-text-primary)]", className)}>
       {lines.map((line, index) => (
         <span key={`${line}-${index}`} className="block">
           {line}

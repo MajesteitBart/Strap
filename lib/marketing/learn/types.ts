@@ -28,7 +28,7 @@ export type RelatedLink = { label: string; href: string };
 
 export type Article = {
   slug: string;
-  // Used verbatim as the <h1> and, with the "| Creed" template, the <title>.
+  // Used verbatim as the <h1> and, with the "| Strap" template, the <title>.
   title: string;
   // Meta description. Written to directly answer the query in one sentence.
   description: string;

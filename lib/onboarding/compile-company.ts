@@ -1,4 +1,4 @@
-import type { AccentKey, CreedSection } from "@/lib/creed-data";
+import type { AccentKey, StrapSection } from "@/lib/strap-data";
 
 // Local HTML escape (kept dependency-free so this pure module stays unit-
 // testable without the @/ runtime alias). Matches lib/rich-text.ts:escapeHtml.
@@ -140,10 +140,10 @@ function graphTags(names: string[]) {
 }
 
 function makeSection(
-  partial: Pick<CreedSection, "id" | "name" | "accent" | "content"> & {
-    template?: CreedSection["template"];
+  partial: Pick<StrapSection, "id" | "name" | "accent" | "content"> & {
+    template?: StrapSection["template"];
   },
-): CreedSection {
+): StrapSection {
   return {
     id: partial.id,
     kind: "rich-text",
@@ -179,7 +179,7 @@ const COMPANY_SECTIONS: Array<{ id: string; name: string; accent: AccentKey }> =
  */
 export function buildCompanyOnboardingSections(
   state: CompanyOnboardingState,
-): CreedSection[] {
+): StrapSection[] {
   const companyBody = [state.whatItDoes, state.whoFor]
     .map((s) => normalizeWhitespace(s))
     .filter(Boolean)
@@ -230,7 +230,7 @@ export function buildCompanyOnboardingSections(
   );
 }
 
-/** The company Creed name from the first answer, trimmed, with a fallback. */
+/** The Company Strap name from the first answer, trimmed, with a fallback. */
 export function companyNameFromOnboarding(
   state: CompanyOnboardingState,
 ): string {

@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { NO_STORE_HEADERS } from "@/lib/http-headers";
-import { hasPersistedCreed } from "@/lib/creed-backend";
+import { hasPersistedCreed } from "@/lib/strap-backend";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 
 // Lightweight "has this user started onboarding?" probe for marketing CTAs:
-// true once a Creed exists server-side (seed claimed or agent-composed), so a
+// true once a Strap exists server-side (seed claimed or agent-composed), so a
 // button can offer "Resume" instead of "Get Started". Account-tied, so it's
 // correct on any device. An unauthed caller gets
 // { started: false } rather than a 401, since the chrome polls this on render.

@@ -9,7 +9,7 @@
 
 import { strict as assert } from "node:assert";
 import { test } from "node:test";
-import { normalizeLegacyProposalDraft, type ProposalDraft } from "../lib/creed-data.ts";
+import { normalizeLegacyProposalDraft, type ProposalDraft } from "../lib/strap-data.ts";
 
 // The function normalizes loosely-typed stored jsonb, so tests pass raw shapes.
 const raw = (o: Record<string, unknown>) => o as unknown as ProposalDraft;

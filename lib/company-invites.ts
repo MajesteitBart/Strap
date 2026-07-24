@@ -4,15 +4,15 @@ import type { User } from "@supabase/supabase-js";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import type { SupabaseLikeClient } from "@/lib/supabase/types";
 import { hashSecret } from "@/lib/secret-crypto";
-import { getCreedRole } from "@/lib/creed-membership";
-import { getUserName, getAvatarUrl, getAvatarInitials } from "@/lib/creed-backend";
+import { getStrapRole } from "@/lib/strap-membership";
+import { getUserName, getAvatarUrl, getAvatarInitials } from "@/lib/strap-backend";
 
 export type InviterProfile = { name: string; avatarUrl?: string; initials: string };
 
 // Company invites: create / accept / resend / revoke.
 //
 // Invites expire after 7 days, carry a hashed token (the raw token only ever
-// lives in the emailed link), and are unique-per-email-per-Creed while pending.
+// lives in the emailed link), and are unique-per-email-per-Strap while pending.
 // All writes go through the admin client after an app-level owner/admin role
 // check in the calling route.
 
@@ -60,7 +60,7 @@ export async function sweepExpiredInvites(creedId: string): Promise<void> {
 }
 
 /**
- * True if the email already belongs to a member of this Creed. Fails CLOSED:
+ * True if the email already belongs to a member of this Strap. Fails CLOSED:
  * if any auth lookup errors we can't rule out a match, so we throw rather than
  * return false - the caller reports a retryable error instead of letting an
  * invite to an existing member through (which would consume a seat that can
@@ -102,7 +102,7 @@ export async function createInvite(params: {
   const { creedId, actorUserId, email, role } = params;
   const db = admin();
 
-  const actorRole = await getCreedRole(db, actorUserId, creedId);
+  const actorRole = await getStrapRole(db, actorUserId, creedId);
   if (actorRole !== "owner" && actorRole !== "admin") {
     return { ok: false, error: "Only an owner or admin can invite.", code: "forbidden" };
   }
@@ -166,7 +166,7 @@ export async function revokeInvite(params: {
   inviteId: string;
 }): Promise<{ ok: boolean; error?: string }> {
   const db = admin();
-  const actorRole = await getCreedRole(db, params.actorUserId, params.creedId);
+  const actorRole = await getStrapRole(db, params.actorUserId, params.creedId);
   if (actorRole !== "owner" && actorRole !== "admin") {
     return { ok: false, error: "Only an owner or admin can revoke invites." };
   }
@@ -189,7 +189,7 @@ export async function rotateInviteToken(params: {
   inviteId: string;
 }): Promise<{ ok: true; token: string; email: string; role: "admin" | "member" } | { ok: false; error: string }> {
   const db = admin();
-  const actorRole = await getCreedRole(db, params.actorUserId, params.creedId);
+  const actorRole = await getStrapRole(db, params.actorUserId, params.creedId);
   if (actorRole !== "owner" && actorRole !== "admin") {
     return { ok: false, error: "Only an owner or admin can resend invites." };
   }
@@ -293,7 +293,7 @@ export async function acceptInvite(token: string, user: User): Promise<AcceptRes
   }
 
   // Already a member? Accept idempotently.
-  const existingRole = await getCreedRole(db, user.id, invite.creed_id);
+  const existingRole = await getStrapRole(db, user.id, invite.creed_id);
   if (existingRole) {
     await db.from("creed_invites").update({ status: "accepted", updated_at: new Date().toISOString() }).eq("id", invite.id);
     return { ok: true, creedId: invite.creed_id };

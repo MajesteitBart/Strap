@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { requireApiAuth } from "@/lib/api-auth";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import { updateCompanyGeneral } from "@/lib/company-admin";
-import { getCreedRole } from "@/lib/creed-membership";
+import { getCreedRole } from "@/lib/strap-membership";
 
 const AVATAR_BUCKET = "creed-avatars";
 const MAX_BYTES = 3 * 1024 * 1024;

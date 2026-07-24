@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireApiAuth } from "@/lib/api-auth";
 import { restoreSectionVersion } from "@/lib/company-sections";
+import { readStrapId } from "@/lib/strap-api";
 
 type Ctx = { params: Promise<{ sectionId: string }> };
 
@@ -18,16 +19,21 @@ export async function POST(request: Request, ctx: Ctx) {
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
-  const b = (body ?? {}) as { creedId?: unknown; versionId?: unknown };
-  if (typeof b.creedId !== "string" || typeof b.versionId !== "number") {
+  const b = (body ?? {}) as {
+    strapId?: unknown;
+    creedId?: unknown;
+    versionId?: unknown;
+  };
+  const strapId = readStrapId(b);
+  if (!strapId || typeof b.versionId !== "number") {
     return NextResponse.json(
-      { error: "creedId and versionId are required." },
+      { error: "strapId and versionId are required." },
       { status: 400 },
     );
   }
 
   const result = await restoreSectionVersion({
-    creedId: b.creedId,
+    creedId: strapId,
     user: auth.user,
     sectionId,
     versionId: b.versionId,

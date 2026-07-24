@@ -1,5 +1,5 @@
 import "server-only";
-// Credential resolution for AI calls. Two modes per Creed: the deployment's
+// Credential resolution for AI calls. Two modes per Strap: the deployment's
 // platform OpenRouter key (stored ai_mode "credits", surfaced as "Included" in
 // the UI), or an encrypted BYOK key belonging to the user or company. Billing
 // was removed from the product, so nothing meters or gates platform usage here

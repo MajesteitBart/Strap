@@ -7,8 +7,8 @@ import {
   resolveSyncStatus,
   withAuthenticatedGitHubAccess,
 } from "@/lib/github-version-control";
-import { readGitHubIntegration, readVersionControlConfig } from "@/lib/creed-backend";
-import { resolveManagedCompanyCreedId } from "@/lib/creed-context";
+import { readGitHubIntegration, readVersionControlConfig } from "@/lib/strap-backend";
+import { resolveManagedCompanyCreedId } from "@/lib/strap-context";
 import { readCompanyVersionControl } from "@/lib/company-version-control";
 import {
   readCompanyGitHubIntegration,
@@ -22,7 +22,7 @@ export async function GET(request: Request) {
     const { supabase, user } = await requireAuthenticatedUser();
 
     // Company managers resolve status against the TEAM connection + the company
-    // target. Members and personal Creeds resolve against their own.
+    // target. Members and Personal Straps resolve against their own.
     const companyId = await resolveManagedCompanyCreedId(supabase, user);
     if (companyId) {
       const companyVc = await readCompanyVersionControl(companyId);

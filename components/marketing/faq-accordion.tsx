@@ -21,19 +21,19 @@ export function FaqAccordion({ items }: { items: FaqItem[] }) {
         const open = openIndex === index;
 
         return (
-          <div key={item.question} className="border-b border-[var(--creed-border)]">
+          <div key={item.question} className="border-b border-[var(--strap-border)]">
             <button
               type="button"
               onClick={() => setOpenIndex(open ? -1 : index)}
               aria-expanded={open}
               className="flex w-full items-center justify-between gap-6 py-7 text-left"
             >
-              <span className="t-body-lg font-medium text-[var(--creed-text-primary)]">
+              <span className="t-body-lg font-medium text-[var(--strap-text-primary)]">
                 {item.question}
               </span>
               <ChevronDown
                 className={cn(
-                  "h-4 w-4 shrink-0 text-[var(--creed-text-tertiary)] transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                  "h-4 w-4 shrink-0 text-[var(--strap-text-tertiary)] transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]",
                   open && "rotate-180",
                 )}
               />
@@ -46,7 +46,7 @@ export function FaqAccordion({ items }: { items: FaqItem[] }) {
               )}
             >
               <div className="overflow-hidden">
-                <p className="t-body max-w-3xl pb-7 text-[var(--creed-text-secondary)]">
+                <p className="t-body max-w-3xl pb-7 text-[var(--strap-text-secondary)]">
                   {item.answer}
                 </p>
               </div>

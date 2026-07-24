@@ -46,7 +46,7 @@ export function SelectMenu<T extends string>({
           type="button"
           disabled={disabled}
           className={cn(
-            "inline-flex h-9 items-center justify-between gap-2 rounded-md border border-[var(--creed-border)] bg-[var(--creed-surface)] px-3 text-[13px] text-[var(--creed-text-primary)] transition-colors duration-150 hover:bg-[var(--creed-surface-raised)] aria-expanded:bg-[var(--creed-surface-raised)] disabled:pointer-events-none disabled:opacity-60",
+            "inline-flex h-9 items-center justify-between gap-2 rounded-md border border-[var(--strap-border)] bg-[var(--strap-surface)] px-3 text-[13px] text-[var(--strap-text-primary)] transition-colors duration-150 hover:bg-[var(--strap-surface-raised)] aria-expanded:bg-[var(--strap-surface-raised)] disabled:pointer-events-none disabled:opacity-60",
             className,
           )}
         >
@@ -57,7 +57,7 @@ export function SelectMenu<T extends string>({
             <span className="truncate">{active?.label ?? placeholder}</span>
           </span>
           <ChevronDown
-            className="h-3.5 w-3.5 shrink-0 text-[var(--creed-text-tertiary)]"
+            className="h-3.5 w-3.5 shrink-0 text-[var(--strap-text-tertiary)]"
             strokeWidth={2}
           />
         </button>
@@ -66,7 +66,7 @@ export function SelectMenu<T extends string>({
         align={align}
         // Size to content (so short labels like "Member" never truncate), but
         // never narrower than the trigger and never wider than a sensible cap.
-        className="w-auto min-w-[max(var(--radix-dropdown-menu-trigger-width),9rem)] max-w-[min(24rem,90vw)] border-[var(--creed-border)] bg-[var(--creed-surface)]"
+        className="w-auto min-w-[max(var(--radix-dropdown-menu-trigger-width),9rem)] max-w-[min(24rem,90vw)] border-[var(--strap-border)] bg-[var(--strap-surface)]"
       >
         {options.map((option) => (
           <DropdownMenuItem
@@ -77,13 +77,13 @@ export function SelectMenu<T extends string>({
             }}
             className="flex items-center justify-between gap-3 text-[13px]"
           >
-            <span className="flex min-w-0 items-center gap-2 text-[var(--creed-text-primary)]">
+            <span className="flex min-w-0 items-center gap-2 text-[var(--strap-text-primary)]">
               {option.avatar}
               <span className="truncate">{option.label}</span>
             </span>
             {option.value === value ? (
               <Check
-                className="h-3.5 w-3.5 shrink-0 text-[var(--creed-text-secondary)]"
+                className="h-3.5 w-3.5 shrink-0 text-[var(--strap-text-secondary)]"
                 strokeWidth={1.8}
               />
             ) : null}

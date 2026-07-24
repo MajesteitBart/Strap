@@ -7,16 +7,16 @@
 
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { SceneryImage } from "@/components/marketing/scenery-image";
-import { CreedWordmark } from "@/components/creed/brand";
+import { BackdropImage } from "@/components/marketing/backdrop-image";
+import { StrapWordmark } from "@/components/strap/brand";
 import { CONTACT_MAILTO } from "@/lib/branding";
 
-const lightPanelImage = "/assets/landing/scenery/light-auth.png";
-const darkPanelImage = "/assets/landing/scenery/dark-auth.png";
+const lightPanelImage = "/assets/landing/backdrops/light-auth.png";
+const darkPanelImage = "/assets/landing/backdrops/dark-auth.png";
 
 export function AuthShell({ topRight, children }: { topRight?: ReactNode; children: ReactNode }) {
   return (
-    <div className="relative flex min-h-screen bg-[var(--creed-background)] text-[var(--creed-text-primary)]">
+    <div className="relative flex min-h-screen bg-[var(--strap-background)] text-[var(--strap-text-primary)]">
       <div className="flex w-full flex-col px-6 py-6 md:w-1/2 md:px-12 md:py-8 lg:px-20">
         <div className="flex items-center justify-between">
           <Link
@@ -24,7 +24,7 @@ export function AuthShell({ topRight, children }: { topRight?: ReactNode; childr
             aria-label="Strap home"
             className="-ml-1 inline-flex shrink-0 items-center transition-opacity duration-200 hover:opacity-60"
           >
-            <CreedWordmark className="ml-0" />
+            <StrapWordmark className="ml-0" />
           </Link>
           {topRight ? <div>{topRight}</div> : null}
         </div>
@@ -33,13 +33,13 @@ export function AuthShell({ topRight, children }: { topRight?: ReactNode; childr
           <div className="w-full max-w-[380px]">{children}</div>
         </div>
 
-        <div className="flex items-center justify-between text-[13px] text-[var(--creed-text-tertiary)]">
+        <div className="flex items-center justify-between text-[13px] text-[var(--strap-text-tertiary)]">
           <span>© 2026 Strap</span>
           <div className="flex items-center gap-5">
-            <a href={CONTACT_MAILTO} className="transition-colors hover:text-[var(--creed-accent)]">
+            <a href={CONTACT_MAILTO} className="transition-colors hover:text-[var(--strap-accent)]">
               Contact
             </a>
-            <Link href="/docs" className="transition-colors hover:text-[var(--creed-accent)]">
+            <Link href="/docs" className="transition-colors hover:text-[var(--strap-accent)]">
               Docs
             </Link>
           </div>
@@ -49,14 +49,14 @@ export function AuthShell({ topRight, children }: { topRight?: ReactNode; childr
       {/* Image panel (hidden on mobile). No framed card - the page background
           fades over the inner edge so the art blends into the form column. */}
       <div className="relative hidden w-1/2 md:block">
-        <SceneryImage
+        <BackdropImage
           src={lightPanelImage}
           fileName="light-auth.png"
           label="Light auth"
           priority
           className="dark:hidden"
         />
-        <SceneryImage
+        <BackdropImage
           src={darkPanelImage}
           fileName="dark-auth.png"
           label="Dark auth"
@@ -67,7 +67,7 @@ export function AuthShell({ topRight, children }: { topRight?: ReactNode; childr
             the image so it melts in rather than cutting off. */}
         <div
           className="pointer-events-none absolute inset-0"
-          style={{ backgroundImage: "var(--scenery-fade-in-x)" }}
+          style={{ backgroundImage: "var(--strap-backdrop-fade-in-x)" }}
         />
       </div>
     </div>

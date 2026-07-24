@@ -1,8 +1,8 @@
 import "server-only";
-// Minimal OAuth 2.1 authorization-server logic for the Creed MCP endpoint.
+// Minimal OAuth 2.1 authorization-server logic for the Strap MCP endpoint.
 // Opaque tokens only (no JWT): each token is random, stored as a SHA-256 hash
 // for lookup plus an AES-256-GCM ciphertext, mirroring the proven pattern in
-// lib/creed-backend.ts. This keeps every token per-client revocable and adds
+// lib/strap-backend.ts. This keeps every token per-client revocable and adds
 // no new crypto or dependencies. PKCE S256 is mandatory; codes are single-use
 // and short-lived. The admin (service-role) client is used throughout because
 // the oauth_* tables are service-role only.
@@ -30,11 +30,13 @@ type CodeRow = {
   creed_grants: CreedGrant[] | null;
 };
 
-// A per-Creed MCP grant chosen on the consent screen: which Creed the agent may
+// A per-Strap MCP grant chosen on the consent screen: which Strap the agent may
 // touch and its ceiling mode. Persisted to oauth_token_creeds when the token is
 // issued; carried on the authorization code in between.
 export type CreedGrantMode = "read-only" | "proposal-only" | "direct";
 export type CreedGrant = { creedId: string; mode: CreedGrantMode };
+export type StrapGrantMode = CreedGrantMode;
+export type StrapGrant = CreedGrant;
 type TokenRow = {
   id: string;
   client_id: string;
@@ -71,7 +73,7 @@ export type ResolvedAccessToken = {
   clientId: string;
   clientName: string | null;
   scope: string;
-  // The oauth_tokens row id, used to look up per-Creed grants
+  // The oauth_tokens row id, used to look up per-Strap grants
   // (oauth_token_creeds) for the Company plan.
   tokenId: string;
   credentialType: "oauth";
@@ -143,7 +145,7 @@ export async function registerOAuthClient(input: {
   redirectUris: string[];
 }): Promise<OAuthClient> {
   const admin = adminDb();
-  const clientId = generateOpaqueToken("creed_client");
+  const clientId = generateOpaqueToken("strap_client");
   const clientName = (input.clientName?.trim() || "MCP Client").slice(0, 120);
   const redirectUris = input.redirectUris;
 
@@ -186,7 +188,7 @@ export async function issueAuthorizationCode(input: {
   creedGrants: CreedGrant[];
 }): Promise<string> {
   const admin = adminDb();
-  const code = generateOpaqueToken("creed_ac");
+  const code = generateOpaqueToken("strap_ac");
   const { error } = await admin.from("oauth_authorization_codes").insert({
     code_hash: hashSecret(code),
     client_id: input.clientId,
@@ -252,8 +254,8 @@ export async function issueTokenPair(input: {
   creedGrantsExplicit?: boolean;
 }): Promise<IssuedTokens> {
   const admin = adminDb();
-  const accessToken = generateOpaqueToken("creed_at");
-  const refreshToken = generateOpaqueToken("creed_rt");
+  const accessToken = generateOpaqueToken("strap_at");
+  const refreshToken = generateOpaqueToken("strap_rt");
   const now = Date.now();
 
   const { data, error } = await admin
@@ -286,13 +288,13 @@ export async function issueTokenPair(input: {
   };
 }
 
-// Persist the per-Creed grants for a freshly-issued token. Deduped by creed_id
+// Persist the per-Strap grants for a freshly-issued token. Deduped by creed_id
 // (last mode wins) so a malformed duplicate can't violate the PK. A token with
 // no grants writes nothing; MCP enforcement treats a grant-less token as
 // personal-only, so access never silently widens.
 //
 // Best-effort on purpose: the oauth_tokens row is already committed by the time
-// this runs, and a grant insert can still fail (e.g. a granted Creed was deleted
+// this runs, and a grant insert can still fail (e.g. a granted Strap was deleted
 // during the ~60s between consent and code exchange, faulting the creed_id FK).
 // Because a grant-less token falls back to personal-only, a lost grant only ever
 // narrows access, never widens it - so we log and continue rather than throw a
@@ -341,8 +343,8 @@ export async function rotateRefreshToken(
     return { error: "invalid_grant" };
   }
 
-  // Carry the old token's per-Creed grants onto the rotated token, otherwise a
-  // connection would lose its Creed scoping on the first refresh (and MCP would
+  // Carry the old token's per-Strap grants onto the rotated token, otherwise a
+  // connection would lose its Strap scoping on the first refresh (and MCP would
   // fall back to personal-only for a token that had been granted a company).
   const { data: grantRows } = await admin
     .from("oauth_token_creeds")

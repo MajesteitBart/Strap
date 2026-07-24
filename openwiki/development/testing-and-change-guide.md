@@ -2,106 +2,70 @@
 
 ## Standard verification
 
-Run the root application checks:
-
 ```bash
 npm test
 npx tsc --noEmit -p .
 npm run lint
 npm run build
+npm run audit:brand
+
+npm --prefix packages/strap run typecheck
+npm --prefix packages/strap test
+npm pack ./packages/strap --dry-run
 ```
 
-Run CLI checks separately:
+The root `tsconfig.json` excludes CLI packages so Netlify/root builds do not compile their Node-specific code. Root typecheck therefore does not validate `packages/strap`; run package checks explicitly. When legacy CLI compatibility changes, also run:
 
 ```bash
-npm --prefix packages/creed-cli test
 npm --prefix packages/creed-cli run typecheck
+npm --prefix packages/creed-cli test
 ```
 
-For database changes:
+For database changes run `npx supabase db reset`, then exercise affected routes/UI. OpenWiki maintenance itself does not run application tests.
 
-```bash
-npx supabase db reset
-```
-
-Then exercise affected routes/UI locally. For API mutations, verify authentication, failure status, expected audit/activity records, and permission behavior. OpenWiki documentation refreshes are run manually and do not run application tests.
-
-## Test map
+## Focused test map
 
 | Area | Representative tests |
 |---|---|
-| Company rules | `company-permissions`, `company-onboarding`, `company-proposal-drafts` |
-| Schema hardening | `company-p0-migrations`, `headless-access-vault` |
-| Editing and rich text | `editing-system`, `rich-text-equivalence`, `section-suggestions` |
-| GitHub format | `github-roundtrip` |
-| Agent/AI behavior | `panel-*`, `tab-completion`, `quality-scope` |
-| MCP/connections | `connection-actions`, `mcp-connection-status`, `mcp-health-filter`, `agent-icon` |
-| Product utilities | `nexus-graph`, `roadmap` |
-| CLI | `packages/creed-cli/tests/**` |
+| Strap naming/protocol | `strap-brand`, `strap-protocol-compatibility`, `strap-agent-contract` |
+| Profile defaults/GitHub | `strap-profile-defaults-migration`, `profile-file`, `github-roundtrip` |
+| OAuth, keys, Vault | `headless-access-vault`, `mcp-connection-status`, `mcp-health-filter`, `connection-actions` |
+| Company policy | `company-permissions`, `company-onboarding`, `company-proposal-drafts` |
+| Editor/rich text | `editing-system`, `rich-text-equivalence`, `section-suggestions` |
+| AI/agent behavior | `panel-*`, `tab-completion`, `quality-scope`, `openrouter-routing` |
+| Primary CLI | `packages/strap/tests/**` |
+| Legacy CLI | `packages/creed-cli/tests/**` |
 
-Most root tests exercise pure functions, parsers, or migration text. They do not replace browser, live Supabase/RLS/Vault, OAuth, GitHub, or OpenRouter integration testing.
+Most root tests exercise pure functions, contracts, migration text, or source invariants. They do not replace browser, live Supabase/RLS/Vault, OAuth, GitHub, or OpenRouter integration testing.
 
 ## Change map
 
-### Editor, sections, and review
+### Product naming and compatibility
 
-Start with `components/creed/file-screen.tsx`, `rich-text-editor.tsx`, `creed-provider.tsx`, `lib/creed-data.ts`, `lib/rich-text.ts`, and relevant section/proposal routes. Check Personal and Company separately, including structural proposals, optimistic state, stale revisions, history, suggestions, and agent-originated updates.
+Start with `lib/marketing/brand.ts`, `lib/profile-file.ts`, `app/mcp/route.ts`, `/api/strap/**`, and `scripts/check-strap-rebrand.mts`. New customer-facing vocabulary and implementation paths are Strap, but preserve exact compatibility/history identifiers: Creed database objects, migrations, deprecated `lib/creed-*` compatibility re-export shims, `/api/creed/**` compatibility APIs, `creed_*`, `creed://`, existing `creed_key_`, and `packages/creed-cli`. Do not remove compatibility paths as a drive-by cleanup. Repository and GitHub references must use `https://github.com/MajesteitBart/Strap`; retain the old remote name only in explicit historical evidence.
 
-### Company permissions and administration
+### OAuth, MCP, connections, and CLI
 
-Start with `lib/creed-permissions.ts`, `lib/company-sections.ts`, `lib/company-admin.ts`, `lib/company-invites.ts`, settings UI, and the company migrations. Maintain the TypeScript/SQL policy twin. Include owner/admin/member, hidden/read/propose/direct, invitation capacity, and concurrent revision cases.
+Verify PKCE, redirect validation, one-time code/device consumption, polling backoff, token rotation/revocation, explicit Personal/Company grants, all three mode ceilings, hidden-section filtering, fail-narrow modern grants, and legacy-only Personal fallback. Check canonical Strap discovery and every exact compatibility alias through the same dispatcher. Test `packages/strap` separately and exercise real MCP clients for protocol changes.
 
-### OAuth, MCP, and connections
+### Vault
 
-Start with `app/mcp/route.ts`, `lib/oauth.ts`, `lib/headless-access.ts`, `lib/oauth-device.ts`, OAuth/device routes, connection status/health helpers, and CLI client tests. Preserve PKCE, redirect validation, one-time code/device consumption, polling backoff, rotation/revocation, explicit Creed grants, headless mode clamping, hidden-section filtering, legacy-only Personal fallback, digested rate-limit identifiers, and CLI attribution. Exercise at least two real MCP clients when changing the universal agent contract or protocol response shapes.
+Start with `lib/api-key-vault.ts`, `app/api/app/vault/**`, `components/strap/api-key-vault-screen.tsx`, and Vault migrations. Verify metadata-only list, Personal and Company owner/admin/member behavior, item-loaded authorization, service-role-only RPCs, create/reveal/rotate/delete, no-store responses, 30-second UI clearing, and fail-closed reveal audit. Remember that Vault protects storage; explicit operations carry plaintext through bounded server/browser memory.
 
-### API-key Vault
+### Profile files and GitHub
 
-Start with `lib/api-key-vault.ts`, `app/api/app/vault/**`, `components/creed/api-key-vault-screen.tsx`, and `supabase/migrations/20260722120000_headless_access_and_secret_vault.sql`. Verify signed-in access, Personal versus Company owner/admin/member behavior, item-to-Creed authorization, metadata-only listing, create/reveal/rotate/delete RPCs, no-store responses, 30-second UI hiding, and fail-closed reveal auditing. Run a local Supabase reset: `headless-access-vault.test.ts` mostly checks helpers and source text, not live Vault or route behavior.
+Start with `lib/profile-file.ts`, `lib/strap-markdown.ts`, GitHub modules/routes, and profile/GitHub tests. `lib/creed-markdown.ts` is only a deprecated compatibility re-export shim. Verify new `strap.md` defaults, fallback read to `creed.md`, custom paths, no parallel-file push, SHA conflicts, Personal preview/apply, Company push, and formatting round trips.
 
-### AI and credits
+### Free-plan and AI behavior
 
-Start with the feature route plus `lib/ai/openrouter.ts`, `credits.ts`, `persistence.ts`, model catalog, and permission-aware action execution. Check BYOK/platform modes, streaming/non-streaming behavior, timeout/abort, malformed output, and accounting failures after successful inference.
+Pricing facts live in `lib/marketing/pricing.ts`: all current plans are `$0 forever`. There is no Stripe runtime. Treat Stripe-named migrations and billing records as history unless active source proves otherwise. AI still has included-key/BYOK, usage, quota, routing, and persistence behavior. Included AI uses a process-local 20-request/60-second burst limit and a default `$0.50` estimated-cost ceiling over the trailing 24 hours per user, configurable with `INCLUDED_AI_DAILY_LIMIT_USD`; absent `OPENROUTER_PLATFORM_KEY` requires BYOK. Test provider errors and usage accounting independently from customer billing.
 
-### GitHub sync
+### Sections and Company policy
 
-Start with `lib/creed-markdown.ts`, `lib/rich-text.ts`, GitHub route handlers/modules, and `github-roundtrip.test.ts`. Verify heading levels, accent comments, supported rich text, SHA conflict behavior, Personal preview/apply, company push, and token refresh.
+Read `components/strap/file-screen.tsx`, `components/strap/strap-provider.tsx`, `lib/strap-data.ts`, `lib/strap-permissions.ts`, `lib/validation/strap-state.ts`, and `lib/company-sections.ts`. Verify Personal/Company separately, direct/proposal behavior, revision conflicts, hidden sections, version history, and TypeScript/SQL policy equivalence.
 
-### Public site or routing
+## High-risk and known gaps
 
-Start with the target marketing component, `lib/marketing-routes.ts`, `proxy.ts`, root layout, and `next.config.ts`. Marketing pages must not trigger user-state fan-out. Confirm cache/CSP/image policy and mobile behavior.
+High-risk files include `app/mcp/route.ts`, `lib/strap-data.ts`, `lib/company-sections.ts`, editor/provider orchestration, and Markdown parsing. Compatibility aliases, security policy, and agent instructions make small-looking changes broad.
 
-## High-risk areas
-
-- `components/creed/file-screen.tsx`, `creed-provider.tsx`, and settings components contain large cross-feature state machines.
-- `lib/creed-data.ts` mixes durable domain types, transforms, defaults, and the contract shipped to every agent.
-- `lib/creed-backend.ts` maps many schema generations and Personal workflows.
-- `app/mcp/route.ts` combines protocol, auth, policy, state, and dispatch.
-- `lib/company-sections.ts` owns service-role writes, permissions, proposal review, revisions, history, and collaboration effects.
-- Markdown parsing is regex/order-sensitive; format changes can silently normalize or lose content.
-- Company synchronization intentionally combines optimistic updates, realtime, polling, suppression, and freeze windows to handle races.
-
-Read the whole local code path before editing a helper in these files. Avoid adding dependencies without a concrete size/maintenance justification.
-
-## Known coverage gaps
-
-High-value additions would cover:
-
-- OAuth discovery, PKCE replay, redirects, refresh rotation, device polling/consumption, and revocation end to end;
-- MCP authentication and tool authorization for OAuth and headless keys against live schema/RLS;
-- proving every `app/api/app/**` route authenticates correctly, including Vault role checks and required reveal auditing;
-- executing Supabase Vault create/reveal/rotate/delete and device RPC concurrency against a local database;
-- GitHub OAuth/refresh and preview/apply races;
-- OpenRouter SSE parsing, timeout, malformed structured output, and credit concurrency;
-- browser-level Personal/Company switching, onboarding, collaboration, and proposal review.
-
-## Documentation cautions
-
-Some root guidance predates current code:
-
-- The test runner is wired in `package.json`, but OpenWiki refresh is manual and does not run application verification.
-- Signed-in users without access are currently sent to onboarding by the app layout, not always pricing.
-- Company onboarding and code size have outgrown older repository maps.
-- GitHub round-trip is precise for supported editor markup, not universally byte-lossless.
-
-Prefer current source, package scripts, and ordered migrations over stale comments. Preserve unrelated working-tree changes, especially root agent instruction files, unless the user explicitly asks to modify them.
+Coverage gaps remain around end-to-end OAuth/device flows, live MCP authorization, RLS/Vault RPC execution and concurrency, GitHub OAuth/pull races, OpenRouter streaming/failure behavior, and browser-level Personal/Company collaboration. Verify current source and ordered migrations over stale comments or historical names.

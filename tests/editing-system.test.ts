@@ -17,7 +17,7 @@ import {
   getMetaProposalDiffText,
   getProposalPreviewText,
   isAccentKey,
-} from "../lib/creed-data.ts";
+} from "../lib/strap-data.ts";
 
 test("isAccentKey: accepts every key in ACCENT_KEYS", () => {
   for (const key of ACCENT_KEYS) {

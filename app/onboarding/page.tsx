@@ -1,15 +1,15 @@
 import { redirect } from "next/navigation";
-import { OnboardingScreen } from "@/components/creed/onboarding-screen";
-import { loadCreedState } from "@/lib/creed-backend";
-import { isSupabaseTableMissingError } from "@/lib/creed-backend-errors";
+import { OnboardingScreen } from "@/components/strap/onboarding-screen";
+import { loadStrapState } from "@/lib/strap-backend";
+import { isSupabaseTableMissingError } from "@/lib/strap-backend-errors";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 
-// Onboarding lives outside the (creed-app) route group. Anyone signed in can
+// Onboarding lives outside the (strap-app) route group. Anyone signed in can
 // run it (answer questions, build with their assistant via a copy-paste
 // prompt, preview) and then go straight into the app. We pass one signal to
 // the screen:
-//   - initialStage: resume point. A composed Creed resumes on the preview; a
+//   - initialStage: resume point. A composed Strap resumes on the preview; a
 //     claimed-but-not-composed seed resumes on the prompt step; otherwise the
 //     screen starts at step 0.
 export default async function OnboardingPage() {
@@ -25,11 +25,11 @@ export default async function OnboardingPage() {
       redirect("/home");
     }
 
-    // loadCreedState is cache()-wrapped, so this reuses the identical call the
+    // loadStrapState is cache()-wrapped, so this reuses the identical call the
     // root layout already made this request. "Composed" == any section last
     // edited by an agent; "hasPersistedCreed" means the seed was claimed.
     try {
-      const result = await loadCreedState(supabase, user);
+      const result = await loadStrapState(supabase, user);
       const composed = result.state.sections.some(
         (section) => section.lastEditedType === "agent"
       );

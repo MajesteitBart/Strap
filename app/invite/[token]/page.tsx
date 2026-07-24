@@ -1,11 +1,11 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { CreedWordmark } from "@/components/creed/brand";
-import { InviteAcceptCard } from "@/components/creed/invite-accept-card";
+import { StrapWordmark } from "@/components/strap/brand";
+import { InviteAcceptCard } from "@/components/strap/invite-accept-card";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { resolveInviteByToken } from "@/lib/company-invites";
-import { getUserName, getAvatarUrl, getAvatarInitials } from "@/lib/creed-backend";
+import { getUserName, getAvatarUrl, getAvatarInitials } from "@/lib/strap-backend";
 
 // Company invite landing. Marketing-chrome-free, styled to match the MCP consent
 // screen (/authorize): wordmark above a borderless, centered card. Resolves the
@@ -18,10 +18,10 @@ export const dynamic = "force-dynamic";
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-[var(--creed-background)] text-[var(--creed-text-primary)]">
+    <div className="min-h-screen bg-[var(--strap-background)] text-[var(--strap-text-primary)]">
       <div className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-6 py-16">
-        <CreedWordmark className="mb-10 h-[20px]" />
-        <div className="w-full rounded-[var(--radius-xl)] bg-[var(--creed-surface)] p-7 text-center">
+        <StrapWordmark className="mb-10 h-[20px]" />
+        <div className="w-full rounded-[var(--radius-xl)] bg-[var(--strap-surface)] p-7 text-center">
           {children}
         </div>
       </div>
@@ -32,8 +32,8 @@ function Shell({ children }: { children: React.ReactNode }) {
 function Message({ title, body, children }: { title: string; body: string; children?: React.ReactNode }) {
   return (
     <>
-      <h1 className="text-[18px] font-medium text-[var(--creed-text-primary)]">{title}</h1>
-      <p className="mt-3 text-[14px] leading-7 text-[var(--creed-text-secondary)]">{body}</p>
+      <h1 className="text-[18px] font-medium text-[var(--strap-text-primary)]">{title}</h1>
+      <p className="mt-3 text-[14px] leading-7 text-[var(--strap-text-secondary)]">{body}</p>
       {children}
     </>
   );
@@ -93,7 +93,7 @@ export default async function InvitePage({ params }: { params: Promise<{ token: 
         >
           <Link
             href="/file"
-            className="mt-5 inline-block text-[14px] text-[var(--creed-text-secondary)] underline underline-offset-2 hover:text-[var(--creed-text-primary)]"
+            className="mt-5 inline-block text-[14px] text-[var(--strap-text-secondary)] underline underline-offset-2 hover:text-[var(--strap-text-primary)]"
           >
             Go to your Strap
           </Link>

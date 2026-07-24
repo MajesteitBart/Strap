@@ -3,7 +3,7 @@
 import { LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ArrowRightIcon } from "@/components/ui/arrow-right";
-import { useAnimatedIconControls } from "@/components/creed/animated-icon-controls";
+import { useAnimatedIconControls } from "@/components/strap/animated-icon-controls";
 import { useOAuthSignIn } from "@/components/auth/use-oauth-sign-in";
 import { cn } from "@/lib/utils";
 
@@ -33,7 +33,7 @@ export function GoogleSignInButton({
   return (
     <Button
       className={cn(
-        "rounded-md bg-[var(--creed-text-primary)] px-5 text-[var(--creed-button-primary-fg)] hover:bg-[var(--creed-button-primary-hover)]",
+        "rounded-md bg-[var(--strap-text-primary)] px-5 text-[var(--strap-button-primary-fg)] hover:bg-[var(--strap-button-primary-hover)]",
         className
       )}
       onClick={() => void signIn("google")}

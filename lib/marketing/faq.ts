@@ -23,7 +23,7 @@ export const homeFaqItems: FaqItem[] = [
   {
     question: "Which tools does Strap work with?",
     answer:
-      "Strap connects to agents like Claude Code, Codex, Cursor, and ChatGPT over MCP, and integrates with GitHub for version control. Support for tools like Notion and Obsidian is coming for editing and storage.",
+      "Strap connects to agents like Claude Code, Codex, Cursor, and ChatGPT over MCP, offers a terminal CLI and scoped headless API keys, and integrates with GitHub for version control.",
   },
   {
     question: "What gets written back to Strap?",
@@ -68,7 +68,7 @@ export const pricingFaqItems: FaqItem[] = [
   {
     question: "Do I own my data?",
     answer:
-      "Your Strap is plain Markdown you own and can export at any time, and deleting your account wipes everything. There is no lock-in.",
+      "Your Strap is portable Markdown you can export at any time. Deleting your account removes active product data; qualified audit and security records may remain for the retention periods in the Privacy Policy.",
   },
 ];
 
@@ -128,11 +128,11 @@ export const contextFileFaqItems: FaqItem[] = [
   {
     question: "Which tools does a personal context file work with?",
     answer:
-      "Strap connects to agents like Claude Code, Codex, Cursor, and ChatGPT over MCP, and integrates with GitHub for version control. Support for Notion and Obsidian is on the way.",
+      "Strap connects to agents like Claude Code, Codex, Cursor, and ChatGPT over MCP, offers a terminal CLI and scoped headless API keys, and integrates with GitHub for version control.",
   },
   {
     question: "Do I own my personal context file?",
     answer:
-      "Yes. Strap is plain Markdown that you control. You bring your own AI key, your tokens stay yours, and deleting your account wipes everything. There is no lock-in.",
+      "Yes. Strap is portable Markdown you control and can export. AI can run on the included key or your own key, and account deletion removes active product data subject to the retention periods in the Privacy Policy.",
   },
 ];

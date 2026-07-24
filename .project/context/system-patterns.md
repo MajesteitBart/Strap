@@ -20,7 +20,7 @@ Capture architecture and delivery patterns that should be reused.
 
 ## Strap-First Compatibility
 - Customer-visible branding, new setup, canonical origin, and default profile filename use Strap, `https://strap.bvdm.ai`, and `strap.md`.
-- Stable Creed schema, module, event, storage, API route, MCP tool/resource, credential-prefix, CSS-token, and legacy-origin identifiers remain in place until a separately approved migration.
+- Canonical implementation paths use Strap naming. Narrow Creed-named re-export shims plus stable schema, event, storage, API aliases, MCP compatibility tools/resources, credential fallbacks, persisted rich-text CSS tokens, and the legacy origin remain only where compatibility or history requires them.
 - Existing GitHub paths are authoritative. Read fallback may adopt `creed.md`, but push must never create a competing `strap.md` automatically.
 - New CLI behavior lives in `packages/strap/`; `packages/creed-cli/` is not renamed or used as the implementation source.
 - External tracker writes, deployments, and public GitHub actions require explicit approval.

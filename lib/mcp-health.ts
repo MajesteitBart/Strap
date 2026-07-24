@@ -3,10 +3,10 @@ import "server-only";
 // the per-agent daily read rollup (creed_mcp_read_events), the connected-agent
 // roster (creed_mcp_clients), and agent-authored activity (creed_activity) -
 // and folds them into one summary the client renders with recharts. All of this
-// lives off the hot loadCreedState path: it's fetched on demand by the route.
-import type { AgentIconKind } from "@/lib/creed-data";
-import { accentColorMap, normalizeLegacySectionId, isAccentKey } from "@/lib/creed-data";
-import { inferAgentIconKind, normalizeMcpClientId } from "@/lib/creed-backend";
+// lives off the hot loadStrapState path: it's fetched on demand by the route.
+import type { AgentIconKind } from "@/lib/strap-data";
+import { accentColorMap, normalizeLegacySectionId, isAccentKey } from "@/lib/strap-data";
+import { inferAgentIconKind, normalizeMcpClientId } from "@/lib/strap-backend";
 
 export type McpHealthRange = "7d" | "30d" | "90d";
 

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireApiAuth } from "@/lib/api-auth";
-import { inferAgentIconKind } from "@/lib/creed-backend";
+import { inferAgentIconKind } from "@/lib/strap-backend";
 import { revokeOAuthTokensForUser } from "@/lib/oauth";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 

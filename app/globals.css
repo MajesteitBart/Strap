@@ -55,25 +55,25 @@
   --ring: rgba(31, 31, 26, 0.15);
   --radius: 0.875rem;
 
-  --creed-background: #f9f9f8;
-  --creed-surface: #ffffff;
-  --creed-surface-raised: #f3f3f1;
+  --strap-background: #f9f9f8;
+  --strap-surface: #ffffff;
+  --strap-surface-raised: #f3f3f1;
   /* Selected row in menus/selects. Sits ~6 off the hover tone (surface-raised
      #f3f3f1): lighter in light mode, darker in dark mode, same magnitude. */
-  --creed-surface-selected: #f9f9f8;
-  --creed-border: #e6e6e2;
-  --creed-border-strong: #d6d6d0;
-  --creed-text-primary: #1f1f1a;
-  --creed-text-secondary: #636360;
-  --creed-text-tertiary: #9a9a96;
-  --creed-button-primary-fg: #ffffff;
-  --creed-button-primary-hover: #2b2b28;
-  --creed-ring-track: rgba(17, 17, 13, 0.12);
+  --strap-surface-selected: #f9f9f8;
+  --strap-border: #e6e6e2;
+  --strap-border-strong: #d6d6d0;
+  --strap-text-primary: #1f1f1a;
+  --strap-text-secondary: #636360;
+  --strap-text-tertiary: #9a9a96;
+  --strap-button-primary-fg: #ffffff;
+  --strap-button-primary-hover: #2b2b28;
+  --strap-ring-track: rgba(17, 17, 13, 0.12);
   /* Brand action / accent - used by primary CTAs (dialog confirm buttons,
      accept-all, push/pull, etc.). Constant across both themes so the brand
      blue reads identically in light and dark mode. */
-  --creed-accent: #2563eb;
-  --creed-accent-hover: #1d4ed8;
+  --strap-accent: #2563eb;
+  --strap-accent-hover: #1d4ed8;
 
   /* Flat fills for the below-hero section panels (replacing the old image
      plates). These light values are deepened in the .dark block below. */
@@ -85,11 +85,11 @@
 
   /* Numeric stat / status colours. Brightened so `+57 -304`-style stats stay
      legible everywhere; the dark-mode block below picks even brighter shades. */
-  --creed-success: #16a34a;
-  --creed-danger: #dc2626;
-  --creed-score-good: #16a34a;
-  --creed-score-mid: #d97706;
-  --creed-score-bad: #dc2626;
+  --strap-success: #16a34a;
+  --strap-danger: #dc2626;
+  --strap-score-good: #16a34a;
+  --strap-score-mid: #d97706;
+  --strap-score-bad: #dc2626;
 
   --accent-tint-identity: #f3e8ff;
   --accent-tint-stack: #dbeafe;
@@ -113,7 +113,7 @@
   --accent-tint-mono: #ebebe6;
   --accent-tint-custom: #ebebe6;
 
-  /* Scenery fades. The art (hero, auth panel, inner banner, closing band)
+  /* Backdrop fades. The art (hero, auth panel, inner banner, closing band)
      melts into the page background through these. Stops are densely sampled
      along an ease curve so the ramp reads as a smooth blur, not banding.
      Redefined per theme in .dark; surfaces reference them by name so the fade
@@ -124,9 +124,9 @@
      tail so the art clears the footer; it melts to full page colour at the top
      edge so it joins the section above seamlessly;
      `fade-in-x` melts the inner vertical edge of the auth panel. */
-  --scenery-fade-down: linear-gradient(180deg, rgba(249,249,248,0) 0%, rgba(249,249,248,0.012) 14%, rgba(249,249,248,0.05) 26%, rgba(249,249,248,0.11) 37%, rgba(249,249,248,0.2) 47%, rgba(249,249,248,0.32) 56%, rgba(249,249,248,0.45) 64%, rgba(249,249,248,0.59) 72%, rgba(249,249,248,0.73) 80%, rgba(249,249,248,0.85) 87%, rgba(249,249,248,0.94) 93%, rgba(249,249,248,1) 100%);
-  --scenery-fade-band: linear-gradient(180deg, rgba(249,249,248,1) 0%, rgba(249,249,248,0.99) 2%, rgba(249,249,248,0.98) 4%, rgba(249,249,248,0.95) 6%, rgba(249,249,248,0.9) 8%, rgba(249,249,248,0.82) 10%, rgba(249,249,248,0.74) 12%, rgba(249,249,248,0.62) 14%, rgba(249,249,248,0.5) 16%, rgba(249,249,248,0.38) 18%, rgba(249,249,248,0.26) 20%, rgba(249,249,248,0.18) 22%, rgba(249,249,248,0.1) 24%, rgba(249,249,248,0.05) 26%, rgba(249,249,248,0.016) 28%, rgba(249,249,248,0.002) 30%, rgba(249,249,248,0) 32%, rgba(249,249,248,0) 65%, rgba(249,249,248,0.002) 67%, rgba(249,249,248,0.016) 69%, rgba(249,249,248,0.05) 71%, rgba(249,249,248,0.1) 73%, rgba(249,249,248,0.18) 75%, rgba(249,249,248,0.26) 77%, rgba(249,249,248,0.38) 79%, rgba(249,249,248,0.5) 81%, rgba(249,249,248,0.62) 83%, rgba(249,249,248,0.74) 85%, rgba(249,249,248,0.82) 87%, rgba(249,249,248,0.9) 89%, rgba(249,249,248,0.95) 91%, rgba(249,249,248,0.98) 93%, rgba(249,249,248,0.99) 95%, rgba(249,249,248,1) 97%, rgba(249,249,248,1) 100%);
-  --scenery-fade-in-x: linear-gradient(90deg, rgba(249,249,248,1) 0%, rgba(249,249,248,0.97) 5%, rgba(249,249,248,0.9) 10%, rgba(249,249,248,0.78) 15%, rgba(249,249,248,0.62) 20%, rgba(249,249,248,0.46) 25%, rgba(249,249,248,0.3) 30%, rgba(249,249,248,0.17) 35%, rgba(249,249,248,0.07) 40%, rgba(249,249,248,0) 46%);
+  --strap-backdrop-fade-down: linear-gradient(180deg, rgba(249,249,248,0) 0%, rgba(249,249,248,0.012) 14%, rgba(249,249,248,0.05) 26%, rgba(249,249,248,0.11) 37%, rgba(249,249,248,0.2) 47%, rgba(249,249,248,0.32) 56%, rgba(249,249,248,0.45) 64%, rgba(249,249,248,0.59) 72%, rgba(249,249,248,0.73) 80%, rgba(249,249,248,0.85) 87%, rgba(249,249,248,0.94) 93%, rgba(249,249,248,1) 100%);
+  --strap-backdrop-fade-band: linear-gradient(180deg, rgba(249,249,248,1) 0%, rgba(249,249,248,0.99) 2%, rgba(249,249,248,0.98) 4%, rgba(249,249,248,0.95) 6%, rgba(249,249,248,0.9) 8%, rgba(249,249,248,0.82) 10%, rgba(249,249,248,0.74) 12%, rgba(249,249,248,0.62) 14%, rgba(249,249,248,0.5) 16%, rgba(249,249,248,0.38) 18%, rgba(249,249,248,0.26) 20%, rgba(249,249,248,0.18) 22%, rgba(249,249,248,0.1) 24%, rgba(249,249,248,0.05) 26%, rgba(249,249,248,0.016) 28%, rgba(249,249,248,0.002) 30%, rgba(249,249,248,0) 32%, rgba(249,249,248,0) 65%, rgba(249,249,248,0.002) 67%, rgba(249,249,248,0.016) 69%, rgba(249,249,248,0.05) 71%, rgba(249,249,248,0.1) 73%, rgba(249,249,248,0.18) 75%, rgba(249,249,248,0.26) 77%, rgba(249,249,248,0.38) 79%, rgba(249,249,248,0.5) 81%, rgba(249,249,248,0.62) 83%, rgba(249,249,248,0.74) 85%, rgba(249,249,248,0.82) 87%, rgba(249,249,248,0.9) 89%, rgba(249,249,248,0.95) 91%, rgba(249,249,248,0.98) 93%, rgba(249,249,248,0.99) 95%, rgba(249,249,248,1) 97%, rgba(249,249,248,1) 100%);
+  --strap-backdrop-fade-in-x: linear-gradient(90deg, rgba(249,249,248,1) 0%, rgba(249,249,248,0.97) 5%, rgba(249,249,248,0.9) 10%, rgba(249,249,248,0.78) 15%, rgba(249,249,248,0.62) 20%, rgba(249,249,248,0.46) 25%, rgba(249,249,248,0.3) 30%, rgba(249,249,248,0.17) 35%, rgba(249,249,248,0.07) 40%, rgba(249,249,248,0) 46%);
 
   --font-heading: var(--font-geist-sans);
 }
@@ -154,20 +154,20 @@
   --input: #262624;
   --ring: rgba(231, 231, 226, 0.18);
 
-  --creed-background: #0e0e0d;
-  --creed-surface: #161615;
-  --creed-surface-raised: #1f1f1d;
+  --strap-background: #0e0e0d;
+  --strap-surface: #161615;
+  --strap-surface-raised: #1f1f1d;
   /* Darker than the hover tone (a recessed "selected" look) but kept off the
      near-black page background so it doesn't read as a hole. */
-  --creed-surface-selected: #121211;
-  --creed-border: #262624;
-  --creed-border-strong: #34342f;
-  --creed-text-primary: #e7e7e2;
-  --creed-text-secondary: #9c9c95;
-  --creed-text-tertiary: #6b6b65;
-  --creed-button-primary-fg: #0e0e0d;
-  --creed-button-primary-hover: #cfcfc8;
-  --creed-ring-track: rgba(231, 231, 226, 0.16);
+  --strap-surface-selected: #121211;
+  --strap-border: #262624;
+  --strap-border-strong: #34342f;
+  --strap-text-primary: #e7e7e2;
+  --strap-text-secondary: #9c9c95;
+  --strap-text-tertiary: #6b6b65;
+  --strap-button-primary-fg: #0e0e0d;
+  --strap-button-primary-hover: #cfcfc8;
+  --strap-ring-track: rgba(231, 231, 226, 0.16);
 
   --plate-proposal: #2069d6;
   --plate-direct: #d46d2d;
@@ -175,11 +175,11 @@
   --plate-connect: #4bc03b;
   --plate-improve: #3a86e8;
 
-  --creed-success: #4ade80;
-  --creed-danger: #f87171;
-  --creed-score-good: #4ade80;
-  --creed-score-mid: #fbbf24;
-  --creed-score-bad: #f87171;
+  --strap-success: #4ade80;
+  --strap-danger: #f87171;
+  --strap-score-good: #4ade80;
+  --strap-score-mid: #fbbf24;
+  --strap-score-bad: #f87171;
 
   /* Same hue, dropped saturation + lifted off the canvas just enough to hint
      the colour family without flashing pastel against the dark surface. */
@@ -204,10 +204,10 @@
   --accent-tint-mono: rgba(231, 231, 226, 0.10);
   --accent-tint-custom: rgba(231, 231, 226, 0.10);
 
-  /* Dark-canvas twins of the scenery fades (see :root for the shape notes). */
-  --scenery-fade-down: linear-gradient(180deg, rgba(14,14,13,0) 0%, rgba(14,14,13,0.012) 14%, rgba(14,14,13,0.05) 26%, rgba(14,14,13,0.11) 37%, rgba(14,14,13,0.2) 47%, rgba(14,14,13,0.32) 56%, rgba(14,14,13,0.45) 64%, rgba(14,14,13,0.59) 72%, rgba(14,14,13,0.73) 80%, rgba(14,14,13,0.85) 87%, rgba(14,14,13,0.94) 93%, rgba(14,14,13,1) 100%);
-  --scenery-fade-band: linear-gradient(180deg, rgba(14,14,13,1) 0%, rgba(14,14,13,0.99) 2%, rgba(14,14,13,0.98) 4%, rgba(14,14,13,0.95) 6%, rgba(14,14,13,0.9) 8%, rgba(14,14,13,0.82) 10%, rgba(14,14,13,0.74) 12%, rgba(14,14,13,0.62) 14%, rgba(14,14,13,0.5) 16%, rgba(14,14,13,0.38) 18%, rgba(14,14,13,0.26) 20%, rgba(14,14,13,0.18) 22%, rgba(14,14,13,0.1) 24%, rgba(14,14,13,0.05) 26%, rgba(14,14,13,0.016) 28%, rgba(14,14,13,0.002) 30%, rgba(14,14,13,0) 32%, rgba(14,14,13,0) 65%, rgba(14,14,13,0.002) 67%, rgba(14,14,13,0.016) 69%, rgba(14,14,13,0.05) 71%, rgba(14,14,13,0.1) 73%, rgba(14,14,13,0.18) 75%, rgba(14,14,13,0.26) 77%, rgba(14,14,13,0.38) 79%, rgba(14,14,13,0.5) 81%, rgba(14,14,13,0.62) 83%, rgba(14,14,13,0.74) 85%, rgba(14,14,13,0.82) 87%, rgba(14,14,13,0.9) 89%, rgba(14,14,13,0.95) 91%, rgba(14,14,13,0.98) 93%, rgba(14,14,13,0.99) 95%, rgba(14,14,13,1) 97%, rgba(14,14,13,1) 100%);
-  --scenery-fade-in-x: linear-gradient(90deg, rgba(14,14,13,1) 0%, rgba(14,14,13,0.97) 5%, rgba(14,14,13,0.9) 10%, rgba(14,14,13,0.78) 15%, rgba(14,14,13,0.62) 20%, rgba(14,14,13,0.46) 25%, rgba(14,14,13,0.3) 30%, rgba(14,14,13,0.17) 35%, rgba(14,14,13,0.07) 40%, rgba(14,14,13,0) 46%);
+  /* Dark-canvas twins of the backdrop fades (see :root for the shape notes). */
+  --strap-backdrop-fade-down: linear-gradient(180deg, rgba(14,14,13,0) 0%, rgba(14,14,13,0.012) 14%, rgba(14,14,13,0.05) 26%, rgba(14,14,13,0.11) 37%, rgba(14,14,13,0.2) 47%, rgba(14,14,13,0.32) 56%, rgba(14,14,13,0.45) 64%, rgba(14,14,13,0.59) 72%, rgba(14,14,13,0.73) 80%, rgba(14,14,13,0.85) 87%, rgba(14,14,13,0.94) 93%, rgba(14,14,13,1) 100%);
+  --strap-backdrop-fade-band: linear-gradient(180deg, rgba(14,14,13,1) 0%, rgba(14,14,13,0.99) 2%, rgba(14,14,13,0.98) 4%, rgba(14,14,13,0.95) 6%, rgba(14,14,13,0.9) 8%, rgba(14,14,13,0.82) 10%, rgba(14,14,13,0.74) 12%, rgba(14,14,13,0.62) 14%, rgba(14,14,13,0.5) 16%, rgba(14,14,13,0.38) 18%, rgba(14,14,13,0.26) 20%, rgba(14,14,13,0.18) 22%, rgba(14,14,13,0.1) 24%, rgba(14,14,13,0.05) 26%, rgba(14,14,13,0.016) 28%, rgba(14,14,13,0.002) 30%, rgba(14,14,13,0) 32%, rgba(14,14,13,0) 65%, rgba(14,14,13,0.002) 67%, rgba(14,14,13,0.016) 69%, rgba(14,14,13,0.05) 71%, rgba(14,14,13,0.1) 73%, rgba(14,14,13,0.18) 75%, rgba(14,14,13,0.26) 77%, rgba(14,14,13,0.38) 79%, rgba(14,14,13,0.5) 81%, rgba(14,14,13,0.62) 83%, rgba(14,14,13,0.74) 85%, rgba(14,14,13,0.82) 87%, rgba(14,14,13,0.9) 89%, rgba(14,14,13,0.95) 91%, rgba(14,14,13,0.98) 93%, rgba(14,14,13,0.99) 95%, rgba(14,14,13,1) 97%, rgba(14,14,13,1) 100%);
+  --strap-backdrop-fade-in-x: linear-gradient(90deg, rgba(14,14,13,1) 0%, rgba(14,14,13,0.97) 5%, rgba(14,14,13,0.9) 10%, rgba(14,14,13,0.78) 15%, rgba(14,14,13,0.62) 20%, rgba(14,14,13,0.46) 25%, rgba(14,14,13,0.3) 30%, rgba(14,14,13,0.17) 35%, rgba(14,14,13,0.07) 40%, rgba(14,14,13,0) 46%);
 }
 
 @layer base {
@@ -238,30 +238,30 @@
   }
 }
 
-.creed-scrollbar {
+.strap-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: var(--creed-border-strong) transparent;
+  scrollbar-color: var(--strap-border-strong) transparent;
 }
 
-.creed-scrollbar::-webkit-scrollbar {
+.strap-scrollbar::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
 
-.creed-scrollbar::-webkit-scrollbar-track {
+.strap-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.creed-scrollbar::-webkit-scrollbar-thumb {
+.strap-scrollbar::-webkit-scrollbar-thumb {
   border: 2px solid transparent;
   border-radius: 999px;
-  background: var(--creed-border-strong);
+  background: var(--strap-border-strong);
   background-clip: padding-box;
 }
 
 .editor-command-item:hover,
 .editor-command-item[data-active="true"] {
-  background: var(--creed-surface-raised);
+  background: var(--strap-surface-raised);
 }
 
 .t-hero {
@@ -350,11 +350,11 @@
 /* Onboarding "Copy prompt" button: smoothly cycles through the brand palette
    (mono, blue, green, yellow, orange, red, purple). Fixed dark mono + white
    text so the label stays legible across every colour and both themes. */
-.creed-copy-cycle {
-  animation: creed-copy-cycle 9s ease-in-out infinite alternate;
+.strap-copy-cycle {
+  animation: strap-copy-cycle 9s ease-in-out infinite alternate;
 }
 
-@keyframes creed-copy-cycle {
+@keyframes strap-copy-cycle {
   0% {
     background-color: #2563eb;
   }
@@ -376,7 +376,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .creed-copy-cycle {
+  .strap-copy-cycle {
     animation: none;
     background-color: #2563eb;
   }
@@ -385,7 +385,7 @@
 .ProseMirror {
   min-height: 56px;
   font-family: var(--font-geist-sans), sans-serif;
-  color: var(--creed-text-primary);
+  color: var(--strap-text-primary);
   font-size: 16px;
   line-height: 1.75;
   outline: none;
@@ -409,7 +409,7 @@
   font-family: var(--font-geist-sans), sans-serif;
   font-weight: 500;
   letter-spacing: -0.03em;
-  color: var(--creed-text-primary);
+  color: var(--strap-text-primary);
 }
 
 .ProseMirror h2 {
@@ -433,26 +433,26 @@
   font-size: 14px;
   line-height: 1.75;
   padding-left: 1.45rem;
-  color: var(--creed-text-primary);
+  color: var(--strap-text-primary);
 }
 
-.ProseMirror .creed-list {
+.ProseMirror :is(.strap-list, .creed-list) {
   margin: 0;
 }
 
 /* Squircle bullet markers (no round dots). Radius is ~33% of the marker so it
    reads as a soft square at any size. */
-.ProseMirror .creed-list-bullet {
+.ProseMirror :is(.strap-list-bullet, .creed-list-bullet) {
   list-style: none;
   padding-left: 0;
 }
 
-.ProseMirror .creed-list-bullet > li {
+.ProseMirror :is(.strap-list-bullet, .creed-list-bullet) > li {
   position: relative;
   padding-left: 1.3em;
 }
 
-.ProseMirror .creed-list-bullet > li::before {
+.ProseMirror :is(.strap-list-bullet, .creed-list-bullet) > li::before {
   content: "";
   position: absolute;
   left: 0.1em;
@@ -460,28 +460,28 @@
   width: 0.42em;
   height: 0.42em;
   border-radius: 0.14em;
-  background: var(--section-accent-bar, var(--creed-text-secondary));
+  background: var(--section-accent-bar, var(--strap-text-secondary));
 }
 
-.ProseMirror .creed-list-ordered {
+.ProseMirror :is(.strap-list-ordered, .creed-list-ordered) {
   list-style-type: decimal;
 }
 
 /* Reusable squircle bullet list for plain JSX lists (docs, marketing, etc.).
-   Set --creed-bullet on the <ul> to colour the markers; defaults to the text
+   Set --strap-bullet on the <ul> to colour the markers; defaults to the text
    colour. Apply to the <ul>; <li> needs no marker classes. */
-.creed-bullets {
+.strap-bullets {
   list-style: none;
   padding-left: 0;
 }
 
-.creed-bullets > li {
+.strap-bullets > li {
   display: flex;
   align-items: flex-start;
   gap: 0.7em;
 }
 
-.creed-bullets > li::before {
+.strap-bullets > li::before {
   content: "";
   flex: 0 0 auto;
   /* Centres the square on the first text line. The lists run line-height ~2
@@ -492,26 +492,26 @@
   width: 0.4em;
   height: 0.4em;
   border-radius: 0.13em;
-  background: var(--creed-bullet, currentColor);
+  background: var(--strap-bullet, currentColor);
 }
 
-.ProseMirror .creed-list-item > p {
+.ProseMirror :is(.strap-list-item, .creed-list-item) > p {
   margin: 0;
   font-family: var(--font-geist-sans), sans-serif;
   font-size: 14px;
   line-height: 1.75;
 }
 
-.ProseMirror > :not(.creed-list) + .creed-list {
+.ProseMirror > :not(:is(.strap-list, .creed-list)) + :is(.strap-list, .creed-list) {
   margin-top: 1.4rem;
 }
 
-.ProseMirror > .creed-list + :not(.creed-list) {
+.ProseMirror > :is(.strap-list, .creed-list) + :not(:is(.strap-list, .creed-list)) {
   margin-top: 1.2rem;
 }
 
 .ProseMirror li::marker {
-  color: var(--section-accent-bar, var(--creed-text-secondary));
+  color: var(--section-accent-bar, var(--strap-text-secondary));
   font-weight: 500;
 }
 
@@ -519,17 +519,17 @@
   margin-top: 0.4rem;
 }
 
-.ProseMirror .creed-callout {
+.ProseMirror :is(.strap-callout, .creed-callout) {
   position: relative;
   border: none;
   border-radius: 0 0.75rem 0.75rem 0;
   background: var(--section-accent-tint, #faf9f6);
   padding: 0.7rem 0.95rem 0.7rem 1.35rem;
   font-family: var(--font-geist-sans), sans-serif;
-  color: var(--creed-text-primary);
+  color: var(--strap-text-primary);
 }
 
-.ProseMirror .creed-callout::before {
+.ProseMirror :is(.strap-callout, .creed-callout)::before {
   position: absolute;
   top: 0;
   bottom: 0;
@@ -540,7 +540,7 @@
   content: "";
 }
 
-.ProseMirror .creed-callout p {
+.ProseMirror :is(.strap-callout, .creed-callout) p {
   margin: 0;
   font-family: var(--font-geist-sans), sans-serif;
   font-size: 14px;
@@ -549,28 +549,28 @@
 
 .ProseMirror code {
   border-radius: 0.45rem;
-  background: var(--creed-surface-raised);
+  background: var(--strap-surface-raised);
   padding: 0.15rem 0.35rem;
   font-family: var(--font-geist-mono), monospace;
   font-size: 0.92em;
 }
 
-.ProseMirror .creed-code-block {
+.ProseMirror :is(.strap-code-block, .creed-code-block) {
   overflow-x: auto;
   border: none;
   border-radius: 0.75rem;
-  background: var(--creed-surface-raised);
+  background: var(--strap-surface-raised);
   padding: 0.7rem 0.95rem;
   font-family: var(--font-geist-mono), monospace;
   font-size: 0.92em;
   line-height: 1.5;
-  color: var(--creed-text-primary);
+  color: var(--strap-text-primary);
   tab-size: 2;
   font-variant-ligatures: none;
   box-shadow: none;
 }
 
-.ProseMirror .creed-code-block code {
+.ProseMirror :is(.strap-code-block, .creed-code-block) code {
   background: transparent;
   padding: 0;
   color: inherit;
@@ -581,117 +581,117 @@
 /* Syntax highlighting (lowlight / highlight.js classes). The token palette
    reads as a calm "GitHub-light" style so colour stays subtle in long blocks;
    the .dark block below adapts each hue for the dark canvas. */
-.creed-code-block .hljs-comment,
-.creed-code-block .hljs-quote {
+:is(.strap-code-block, .creed-code-block) .hljs-comment,
+:is(.strap-code-block, .creed-code-block) .hljs-quote {
   color: #6a737d;
   font-style: italic;
 }
-.creed-code-block .hljs-keyword,
-.creed-code-block .hljs-selector-tag,
-.creed-code-block .hljs-literal,
-.creed-code-block .hljs-section,
-.creed-code-block .hljs-link {
+:is(.strap-code-block, .creed-code-block) .hljs-keyword,
+:is(.strap-code-block, .creed-code-block) .hljs-selector-tag,
+:is(.strap-code-block, .creed-code-block) .hljs-literal,
+:is(.strap-code-block, .creed-code-block) .hljs-section,
+:is(.strap-code-block, .creed-code-block) .hljs-link {
   color: #d73a49;
 }
-.creed-code-block .hljs-string,
-.creed-code-block .hljs-attr,
-.creed-code-block .hljs-template-tag,
-.creed-code-block .hljs-template-variable,
-.creed-code-block .hljs-meta-string,
-.creed-code-block .hljs-regexp {
+:is(.strap-code-block, .creed-code-block) .hljs-string,
+:is(.strap-code-block, .creed-code-block) .hljs-attr,
+:is(.strap-code-block, .creed-code-block) .hljs-template-tag,
+:is(.strap-code-block, .creed-code-block) .hljs-template-variable,
+:is(.strap-code-block, .creed-code-block) .hljs-meta-string,
+:is(.strap-code-block, .creed-code-block) .hljs-regexp {
   color: #032f62;
 }
-.creed-code-block .hljs-number,
-.creed-code-block .hljs-symbol,
-.creed-code-block .hljs-bullet,
-.creed-code-block .hljs-meta {
+:is(.strap-code-block, .creed-code-block) .hljs-number,
+:is(.strap-code-block, .creed-code-block) .hljs-symbol,
+:is(.strap-code-block, .creed-code-block) .hljs-bullet,
+:is(.strap-code-block, .creed-code-block) .hljs-meta {
   color: #005cc5;
 }
-.creed-code-block .hljs-title,
-.creed-code-block .hljs-name,
-.creed-code-block .hljs-class .hljs-title,
-.creed-code-block .hljs-type {
+:is(.strap-code-block, .creed-code-block) .hljs-title,
+:is(.strap-code-block, .creed-code-block) .hljs-name,
+:is(.strap-code-block, .creed-code-block) .hljs-class .hljs-title,
+:is(.strap-code-block, .creed-code-block) .hljs-type {
   color: #6f42c1;
 }
-.creed-code-block .hljs-built_in,
-.creed-code-block .hljs-builtin-name {
+:is(.strap-code-block, .creed-code-block) .hljs-built_in,
+:is(.strap-code-block, .creed-code-block) .hljs-builtin-name {
   color: #005cc5;
 }
-.creed-code-block .hljs-variable,
-.creed-code-block .hljs-template-variable,
-.creed-code-block .hljs-attribute {
+:is(.strap-code-block, .creed-code-block) .hljs-variable,
+:is(.strap-code-block, .creed-code-block) .hljs-template-variable,
+:is(.strap-code-block, .creed-code-block) .hljs-attribute {
   color: #e36209;
 }
-.creed-code-block .hljs-tag {
+:is(.strap-code-block, .creed-code-block) .hljs-tag {
   color: #22863a;
 }
-.creed-code-block .hljs-deletion {
+:is(.strap-code-block, .creed-code-block) .hljs-deletion {
   color: #b31d28;
   background: #ffeef0;
 }
-.creed-code-block .hljs-addition {
+:is(.strap-code-block, .creed-code-block) .hljs-addition {
   color: #22863a;
   background: #f0fff4;
 }
-.creed-code-block .hljs-emphasis { font-style: italic; }
-.creed-code-block .hljs-strong { font-weight: 600; }
+:is(.strap-code-block, .creed-code-block) .hljs-emphasis { font-style: italic; }
+:is(.strap-code-block, .creed-code-block) .hljs-strong { font-weight: 600; }
 
-.dark .creed-code-block .hljs-comment,
-.dark .creed-code-block .hljs-quote {
+.dark :is(.strap-code-block, .creed-code-block) .hljs-comment,
+.dark :is(.strap-code-block, .creed-code-block) .hljs-quote {
   color: #7a7a72;
 }
-.dark .creed-code-block .hljs-keyword,
-.dark .creed-code-block .hljs-selector-tag,
-.dark .creed-code-block .hljs-literal,
-.dark .creed-code-block .hljs-section,
-.dark .creed-code-block .hljs-link {
+.dark :is(.strap-code-block, .creed-code-block) .hljs-keyword,
+.dark :is(.strap-code-block, .creed-code-block) .hljs-selector-tag,
+.dark :is(.strap-code-block, .creed-code-block) .hljs-literal,
+.dark :is(.strap-code-block, .creed-code-block) .hljs-section,
+.dark :is(.strap-code-block, .creed-code-block) .hljs-link {
   color: #ff7b72;
 }
-.dark .creed-code-block .hljs-string,
-.dark .creed-code-block .hljs-attr,
-.dark .creed-code-block .hljs-template-tag,
-.dark .creed-code-block .hljs-template-variable,
-.dark .creed-code-block .hljs-meta-string,
-.dark .creed-code-block .hljs-regexp {
+.dark :is(.strap-code-block, .creed-code-block) .hljs-string,
+.dark :is(.strap-code-block, .creed-code-block) .hljs-attr,
+.dark :is(.strap-code-block, .creed-code-block) .hljs-template-tag,
+.dark :is(.strap-code-block, .creed-code-block) .hljs-template-variable,
+.dark :is(.strap-code-block, .creed-code-block) .hljs-meta-string,
+.dark :is(.strap-code-block, .creed-code-block) .hljs-regexp {
   color: #a5d6ff;
 }
-.dark .creed-code-block .hljs-number,
-.dark .creed-code-block .hljs-symbol,
-.dark .creed-code-block .hljs-bullet,
-.dark .creed-code-block .hljs-meta,
-.dark .creed-code-block .hljs-built_in,
-.dark .creed-code-block .hljs-builtin-name {
+.dark :is(.strap-code-block, .creed-code-block) .hljs-number,
+.dark :is(.strap-code-block, .creed-code-block) .hljs-symbol,
+.dark :is(.strap-code-block, .creed-code-block) .hljs-bullet,
+.dark :is(.strap-code-block, .creed-code-block) .hljs-meta,
+.dark :is(.strap-code-block, .creed-code-block) .hljs-built_in,
+.dark :is(.strap-code-block, .creed-code-block) .hljs-builtin-name {
   color: #79c0ff;
 }
-.dark .creed-code-block .hljs-title,
-.dark .creed-code-block .hljs-name,
-.dark .creed-code-block .hljs-class .hljs-title,
-.dark .creed-code-block .hljs-type {
+.dark :is(.strap-code-block, .creed-code-block) .hljs-title,
+.dark :is(.strap-code-block, .creed-code-block) .hljs-name,
+.dark :is(.strap-code-block, .creed-code-block) .hljs-class .hljs-title,
+.dark :is(.strap-code-block, .creed-code-block) .hljs-type {
   color: #d2a8ff;
 }
-.dark .creed-code-block .hljs-variable,
-.dark .creed-code-block .hljs-attribute {
+.dark :is(.strap-code-block, .creed-code-block) .hljs-variable,
+.dark :is(.strap-code-block, .creed-code-block) .hljs-attribute {
   color: #ffa657;
 }
-.dark .creed-code-block .hljs-tag {
+.dark :is(.strap-code-block, .creed-code-block) .hljs-tag {
   color: #7ee787;
 }
-.dark .creed-code-block .hljs-deletion {
+.dark :is(.strap-code-block, .creed-code-block) .hljs-deletion {
   color: #ffdcd7;
   background: rgba(248, 81, 73, 0.15);
 }
-.dark .creed-code-block .hljs-addition {
+.dark :is(.strap-code-block, .creed-code-block) .hljs-addition {
   color: #aff5b4;
   background: rgba(46, 160, 67, 0.15);
 }
 
-.ProseMirror > :not(.creed-code-block) + .creed-code-block,
-.ProseMirror > :not(.creed-callout) + .creed-callout {
+.ProseMirror > :not(:is(.strap-code-block, .creed-code-block)) + :is(.strap-code-block, .creed-code-block),
+.ProseMirror > :not(:is(.strap-callout, .creed-callout)) + :is(.strap-callout, .creed-callout) {
   margin-top: 1.35rem;
 }
 
-.ProseMirror > .creed-code-block + *,
-.ProseMirror > .creed-callout + * {
+.ProseMirror > :is(.strap-code-block, .creed-code-block) + *,
+.ProseMirror > :is(.strap-callout, .creed-callout) + * {
   margin-top: 1.2rem;
 }
 
@@ -716,14 +716,14 @@
 .ProseMirror p.is-editor-empty:first-child::before {
   float: left;
   height: 0;
-  color: var(--creed-text-tertiary);
+  color: var(--strap-text-tertiary);
   content: attr(data-placeholder);
   pointer-events: none;
 }
 
 /* Inline tag pill - Obsidian-style #tags. Renders inside any rich-text
  * paragraph via the creedInlineTag mark. */
-.creed-inline-tag {
+:is(.strap-inline-tag, .creed-inline-tag) {
   display: inline;
   padding: 1px 6px;
   margin: 0 1px;
@@ -738,29 +738,29 @@
   vertical-align: baseline;
 }
 
-.creed-inline-tag::before {
+:is(.strap-inline-tag, .creed-inline-tag)::before {
   content: "#";
   opacity: 0.5;
   margin-right: 1px;
 }
 
-.ProseMirror .creed-inline-tag {
+.ProseMirror :is(.strap-inline-tag, .creed-inline-tag) {
   cursor: text;
 }
 
 /* Tab autocomplete ghost text. Rendered as a ProseMirror widget decoration
  * (never document content), tinted toward the section accent so it reads as
  * proposed, not written. */
-.creed-tab-ghost-wrapper {
+.strap-tab-ghost-wrapper {
   user-select: none;
   pointer-events: none;
 }
 
-.creed-tab-ghost {
+.strap-tab-ghost {
   color: color-mix(
     in srgb,
     var(--section-accent, #6b7280) 34%,
-    var(--creed-text-tertiary)
+    var(--strap-text-tertiary)
   );
   white-space: pre-wrap;
 }
@@ -773,7 +773,7 @@
 
 /* Keycap hint trailing the ghost: Tab accept, Esc dismiss. Matches the
  * shared ShortcutKey styling (border, raised surface, 10px caps). */
-.creed-tab-hint {
+.strap-tab-hint {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -782,35 +782,35 @@
   white-space: nowrap;
 }
 
-.creed-tab-hint kbd {
+.strap-tab-hint kbd {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   height: 16px;
   padding: 0 4px;
-  border: 1px solid var(--creed-border);
+  border: 1px solid var(--strap-border);
   border-radius: 4px;
-  background: var(--creed-surface-raised);
+  background: var(--strap-surface-raised);
   font-family: var(--font-geist-sans), sans-serif;
   font-size: 10px;
   font-weight: 500;
   line-height: 1;
-  color: var(--creed-text-secondary);
+  color: var(--strap-text-secondary);
 }
 
-.creed-tab-hint span {
+.strap-tab-hint span {
   font-size: 11px;
   line-height: 1;
-  color: var(--creed-text-tertiary);
+  color: var(--strap-text-tertiary);
 }
 
-.creed-tab-hint span + kbd {
+.strap-tab-hint span + kbd {
   margin-left: 4px;
 }
 
 /* Small ring spinner while the suggestion is in flight. Kept subtle: the
  * fast models land in well under a second, so it mostly never gets noticed. */
-.creed-tab-spinner {
+.strap-tab-spinner {
   display: inline-block;
   width: 12px;
   height: 12px;
@@ -818,35 +818,35 @@
   vertical-align: -1px;
   border-radius: 9999px;
   border: 1.5px solid
-    color-mix(in srgb, var(--creed-text-tertiary) 30%, transparent);
-  border-top-color: var(--creed-text-tertiary);
-  animation: creed-tab-spin 700ms linear infinite;
+    color-mix(in srgb, var(--strap-text-tertiary) 30%, transparent);
+  border-top-color: var(--strap-text-tertiary);
+  animation: strap-tab-spin 700ms linear infinite;
 }
 
-@keyframes creed-tab-spin {
+@keyframes strap-tab-spin {
   to {
     transform: rotate(360deg);
   }
 }
 
 /* Cursor-style inline diff for proposal review. */
-.creed-diff-block {
+.strap-diff-block {
   font-family: var(--font-geist-sans), sans-serif;
   font-size: 14px;
   line-height: 1.7;
-  color: var(--creed-text-primary);
+  color: var(--strap-text-primary);
   white-space: pre-wrap;
   word-wrap: break-word;
 }
 
-.creed-diff-add {
+.strap-diff-add {
   background: rgba(22, 163, 74, 0.12);
   color: #15803d;
   padding: 1px 2px;
   border-radius: 3px;
 }
 
-.creed-diff-remove {
+.strap-diff-remove {
   background: rgba(220, 38, 38, 0.10);
   color: #b91c1c;
   text-decoration: line-through;
@@ -858,19 +858,19 @@
 /* Dark-canvas diff tones: lower the surface opacity so the highlighted
    words stay readable against the dark surface without flashing a fully
    saturated red/green block behind every span. */
-.dark .creed-diff-add {
+.dark .strap-diff-add {
   background: rgba(34, 197, 94, 0.10);
   color: #4ade80;
 }
 
-.dark .creed-diff-remove {
+.dark .strap-diff-remove {
   background: rgba(248, 113, 113, 0.10);
   color: #f87171;
   text-decoration-color: rgba(248, 113, 113, 0.5);
 }
 
 /* View Transition API hooks for the circular theme reveal (see
-   components/creed/theme-provider.tsx). The default cross-fade is killed so
+   components/strap/theme-provider.tsx). The default cross-fade is killed so
    only the new layer animates; the JS animation drives the clip-path. */
 ::view-transition-old(root),
 ::view-transition-new(root) {
@@ -886,9 +886,9 @@
 
 /* The root reveal owns the theme animation. Prevent every mounted component
    from running its own colour transition during the same two paint frames. */
-.creed-theme-switching *,
-.creed-theme-switching *::before,
-.creed-theme-switching *::after {
+.strap-theme-switching *,
+.strap-theme-switching *::before,
+.strap-theme-switching *::after {
   transition: none !important;
 }
 
@@ -902,18 +902,18 @@
 /* Flip pure-black-on-white SVGs (brandmark, logo, GitHub mark, etc.) in dark
    mode so they read against the dark surface. Use sparingly - coloured brand
    assets shouldn't get this class. */
-.dark .creed-invert-on-dark {
+.dark .strap-invert-on-dark {
   filter: invert(1);
 }
 
 /* Inline tag in dark mode: lift the tint a touch so it sits well on the
    darker canvas. */
-.dark .creed-inline-tag {
+.dark :is(.strap-inline-tag, .creed-inline-tag) {
   background: var(--section-accent-tint, rgba(96, 165, 250, 0.18));
   color: var(--section-accent-bar, #93c5fd);
 }
 
-.dark .creed-inline-tag::before {
+.dark :is(.strap-inline-tag, .creed-inline-tag)::before {
   opacity: 0.7;
 }
 
@@ -921,10 +921,10 @@
    keep their `--section-accent-tint` background so the section's colour
    identity reads in both modes - overriding it with the neutral surface
    stripped the callout of its accent in dark mode. */
-.dark .creed-code-block {
-  background: var(--creed-surface-raised);
-  color: var(--creed-text-primary);
-  border-color: var(--creed-border);
+.dark :is(.strap-code-block, .creed-code-block) {
+  background: var(--strap-surface-raised);
+  color: var(--strap-text-primary);
+  border-color: var(--strap-border);
 }
 
 /* Text selection: a saturated brand blue in both themes. Light mode keeps the
@@ -941,7 +941,7 @@
 
 /* Strap public website: a warm, flat worktable with one persistent colour per
    agent resource. The scope prevents this identity layer from leaking into
-   the authenticated product's compatibility-era Creed CSS tokens. */
+   the authenticated product's canonical Strap CSS tokens. */
 .strap-site {
   --strap-paper: #fbf6ee;
   --strap-surface: #ffffff;

@@ -3,20 +3,20 @@ import { randomBytes } from "node:crypto";
 import type { User } from "@supabase/supabase-js";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import type { SupabaseLikeClient } from "@/lib/supabase/types";
-import { getCreedRole } from "@/lib/creed-membership";
+import { getStrapRole } from "@/lib/strap-membership";
 import {
   resolveSectionPermission,
   canApproveProposal,
   canManageSectionsLifecycle,
   minPermission,
-  type CreedRole,
-} from "@/lib/creed-permissions";
+  type StrapRole,
+} from "@/lib/strap-permissions";
 import {
   normalizeLegacyProposalDraft,
   type AgentPermission,
   type ProposalDraft,
-} from "@/lib/creed-data";
-import { actorLabel } from "@/lib/creed-attribution";
+} from "@/lib/strap-data";
+import { actorLabel } from "@/lib/strap-attribution";
 import { getDisplayName } from "@/lib/user-name";
 import {
   normalizeRichTextInput,
@@ -37,9 +37,9 @@ import {
 // change. A caller who lacks Direct edit on a section files a proposal instead.
 //
 // The permission lattice, the direct-vs-proposal routing, and the draft
-// vocabulary are identical to the personal Creed, so an agent connected to a
-// company Creed sees exactly the same tools and behaviour as on a personal one.
-// Every action is attributed via lib/creed-attribution: a human logs their name,
+// vocabulary are identical to the Personal Strap, so an agent connected to a
+// Company Strap sees exactly the same tools and behaviour as on a personal one.
+// Every action is attributed via lib/strap-attribution: a human logs their name,
 // an agent logs "[member]'s [agent]".
 
 const MAX_VERSIONS_PER_SECTION = 200;
@@ -64,7 +64,7 @@ export type SectionWriteOk = {
   // the result card to the pending proposal.
   proposalId?: string;
   // Set by proposal accepts so the client can reconcile the affected section
-  // from the response instead of refetching the whole Creed state.
+  // from the response instead of refetching the whole Strap state.
   sectionId?: string;
   sectionName?: string;
   accent?: string;
@@ -105,7 +105,7 @@ type Actor = {
 
 /**
  * Resolve the attribution for a write. A non-null `agentName` marks an agent
- * action; otherwise it is a human action. Mirrors lib/creed-attribution so the
+ * action; otherwise it is a human action. Mirrors lib/strap-attribution so the
  * activity drawer, version rows, and proposal list all agree.
  */
 function describeActor(user: User, agentName: string | null): Actor {
@@ -135,7 +135,7 @@ async function effectivePermission(
   creedId: string,
   userId: string,
   sectionId: string,
-  role: CreedRole,
+  role: StrapRole,
   asAgent: boolean,
 ): Promise<AgentPermission> {
   const db = admin();
@@ -265,7 +265,7 @@ type SectionRow = {
 };
 
 // ---------------------------------------------------------------------------
-// Draft vocabulary + application. A change to a company Creed - whether applied
+// Draft vocabulary + application. A change to a Company Strap - whether applied
 // directly or via an accepted proposal - is one of these four drafts, stored
 // verbatim in creed_proposals.draft (jsonb). rich-text carries any of content /
 // name / accent so a content edit, rename, and recolour share one path.
@@ -649,7 +649,7 @@ async function fileCompanyProposal(params: {
     // author_user_id marks a human proposal (the UI shows the person's avatar and
     // lets them edit/withdraw it). An agent proposal leaves it null and carries
     // the full "[member]'s [agent]" attribution in agent_name, so it renders as
-    // an agent proposal - exactly like the personal Creed.
+    // an agent proposal - exactly like the Personal Strap.
     author_user_id: actor.actorType === "agent" ? null : params.user.id,
     section_id: params.sectionId,
     section_name: params.sectionName,
@@ -741,7 +741,7 @@ function describeProposal(
 // ---------------------------------------------------------------------------
 
 /**
- * Create a section on a company Creed from the app (human). Creating a section
+ * Create a section on a Company Strap from the app (human). Creating a section
  * is a structural change reserved to owner/admin, mirroring the MCP create
  * governance and the in-app affordance gate (canCreateSections). Accepts an
  * optional client-generated id so the provider's optimistic row and the server
@@ -760,7 +760,7 @@ export async function createCompanySection(params: {
   const { creedId, user } = params;
   const db = admin();
 
-  const role = await getCreedRole(db, user.id, creedId);
+  const role = await getStrapRole(db, user.id, creedId);
   if (!role)
     return { ok: false, code: "forbidden", error: "You are not a member of this Strap." };
   if (role !== "owner" && role !== "admin") {
@@ -837,7 +837,7 @@ export async function updateCompanySection(params: {
   const { creedId, user, sectionId } = params;
   const db = admin();
 
-  const role = await getCreedRole(db, user.id, creedId);
+  const role = await getStrapRole(db, user.id, creedId);
   if (!role)
     return { ok: false, code: "forbidden", error: "You are not a member of this Strap." };
 
@@ -946,7 +946,7 @@ export type CompanyMcpOp =
     };
 
 /**
- * The single write entry for a connected agent on a company Creed. Enforces the
+ * The single write entry for a connected agent on a Company Strap. Enforces the
  * effective agent permission per section (Direct applies immediately, Proposal
  * files a proposal, Read-only / Hidden are rejected) with agent attribution.
  * Creating a section is structural, so owner/admin create directly while members
@@ -965,7 +965,7 @@ export async function companyMcpWrite(params: {
   const permissionCeiling = params.permissionCeiling ?? "direct";
   const db = admin();
 
-  const role = await getCreedRole(db, user.id, creedId);
+  const role = await getStrapRole(db, user.id, creedId);
   if (!role)
     return { ok: false, code: "forbidden", error: "You are not a member of this Strap." };
 
@@ -1195,7 +1195,7 @@ export async function setCompanySectionArchived(params: {
   const { creedId, user, sectionId } = params;
   const db = admin();
 
-  const role = await getCreedRole(db, user.id, creedId);
+  const role = await getStrapRole(db, user.id, creedId);
   if (!role)
     return { ok: false, code: "forbidden", error: "You are not a member of this Strap." };
   if (!canManageSectionsLifecycle(role)) {
@@ -1266,7 +1266,7 @@ export async function reviewCompanyProposal(params: {
 }): Promise<SectionWriteResult> {
   const { creedId, user, proposalId } = params;
   const db = admin();
-  const role = await getCreedRole(db, user.id, creedId);
+  const role = await getStrapRole(db, user.id, creedId);
   if (!role)
     return { ok: false, code: "forbidden", error: "You are not a member of this Strap." };
 
@@ -1451,7 +1451,7 @@ export async function reviewCompanyProposal(params: {
   return acceptResult;
 }
 
-// Personal-Creed proposal review: the durable, server-authoritative half of a
+// Personal Strap proposal review: the durable, server-authoritative half of a
 // personal accept/reject. The client applies the draft to its local state
 // instantly (and its autosave later persists sections/activity as usual); this
 // makes the RESOLUTION itself durable at click time, so a browser refresh can
@@ -1464,7 +1464,7 @@ export async function reviewCompanyProposal(params: {
 // - accept, content drafts (rich-text / rename / recolor): apply server-side
 //   via the shared applyDraft, then delete the row. No base-revision re-check:
 //   the client already ran the staleness guard against the same revisions, and
-//   a personal Creed has a single writer.
+//   a Personal Strap has a single writer.
 // - accept, structural drafts (new/delete/reorder-section): delete the row
 //   only. The client applies the structure locally and its full-state PUT
 //   persists it - applying server-side too would race that PUT (e.g. the
@@ -1594,7 +1594,7 @@ export async function listSectionVersions(params: {
   { ok: true; versions: SectionVersionEntry[] } | SectionWriteError
 > {
   const db = admin();
-  const role = await getCreedRole(db, params.user.id, params.creedId);
+  const role = await getStrapRole(db, params.user.id, params.creedId);
   if (role !== "owner" && role !== "admin") {
     return {
       ok: false,
@@ -1646,7 +1646,7 @@ export async function restoreSectionVersion(params: {
 }): Promise<SectionWriteResult> {
   const { creedId, user, sectionId, versionId } = params;
   const db = admin();
-  const role = await getCreedRole(db, user.id, creedId);
+  const role = await getStrapRole(db, user.id, creedId);
   if (role !== "owner" && role !== "admin") {
     return {
       ok: false,
@@ -1707,7 +1707,7 @@ export async function deleteCompanySection(params: {
 }): Promise<SectionWriteResult> {
   const { creedId, user, sectionId } = params;
   const db = admin();
-  const role = await getCreedRole(db, user.id, creedId);
+  const role = await getStrapRole(db, user.id, creedId);
   if (!role || !canManageSectionsLifecycle(role)) {
     return {
       ok: false,
@@ -1747,7 +1747,7 @@ export async function deleteCompanySection(params: {
 }
 
 /**
- * Reorder a company Creed's sections (owner/admin only). Writes each visible
+ * Reorder a Company Strap's sections (owner/admin only). Writes each visible
  * section's new position (0..N-1) so every member sees the new order on their
  * next sync. Members can't reach this (the UI hides drag; this re-checks).
  */
@@ -1763,7 +1763,7 @@ export async function reorderCompanySections(params: {
   const { creedId, user, sectionIds } = params;
   const db = admin();
 
-  const role = await getCreedRole(db, user.id, creedId);
+  const role = await getStrapRole(db, user.id, creedId);
   if (!role)
     return {
       ok: false,

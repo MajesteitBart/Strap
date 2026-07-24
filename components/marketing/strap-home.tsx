@@ -5,32 +5,38 @@ import type { ReactNode } from "react";
 import { useLandingAuthState } from "@/components/marketing/use-landing-auth-state";
 import { useOnboardingResume } from "@/components/marketing/use-onboarding-resume";
 import { BRAND_TAGLINE } from "@/lib/marketing/brand";
+import { homeFaqItems } from "@/lib/marketing/faq";
 
 const resources = [
   {
     key: "context",
     label: "Context",
-    body: "Project instructions, conventions, identity, and operating rules.",
+    body: "Shipped: one portable personal or company profile for every connected agent.",
+    status: "Available",
   },
   {
     key: "skills",
     label: "Skills",
-    body: "Reusable workflows and capability packages.",
+    body: "Roadmap: reusable workflows and capability packages.",
+    status: "Roadmap",
   },
   {
     key: "secrets",
     label: "Keys",
-    body: "Secure credentials, available only when needed.",
+    body: "Shipped: profile-scoped API keys in Vault and scoped headless access.",
+    status: "Available",
   },
   {
     key: "environments",
     label: "Environments",
-    body: "Named places to work, so every agent knows where it stands.",
+    body: "Roadmap: named places to work, so every agent knows where it stands.",
+    status: "Roadmap",
   },
   {
     key: "agents",
     label: "Agents",
-    body: "Every agent shows what it carries and what it's allowed to use.",
+    body: "Roadmap: manifests that show what each agent carries and may use.",
+    status: "Roadmap",
   },
 ] as const;
 
@@ -38,20 +44,23 @@ const chapters = [
   {
     key: "context",
     title: "Put project knowledge and operating rules in one context layer.",
-    body: "A context pack bundles Strap profiles, project briefs, conventions, and environment notes. Versioned, validated, and assigned per agent.",
+    body: "Your Strap profile is a compact Markdown context layer. Connected agents read allowed sections and propose or apply focused updates according to your permissions.",
     action: "Explore context",
+    status: "Available",
   },
   {
     key: "skills",
     title: "Store proven procedures once and equip them wherever agents work.",
-    body: "A skill is one job with an identifier, a version, and a scope. Equip the agents that need it. Leave the rest in the library.",
-    action: "Browse skills",
+    body: "Reusable skill libraries and per-agent equipping are on the roadmap. They are shown here as product direction, not a feature you can use today.",
+    action: "Read the roadmap",
+    status: "Roadmap",
   },
   {
     key: "secrets",
     title: "Connect agents to approved credentials without scattering secrets across machines.",
-    body: "Every secret is a reference with a scope. Strap shows what it opens, who can use it, and when it was last resolved.",
+    body: "Vault stores external API keys for a Personal or Company Strap. Values remain server-side and reveal requires an explicit authorized action.",
     action: "Manage keys",
+    status: "Available",
   },
 ] as const;
 
@@ -60,12 +69,16 @@ function Status({ tone = "ready", children }: { tone?: "ready" | "syncing" | "wa
 }
 
 function ManifestLine({ kind, label, source }: { kind: "context" | "skills" | "secrets"; label: string; source: string }) {
+  const ready = kind !== "skills";
+
   return (
     <div className="strap-manifest-line">
       <span className={`strap-swatch strap-bg-${kind}`} aria-hidden="true" />
       <span>{label}</span>
       <span className="strap-manifest-source">{source}</span>
-      <span className="strap-check" aria-label="Ready">✓</span>
+      <span className="strap-check" aria-label={ready ? "Available" : "Roadmap"}>
+        {ready ? "✓" : "△"}
+      </span>
     </div>
   );
 }
@@ -99,13 +112,13 @@ function SkillsProof() {
   ];
   return (
     <div className="strap-proof-ui">
-      <div className="strap-proof-bar"><span>skills library</span><span>23 skills · 6 equipped</span></div>
+      <div className="strap-proof-bar"><span>skills library</span><span>Roadmap preview</span></div>
       <div className="strap-skill-grid">
         {skills.map(([name, job, id, version], index) => (
           <div className="strap-skill-tile" key={id}>
             <strong>{name}</strong>
             <span className="strap-dim">{job}</span>
-            <div><span className="strap-mono">skill://{id} · {version}</span><Status tone={index === 2 ? "warning" : "ready"}>{index === 2 ? "△ Verify" : "✓ Ready"}</Status></div>
+            <div><span className="strap-mono">skill://{id} · {version}</span><Status tone="warning">{index === 2 ? "△ Proposed" : "△ Roadmap"}</Status></div>
           </div>
         ))}
       </div>
@@ -122,7 +135,7 @@ function SecretsProof() {
   ] as const;
   return (
     <div className="strap-proof-ui">
-      <div className="strap-proof-bar"><span>secret references</span><span>values hidden</span></div>
+      <div className="strap-proof-bar"><span>Vault keys</span><span>values hidden</span></div>
       {secrets.map(([name, scope, resolved, ready]) => (
         <div className="strap-proof-row strap-proof-row-secret" key={name}>
           <span className="strap-mono">{name}</span>
@@ -150,6 +163,7 @@ export function StrapHome({ configured }: { configured: boolean }) {
   const signedIn = authState === "signed-in";
   const canResume = useOnboardingResume(configured) && !signedIn;
   const appHref = signedIn ? "/file" : canResume ? "/onboarding" : "/signup";
+  const keysHref = signedIn ? "/vault" : appHref;
   const appLabel = signedIn ? "Open Strap" : canResume ? "Resume setup" : "Equip an agent";
 
   return (
@@ -176,24 +190,24 @@ export function StrapHome({ configured }: { configured: boolean }) {
           <div className="strap-wrap strap-hero-grid">
             <div className="strap-hero-copy">
               <h1>{BRAND_TAGLINE}</h1>
-              <p>Pack once. Every agent picks up the same versioned kit.</p>
+              <p>Pack your context once. Connect agents through MCP, scoped keys, or the Strap CLI.</p>
               <div className="strap-actions">
                 <Link className="strap-button strap-button-primary" href={appHref}>{appLabel}</Link>
                 <Link className="strap-button strap-button-secondary" href="/docs">Read the docs</Link>
               </div>
             </div>
 
-            <div className="strap-kit" aria-label="Agent manifest showing context, skills, and secrets ready for use">
+            <div className="strap-kit" aria-label="Strap availability summary for context, skills, and keys">
               <span className="strap-backing strap-backing-one" aria-hidden="true" />
               <span className="strap-backing strap-backing-two" aria-hidden="true" />
               <div className="strap-manifest">
                 <span className="strap-chip strap-chip-ready">Ready</span>
                 <div className="strap-manifest-head">
-                  <span className="strap-mono">env: <b>production</b> · synced 2m ago</span>
+                  <span className="strap-mono"><b>Strap resources</b> · current availability</span>
                 </div>
-                <ManifestLine kind="context" label="context · 4 packs" source="strap.md +3" />
-                <ManifestLine kind="skills" label="skills · 6 equipped" source="review, deploy…" />
-                <ManifestLine kind="secrets" label="secrets · 3 references" source="values hidden" />
+                <ManifestLine kind="context" label="context · available" source="Personal + Company" />
+                <ManifestLine kind="skills" label="skills · roadmap" source="not shipped" />
+                <ManifestLine kind="secrets" label="keys · available" source="Vault + headless access" />
                 <div className="strap-pattern" aria-hidden="true" />
               </div>
               <Link className="strap-manifest-cta" href={appHref}><span>Open Strap</span><span aria-hidden="true">→</span></Link>
@@ -205,12 +219,13 @@ export function StrapHome({ configured }: { configured: boolean }) {
           <div className="strap-wrap">
             <div className="strap-section-head">
               <h2>Everything on the table.</h2>
-              <p>Five resource types. Read any agent&apos;s manifest at a glance.</p>
+              <p>Two resource types ship today. Three more are clearly marked as roadmap.</p>
             </div>
             <div className="strap-resource-grid">
               {resources.map((resource) => (
                 <article className={`strap-resource strap-resource-${resource.key}`} key={resource.key}>
                   <span className="strap-chip">{resource.label}</span>
+                  <span className="strap-mono">{resource.status}</span>
                   <p>{resource.body}</p>
                 </article>
               ))}
@@ -223,11 +238,12 @@ export function StrapHome({ configured }: { configured: boolean }) {
             <div className="strap-wrap strap-chapter-grid">
               <div className="strap-chapter-copy">
                 <h2>{chapter.title}</h2>
+                <span className="strap-chip">{chapter.status}</span>
                 <p>{chapter.body}</p>
               </div>
               <div className="strap-proof-wrap">
                 <ChapterProof kind={chapter.key} />
-                <Link className="strap-flush-tab" href={chapter.key === "secrets" ? "/vault" : chapter.key === "context" ? "/file" : "/docs"}>{chapter.action}</Link>
+                <Link className="strap-flush-tab" href={chapter.key === "secrets" ? keysHref : chapter.key === "context" ? appHref : "/roadmap"}>{chapter.action}</Link>
               </div>
             </div>
           </section>
@@ -236,21 +252,37 @@ export function StrapHome({ configured }: { configured: boolean }) {
         <section className="strap-section strap-assembly">
           <div className="strap-wrap">
             <div className="strap-section-head">
-              <h2>A kit comes together in four moves.</h2>
+              <h2>Verify a live Strap connection.</h2>
             </div>
             <div className="strap-assembly-box">
-              <span className="strap-chip">$ strap equip clark --env production</span>
+              <span className="strap-chip">$ npx @bvdm/strap doctor</span>
               {[
-                ["Stack context", "bvdm-core v14 synced · strap.md +3 sources", "Synced"],
-                ["Snap in skills", "6 of 23 equipped · the rest stay in the library", "Equipped"],
-                ["Lock the secrets", "GITHUB_TOKEN resolved · production · 09:41", "Resolved"],
-                ["Hand it over", "clark starts with its whole kit visible", "Ready"],
+                ["Authorize", "strap login opens browser or device authorization", "Connected"],
+                ["Check status", "strap status reports local credential state", "Checked"],
+                ["Inspect tools", "strap tools lists the live MCP capabilities", "Listed"],
+                ["Read context", "strap call read_strap --json verifies access", "Ready"],
               ].map(([title, detail, status], index) => (
                 <div className="strap-assembly-row" key={title}>
                   <span className={`strap-assembly-number strap-assembly-number-${index + 1}`}>{index + 1}</span>
                   <span className="strap-mono"><strong>{title}</strong><small>{detail}</small></span>
                   <Status>✓ {status}</Status>
                 </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="strap-section" aria-labelledby="home-faq-title">
+          <div className="strap-wrap">
+            <div className="strap-section-head">
+              <h2 id="home-faq-title">Frequently asked questions.</h2>
+            </div>
+            <div className="strap-resource-grid">
+              {homeFaqItems.map((item) => (
+                <article className="strap-resource strap-resource-context" key={item.question}>
+                  <h3>{item.question}</h3>
+                  <p>{item.answer}</p>
+                </article>
               ))}
             </div>
           </div>

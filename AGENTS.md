@@ -33,7 +33,7 @@ Keep one compact, curated personal context profile useful and safe across every 
 
 ## Current Implementation Goal
 
-Use Delano as Strap's local delivery contract and runtime without changing the product architecture or turning `.project` into product data. The active rebrand contract is `.project/projects/strap-rebrand/`; earlier projects remain historical delivery truth.
+Keep the completed rename-first Strap release and its compatibility contracts intact without turning `.project` into product data. Additional visual redesign is separately planned under `.project/projects/strap-visual-redesign/` and starts only with explicit approval.
 
 ## Source Of Truth
 
@@ -73,10 +73,14 @@ Supabase (Postgres + RLS + auth)   OpenRouter (included key + BYOK)
 
 ```
 app/                Next routes
-├── (creed-app)/    signed-in product: /file, /connections, /settings
+├── (strap-app)/    signed-in product: /file, /connections, /vault, /settings
 ├── api/app/        session-authed APIs (requireApiAuth)
+│   ├── headless-access/  one-time-visible scoped agent keys
+│   └── vault/      metadata, create, update, reveal, and delete operations
 ├── api/creed/*     token-authed agent APIs (hash compare)
-├── auth/callback/  OAuth callback
+├── authorize/      browser OAuth consent
+├── device/         OAuth device authorization
+├── auth/callback/  Supabase OAuth callback
 ├── mcp/route.ts    MCP protocol endpoint
 ├── home/           public landing (/home)
 ├── docs|pricing|privacy|terms|stack/   marketing
@@ -85,15 +89,15 @@ app/                Next routes
 └── proxy.ts        sets x-request-id + x-pathname
 
 components/
-├── creed/          product UI (editor, sidebars, settings)
+├── strap/          product UI (editor, sidebars, settings)
 ├── marketing/      public site
 ├── auth/           sign-in / landing-hero
 └── ui/             shadcn primitives + animated icons
 
 lib/
-├── creed-data.ts             types, section IDs, accent maps, agent contract
-├── creed-backend.ts          Supabase reads/writes
-├── creed-markdown.ts         Markdown ↔ section parser
+├── strap-data.ts             types, section IDs, accent maps, agent contract
+├── strap-backend.ts          Supabase reads/writes
+├── strap-markdown.ts         Markdown ↔ section parser
 ├── rich-text.ts              Tiptap content normalization
 ├── ai/quality{,-runner,-rubric}.ts   quality analysis
 ├── ai/openrouter.ts          OpenRouter call helper (included key + BYOK)
@@ -101,6 +105,9 @@ lib/
 ├── onboarding/{compile,refine,validate}.ts   synthesizer pipeline
 ├── supabase/{server,browser,admin}.ts        per-runtime clients
 ├── secret-crypto.ts          AES-256-GCM token storage
+├── headless-access.ts        scoped API-key creation and resolution
+├── oauth-device.ts           device authorization grant lifecycle
+├── api-key-vault.ts          authorized Supabase Vault operations
 ├── audit-log.ts              creed_audit_events writer
 ├── rate-limit.ts             per-token rate limiting
 ├── observability.ts          structured log helpers
@@ -108,15 +115,17 @@ lib/
 └── branding.ts               env-driven contact / social URLs
 
 supabase/migrations/    canonical schema (forward-only, idempotent)
+packages/strap/         primary @bvdm/strap CLI
+packages/creed-cli/     preserved legacy CLI compatibility package
 public/                 static assets
 project-context/        gitignored — internal context pack (read this first)
 ```
 
 The four "god" files to be careful in:
-- `components/creed/file-screen.tsx` (~2700L) — the editor
-- `lib/creed-backend.ts` (~1750L) — Supabase glue
-- `lib/creed-data.ts` (~1620L) — types + agent contract + seed
-- `components/creed/settings-screen.tsx` (~1570L) — settings tabs
+- `components/strap/file-screen.tsx` — the editor
+- `lib/strap-backend.ts` — Supabase glue
+- `lib/strap-data.ts` — types + agent contract + seed
+- `components/strap/settings-screen.tsx` — settings tabs
 
 ---
 
@@ -138,13 +147,16 @@ end-to-end.
 These are non-negotiable. Don't cross them without asking.
 
 1. **`requireApiAuth()` on every `/api/app/*` route.**
-2. **Hashed-token verification on every `/api/creed/*` and `/mcp` route.**
+2. **Hashed-token verification on every `/api/strap/*`, `/api/creed/*`, and `/mcp` route.**
+   Modern OAuth tokens and `strap_key_` API keys must also resolve an explicit
+   profile grant and mode before MCP dispatch; `creed_key_` remains an accepted
+   compatibility prefix.
 3. **No personal info in source.** Email / handles / names go through
    `lib/branding.ts` env vars.
 4. **Marketing routes never read user state.** The root layout skips
    `loadCreedState` based on the `x-pathname` header set by `proxy.ts`.
    Don't reintroduce a fan-out without that gate.
-5. **Don't touch `lib/creed-data.ts:collaborationRules`** without
+5. **Don't touch `lib/strap-data.ts:collaborationRules`** without
    thinking carefully — it ships to every connected agent on every
    read. Test across at least 2 models if you do.
 6. **No em dashes in product copy** unless the user explicitly asked for
@@ -155,6 +167,9 @@ These are non-negotiable. Don't cross them without asking.
 9. **TypeScript strict, no `any`.** `unknown` + narrowing instead.
 10. **Default to server components.** Add `"use client"` only when a
     hook, browser API, or interactive event genuinely needs it.
+11. **Secret plaintext stays inside its narrow reveal boundary.** Vault lists,
+    logs, audits, and ordinary MCP responses contain metadata or references,
+    never secret values.
 
 ---
 
@@ -311,6 +326,11 @@ product. Some legacy code paths still reference the old framing —
 `conventions` section ID, "operating principles" naming, chips/rules/
 focus payload variants in the markdown parser.
 
+Canonical implementation paths are `app/(strap-app)/`, `components/strap/`,
+and `lib/strap-*`. Narrow `lib/creed-*` re-export shims, `/api/creed/**`,
+database identifiers, migration history, and `packages/creed-cli/` remain
+explicit compatibility surfaces.
+
 When you find one of these, leave it alone unless you're explicitly
 cleaning up legacy paths. Removing them too early breaks existing
 imported user data. The plan is to gate them behind a feature flag
@@ -327,6 +347,6 @@ Update this file in the same pass.
 
 This repository uses OpenWiki for recurring code documentation. Start with `openwiki/quickstart.md`, then follow its links to architecture, workflows, domain concepts, operations, integrations, testing guidance, and source maps.
 
-Run OpenWiki manually to refresh the repository wiki. Do not hand-edit generated OpenWiki pages unless explicitly asked; prefer updating source code/docs and letting OpenWiki regenerate.
+The scheduled OpenWiki GitHub Actions workflow refreshes the repository wiki. Do not hand-edit generated OpenWiki pages unless explicitly asked; prefer updating source code/docs and letting OpenWiki regenerate.
 
 <!-- OPENWIKI:END -->

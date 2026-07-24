@@ -1,0 +1,4 @@
+interface:
+  display_name: "Strap Repository"
+  short_description: "Build and maintain Strap safely"
+  default_prompt: "Use $strap-repo to make a well-verified change in the Strap repository."

@@ -20,7 +20,7 @@ Keep Strap ready for agentic implementation through Delano while preserving its 
 ## Repository and GitHub
 
 - Local repository: the current Strap checkout.
-- Remote: `https://github.com/MajesteitBart/Creed.git`, retained until an explicitly approved repository rename.
+- Remote: `https://github.com/MajesteitBart/Strap.git`.
 - Visibility: private at bootstrap time.
 - Default branch: `main`.
 - Owner and required collaborator: `MajesteitBart`; no separate collaborator invitation is needed because the required collaborator owns the repository.
@@ -65,11 +65,18 @@ Use `.agents/skills/manage-context/SKILL.md` to maintain `.project/context/`:
 
 ## Project Contracts
 
-The bootstrap creates one project because the supplied scope contains one bounded body of work:
+The bootstrap created one bounded project:
 
 - `.project/projects/delano-bootstrap/`: install the runtime, adapt entrypoints, seed context, validate, and publish the baseline.
 
-It is decomposed into `WS-A` for runtime and agent entrypoints and `WS-B` for project context and validation. Do not invent future Strap roadmap projects during bootstrap. Create later projects from explicit product outcomes when they become active.
+That historical project is complete. Current work is represented by later explicit contracts:
+
+- `.project/projects/headless-access-secret-vault/`: scoped headless MCP access, OAuth device authorization, and Supabase Vault-backed secrets.
+- `.project/projects/strap-rebrand/`: completed canonical Strap product, site, filename, connection, CLI, and compatibility baseline.
+- `.project/projects/strap-rename-completion/`: completed rename-first follow-up from the tracked Creed-remnant inventory.
+- `.project/projects/strap-visual-redesign/`: planned visual follow-up that starts only after direction and rollout priority are approved.
+
+Do not reopen completed contracts to hide follow-up work. Create later projects only from explicit product outcomes.
 
 ## Verification
 
@@ -87,4 +94,4 @@ Also confirm that `AGENTS.md`, `CLAUDE.md`, `README.md`, `BOOTSTRAP.md`, and `.p
 
 ## Completion Evidence
 
-Report the repository and remote, private/owner status, source material processed, installed Delano version, active project decomposition, skipped conditional steps and reasons, validation results, branch, commit hash, push result, and any remaining risk.
+Report the repository and remote, private/owner status, source material processed, installed Delano version, current project decomposition, skipped conditional steps and reasons, validation results, branch, commit hash, push result, and any remaining risk.

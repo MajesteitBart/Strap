@@ -13,7 +13,7 @@ export function FaqSection({
   return (
     <section className={className}>
       {heading ? (
-        <h2 className="text-[22px] font-medium tracking-[-0.01em] text-[var(--creed-text-primary)] md:text-[26px]">
+        <h2 className="text-[22px] font-medium tracking-[-0.01em] text-[var(--strap-text-primary)] md:text-[26px]">
           {heading}
         </h2>
       ) : null}

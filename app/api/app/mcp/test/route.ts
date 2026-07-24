@@ -15,7 +15,10 @@ export async function GET(request: Request) {
 
   const searchParams = new URL(request.url).searchParams;
   const icon = searchParams.get("icon")?.trim() ?? "";
-  const creedId = searchParams.get("creedId")?.trim() ?? "";
+  const creedId =
+    searchParams.get("strapId")?.trim() ??
+    searchParams.get("creedId")?.trim() ??
+    "";
   if (!icon || !creedId) {
     return NextResponse.json(
       { error: "Missing agent icon or Strap id." },
@@ -76,7 +79,7 @@ export async function GET(request: Request) {
 
   // Some hosts register under the generic OAuth name "MCP Client" and only
   // identify the real agent in JSON-RPC clientInfo. In that one case, use the
-  // active Creed's roster to resolve the brand. Never use roster history as a
+  // active Strap's roster to resolve the brand. Never use roster history as a
   // fallback for a specifically named OAuth client, because expired or
   // revoked clients leave historical usage rows behind.
   const hasGenericClient = oauthClientNames.some(

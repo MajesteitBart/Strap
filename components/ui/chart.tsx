@@ -51,7 +51,7 @@ function ChartContainer({
         data-slot="chart"
         data-chart={chartId}
         className={cn(
-          "flex aspect-video justify-center text-[12px] [&_.recharts-cartesian-axis-tick_text]:fill-[var(--creed-text-tertiary)] [&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-[var(--creed-border)] [&_.recharts-curve.recharts-tooltip-cursor]:stroke-[var(--creed-border)] [&_.recharts-polar-grid_[stroke='#ccc']]:stroke-[var(--creed-border)] [&_.recharts-radial-bar-background-sector]:fill-[var(--creed-surface-raised)] [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-[var(--creed-surface-raised)] [&_.recharts-reference-line_[stroke='#ccc']]:stroke-[var(--creed-border)] [&_.recharts-sector]:outline-none [&_.recharts-surface]:outline-none",
+          "flex aspect-video justify-center text-[12px] [&_.recharts-cartesian-axis-tick_text]:fill-[var(--strap-text-tertiary)] [&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-[var(--strap-border)] [&_.recharts-curve.recharts-tooltip-cursor]:stroke-[var(--strap-border)] [&_.recharts-polar-grid_[stroke='#ccc']]:stroke-[var(--strap-border)] [&_.recharts-radial-bar-background-sector]:fill-[var(--strap-surface-raised)] [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-[var(--strap-surface-raised)] [&_.recharts-reference-line_[stroke='#ccc']]:stroke-[var(--strap-border)] [&_.recharts-sector]:outline-none [&_.recharts-surface]:outline-none",
           className
         )}
         {...props}
@@ -182,12 +182,12 @@ function ChartTooltipContent({
         : itemConfig?.label;
 
     if (labelFormatter) {
-      return <div className="font-medium text-[var(--creed-text-primary)]">{labelFormatter(value, renderPayload)}</div>;
+      return <div className="font-medium text-[var(--strap-text-primary)]">{labelFormatter(value, renderPayload)}</div>;
     }
     if (!value) {
       return null;
     }
-    return <div className="font-medium text-[var(--creed-text-primary)]">{value}</div>;
+    return <div className="font-medium text-[var(--strap-text-primary)]">{value}</div>;
   }, [label, labelFormatter, renderPayload, hideLabel, config, labelKey]);
 
   if (!renderPayload?.length) {
@@ -199,7 +199,7 @@ function ChartTooltipContent({
   return (
     <div
       className={cn(
-        "grid min-w-[8rem] items-start gap-1.5 rounded-sm border border-[var(--creed-border)] bg-[var(--creed-surface)] px-2.5 py-2 text-[12px] shadow-[0_12px_32px_rgba(28,28,26,0.12)] animate-in fade-in-0 zoom-in-95 transition-[opacity,transform] duration-150 ease-out",
+        "grid min-w-[8rem] items-start gap-1.5 rounded-sm border border-[var(--strap-border)] bg-[var(--strap-surface)] px-2.5 py-2 text-[12px] shadow-[0_12px_32px_rgba(28,28,26,0.12)] animate-in fade-in-0 zoom-in-95 transition-[opacity,transform] duration-150 ease-out",
         active ? "opacity-100 scale-100" : "opacity-0 scale-95",
         className
       )}
@@ -215,7 +215,7 @@ function ChartTooltipContent({
             <div
               key={item.dataKey ?? index}
               className={cn(
-                "flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-[var(--creed-text-tertiary)]",
+                "flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-[var(--strap-text-tertiary)]",
                 indicator === "dot" && "items-center"
               )}
             >
@@ -252,12 +252,12 @@ function ChartTooltipContent({
                   >
                     <div className="grid gap-1.5">
                       {nestLabel ? tooltipLabel : null}
-                      <span className="text-[var(--creed-text-secondary)]">
+                      <span className="text-[var(--strap-text-secondary)]">
                         {itemConfig?.label || item.name}
                       </span>
                     </div>
                     {item.value !== undefined && (
-                      <span className="font-mono font-medium tabular-nums text-[var(--creed-text-primary)]">
+                      <span className="font-mono font-medium tabular-nums text-[var(--strap-text-primary)]">
                         {typeof item.value === "number" ? item.value.toLocaleString() : item.value}
                       </span>
                     )}
@@ -314,7 +314,7 @@ function ChartLegendContent({
         return (
           <div
             key={String(item.value)}
-            className="flex items-center gap-1.5 text-[12px] text-[var(--creed-text-secondary)] [&>svg]:h-3 [&>svg]:w-3 [&>svg]:text-[var(--creed-text-tertiary)]"
+            className="flex items-center gap-1.5 text-[12px] text-[var(--strap-text-secondary)] [&>svg]:h-3 [&>svg]:w-3 [&>svg]:text-[var(--strap-text-tertiary)]"
           >
             {itemConfig?.icon && !hideIcon ? (
               <itemConfig.icon />

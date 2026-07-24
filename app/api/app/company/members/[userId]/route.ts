@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireApiAuth } from "@/lib/api-auth";
 import { setMemberRole, removeMember, transferOwnership } from "@/lib/company-admin";
+import { readStrapId } from "@/lib/strap-api";
 
 type Ctx = { params: Promise<{ userId: string }> };
 
@@ -12,24 +13,26 @@ export async function POST(request: Request, ctx: Ctx) {
   if (auth instanceof NextResponse) return auth;
   const { userId } = await ctx.params;
   const b = (await request.json().catch(() => ({}))) as {
+    strapId?: unknown;
     creedId?: unknown;
     role?: unknown;
     action?: unknown;
   };
-  if (typeof b.creedId !== "string") {
-    return NextResponse.json({ error: "creedId is required." }, { status: 400 });
+  const strapId = readStrapId(b);
+  if (!strapId) {
+    return NextResponse.json({ error: "strapId is required." }, { status: 400 });
   }
 
   if (b.action === "transfer") {
-    const result = await transferOwnership({ creedId: b.creedId, actor: auth.user, targetUserId: userId });
+    const result = await transferOwnership({ creedId: strapId, actor: auth.user, targetUserId: userId });
     if (!result.ok) return NextResponse.json({ error: result.error }, { status: result.status });
     return NextResponse.json({ ok: true });
   }
 
   if (b.role !== "admin" && b.role !== "member") {
-    return NextResponse.json({ error: "creedId and role are required." }, { status: 400 });
+    return NextResponse.json({ error: "strapId and role are required." }, { status: 400 });
   }
-  const result = await setMemberRole({ creedId: b.creedId, actor: auth.user, targetUserId: userId, role: b.role });
+  const result = await setMemberRole({ creedId: strapId, actor: auth.user, targetUserId: userId, role: b.role });
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: result.status });
   return NextResponse.json({ ok: true });
 }
@@ -39,11 +42,15 @@ export async function DELETE(request: Request, ctx: Ctx) {
   const auth = await requireApiAuth();
   if (auth instanceof NextResponse) return auth;
   const { userId } = await ctx.params;
-  const b = (await request.json().catch(() => ({}))) as { creedId?: unknown };
-  if (typeof b.creedId !== "string") {
-    return NextResponse.json({ error: "creedId is required." }, { status: 400 });
+  const b = (await request.json().catch(() => ({}))) as {
+    strapId?: unknown;
+    creedId?: unknown;
+  };
+  const strapId = readStrapId(b);
+  if (!strapId) {
+    return NextResponse.json({ error: "strapId is required." }, { status: 400 });
   }
-  const result = await removeMember({ creedId: b.creedId, actor: auth.user, targetUserId: userId });
+  const result = await removeMember({ creedId: strapId, actor: auth.user, targetUserId: userId });
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: result.status });
   return NextResponse.json({ ok: true });
 }

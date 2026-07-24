@@ -15,12 +15,15 @@ export type OAuthProvider = "google" | "x";
 
 // Remember the last OAuth provider the user kicked off, so the auth screen can
 // surface a "Last used" hint. Written at click time (before the redirect).
-const LAST_PROVIDER_KEY = "creed:last-auth-provider";
+const LAST_PROVIDER_KEY = "strap:last-auth-provider";
+const LEGACY_LAST_PROVIDER_KEY = "creed:last-auth-provider";
 
 export function readLastAuthProvider(): OAuthProvider | null {
   if (typeof window === "undefined") return null;
   try {
-    const value = window.localStorage.getItem(LAST_PROVIDER_KEY);
+    const value =
+      window.localStorage.getItem(LAST_PROVIDER_KEY) ??
+      window.localStorage.getItem(LEGACY_LAST_PROVIDER_KEY);
     return value === "google" || value === "x" ? value : null;
   } catch {
     return null;

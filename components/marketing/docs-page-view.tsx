@@ -7,13 +7,13 @@ import {
   AnimatedPageTitle,
   AnimatedSectionHeading,
 } from "@/components/marketing/animated-page-title";
-import { IntegrationGlyph } from "@/components/creed/brand";
+import { IntegrationGlyph } from "@/components/strap/brand";
 import {
   MarketingFooter,
   MarketingHeroBanner,
 } from "@/components/marketing/site-chrome";
 import { useOpenSections } from "@/components/marketing/use-open-sections";
-import { AnimatedIconButton } from "@/components/creed/animated-icon-action";
+import { AnimatedIconButton } from "@/components/strap/animated-icon-action";
 import { AnimatedCheckmark } from "@/components/ui/animated-checkmark";
 import { CopyIcon } from "@/components/ui/copy";
 import { ChevronDown } from "lucide-react";
@@ -116,6 +116,23 @@ const sections: DocsSection[] = [
     ],
   },
   {
+    id: "resources",
+    label: "Resources and roadmap",
+    group: "Start here",
+    title: "What Strap ships today",
+    paragraphs: [
+      "Strap ships a compact Context profile, MCP connections, scoped headless API keys, the Strap CLI, GitHub synchronization, and a per-profile Vault for external API keys.",
+      "Skills, named Environments, and per-agent manifests are roadmap resources. The homepage previews that direction, but those workflows are not available in the product or CLI yet.",
+    ],
+    bullets: [
+      "Context: a Personal or Company Strap in portable Markdown, with per-section permissions.",
+      "Agents: browser OAuth, RFC 8628 device authorization, or scoped headless API keys over MCP.",
+      "Keys and Vault: server-side storage for external API keys, with explicit authorized reveal.",
+      "CLI: live discovery of Strap MCP tools, resources, prompts, and schemas.",
+      "Roadmap: reusable Skills, named Environments, and per-agent resource manifests.",
+    ],
+  },
+  {
     id: "anatomy",
     label: "What goes in a Strap",
     group: "Start here",
@@ -138,7 +155,7 @@ const sections: DocsSection[] = [
     ],
   },
   {
-    id: "company-creed",
+    id: "company-strap",
     label: "Company Strap",
     group: "Company plan",
     title: "Company Strap",
@@ -167,8 +184,9 @@ const sections: DocsSection[] = [
     bullets: [
       "Connect from the Connections page: copy the server URL, or use the per-agent command or one-click button.",
       "The first time the agent calls Strap it runs the OAuth flow and opens a browser. Approve while signed in to strap.bvdm.ai. Tokens refresh automatically after that.",
-      "Verify by listing the MCP tools and calling read_creed once. Do not claim connected unless read_creed succeeds.",
-      "Update sections with the flat creed_* tools. The server applies the edit directly or as a proposal based on each section's permission; get_write_policy reports what's allowed.",
+      "Verify by listing the MCP tools and calling read_strap once. Do not claim connected unless read_strap succeeds.",
+      "Update sections with the flat strap_* tools. The server applies the edit directly or as a proposal based on each section's permission; get_write_policy reports what's allowed.",
+      "Existing clients using read_creed, creed_*, creed://profile, or /api/creed remain supported as legacy compatibility names.",
       "If anything is unclear during setup, read https://strap.bvdm.ai/docs once and follow it.",
     ],
   },
@@ -186,7 +204,7 @@ const sections: DocsSection[] = [
       "Run without installing with npx @bvdm/strap.",
       "Check the connection and live capability counts with strap doctor.",
       "Use strap status for local credential state; use strap doctor when you need a live server check.",
-      "List exact tool names with strap tools, or call one with strap call read_creed.",
+      "List exact tool names with strap tools, or call one with strap call read_strap.",
       "Use the per-agent --agent ID from the Connections page for attributed CLI status and last-seen times.",
       "Use --json for scripts and coding agents. Diagnostics stay on stderr and structured output stays on stdout.",
       "Run strap logout to revoke the OAuth grant and remove local credentials.",
@@ -201,8 +219,8 @@ const sections: DocsSection[] = [
       "Almost every connection issue is the OAuth step. These cover the common ones.",
     ],
     bullets: [
-      "No browser popup: re-run the agent's connect or auth action (/mcp in Claude Code, codex mcp login creed, opencode mcp auth creed). It opens your default browser.",
-      "Stuck on sign-in: authorize while signed in to strap.md in that browser. Signed out, the consent screen signs you in first, then returns to Allow.",
+      "No browser popup: re-run the agent's connect or auth action (/mcp in Claude Code, codex mcp login strap, opencode mcp auth strap). It opens your default browser.",
+      "Stuck on sign-in: authorize while signed in to strap.bvdm.ai in that browser. Signed out, the consent screen signs you in first, then returns to Allow.",
       "401 or 'unauthorized' from the MCP endpoint: the client isn't authorized yet or the token expired. Reconnect or re-run the auth step to get a fresh token.",
       "An old connection stopped working: Strap moved from static tokens to OAuth. Remove the old server entry, re-add it by URL, and authorize again.",
       "Registration fails on connect: make sure the client supports OAuth-based remote MCP (Claude, Cursor, Codex, OpenCode, ChatGPT connectors all do).",
@@ -246,7 +264,7 @@ const sections: DocsSection[] = [
     ],
   },
   {
-    id: "how-agents-should-use-creed",
+    id: "how-agents-should-use-strap",
     label: "How AI uses Strap",
     group: "How agents use Strap",
     title: "How AI should use Strap",
@@ -321,7 +339,7 @@ const sections: DocsSection[] = [
     group: "Keep it sharp",
     title: "How Strap measures quality",
     paragraphs: [
-      "Strap can score how good your profile is, section by section, and surface where to sharpen it. Quality analysis runs on a monthly AI allowance included with your plan, with prepaid top-ups when you need more, or on your own OpenRouter key at cost.",
+      "Strap can score how good your profile is, section by section, and surface where to sharpen it. Quality analysis runs on the deployment's included OpenRouter key, or on your own OpenRouter key (BYOK).",
       "It judges how context is written, never what it is about. A section on work and a section on LEGO are held to the same bar. The only question is whether it helps the next AI know you better.",
     ],
   },
@@ -331,7 +349,8 @@ const sections: DocsSection[] = [
     group: "Reference",
     title: "MCP tools, prompts, and resources",
     paragraphs: [
-      "Once connected, an agent has a focused set of tools for reading and improving your Strap. The flat creed_ tools are the recommended path: each one applies your change directly when that section allows direct edits, or files it as a proposal when approval is on. You never pick the mode; the server does, and every call reports what happened.",
+      "Once connected, an agent has a focused set of tools for reading and improving your Strap. The flat strap_ tools are the recommended path: each one applies your change directly when that section allows direct edits, or files it as a proposal when approval is on. You never pick the mode; the server does, and every call reports what happened.",
+      "Creed-named tools remain compatibility aliases for existing clients. New integrations should use the Strap names.",
     ],
   },
   {
@@ -349,15 +368,15 @@ const sections: DocsSection[] = [
     group: "Reference",
     title: "Your data and privacy",
     paragraphs: [
-      "Strap is built so the file stays yours: portable, encrypted, and only ever visible to you.",
+      "Strap is built so your profile stays portable and access remains permission-aware.",
     ],
     bullets: [
       "One file, plain Markdown. It stays portable, and you can push or pull it to your own GitHub repo from Settings.",
-      "Your call on AI spend. AI features run on a monthly allowance of prepaid credits, or on your own OpenRouter key. Your context is only ever sent to the model to run the feature you asked for.",
-      "Secrets are encrypted. API keys and connection tokens are stored with AES-256-GCM, never in plain text.",
-      "You only ever see your own data. Every table is row-level secured per user.",
+      "Your call on AI spend. AI features run on the deployment's included OpenRouter key or on your own key (BYOK). Your context is sent to the model only for the feature you requested.",
+      "Credentials use purpose-specific protection. Capability and headless keys are verified by hash, provider tokens are encrypted, and Vault values remain server-side behind authorized operations.",
+      "Personal and Company access is enforced through authentication, membership, roles, section permissions, RLS, and explicit checks before service-role operations.",
       "Hidden sections never leave the app. Set a section to hidden and it is dropped from the agent payload entirely.",
-      "Deletion means deletion. Removing your file or your account wipes the data.",
+      "Deletion removes active product data. Qualified audit and security records may remain for the retention periods described in the Privacy Policy.",
     ],
   },
 ];
@@ -446,7 +465,7 @@ const anatomyOptional: AnatomyEntry[] = [
   },
 ];
 
-const exampleCreed = `## Identity
+const exampleStrap = `## Identity
 Product designer turned solo founder. I value clarity over cleverness
 and ship small, polished things. Default to plain language; I dislike jargon.
 
@@ -466,10 +485,10 @@ const perClientIntro =
   "Every MCP client connects from the same server URL. These are the per-client steps; each one ends with a browser approval.";
 
 const perClientSteps: string[] = [
-  "Claude Code: run claude mcp add -t http creed https://strap.bvdm.ai/mcp, then /mcp to authorize in the browser.",
-  "Codex: run codex mcp add creed --url https://strap.bvdm.ai/mcp, then codex mcp login creed to authorize.",
+  "Claude Code: run claude mcp add -t http strap https://strap.bvdm.ai/mcp, then /mcp to authorize in the browser.",
+  "Codex: run codex mcp add strap --url https://strap.bvdm.ai/mcp, then codex mcp login strap to authorize.",
   "Cursor: use the one-click Add MCP button on the Connections page, then authorize in the browser.",
-  "OpenCode: add Strap to opencode.json as a remote server (type remote, the server URL), then run opencode mcp auth creed to authorize.",
+  "OpenCode: add Strap to opencode.json as a remote server (type remote, the server URL), then run opencode mcp auth strap to authorize.",
   "ChatGPT and other MCP chatbots: add a custom connector with the server URL and approve in the browser.",
   "Any other MCP client: add the server URL as a custom or remote MCP server and approve when prompted. Non-MCP clients can fall back to the HTTP read API.",
 ];
@@ -543,7 +562,7 @@ const toolGroups: ToolGroup[] = [
     title: "Read and inspect",
     tools: [
       {
-        name: "read_creed",
+        name: "read_strap",
         description: "Read the full profile plus the private agent contract.",
       },
       {
@@ -551,21 +570,21 @@ const toolGroups: ToolGroup[] = [
         description: "List sections with their ids, names, and accents.",
       },
       {
-        name: "creed_get_section",
+        name: "strap_get_section",
         description:
           "Fetch one section by id or name, with its content and metadata.",
       },
       {
-        name: "creed_search",
+        name: "strap_search",
         description:
           "Find where a fact lives without reading the whole profile.",
       },
       {
-        name: "creed_get_recent_activity",
+        name: "strap_get_recent_activity",
         description: "See recent changes so agents avoid duplicate proposals.",
       },
       {
-        name: "creed_get_quality_report",
+        name: "strap_get_quality_report",
         description:
           "Read the latest quality report to target the weakest sections.",
       },
@@ -579,12 +598,12 @@ const toolGroups: ToolGroup[] = [
     title: "Edit content",
     tools: [
       {
-        name: "creed_update_section",
+        name: "strap_update_section",
         description:
           "Replace a section's body. Params: sectionId, contentMarkdown.",
       },
       {
-        name: "creed_append_to_section",
+        name: "strap_append_to_section",
         description:
           "Add to a section without rewriting it. Params: sectionId, contentMarkdown.",
       },
@@ -594,24 +613,24 @@ const toolGroups: ToolGroup[] = [
     title: "Manage sections",
     tools: [
       {
-        name: "creed_create_section",
+        name: "strap_create_section",
         description:
           "Add a new section. Params: name, contentMarkdown, optional accent.",
       },
       {
-        name: "creed_delete_section",
+        name: "strap_delete_section",
         description: "Remove a section. Params: sectionId.",
       },
       {
-        name: "creed_rename_section",
+        name: "strap_rename_section",
         description: "Rename a section. Params: sectionId, name.",
       },
       {
-        name: "creed_recolor_section",
+        name: "strap_recolor_section",
         description: "Change a section's accent. Params: sectionId, accent.",
       },
       {
-        name: "creed_reorder_section",
+        name: "strap_reorder_section",
         description:
           "Move a section. Params: sectionId, then afterSectionId or position.",
       },
@@ -628,13 +647,13 @@ const referenceItems: ReferenceItem[] = [
   },
   {
     kind: "Prompt",
-    name: "tighten-my-creed",
+    name: "tighten-my-strap",
     description:
       "Review my Strap and propose tightening or pruning where it has drifted.",
   },
   {
     kind: "Resource",
-    name: "creed://profile",
+    name: "strap://profile",
     description: "Your current profile, exposed as a readable MCP resource.",
   },
 ];
@@ -642,21 +661,21 @@ const referenceItems: ReferenceItem[] = [
 const httpEndpoints: HttpEndpoint[] = [
   {
     method: "GET",
-    path: "/api/creed",
+    path: "/api/strap",
     summary: "Read the profile.",
     detail:
       "Returns the visible Markdown plus the hidden agent contract as plain text. Up to 120 requests per minute.",
   },
   {
     method: "POST",
-    path: "/api/creed/proposals",
+    path: "/api/strap/proposals",
     summary: "Submit a proposal.",
     detail:
       "JSON body with the target section, draft, and reason. Works in every mode. Up to 60 per minute.",
   },
   {
     method: "POST",
-    path: "/api/creed/write",
+    path: "/api/strap/write",
     summary: "Apply a direct edit.",
     detail:
       "JSON body with an operation and its payload. Succeeds only for sections set to direct edit. Up to 60 per minute.",
@@ -889,7 +908,7 @@ const agentCardsBySection: Record<string, AgentCard[]> = {
       name: "OpenCode",
       glyph: "opencode",
       blurb:
-        "Add Strap as a remote server in opencode.json, then opencode mcp auth creed. Reference it from your bootstrap instructions to keep it current.",
+        "Add Strap as a remote server in opencode.json, then opencode mcp auth strap. Reference it from your bootstrap instructions to keep it current.",
     },
     {
       name: "Cursor",
@@ -930,7 +949,7 @@ const sectionGroupById = new Map(
 function MonoCode({ children }: { children: ReactNode }) {
   return (
     <code
-      className="rounded-[6px] bg-[var(--creed-surface-raised)] px-1.5 py-0.5 text-[13px] text-[var(--creed-text-primary)]"
+      className="rounded-[6px] bg-[var(--strap-surface-raised)] px-1.5 py-0.5 text-[13px] text-[var(--strap-text-primary)]"
       style={{ fontFamily: "var(--font-mono), monospace" }}
     >
       {children}
@@ -941,9 +960,9 @@ function MonoCode({ children }: { children: ReactNode }) {
 function FileBlock({ label, children }: { label: string; children: string }) {
   const [copied, setCopied] = useState(false);
   return (
-    <div className="mt-6 overflow-hidden rounded-xl border border-[var(--creed-border)] bg-[var(--creed-surface)]">
-      <div className="flex items-center justify-between border-b border-[var(--creed-border)] py-2 pl-4 pr-2">
-        <span className="text-[0.8rem] font-medium text-[var(--creed-text-secondary)]">
+    <div className="mt-6 overflow-hidden rounded-xl border border-[var(--strap-border)] bg-[var(--strap-surface)]">
+      <div className="flex items-center justify-between border-b border-[var(--strap-border)] py-2 pl-4 pr-2">
+        <span className="text-[0.8rem] font-medium text-[var(--strap-text-secondary)]">
           {label}
         </span>
         <AnimatedIconButton
@@ -953,7 +972,7 @@ function FileBlock({ label, children }: { label: string; children: string }) {
           showIcon={!copied}
           variant="ghost"
           size="sm"
-          className="text-[var(--creed-text-secondary)] hover:text-[var(--creed-text-primary)]"
+          className="text-[var(--strap-text-secondary)] hover:text-[var(--strap-text-primary)]"
           onClick={() => {
             void navigator.clipboard?.writeText(children).then(() => {
               setCopied(true);
@@ -971,7 +990,7 @@ function FileBlock({ label, children }: { label: string; children: string }) {
           )}
         </AnimatedIconButton>
       </div>
-      <pre className="overflow-x-auto px-4 py-4 text-[13px] leading-7 text-[var(--creed-text-secondary)]">
+      <pre className="overflow-x-auto px-4 py-4 text-[13px] leading-7 text-[var(--strap-text-secondary)]">
         <code style={{ fontFamily: "var(--font-mono), monospace" }}>
           {children}
         </code>
@@ -1075,13 +1094,13 @@ export function DocsPageView() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--creed-background)] text-[var(--creed-text-primary)]">
+    <div className="min-h-screen bg-[var(--strap-background)] text-[var(--strap-text-primary)]">
       <MarketingHeroBanner configured scrolled={scrolled} />
 
       <main className="mx-auto max-w-6xl px-6 pb-20 pt-8 md:px-10 md:pb-24 md:pt-10">
-        <div className="border-b border-[var(--creed-border)] pb-8">
+        <div className="border-b border-[var(--strap-border)] pb-8">
           <AnimatedPageTitle text="Docs" />
-          <p className="mt-5 max-w-5xl t-lede text-[var(--creed-text-secondary)]">
+          <p className="mt-5 max-w-5xl t-lede text-[var(--strap-text-secondary)]">
             What Strap is, what goes in it, how to connect your agents, how they
             read and improve it, and the full tool and API reference.
           </p>
@@ -1092,7 +1111,7 @@ export function DocsPageView() {
             without the scrollspy highlight: a sidebar that isn't on screen
             while you scroll has nothing to highlight, so the links stay plain. */}
         <div className="mt-8 block lg:hidden">
-          <div className="text-[18px] font-semibold tracking-[-0.01em] text-[var(--creed-text-primary)]">
+          <div className="text-[18px] font-semibold tracking-[-0.01em] text-[var(--strap-text-primary)]">
             On this page
           </div>
           <nav className="mt-5 space-y-1">
@@ -1104,7 +1123,7 @@ export function DocsPageView() {
                     type="button"
                     onClick={() => toggle(group.group)}
                     aria-expanded={open}
-                    className="flex w-full items-center justify-between gap-2 py-1.5 text-[15px] font-medium text-[var(--creed-text-primary)] transition-opacity hover:opacity-70"
+                    className="flex w-full items-center justify-between gap-2 py-1.5 text-[15px] font-medium text-[var(--strap-text-primary)] transition-opacity hover:opacity-70"
                   >
                     <span>{group.group}</span>
                     <ChevronDown
@@ -1133,7 +1152,7 @@ export function DocsPageView() {
                                 event.preventDefault();
                                 scrollToSection(section.id);
                               }}
-                              className="block text-[14px] leading-6 text-[var(--creed-text-secondary)] transition-colors hover:text-[var(--creed-text-primary)]"
+                              className="block text-[14px] leading-6 text-[var(--strap-text-secondary)] transition-colors hover:text-[var(--strap-text-primary)]"
                             >
                               {section.label}
                             </a>
@@ -1151,7 +1170,7 @@ export function DocsPageView() {
         <div className="mt-10 grid gap-14 lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-20">
           <aside className="hidden lg:block">
             <div className="sticky top-8 pb-10">
-              <div className="text-[18px] font-semibold tracking-[-0.01em] text-[var(--creed-text-primary)]">
+              <div className="text-[18px] font-semibold tracking-[-0.01em] text-[var(--strap-text-primary)]">
                 On this page
               </div>
               <nav className="mt-5 space-y-1">
@@ -1167,8 +1186,8 @@ export function DocsPageView() {
                         className={cn(
                           "flex w-full items-center justify-between gap-2 py-1.5 text-[15px] font-medium transition-opacity hover:opacity-70",
                           isActiveGroup
-                            ? "text-[var(--creed-accent)]"
-                            : "text-[var(--creed-text-primary)]",
+                            ? "text-[var(--strap-accent)]"
+                            : "text-[var(--strap-text-primary)]",
                         )}
                       >
                         <span>{group.group}</span>
@@ -1204,8 +1223,8 @@ export function DocsPageView() {
                                   className={cn(
                                     "block text-[14px] leading-6 transition-colors",
                                     activeSection === section.id
-                                      ? "font-medium text-[var(--creed-accent)]"
-                                      : "text-[var(--creed-text-secondary)] hover:text-[var(--creed-text-primary)]",
+                                      ? "font-medium text-[var(--strap-accent)]"
+                                      : "text-[var(--strap-text-secondary)] hover:text-[var(--strap-text-primary)]",
                                   )}
                                 >
                                   {section.label}
@@ -1231,7 +1250,7 @@ export function DocsPageView() {
                   "scroll-mt-28 py-8 md:py-10",
                   index === sections.length - 1
                     ? ""
-                    : "border-b border-[var(--creed-border)]",
+                    : "border-b border-[var(--strap-border)]",
                 )}
               >
                 <AnimatedSectionHeading
@@ -1240,7 +1259,7 @@ export function DocsPageView() {
                 />
 
                 {section.paragraphs ? (
-                  <div className="mt-5 space-y-4 text-[15px] leading-8 text-[var(--creed-text-secondary)] md:text-[16px]">
+                  <div className="mt-5 space-y-4 text-[15px] leading-8 text-[var(--strap-text-secondary)] md:text-[16px]">
                     {section.paragraphs.map((paragraph) => (
                       <p key={paragraph}>{paragraph}</p>
                     ))}
@@ -1248,7 +1267,7 @@ export function DocsPageView() {
                 ) : null}
 
                 {section.bullets ? (
-                  <ul className="creed-bullets mt-5 space-y-3 text-[15px] leading-8 text-[var(--creed-text-secondary)] [--creed-bullet:#2563EB] md:text-[16px]">
+                  <ul className="strap-bullets mt-5 space-y-3 text-[15px] leading-8 text-[var(--strap-text-secondary)] [--strap-bullet:#2563EB] md:text-[16px]">
                     {section.bullets.map((item) => (
                       <li key={item}>{item}</li>
                     ))}
@@ -1261,23 +1280,23 @@ export function DocsPageView() {
                       {loopSteps.map((loopStep) => (
                         <div
                           key={loopStep.step}
-                          className="rounded-xl bg-[var(--creed-surface)] p-5"
+                          className="rounded-xl bg-[var(--strap-surface)] p-5"
                         >
                           <div className="flex items-center gap-3">
-                            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] bg-[var(--creed-accent)] text-[13px] font-medium text-[var(--creed-surface)]">
+                            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] bg-[var(--strap-accent)] text-[13px] font-medium text-[var(--strap-surface)]">
                               {loopStep.step}
                             </span>
-                            <div className="text-[16px] font-medium text-[var(--creed-text-primary)]">
+                            <div className="text-[16px] font-medium text-[var(--strap-text-primary)]">
                               {loopStep.title}
                             </div>
                           </div>
-                          <p className="mt-3 text-[15px] leading-7 text-[var(--creed-text-secondary)] md:text-[16px]">
+                          <p className="mt-3 text-[15px] leading-7 text-[var(--strap-text-secondary)] md:text-[16px]">
                             {loopStep.body}
                           </p>
                         </div>
                       ))}
                     </div>
-                    <p className="mt-6 text-[15px] leading-8 text-[var(--creed-text-secondary)] md:text-[16px]">
+                    <p className="mt-6 text-[15px] leading-8 text-[var(--strap-text-secondary)] md:text-[16px]">
                       You stay in control of every change. Trusted agents can be
                       granted direct-edit access per section; everything else
                       stays a proposal you approve.
@@ -1289,7 +1308,7 @@ export function DocsPageView() {
                   <>
                     <div className="mt-8 grid gap-8 md:grid-cols-2">
                       <div>
-                        <div className="text-[12px] font-medium tracking-[0.02em] text-[var(--creed-accent)]">
+                        <div className="text-[12px] font-medium tracking-[0.02em] text-[var(--strap-accent)]">
                           Always on
                         </div>
                         <div className="mt-4 space-y-4">
@@ -1304,10 +1323,10 @@ export function DocsPageView() {
                                 style={{ backgroundColor: entry.color }}
                               />
                               <div>
-                                <div className="text-[15px] font-medium text-[var(--creed-text-primary)] md:text-[16px]">
+                                <div className="text-[15px] font-medium text-[var(--strap-text-primary)] md:text-[16px]">
                                   {entry.name}
                                 </div>
-                                <p className="mt-0.5 text-[14px] leading-7 text-[var(--creed-text-secondary)] md:text-[15px]">
+                                <p className="mt-0.5 text-[14px] leading-7 text-[var(--strap-text-secondary)] md:text-[15px]">
                                   {entry.blurb}
                                 </p>
                               </div>
@@ -1316,7 +1335,7 @@ export function DocsPageView() {
                         </div>
                       </div>
                       <div>
-                        <div className="text-[12px] font-medium tracking-[0.02em] text-[var(--creed-text-tertiary)]">
+                        <div className="text-[12px] font-medium tracking-[0.02em] text-[var(--strap-text-tertiary)]">
                           Optional, appears once used
                         </div>
                         <div className="mt-4 space-y-4">
@@ -1331,10 +1350,10 @@ export function DocsPageView() {
                                 style={{ backgroundColor: entry.color }}
                               />
                               <div>
-                                <div className="text-[15px] font-medium text-[var(--creed-text-primary)] md:text-[16px]">
+                                <div className="text-[15px] font-medium text-[var(--strap-text-primary)] md:text-[16px]">
                                   {entry.name}
                                 </div>
-                                <p className="mt-0.5 text-[14px] leading-7 text-[var(--creed-text-secondary)] md:text-[15px]">
+                                <p className="mt-0.5 text-[14px] leading-7 text-[var(--strap-text-secondary)] md:text-[15px]">
                                   {entry.blurb}
                                 </p>
                               </div>
@@ -1343,19 +1362,19 @@ export function DocsPageView() {
                         </div>
                       </div>
                     </div>
-                    <FileBlock label="strap.md">{exampleCreed}</FileBlock>
+                    <FileBlock label="strap.md">{exampleStrap}</FileBlock>
                   </>
                 ) : null}
 
                 {section.id === "connect-mcp" ? (
-                  <div className="mt-8 border-t border-[var(--creed-border)] pt-6">
-                    <h3 className="text-[18px] font-medium text-[var(--creed-text-primary)]">
+                  <div className="mt-8 border-t border-[var(--strap-border)] pt-6">
+                    <h3 className="text-[18px] font-medium text-[var(--strap-text-primary)]">
                       Per-client steps
                     </h3>
-                    <p className="mt-3 text-[15px] leading-8 text-[var(--creed-text-secondary)] md:text-[16px]">
+                    <p className="mt-3 text-[15px] leading-8 text-[var(--strap-text-secondary)] md:text-[16px]">
                       {perClientIntro}
                     </p>
-                    <ul className="creed-bullets mt-4 space-y-3 text-[15px] leading-8 text-[var(--creed-text-secondary)] [--creed-bullet:#2563EB] md:text-[16px]">
+                    <ul className="strap-bullets mt-4 space-y-3 text-[15px] leading-8 text-[var(--strap-text-secondary)] [--strap-bullet:#2563EB] md:text-[16px]">
                       {perClientSteps.map((item) => (
                         <li key={item}>{item}</li>
                       ))}
@@ -1370,7 +1389,7 @@ export function DocsPageView() {
                       <div
                         key={card.name}
                         id={`agent-${card.glyph}`}
-                        className="scroll-mt-28 rounded-xl bg-[var(--creed-surface)] p-5"
+                        className="scroll-mt-28 rounded-xl bg-[var(--strap-surface)] p-5"
                       >
                         <div className="flex items-center gap-3">
                           <IntegrationGlyph
@@ -1379,11 +1398,11 @@ export function DocsPageView() {
                             className="h-7 w-7 shrink-0"
                             assetClassName="h-7 w-7"
                           />
-                          <div className="text-[16px] font-medium text-[var(--creed-text-primary)]">
+                          <div className="text-[16px] font-medium text-[var(--strap-text-primary)]">
                             {card.name}
                           </div>
                         </div>
-                        <p className="mt-3 text-[15px] leading-7 text-[var(--creed-text-secondary)] md:text-[16px]">
+                        <p className="mt-3 text-[15px] leading-7 text-[var(--strap-text-secondary)] md:text-[16px]">
                           {card.blurb}
                         </p>
                       </div>
@@ -1391,19 +1410,19 @@ export function DocsPageView() {
                   </div>
                 ) : null}
 
-                {section.id === "how-agents-should-use-creed" ? (
-                  <p className="mt-6 text-[15px] leading-8 text-[var(--creed-text-secondary)] md:text-[16px]">
+                {section.id === "how-agents-should-use-strap" ? (
+                  <p className="mt-6 text-[15px] leading-8 text-[var(--strap-text-secondary)] md:text-[16px]">
                     Set this up from{" "}
                     <Link
                       href="/connections"
-                      className="font-medium text-[var(--creed-accent)] hover:text-[var(--creed-accent-hover)]"
+                      className="font-medium text-[var(--strap-accent)] hover:text-[var(--strap-accent-hover)]"
                     >
                       Connections
                     </Link>
                     , then review proposed updates from the{" "}
                     <Link
                       href="/file"
-                      className="font-medium text-[var(--creed-accent)] hover:text-[var(--creed-accent-hover)]"
+                      className="font-medium text-[var(--strap-accent)] hover:text-[var(--strap-accent-hover)]"
                     >
                       file view
                     </Link>
@@ -1414,20 +1433,20 @@ export function DocsPageView() {
                 {section.id === "when-to-propose" ? (
                   <div className="mt-8 grid gap-6 md:grid-cols-2">
                     <div>
-                      <div className="text-[12px] font-medium tracking-[0.02em] text-[var(--creed-accent)]">
+                      <div className="text-[12px] font-medium tracking-[0.02em] text-[var(--strap-accent)]">
                         Propose
                       </div>
-                      <ul className="creed-bullets mt-3 space-y-2 text-[15px] leading-7 text-[var(--creed-text-secondary)] [--creed-bullet:#2563EB] md:text-[16px]">
+                      <ul className="strap-bullets mt-3 space-y-2 text-[15px] leading-7 text-[var(--strap-text-secondary)] [--strap-bullet:#2563EB] md:text-[16px]">
                         {proposeWhen.map((item) => (
                           <li key={item}>{item}</li>
                         ))}
                       </ul>
                     </div>
                     <div>
-                      <div className="text-[12px] font-medium tracking-[0.02em] text-[var(--creed-text-tertiary)]">
+                      <div className="text-[12px] font-medium tracking-[0.02em] text-[var(--strap-text-tertiary)]">
                         Don&apos;t propose
                       </div>
-                      <ul className="creed-bullets mt-3 space-y-2 text-[15px] leading-7 text-[var(--creed-text-secondary)] [--creed-bullet:var(--creed-text-tertiary)] md:text-[16px]">
+                      <ul className="strap-bullets mt-3 space-y-2 text-[15px] leading-7 text-[var(--strap-text-secondary)] [--strap-bullet:var(--strap-text-tertiary)] md:text-[16px]">
                         {proposeNot.map((item) => (
                           <li key={item}>{item}</li>
                         ))}
@@ -1441,27 +1460,27 @@ export function DocsPageView() {
                     {sectionGuides.map((guide) => (
                       <div
                         key={guide.title}
-                        className="border-t border-[var(--creed-border)] pt-6 first:border-t-0 first:pt-0"
+                        className="border-t border-[var(--strap-border)] pt-6 first:border-t-0 first:pt-0"
                       >
-                        <h3 className="text-[18px] font-medium text-[var(--creed-text-primary)]">
+                        <h3 className="text-[18px] font-medium text-[var(--strap-text-primary)]">
                           {guide.title}
                         </h3>
                         <div className="mt-4 grid gap-6 md:grid-cols-2">
                           <div>
-                            <div className="text-[12px] font-medium tracking-[0.02em] text-[var(--creed-accent)]">
+                            <div className="text-[12px] font-medium tracking-[0.02em] text-[var(--strap-accent)]">
                               What belongs
                             </div>
-                            <ul className="creed-bullets mt-3 space-y-2 text-[15px] leading-7 text-[var(--creed-text-secondary)] [--creed-bullet:#2563EB] md:text-[16px]">
+                            <ul className="strap-bullets mt-3 space-y-2 text-[15px] leading-7 text-[var(--strap-text-secondary)] [--strap-bullet:#2563EB] md:text-[16px]">
                               {guide.belongs.map((item) => (
                                 <li key={item}>{item}</li>
                               ))}
                             </ul>
                           </div>
                           <div>
-                            <div className="text-[12px] font-medium tracking-[0.02em] text-[var(--creed-text-tertiary)]">
+                            <div className="text-[12px] font-medium tracking-[0.02em] text-[var(--strap-text-tertiary)]">
                               What to avoid
                             </div>
-                            <ul className="creed-bullets mt-3 space-y-2 text-[15px] leading-7 text-[var(--creed-text-secondary)] [--creed-bullet:var(--creed-text-tertiary)] md:text-[16px]">
+                            <ul className="strap-bullets mt-3 space-y-2 text-[15px] leading-7 text-[var(--strap-text-secondary)] [--strap-bullet:var(--strap-text-tertiary)] md:text-[16px]">
                               {guide.avoid.map((item) => (
                                 <li key={item}>{item}</li>
                               ))}
@@ -1478,17 +1497,17 @@ export function DocsPageView() {
                     {exampleGroups.map((group) => (
                       <div
                         key={group.title}
-                        className="border-t border-[var(--creed-border)] pt-6 first:border-t-0 first:pt-0"
+                        className="border-t border-[var(--strap-border)] pt-6 first:border-t-0 first:pt-0"
                       >
-                        <h3 className="text-[18px] font-medium text-[var(--creed-text-primary)]">
+                        <h3 className="text-[18px] font-medium text-[var(--strap-text-primary)]">
                           {group.title}
                         </h3>
                         <div className="mt-4 grid gap-6 md:grid-cols-2">
                           <div>
-                            <div className="text-[12px] font-medium tracking-[0.02em] text-[var(--creed-success)]">
+                            <div className="text-[12px] font-medium tracking-[0.02em] text-[var(--strap-success)]">
                               Good
                             </div>
-                            <ul className="mt-3 space-y-2 text-[15px] leading-7 text-[var(--creed-text-secondary)] md:text-[16px]">
+                            <ul className="mt-3 space-y-2 text-[15px] leading-7 text-[var(--strap-text-secondary)] md:text-[16px]">
                               {group.good.map((item) => (
                                 <li
                                   key={item}
@@ -1496,7 +1515,7 @@ export function DocsPageView() {
                                 >
                                   <span
                                     aria-hidden
-                                    className="mt-[3px] shrink-0 font-mono text-[14px] font-medium leading-6 text-[var(--creed-success)]"
+                                    className="mt-[3px] shrink-0 font-mono text-[14px] font-medium leading-6 text-[var(--strap-success)]"
                                   >
                                     +
                                   </span>
@@ -1506,10 +1525,10 @@ export function DocsPageView() {
                             </ul>
                           </div>
                           <div>
-                            <div className="text-[12px] font-medium tracking-[0.02em] text-[var(--creed-danger)]">
+                            <div className="text-[12px] font-medium tracking-[0.02em] text-[var(--strap-danger)]">
                               Bad
                             </div>
-                            <ul className="mt-3 space-y-2 text-[15px] leading-7 text-[var(--creed-text-secondary)] md:text-[16px]">
+                            <ul className="mt-3 space-y-2 text-[15px] leading-7 text-[var(--strap-text-secondary)] md:text-[16px]">
                               {group.bad.map((item) => (
                                 <li
                                   key={item}
@@ -1517,7 +1536,7 @@ export function DocsPageView() {
                                 >
                                   <span
                                     aria-hidden
-                                    className="mt-[3px] shrink-0 font-mono text-[14px] font-medium leading-6 text-[var(--creed-danger)]"
+                                    className="mt-[3px] shrink-0 font-mono text-[14px] font-medium leading-6 text-[var(--strap-danger)]"
                                   >
                                     −
                                   </span>
@@ -1534,21 +1553,21 @@ export function DocsPageView() {
 
                 {section.id === "maintaining" ? (
                   <>
-                    <ul className="creed-bullets mt-5 space-y-3 text-[15px] leading-8 text-[var(--creed-text-secondary)] [--creed-bullet:#2563EB] md:text-[16px]">
+                    <ul className="strap-bullets mt-5 space-y-3 text-[15px] leading-8 text-[var(--strap-text-secondary)] [--strap-bullet:#2563EB] md:text-[16px]">
                       {afterWorkBullets.map((item) => (
                         <li key={item}>{item}</li>
                       ))}
                     </ul>
-                    <div className="mt-8 border-t border-[var(--creed-border)] pt-6">
-                      <h3 className="text-[18px] font-medium text-[var(--creed-text-primary)]">
+                    <div className="mt-8 border-t border-[var(--strap-border)] pt-6">
+                      <h3 className="text-[18px] font-medium text-[var(--strap-text-primary)]">
                         On a recurring cadence
                       </h3>
-                      <div className="mt-3 space-y-4 text-[15px] leading-8 text-[var(--creed-text-secondary)] md:text-[16px]">
+                      <div className="mt-3 space-y-4 text-[15px] leading-8 text-[var(--strap-text-secondary)] md:text-[16px]">
                         {recurringIntro.map((paragraph) => (
                           <p key={paragraph}>{paragraph}</p>
                         ))}
                       </div>
-                      <ul className="creed-bullets mt-4 space-y-3 text-[15px] leading-8 text-[var(--creed-text-secondary)] [--creed-bullet:#2563EB] md:text-[16px]">
+                      <ul className="strap-bullets mt-4 space-y-3 text-[15px] leading-8 text-[var(--strap-text-secondary)] [--strap-bullet:#2563EB] md:text-[16px]">
                         {recurringBullets.map((item) => (
                           <li key={item}>{item}</li>
                         ))}
@@ -1560,29 +1579,29 @@ export function DocsPageView() {
                 {section.id === "quality" ? (
                   <>
                     <div className="mt-8 space-y-4">
-                      <div className="text-[12px] font-medium tracking-[0.02em] text-[var(--creed-accent)]">
+                      <div className="text-[12px] font-medium tracking-[0.02em] text-[var(--strap-accent)]">
                         The five tests
                       </div>
                       {qualityPractices.map((practice) => (
                         <div
                           key={practice.name}
-                          className="grid gap-1 border-t border-[var(--creed-border)] pt-4 first:border-t-0 first:pt-0 md:grid-cols-[minmax(0,140px)_minmax(0,1fr)] md:gap-6"
+                          className="grid gap-1 border-t border-[var(--strap-border)] pt-4 first:border-t-0 first:pt-0 md:grid-cols-[minmax(0,140px)_minmax(0,1fr)] md:gap-6"
                         >
-                          <div className="text-[15px] font-medium text-[var(--creed-text-primary)] md:text-[16px]">
+                          <div className="text-[15px] font-medium text-[var(--strap-text-primary)] md:text-[16px]">
                             {practice.name}
                           </div>
-                          <p className="text-[15px] leading-7 text-[var(--creed-text-secondary)] md:text-[16px]">
+                          <p className="text-[15px] leading-7 text-[var(--strap-text-secondary)] md:text-[16px]">
                             {practice.test}
                           </p>
                         </div>
                       ))}
                     </div>
-                    <p className="mt-8 text-[15px] leading-8 text-[var(--creed-text-secondary)] md:text-[16px]">
+                    <p className="mt-8 text-[15px] leading-8 text-[var(--strap-text-secondary)] md:text-[16px]">
                       The overall score is computed from the sections, not asked
                       of the model, so the headline never drifts from what it
                       summarizes.
                     </p>
-                    <ul className="creed-bullets mt-4 space-y-3 text-[15px] leading-8 text-[var(--creed-text-secondary)] [--creed-bullet:#2563EB] md:text-[16px]">
+                    <ul className="strap-bullets mt-4 space-y-3 text-[15px] leading-8 text-[var(--strap-text-secondary)] [--strap-bullet:#2563EB] md:text-[16px]">
                       {overallRules.map((rule) => (
                         <li key={rule}>{rule}</li>
                       ))}
@@ -1596,9 +1615,9 @@ export function DocsPageView() {
                       {toolGroups.map((group) => (
                         <div
                           key={group.title}
-                          className="border-t border-[var(--creed-border)] pt-6 first:border-t-0 first:pt-0"
+                          className="border-t border-[var(--strap-border)] pt-6 first:border-t-0 first:pt-0"
                         >
-                          <h3 className="text-[18px] font-medium text-[var(--creed-text-primary)]">
+                          <h3 className="text-[18px] font-medium text-[var(--strap-text-primary)]">
                             {group.title}
                           </h3>
                           <div className="mt-4 space-y-3">
@@ -1610,7 +1629,7 @@ export function DocsPageView() {
                                 <div>
                                   <MonoCode>{tool.name}</MonoCode>
                                 </div>
-                                <p className="text-[15px] leading-7 text-[var(--creed-text-secondary)] md:text-[16px]">
+                                <p className="text-[15px] leading-7 text-[var(--strap-text-secondary)] md:text-[16px]">
                                   {tool.description}
                                 </p>
                               </div>
@@ -1619,19 +1638,19 @@ export function DocsPageView() {
                         </div>
                       ))}
                     </div>
-                    <p className="mt-8 text-[15px] leading-8 text-[var(--creed-text-secondary)] md:text-[16px]">
+                    <p className="mt-8 text-[15px] leading-8 text-[var(--strap-text-secondary)] md:text-[16px]">
                       Two lower-level tools sit underneath these:{" "}
-                      <MonoCode>propose_creed_update</MonoCode> submits a
+                      <MonoCode>propose_strap_update</MonoCode> submits a
                       proposal in any mode, and{" "}
-                      <MonoCode>direct_edit_creed</MonoCode> applies a change
+                      <MonoCode>direct_edit_strap</MonoCode> applies a change
                       immediately where a section allows it (it stays hidden
                       until at least one section is set to direct edit). The
                       flat tools above are built on them and are easier to call
                       correctly.
                     </p>
 
-                    <div className="mt-8 border-t border-[var(--creed-border)] pt-6">
-                      <h3 className="text-[18px] font-medium text-[var(--creed-text-primary)]">
+                    <div className="mt-8 border-t border-[var(--strap-border)] pt-6">
+                      <h3 className="text-[18px] font-medium text-[var(--strap-text-primary)]">
                         Prompts and resources
                       </h3>
                       <div className="mt-4 space-y-3">
@@ -1641,18 +1660,18 @@ export function DocsPageView() {
                             className="grid gap-1 md:grid-cols-[minmax(0,240px)_minmax(0,1fr)] md:gap-6"
                           >
                             <div className="flex items-center gap-2">
-                              <span className="text-[12px] font-medium tracking-[0.02em] text-[var(--creed-text-tertiary)]">
+                              <span className="text-[12px] font-medium tracking-[0.02em] text-[var(--strap-text-tertiary)]">
                                 {item.kind}
                               </span>
                               <MonoCode>{item.name}</MonoCode>
                             </div>
-                            <p className="text-[15px] leading-7 text-[var(--creed-text-secondary)] md:text-[16px]">
+                            <p className="text-[15px] leading-7 text-[var(--strap-text-secondary)] md:text-[16px]">
                               {item.description}
                             </p>
                           </div>
                         ))}
                       </div>
-                      <p className="mt-6 text-[15px] leading-8 text-[var(--creed-text-secondary)] md:text-[16px]">
+                      <p className="mt-6 text-[15px] leading-8 text-[var(--strap-text-secondary)] md:text-[16px]">
                         When a client connects, the server also sends an
                         instructions field carrying the read-before-work,
                         propose-narrowly contract, so agents behave correctly
@@ -1667,14 +1686,14 @@ export function DocsPageView() {
                     {httpEndpoints.map((endpoint) => (
                       <div
                         key={endpoint.path}
-                        className="rounded-xl bg-[var(--creed-surface)] p-5"
+                        className="rounded-xl bg-[var(--strap-surface)] p-5"
                       >
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="rounded-[6px] bg-[var(--creed-surface-raised)] px-2 py-0.5 text-[12px] font-medium text-[var(--creed-accent)]">
+                          <span className="rounded-[6px] bg-[var(--strap-surface-raised)] px-2 py-0.5 text-[12px] font-medium text-[var(--strap-accent)]">
                             {endpoint.method}
                           </span>
                           <span
-                            className="text-[14px] text-[var(--creed-text-primary)]"
+                            className="text-[14px] text-[var(--strap-text-primary)]"
                             style={{
                               fontFamily: "var(--font-mono), monospace",
                             }}
@@ -1682,8 +1701,8 @@ export function DocsPageView() {
                             {endpoint.path}
                           </span>
                         </div>
-                        <p className="mt-3 text-[15px] leading-7 text-[var(--creed-text-secondary)] md:text-[16px]">
-                          <span className="text-[var(--creed-text-primary)]">
+                        <p className="mt-3 text-[15px] leading-7 text-[var(--strap-text-secondary)] md:text-[16px]">
+                          <span className="text-[var(--strap-text-primary)]">
                             {endpoint.summary}
                           </span>{" "}
                           {endpoint.detail}
@@ -1694,11 +1713,11 @@ export function DocsPageView() {
                 ) : null}
 
                 {section.id === "data-and-privacy" ? (
-                  <p className="mt-6 text-[15px] leading-8 text-[var(--creed-text-secondary)] md:text-[16px]">
+                  <p className="mt-6 text-[15px] leading-8 text-[var(--strap-text-secondary)] md:text-[16px]">
                     Read the full{" "}
                     <Link
                       href="/privacy"
-                      className="font-medium text-[var(--creed-accent)] hover:text-[var(--creed-accent-hover)]"
+                      className="font-medium text-[var(--strap-accent)] hover:text-[var(--strap-accent-hover)]"
                     >
                       privacy policy
                     </Link>{" "}
