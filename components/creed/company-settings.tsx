@@ -70,6 +70,7 @@ import {
 } from "@/lib/creed-data";
 import { permissionsUpTo } from "@/lib/creed-permissions";
 import { cn } from "@/lib/utils";
+import { LegacySubscriptionNotice } from "@/components/creed/legacy-subscription-notice";
 import { STRAP_FILE_NAME } from "@/lib/profile-file";
 
 // A section's accent chip colour, tolerating custom/unknown accents the same
@@ -1836,6 +1837,13 @@ export function CompanySettings() {
 
   // ── Danger zone (owner-only) ─────────────────────────────────────────────────
   if (isOwner) {
+    blocks.push(
+      <LegacySubscriptionNotice
+        key="legacy-subscription"
+        scope="company"
+        creedId={creedId}
+      />,
+    );
     blocks.push(
       <section key="danger" className="scroll-mt-6">
         <h2 className={H2}>Danger zone</h2>
