@@ -41,8 +41,9 @@
 - Delano validation: zero errors and zero warnings.
 - npm: published `@bvdm/strap@0.1.1` with the verified tarball integrity and
   `strap` executable; `latest` resolves to `0.1.1`.
-- GitHub: canonical and redirected remotes resolve to published `main` commit
-  `c92006069bea3beaece280e6c69e51918ca7e40d`; the GitHub contents API confirms
+- GitHub: the rename-first implementation is published in `main` history as
+  `c92006069bea3beaece280e6c69e51918ca7e40d`; canonical and redirected remotes
+  resolve to the same current descendant, and the GitHub contents API confirms
   the README uses the Strap clone URL and Strap-first CLI example.
 
 ## Notes
