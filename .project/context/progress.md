@@ -10,7 +10,7 @@
 - Root documentation, environment examples, package metadata, repository guidance, and durable context now describe Strap while naming legacy identifiers only where compatibility requires them.
 - A 2026-07-24 follow-up inventory found substantial rebrand drift that the original narrow brand gate did not cover. The review spans visible copy, design language, active documentation, generated docs, CLI attribution, agent protocols, schema defaults, tests, internal paths, compatibility contracts, and historical delivery truth.
 - The rename-first follow-up now makes Strap canonical across active product, public website, CLI, MCP and HTTP discovery, package metadata, source modules, route/component paths, repository guidance, OpenWiki, tests, assets, configuration, and new persisted defaults. Retained Creed identifiers are explicit compatibility or immutable historical contracts.
-- The GitHub repository is now `MajesteitBart/Strap`; the new remote and the old redirected remote resolve to the same `main` commit. The local `origin` uses the Strap URL.
+- The GitHub repository is now `MajesteitBart/Strap`; the rename-first tree is published on `main` as `c92006069bea3beaece280e6c69e51918ca7e40d`, the redirected remote resolves to that commit, and local `origin` uses the Strap URL.
 - Visual redesign beyond the rename is intentionally deferred to the planned `.project/projects/strap-visual-redesign/` contract.
 - `strap.bvdm.ai` is live as an unproxied Cloudflare CNAME to the existing Netlify production site. Netlify serves it as a verified domain alias with Strap's production build and canonical metadata.
 - The earlier `headless-access-secret-vault` project delivered scoped API keys, OAuth device authorization, and Supabase Vault-backed secret storage. Its user-authored Strap CLI workstream remains preserved as the implementation contract source.
@@ -20,7 +20,7 @@
 - Delano research, Spec, plan, workstreams, decisions, and atomic tasks validate for `strap-rebrand`.
 - Fable approved the plan after compatibility blockers were resolved and later passed the grounded agent-contract review.
 - The root suite passes 179/179 tests, strict TypeScript and ESLint pass, and the production build succeeds with 102 generated routes.
-- The exact rebrand audit covers 1,111 current repository files and classifies all 4,788 remaining case-insensitive Creed occurrences and 65 Creed-named paths through 504 reviewed history or compatibility entries.
+- The exact rebrand audit covers 1,112 current repository files and classifies all 4,780 remaining case-insensitive Creed occurrences and 65 Creed-named paths through 504 reviewed history or compatibility entries.
 - `@bvdm/strap@0.1.1` passes typecheck and 30 tests. The legacy CLI passes typecheck and 20 compatibility tests. The 51-file Strap tarball installs cleanly, returns Strap help and version `0.1.1`, and is published to npm as the public `latest` release.
 - A bounded, grounded Fable release review passed with no blockers. Its three actionable non-blocking findings were resolved in the same pass.
 - Cloudflare API and public DNS checks confirm `strap.bvdm.ai` resolves to `creed-bvdm.netlify.app`; HTTPS returns 200 with a valid Netlify certificate.
@@ -31,6 +31,7 @@
 - The rename-first work is mapped into `.project/projects/strap-rename-completion/`. Its rebuilt audit reads the Git index plus current untracked rename targets, scans text without extension or case exclusions, inventories Creed-bearing paths, fingerprints each reviewed file/path classification, and asserts canonical Strap values.
 - Desktop and 390px mobile browser smoke covers ten public/auth routes with zero console warnings, console errors, or page errors. The responsive mobile menu is operable. Signed-in routes correctly gate unauthenticated sessions.
 - `npx supabase db reset` applies the forward Strap profile-default migration successfully while preserving legacy database compatibility.
+- GitHub's contents API confirms published `main` serves the Strap clone URL and `read_strap` CLI example from the root README.
 
 ## What Is Next
 

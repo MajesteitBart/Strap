@@ -1,10 +1,10 @@
 ---
 id: T-010
 name: Run full quality browser release and closeout gates
-status: in-progress
+status: done
 workstream: WS-E
 created: 2026-07-24T20:00:37Z
-updated: 2026-07-24T23:05:06Z
+updated: 2026-07-24T23:15:17Z
 linear_issue_id:
 github_issue:
 github_pr:
@@ -44,6 +44,10 @@ Run repository-wide verification, migration and CLI gates, two-model agent-contr
 - [x] Docs updated
 
 ## Evidence Log
+
+- 2026-07-24T23:15:17Z: Published and verified rename-first commit c92006069bea3beaece280e6c69e51918ca7e40d on MajesteitBart/Strap main. Root and CLI gates pass; the GitHub contents API shows the canonical Strap clone URL and read_strap example; the redirected remote resolves the same commit. GitHub code search remains temporarily cached on the preceding commit, as shown by its result URLs.
+
+- 2026-07-24T23:12:02Z: Published verified rename-first commit c92006069bea3beaece280e6c69e51918ca7e40d to MajesteitBart/Strap main. GitHub contents API confirms README uses the Strap clone URL and read_strap example; code search is still indexed at the preceding commit and remains under observation.
 
 - 2026-07-24T23:05:06Z: Publish the verified rename-first worktree to the renamed GitHub repository while excluding unrelated contract and local artifacts.
 

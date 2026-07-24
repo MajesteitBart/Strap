@@ -2,9 +2,9 @@
 name: Strap Rename Completion
 slug: strap-rename-completion
 owner: MajesteitBart
-status: active
+status: complete
 created: 2026-07-24T19:56:24Z
-updated: 2026-07-24T23:05:05Z
+updated: 2026-07-24T23:15:17Z
 outcome: Complete the 111-item rename-first inventory so active product, website, CLI, protocol, repository, and documentation surfaces use Strap while compatibility remains tested and redesign stays deferred.
 uncertainty: medium
 probe_required: false

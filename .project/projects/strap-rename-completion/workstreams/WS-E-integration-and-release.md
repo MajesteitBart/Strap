@@ -2,9 +2,9 @@
 id: WS-E
 name: WS-E Integration and Release
 owner: integration-stream
-status: active
+status: done
 created: 2026-07-24T19:59:41Z
-updated: 2026-07-24T23:05:05Z
+updated: 2026-07-24T23:15:17Z
 operating_mode: multi-stream
 ---
 

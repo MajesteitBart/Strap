@@ -59,7 +59,7 @@
       "file": ".project/context/progress.md",
       "kind": "content",
       "occurrences": 14,
-      "fingerprint": "95faafb8a232364c7d716279d4c8c2b17158f651e406a39c552791bf75f61ddb",
+      "fingerprint": "db2bcc99339ebdacc5b976f64b027d0908866f5e19f2fa82f5b5dfc06be14395",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -1445,7 +1445,7 @@
       "file": ".project/projects/strap-rename-completion/completion-summary.md",
       "kind": "content",
       "occurrences": 4,
-      "fingerprint": "a4e321f6de772ea3b7af083dbab17b3776656fc07a1c993afc926dc85aeb3df5",
+      "fingerprint": "7974ed4786a91b49459b0c7dc0cfe15b333c0b47d03355c866284e900baf1ebf",
       "decision": "history",
       "category": "historical-delivery-or-schema",
       "rationale": "Preserved historical delivery evidence or forward-only schema history; rewriting would falsify repository history."

@@ -35,13 +35,15 @@
 - Agent contract: focused tests plus independent Claude and Codex reviews pass.
 - Browser: ten public/auth routes pass at desktop and 390x844; zero console
   warnings, console errors, or page errors; mobile navigation passes.
-- Brand audit: 1,111 current repository files, 4,788 Creed occurrences across
+- Brand audit: 1,112 current repository files, 4,780 Creed occurrences across
   439 files, 65 Creed-named paths, and every remaining occurrence/path classified
   as history or compatibility.
 - Delano validation: zero errors and zero warnings.
 - npm: published `@bvdm/strap@0.1.1` with the verified tarball integrity and
   `strap` executable; `latest` resolves to `0.1.1`.
-- GitHub: canonical and redirected remotes resolve to the same `main` commit.
+- GitHub: canonical and redirected remotes resolve to published `main` commit
+  `c92006069bea3beaece280e6c69e51918ca7e40d`; the GitHub contents API confirms
+  the README uses the Strap clone URL and Strap-first CLI example.
 
 ## Notes
 

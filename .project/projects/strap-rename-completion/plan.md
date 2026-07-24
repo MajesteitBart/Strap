@@ -1,9 +1,9 @@
 ---
 name: Strap Rename Completion
-status: active
+status: done
 lead: MajesteitBart
 created: 2026-07-24T19:56:24Z
-updated: 2026-07-24T23:05:05Z
+updated: 2026-07-24T23:15:17Z
 linear_project_id:
 risk_level: high
 spec_status_at_plan_time: planned
