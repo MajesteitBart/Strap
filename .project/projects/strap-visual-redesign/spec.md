@@ -2,14 +2,14 @@
 name: Strap Visual Redesign
 slug: strap-visual-redesign
 owner: MajesteitBart
-status: planned
+status: active
 created: 2026-07-24T21:18:45Z
-updated: 2026-07-24T21:18:45Z
+updated: 2026-07-25T00:12:52Z
 outcome: Apply a cohesive Strap visual design language across public, authentication, signed-in product, and communication surfaces after the rename-first release.
 uncertainty: medium
 probe_required: false
 probe_status: skipped
-probe_decision_rationale: The rename inventory already identifies the affected surfaces; visual direction and prioritization will be approved when this follow-up starts.
+probe_decision_rationale: The rename inventory already identifies the affected surfaces, and the user approved the existing /home worktable system as the reference for the public docs redesign on 2026-07-25.
 operating_mode: multi-stream
 ---
 
@@ -94,12 +94,19 @@ authentication, product UI, email, assets, and motion.
 ## Assumptions
 
 - The rename-first release is complete before this project begins.
-- Design references and prioritization will be approved at project start.
+- The existing `/home` worktable system is the approved public-site reference:
+  warm paper, flat white surfaces, crisp dark borders, persistent resource
+  colours, display typography, and compact monospace labels.
 
 ## Needs Clarification
 
-- Final visual direction, reference set, and whether public or product surfaces
-  should lead implementation.
+- None for the docs slice. The visual reference and lead surface are approved.
+
+## Approved Direction
+
+- Public documentation leads implementation, using `/home` as the reference.
+- Other public and signed-in surfaces remain separately scoped and must not be
+  treated as redesigned merely because the shared docs chrome has shipped.
 
 ## Hypotheses and Unknowns
 

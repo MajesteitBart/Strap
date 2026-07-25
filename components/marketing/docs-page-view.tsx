@@ -3,15 +3,13 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
-import {
-  AnimatedPageTitle,
-  AnimatedSectionHeading,
-} from "@/components/marketing/animated-page-title";
+import { AnimatedSectionHeading } from "@/components/marketing/animated-page-title";
 import { IntegrationGlyph } from "@/components/strap/brand";
 import {
-  MarketingFooter,
-  MarketingHeroBanner,
-} from "@/components/marketing/site-chrome";
+  StrapSiteFooter,
+  StrapSiteNav,
+  useStrapSiteCta,
+} from "@/components/marketing/strap-site-shell";
 import { useOpenSections } from "@/components/marketing/use-open-sections";
 import { AnimatedIconButton } from "@/components/strap/animated-icon-action";
 import { AnimatedCheckmark } from "@/components/ui/animated-checkmark";
@@ -93,6 +91,13 @@ type HttpEndpoint = {
   summary: string;
   detail: string;
 };
+
+type DocsTone =
+  | "context"
+  | "skills"
+  | "secrets"
+  | "environments"
+  | "agents";
 
 const sections: DocsSection[] = [
   {
@@ -946,12 +951,23 @@ const sectionGroupById = new Map(
   sections.map((section) => [section.id, section.group]),
 );
 
+const docsToneByGroup: Record<string, DocsTone> = {
+  "Start here": "context",
+  "Company plan": "environments",
+  "Connect your agents": "agents",
+  "Agent guides": "skills",
+  "How agents use Strap": "skills",
+  "Keep it sharp": "environments",
+  Reference: "secrets",
+};
+
+function docsToneForGroup(group: string): DocsTone {
+  return docsToneByGroup[group] ?? "context";
+}
+
 function MonoCode({ children }: { children: ReactNode }) {
   return (
-    <code
-      className="rounded-[6px] bg-[var(--strap-surface-raised)] px-1.5 py-0.5 text-[13px] text-[var(--strap-text-primary)]"
-      style={{ fontFamily: "var(--font-mono), monospace" }}
-    >
+    <code className="strap-docs-inline-code">
       {children}
     </code>
   );
@@ -960,8 +976,8 @@ function MonoCode({ children }: { children: ReactNode }) {
 function FileBlock({ label, children }: { label: string; children: string }) {
   const [copied, setCopied] = useState(false);
   return (
-    <div className="mt-6 overflow-hidden rounded-xl border border-[var(--strap-border)] bg-[var(--strap-surface)]">
-      <div className="flex items-center justify-between border-b border-[var(--strap-border)] py-2 pl-4 pr-2">
+    <div className="strap-docs-code mt-6">
+      <div className="strap-docs-code-head">
         <span className="text-[0.8rem] font-medium text-[var(--strap-text-secondary)]">
           {label}
         </span>
@@ -991,16 +1007,14 @@ function FileBlock({ label, children }: { label: string; children: string }) {
         </AnimatedIconButton>
       </div>
       <pre className="overflow-x-auto px-4 py-4 text-[13px] leading-7 text-[var(--strap-text-secondary)]">
-        <code style={{ fontFamily: "var(--font-mono), monospace" }}>
-          {children}
-        </code>
+        <code>{children}</code>
       </pre>
     </div>
   );
 }
 
-export function DocsPageView() {
-  const [scrolled, setScrolled] = useState(false);
+export function DocsPageView({ configured }: { configured: boolean }) {
+  const cta = useStrapSiteCta(configured);
   const [activeSection, setActiveSection] = useState(
     navItems[0]?.id ?? "overview",
   );
@@ -1019,16 +1033,6 @@ export function DocsPageView() {
   const unlockTimerRef = useRef<number | null>(null);
 
   const sectionIds = useMemo(() => navItems.map((section) => section.id), []);
-
-  useEffect(() => {
-    function onScroll() {
-      setScrolled(window.scrollY > 20);
-    }
-
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   useEffect(() => {
     const sectionElements = sectionIds
@@ -1076,8 +1080,19 @@ export function DocsPageView() {
     lockedRef.current = true;
     if (unlockTimerRef.current) window.clearTimeout(unlockTimerRef.current);
 
-    target.scrollIntoView({ behavior: "smooth", block: "start" });
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    target.scrollIntoView({
+      behavior: reduceMotion ? "auto" : "smooth",
+      block: "start",
+    });
     window.history.replaceState(null, "", `#${sectionId}`);
+
+    if (reduceMotion) {
+      lockedRef.current = false;
+      return;
+    }
 
     const unlock = () => {
       lockedRef.current = false;
@@ -1094,38 +1109,123 @@ export function DocsPageView() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--strap-background)] text-[var(--strap-text-primary)]">
-      <MarketingHeroBanner configured scrolled={scrolled} />
+    <div className="strap-site strap-docs">
+      <StrapSiteNav cta={cta} current="docs" />
 
-      <main className="mx-auto max-w-6xl px-6 pb-20 pt-8 md:px-10 md:pb-24 md:pt-10">
-        <div className="border-b border-[var(--strap-border)] pb-8">
-          <AnimatedPageTitle text="Docs" />
-          <p className="mt-5 max-w-5xl t-lede text-[var(--strap-text-secondary)]">
-            What Strap is, what goes in it, how to connect your agents, how they
-            read and improve it, and the full tool and API reference.
-          </p>
+      <header className="strap-docs-hero">
+        <div className="strap-wrap strap-docs-hero-grid">
+          <div className="strap-docs-hero-copy">
+            <span className="strap-docs-kicker">
+              Strap documentation · {sections.length} guides
+            </span>
+            <h1>Give every agent the right context.</h1>
+            <p>
+              Build your Strap, connect it to the agents you use, and understand
+              every tool, permission, and API surface.
+            </p>
+            <div className="strap-actions">
+              <a
+                className="strap-button strap-button-primary"
+                href="#overview"
+                onClick={(event) => {
+                  event.preventDefault();
+                  scrollToSection("overview");
+                }}
+              >
+                Start with Strap
+              </a>
+              <a
+                className="strap-button strap-button-secondary"
+                href="#connect-mcp"
+                onClick={(event) => {
+                  event.preventDefault();
+                  scrollToSection("connect-mcp");
+                }}
+              >
+                Connect an agent
+              </a>
+            </div>
+          </div>
+
+          <div className="strap-docs-map" aria-label="Documentation index">
+            <span
+              className="strap-docs-map-backing strap-docs-map-backing-one"
+              aria-hidden="true"
+            />
+            <span
+              className="strap-docs-map-backing strap-docs-map-backing-two"
+              aria-hidden="true"
+            />
+            <div className="strap-docs-map-card">
+              <span className="strap-chip strap-chip-ready">Index</span>
+              <div className="strap-docs-map-head">
+                <span className="strap-mono">
+                  <b>Strap docs</b> · complete reference
+                </span>
+                <span className="strap-mono">{navGroups.length} chapters</span>
+              </div>
+              {navGroups.map((group) => (
+                <a
+                  key={group.group}
+                  className={cn(
+                    "strap-docs-map-row",
+                    `strap-docs-tone-${docsToneForGroup(group.group)}`,
+                  )}
+                  href={`#${group.items[0]?.id}`}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    const firstSection = group.items[0]?.id;
+                    if (firstSection) scrollToSection(firstSection);
+                  }}
+                >
+                  <span className="strap-docs-map-swatch" aria-hidden="true" />
+                  <span>{group.group}</span>
+                  <span>
+                    {group.items.length}{" "}
+                    {group.items.length === 1 ? "guide" : "guides"}
+                  </span>
+                </a>
+              ))}
+            </div>
+          </div>
         </div>
+      </header>
+
+      <main className="strap-wrap strap-docs-main">
 
         {/* Below the desktop sidebar breakpoint, the same collapsible dropdown
             nav as desktop (one group open at a time, click to scroll), but
             without the scrollspy highlight: a sidebar that isn't on screen
             while you scroll has nothing to highlight, so the links stay plain. */}
-        <div className="mt-8 block lg:hidden">
-          <div className="text-[18px] font-semibold tracking-[-0.01em] text-[var(--strap-text-primary)]">
-            On this page
+        <div className="strap-docs-mobile-index">
+          <div className="strap-docs-index-title">
+            <span>On this page</span>
+            <span>{sections.length} guides</span>
           </div>
-          <nav className="mt-5 space-y-1">
+          <nav aria-label="Documentation sections">
             {navGroups.map((group) => {
               const open = isOpen(group.group);
               return (
-                <div key={group.group}>
+                <div
+                  key={group.group}
+                  className={cn(
+                    "strap-docs-nav-group",
+                    `strap-docs-tone-${docsToneForGroup(group.group)}`,
+                  )}
+                >
                   <button
                     type="button"
                     onClick={() => toggle(group.group)}
                     aria-expanded={open}
-                    className="flex w-full items-center justify-between gap-2 py-1.5 text-[15px] font-medium text-[var(--strap-text-primary)] transition-opacity hover:opacity-70"
+                    className="strap-docs-nav-toggle"
                   >
-                    <span>{group.group}</span>
+                    <span className="strap-docs-nav-label">
+                      <span
+                        className="strap-docs-nav-swatch"
+                        aria-hidden="true"
+                      />
+                      {group.group}
+                    </span>
                     <ChevronDown
                       className={cn(
                         "h-[18px] w-[18px] shrink-0 transition-transform duration-200",
@@ -1143,7 +1243,7 @@ export function DocsPageView() {
                         transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
                         className="overflow-hidden"
                       >
-                        <div className="mb-3 mt-1 space-y-3">
+                        <div className="strap-docs-nav-items">
                           {group.items.map((section) => (
                             <a
                               key={section.id}
@@ -1152,7 +1252,7 @@ export function DocsPageView() {
                                 event.preventDefault();
                                 scrollToSection(section.id);
                               }}
-                              className="block text-[14px] leading-6 text-[var(--strap-text-secondary)] transition-colors hover:text-[var(--strap-text-primary)]"
+                              className="strap-docs-nav-link"
                             >
                               {section.label}
                             </a>
@@ -1167,30 +1267,41 @@ export function DocsPageView() {
           </nav>
         </div>
 
-        <div className="mt-10 grid gap-14 lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-20">
-          <aside className="hidden lg:block">
-            <div className="sticky top-8 pb-10">
-              <div className="text-[18px] font-semibold tracking-[-0.01em] text-[var(--strap-text-primary)]">
-                On this page
+        <div className="strap-docs-layout">
+          <aside className="strap-docs-sidebar">
+            <div className="strap-docs-index">
+              <div className="strap-docs-index-title">
+                <span>On this page</span>
+                <span>{sections.length} guides</span>
               </div>
-              <nav className="mt-5 space-y-1">
+              <nav aria-label="Documentation sections">
                 {navGroups.map((group) => {
                   const open = isOpen(group.group);
                   const isActiveGroup = group.group === activeGroup;
                   return (
-                    <div key={group.group}>
+                    <div
+                      key={group.group}
+                      className={cn(
+                        "strap-docs-nav-group",
+                        `strap-docs-tone-${docsToneForGroup(group.group)}`,
+                      )}
+                    >
                       <button
                         type="button"
                         onClick={() => toggle(group.group)}
                         aria-expanded={open}
                         className={cn(
-                          "flex w-full items-center justify-between gap-2 py-1.5 text-[15px] font-medium transition-opacity hover:opacity-70",
-                          isActiveGroup
-                            ? "text-[var(--strap-accent)]"
-                            : "text-[var(--strap-text-primary)]",
+                          "strap-docs-nav-toggle",
+                          isActiveGroup && "is-active",
                         )}
                       >
-                        <span>{group.group}</span>
+                        <span className="strap-docs-nav-label">
+                          <span
+                            className="strap-docs-nav-swatch"
+                            aria-hidden="true"
+                          />
+                          {group.group}
+                        </span>
                         <ChevronDown
                           className={cn(
                             "h-[18px] w-[18px] shrink-0 transition-transform duration-200",
@@ -1211,7 +1322,7 @@ export function DocsPageView() {
                             }}
                             className="overflow-hidden"
                           >
-                            <div className="mb-3 mt-1 space-y-3">
+                            <div className="strap-docs-nav-items">
                               {group.items.map((section) => (
                                 <a
                                   key={section.id}
@@ -1221,10 +1332,8 @@ export function DocsPageView() {
                                     scrollToSection(section.id);
                                   }}
                                   className={cn(
-                                    "block text-[14px] leading-6 transition-colors",
-                                    activeSection === section.id
-                                      ? "font-medium text-[var(--strap-accent)]"
-                                      : "text-[var(--strap-text-secondary)] hover:text-[var(--strap-text-primary)]",
+                                    "strap-docs-nav-link",
+                                    activeSection === section.id && "is-active",
                                   )}
                                 >
                                   {section.label}
@@ -1241,22 +1350,29 @@ export function DocsPageView() {
             </div>
           </aside>
 
-          <div className="min-w-0">
+          <div className="strap-docs-content">
             {sections.map((section, index) => (
               <section
                 key={section.id}
                 id={section.id}
                 className={cn(
-                  "scroll-mt-28 py-8 md:py-10",
-                  index === sections.length - 1
-                    ? ""
-                    : "border-b border-[var(--strap-border)]",
+                  "strap-docs-section",
+                  `strap-docs-tone-${docsToneForGroup(section.group)}`,
                 )}
               >
-                <AnimatedSectionHeading
-                  text={section.title}
-                  className="t-step"
-                />
+                <div className="strap-docs-section-header">
+                  <span className="strap-docs-section-number">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <div>
+                    <span className="strap-docs-section-kicker">
+                      {section.group}
+                    </span>
+                    <AnimatedSectionHeading text={section.title} />
+                  </div>
+                </div>
+
+                <div className="strap-docs-section-body">
 
                 {section.paragraphs ? (
                   <div className="mt-5 space-y-4 text-[15px] leading-8 text-[var(--strap-text-secondary)] md:text-[16px]">
@@ -1267,7 +1383,7 @@ export function DocsPageView() {
                 ) : null}
 
                 {section.bullets ? (
-                  <ul className="strap-bullets mt-5 space-y-3 text-[15px] leading-8 text-[var(--strap-text-secondary)] [--strap-bullet:#2563EB] md:text-[16px]">
+                  <ul className="strap-bullets mt-5 space-y-3 text-[15px] leading-8 text-[var(--strap-text-secondary)] [--strap-bullet:var(--strap-accent)] md:text-[16px]">
                     {section.bullets.map((item) => (
                       <li key={item}>{item}</li>
                     ))}
@@ -1280,7 +1396,7 @@ export function DocsPageView() {
                       {loopSteps.map((loopStep) => (
                         <div
                           key={loopStep.step}
-                          className="rounded-xl bg-[var(--strap-surface)] p-5"
+                          className="strap-docs-card p-5"
                         >
                           <div className="flex items-center gap-3">
                             <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] bg-[var(--strap-accent)] text-[13px] font-medium text-[var(--strap-surface)]">
@@ -1374,7 +1490,7 @@ export function DocsPageView() {
                     <p className="mt-3 text-[15px] leading-8 text-[var(--strap-text-secondary)] md:text-[16px]">
                       {perClientIntro}
                     </p>
-                    <ul className="strap-bullets mt-4 space-y-3 text-[15px] leading-8 text-[var(--strap-text-secondary)] [--strap-bullet:#2563EB] md:text-[16px]">
+                    <ul className="strap-bullets mt-4 space-y-3 text-[15px] leading-8 text-[var(--strap-text-secondary)] [--strap-bullet:var(--strap-accent)] md:text-[16px]">
                       {perClientSteps.map((item) => (
                         <li key={item}>{item}</li>
                       ))}
@@ -1389,7 +1505,7 @@ export function DocsPageView() {
                       <div
                         key={card.name}
                         id={`agent-${card.glyph}`}
-                        className="scroll-mt-28 rounded-xl bg-[var(--strap-surface)] p-5"
+                        className="strap-docs-card scroll-mt-28 p-5"
                       >
                         <div className="flex items-center gap-3">
                           <IntegrationGlyph
@@ -1436,7 +1552,7 @@ export function DocsPageView() {
                       <div className="text-[12px] font-medium tracking-[0.02em] text-[var(--strap-accent)]">
                         Propose
                       </div>
-                      <ul className="strap-bullets mt-3 space-y-2 text-[15px] leading-7 text-[var(--strap-text-secondary)] [--strap-bullet:#2563EB] md:text-[16px]">
+                      <ul className="strap-bullets mt-3 space-y-2 text-[15px] leading-7 text-[var(--strap-text-secondary)] [--strap-bullet:var(--strap-accent)] md:text-[16px]">
                         {proposeWhen.map((item) => (
                           <li key={item}>{item}</li>
                         ))}
@@ -1470,7 +1586,7 @@ export function DocsPageView() {
                             <div className="text-[12px] font-medium tracking-[0.02em] text-[var(--strap-accent)]">
                               What belongs
                             </div>
-                            <ul className="strap-bullets mt-3 space-y-2 text-[15px] leading-7 text-[var(--strap-text-secondary)] [--strap-bullet:#2563EB] md:text-[16px]">
+                            <ul className="strap-bullets mt-3 space-y-2 text-[15px] leading-7 text-[var(--strap-text-secondary)] [--strap-bullet:var(--strap-accent)] md:text-[16px]">
                               {guide.belongs.map((item) => (
                                 <li key={item}>{item}</li>
                               ))}
@@ -1553,7 +1669,7 @@ export function DocsPageView() {
 
                 {section.id === "maintaining" ? (
                   <>
-                    <ul className="strap-bullets mt-5 space-y-3 text-[15px] leading-8 text-[var(--strap-text-secondary)] [--strap-bullet:#2563EB] md:text-[16px]">
+                    <ul className="strap-bullets mt-5 space-y-3 text-[15px] leading-8 text-[var(--strap-text-secondary)] [--strap-bullet:var(--strap-accent)] md:text-[16px]">
                       {afterWorkBullets.map((item) => (
                         <li key={item}>{item}</li>
                       ))}
@@ -1567,7 +1683,7 @@ export function DocsPageView() {
                           <p key={paragraph}>{paragraph}</p>
                         ))}
                       </div>
-                      <ul className="strap-bullets mt-4 space-y-3 text-[15px] leading-8 text-[var(--strap-text-secondary)] [--strap-bullet:#2563EB] md:text-[16px]">
+                      <ul className="strap-bullets mt-4 space-y-3 text-[15px] leading-8 text-[var(--strap-text-secondary)] [--strap-bullet:var(--strap-accent)] md:text-[16px]">
                         {recurringBullets.map((item) => (
                           <li key={item}>{item}</li>
                         ))}
@@ -1601,7 +1717,7 @@ export function DocsPageView() {
                       of the model, so the headline never drifts from what it
                       summarizes.
                     </p>
-                    <ul className="strap-bullets mt-4 space-y-3 text-[15px] leading-8 text-[var(--strap-text-secondary)] [--strap-bullet:#2563EB] md:text-[16px]">
+                    <ul className="strap-bullets mt-4 space-y-3 text-[15px] leading-8 text-[var(--strap-text-secondary)] [--strap-bullet:var(--strap-accent)] md:text-[16px]">
                       {overallRules.map((rule) => (
                         <li key={rule}>{rule}</li>
                       ))}
@@ -1686,10 +1802,10 @@ export function DocsPageView() {
                     {httpEndpoints.map((endpoint) => (
                       <div
                         key={endpoint.path}
-                        className="rounded-xl bg-[var(--strap-surface)] p-5"
+                        className="strap-docs-card p-5"
                       >
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="rounded-[6px] bg-[var(--strap-surface-raised)] px-2 py-0.5 text-[12px] font-medium text-[var(--strap-accent)]">
+                          <span className="strap-docs-method">
                             {endpoint.method}
                           </span>
                           <span
@@ -1724,13 +1840,14 @@ export function DocsPageView() {
                     for the complete picture.
                   </p>
                 ) : null}
+                </div>
               </section>
             ))}
           </div>
         </div>
       </main>
 
-      <MarketingFooter />
+      <StrapSiteFooter />
     </div>
   );
 }

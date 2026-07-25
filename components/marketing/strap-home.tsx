@@ -2,8 +2,11 @@
 
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { useLandingAuthState } from "@/components/marketing/use-landing-auth-state";
-import { useOnboardingResume } from "@/components/marketing/use-onboarding-resume";
+import {
+  StrapSiteFooter,
+  StrapSiteNav,
+  useStrapSiteCta,
+} from "@/components/marketing/strap-site-shell";
 import { BRAND_TAGLINE } from "@/lib/marketing/brand";
 import { homeFaqItems } from "@/lib/marketing/faq";
 
@@ -159,31 +162,12 @@ function ChapterProof({ kind }: { kind: "context" | "skills" | "secrets" }) {
 }
 
 export function StrapHome({ configured }: { configured: boolean }) {
-  const authState = useLandingAuthState(configured);
-  const signedIn = authState === "signed-in";
-  const canResume = useOnboardingResume(configured) && !signedIn;
-  const appHref = signedIn ? "/file" : canResume ? "/onboarding" : "/signup";
-  const keysHref = signedIn ? "/vault" : appHref;
-  const appLabel = signedIn ? "Open Strap" : canResume ? "Resume setup" : "Equip an agent";
+  const cta = useStrapSiteCta(configured);
+  const keysHref = cta.signedIn ? "/vault" : cta.appHref;
 
   return (
     <div className="strap-site">
-      <nav className="strap-nav" aria-label="Primary navigation">
-        <div className="strap-wrap strap-navbar">
-          <Link className="strap-wordmark" href="/home" aria-label="Strap home">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/assets/brand/strap-logo.svg" width="1003" height="257" alt="Strap" />
-          </Link>
-          <div className="strap-nav-links">
-            <a href="#resources">Resources</a>
-            <a href="#context">Context</a>
-            <a href="#skills">Skills</a>
-            <a href="#secrets">Keys</a>
-            <Link href="/docs">Docs</Link>
-          </div>
-          <Link className="strap-button strap-button-primary strap-nav-cta" href={appHref}>{appLabel}</Link>
-        </div>
-      </nav>
+      <StrapSiteNav cta={cta} />
 
       <main>
         <header className="strap-hero">
@@ -192,7 +176,7 @@ export function StrapHome({ configured }: { configured: boolean }) {
               <h1>{BRAND_TAGLINE}</h1>
               <p>Pack your context once. Connect agents through MCP, scoped keys, or the Strap CLI.</p>
               <div className="strap-actions">
-                <Link className="strap-button strap-button-primary" href={appHref}>{appLabel}</Link>
+                <Link className="strap-button strap-button-primary" href={cta.appHref}>{cta.appLabel}</Link>
                 <Link className="strap-button strap-button-secondary" href="/docs">Read the docs</Link>
               </div>
             </div>
@@ -210,7 +194,7 @@ export function StrapHome({ configured }: { configured: boolean }) {
                 <ManifestLine kind="secrets" label="keys · available" source="Vault + headless access" />
                 <div className="strap-pattern" aria-hidden="true" />
               </div>
-              <Link className="strap-manifest-cta" href={appHref}><span>Open Strap</span><span aria-hidden="true">→</span></Link>
+                <Link className="strap-manifest-cta" href={cta.appHref}><span>Open Strap</span><span aria-hidden="true">→</span></Link>
             </div>
           </div>
         </header>
@@ -243,7 +227,7 @@ export function StrapHome({ configured }: { configured: boolean }) {
               </div>
               <div className="strap-proof-wrap">
                 <ChapterProof kind={chapter.key} />
-                <Link className="strap-flush-tab" href={chapter.key === "secrets" ? keysHref : chapter.key === "context" ? appHref : "/roadmap"}>{chapter.action}</Link>
+                <Link className="strap-flush-tab" href={chapter.key === "secrets" ? keysHref : chapter.key === "context" ? cta.appHref : "/roadmap"}>{chapter.action}</Link>
               </div>
             </div>
           </section>
@@ -293,18 +277,13 @@ export function StrapHome({ configured }: { configured: boolean }) {
             <div className="strap-closing-box">
               <h2>Set the table. Start the work.</h2>
               <p>One kit for every agent you rely on.</p>
-              <Link className="strap-button strap-button-secondary" href={appHref}>{appLabel}</Link>
+              <Link className="strap-button strap-button-secondary" href={cta.appHref}>{cta.appLabel}</Link>
             </div>
           </div>
         </section>
       </main>
 
-      <footer className="strap-footer">
-        <div className="strap-wrap strap-footer-row">
-          <span>Strap · context, skills, and keys for every agent</span>
-          <span className="strap-footer-links"><Link href="/docs">Docs</Link><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link><Link href="/changelog">Changelog</Link></span>
-        </div>
-      </footer>
+      <StrapSiteFooter />
     </div>
   );
 }

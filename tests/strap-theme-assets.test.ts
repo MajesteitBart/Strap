@@ -59,3 +59,21 @@ test("canonical Strap assets and install metadata replace legacy paths", async (
   ]);
   assert.notDeepEqual(darkEmailWordmark, lightEmailWordmark);
 });
+
+test("public docs and home share the Strap worktable shell", async () => {
+  const [docs, home, shell, css] = await Promise.all([
+    readFile("components/marketing/docs-page-view.tsx", "utf8"),
+    readFile("components/marketing/strap-home.tsx", "utf8"),
+    readFile("components/marketing/strap-site-shell.tsx", "utf8"),
+    readFile("app/globals.css", "utf8"),
+  ]);
+
+  assert.match(docs, /<StrapSiteNav cta=\{cta\} current="docs" \/>/);
+  assert.match(docs, /className="strap-site strap-docs"/);
+  assert.doesNotMatch(docs, /MarketingHeroBanner|light-hero\.png/);
+  assert.match(home, /<StrapSiteNav cta=\{cta\} \/>/);
+  assert.match(home, /<StrapSiteFooter \/>/);
+  assert.match(shell, /strap-logo\.svg/);
+  assert.match(css, /\.strap-docs-hero/);
+  assert.match(css, /\.strap-docs-section/);
+});

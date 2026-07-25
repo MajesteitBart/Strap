@@ -2300,7 +2300,7 @@
       "file": "components/marketing/docs-page-view.tsx",
       "kind": "content",
       "occurrences": 5,
-      "fingerprint": "90275f0c3b421b36441e722b2da7b25e2123ce8bcdd0368a266e8a62e2e1b4d3",
+      "fingerprint": "f9d11823c6311b5f477b042fd1443ab038eba7ae906cce88842ba596f6648d71",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
