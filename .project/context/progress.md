@@ -13,14 +13,14 @@
 - The GitHub repository is now `MajesteitBart/Strap`; the rename-first tree is published in `main` history as `c92006069bea3beaece280e6c69e51918ca7e40d`, the canonical and redirected remotes resolve to the same current descendant, and local `origin` uses the Strap URL.
 - Visual redesign beyond the rename is intentionally deferred to the planned `.project/projects/strap-visual-redesign/` contract.
 - `strap.bvdm.ai` is live as an unproxied Cloudflare CNAME to the existing Netlify production site. Netlify serves it as a verified domain alias with Strap's production build and canonical metadata.
-- The earlier `headless-access-secret-vault` project delivered scoped API keys, OAuth device authorization, and Supabase Vault-backed secret storage. Its user-authored Strap CLI workstream remains preserved as the implementation contract source.
+- The earlier `headless-access-secret-vault` project delivered scoped API keys, OAuth device authorization, Supabase Vault-backed secret storage, and the reviewed Strap CLI package workstream. Its remediation record covers the safe pack command, OAuth credential lifecycle, output and exit-code contracts, external install smoke, and publication guard.
 
 ## Evidence So Far
 
 - Delano research, Spec, plan, workstreams, decisions, and atomic tasks validate for `strap-rebrand`.
 - Fable approved the plan after compatibility blockers were resolved and later passed the grounded agent-contract review.
 - The root suite passes 179/179 tests, strict TypeScript and ESLint pass, and the production build succeeds with 102 generated routes.
-- The exact rebrand audit covers 1,112 current repository files and classifies all 4,780 remaining case-insensitive Creed occurrences and 65 Creed-named paths through 504 reviewed history or compatibility entries.
+- The exact rebrand audit covers 1,094 current repository files and classifies all 4,765 remaining case-insensitive Creed occurrences across 436 files and 65 Creed-named paths through 501 reviewed history or compatibility entries.
 - `@bvdm/strap@0.1.1` passes typecheck and 30 tests. The legacy CLI passes typecheck and 20 compatibility tests. The 51-file Strap tarball installs cleanly, returns Strap help and version `0.1.1`, and is published to npm as the public `latest` release.
 - A bounded, grounded Fable release review passed with no blockers. Its three actionable non-blocking findings were resolved in the same pass.
 - Cloudflare API and public DNS checks confirm `strap.bvdm.ai` resolves to `creed-bvdm.netlify.app`; HTTPS returns 200 with a valid Netlify certificate.

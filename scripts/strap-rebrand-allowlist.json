@@ -41,7 +41,7 @@
       "file": ".gitignore",
       "kind": "content",
       "occurrences": 1,
-      "fingerprint": "0e89bc13d257961a2546fc19a6bfb5a4f9a54d2ac12e61ade193dc6889994d6b",
+      "fingerprint": "029ae99edadab602231d7fcd9b788813ee896de4b9c3b83bff2b95708248c6b2",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -59,7 +59,7 @@
       "file": ".project/context/progress.md",
       "kind": "content",
       "occurrences": 14,
-      "fingerprint": "db2bcc99339ebdacc5b976f64b027d0908866f5e19f2fa82f5b5dfc06be14395",
+      "fingerprint": "650ddf0a5c6ed3ebc7b7ae3ec5478bbe77be793afb2afeae71317e6caa0bb822",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -3219,33 +3219,6 @@
       "kind": "content",
       "occurrences": 19,
       "fingerprint": "6c5f07732a45a5413233fce81df9ed8e546a55e957183f18ce75699e5086cf66",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "output/playwright/strap-rebrand/.playwright-cli/page-2026-07-24T21-12-47-935Z.yml",
-      "kind": "content",
-      "occurrences": 5,
-      "fingerprint": "6c16ce084e6b13b5f83f9dcb5b3b1eea7a3860e0366856e5e5feb6702b3d5d2d",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "output/playwright/strap-rebrand/.playwright-cli/page-2026-07-24T21-21-06-701Z.yml",
-      "kind": "content",
-      "occurrences": 5,
-      "fingerprint": "99808b08717006827f0045d533cca79f2924128886fcb72faefefa3a2d773a5d",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "output/playwright/strap-rebrand/.playwright-cli/page-2026-07-24T21-22-01-061Z.yml",
-      "kind": "content",
-      "occurrences": 5,
-      "fingerprint": "ac0939639a3faebc83be11cbd35d9a2186ccb4948de43178e6ab09132d923e5b",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."

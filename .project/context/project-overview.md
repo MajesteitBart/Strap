@@ -7,7 +7,7 @@
 ## Delivery Scopes
 - `delano-bootstrap`: completed Delano retrofit baseline.
 - `strap-rebrand`: completed canonical public brand, site, profile filename, agent setup, CLI, and compatibility baseline.
-- `headless-access-secret-vault`: delivered scoped agent keys, device authorization, and Vault-backed secrets; remaining package-release review is tracked in that contract.
+- `headless-access-secret-vault`: delivered scoped agent keys, device authorization, Vault-backed secrets, and the completed Strap CLI package review and remediation workstream.
 - `strap-rename-completion`: completed rename-first follow-up covering the tracked Creed-remnant inventory.
 - `strap-visual-redesign`: planned visual follow-up that starts only after direction and rollout priority are approved.
 - Future delivery scopes are created only from explicit product outcomes.

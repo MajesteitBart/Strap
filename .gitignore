@@ -12,6 +12,8 @@
 
 # testing
 /coverage
+/.playwright-cli/
+/output/playwright/
 
 # next.js
 /.next/
@@ -52,6 +54,10 @@ yarn-error.log*
 !.claude/common/log-safety.js
 .cursor/
 .aider*
+
+# local Delano runtime evidence and viewer state
+/.agents/logs/*.jsonl
+/.project/viewer/
 
 # launch video workspace (Remotion) - local only, never pushed
 /video/
