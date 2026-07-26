@@ -2300,7 +2300,7 @@
       "file": "components/marketing/docs-page-view.tsx",
       "kind": "content",
       "occurrences": 5,
-      "fingerprint": "f9d11823c6311b5f477b042fd1443ab038eba7ae906cce88842ba596f6648d71",
+      "fingerprint": "68c8f8e2627a641b31662977cffb9d4e951122be60b81cf8409661d16e32ef78",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -4343,7 +4343,7 @@
       "file": "tests/headless-access-vault.test.ts",
       "kind": "content",
       "occurrences": 13,
-      "fingerprint": "d9c917b1e65688400d618e43b8b8d2788a88d028929381ab1eb70b648ecaf2eb",
+      "fingerprint": "427e40b3c62f2737573c51e5ec1827cd497979b586478bf8f0f5ec5b2b43c790",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."

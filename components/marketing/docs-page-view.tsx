@@ -132,7 +132,7 @@ const sections: DocsSection[] = [
     bullets: [
       "Context: a Personal or Company Strap in portable Markdown, with per-section permissions.",
       "Agents: browser OAuth, RFC 8628 device authorization, or scoped headless API keys over MCP.",
-      "Keys and Vault: server-side storage for external API keys, with explicit authorized reveal.",
+      "Keys: scoped, one-time-visible agent access keys plus a Vault for external service credentials.",
       "CLI: live discovery of Strap MCP tools, resources, prompts, and schemas.",
       "Roadmap: reusable Skills, named Environments, and per-agent resource manifests.",
     ],
@@ -230,6 +230,53 @@ const sections: DocsSection[] = [
       "An old connection stopped working: Strap moved from static tokens to OAuth. Remove the old server entry, re-add it by URL, and authorize again.",
       "Registration fails on connect: make sure the client supports OAuth-based remote MCP (Claude, Cursor, Codex, OpenCode, ChatGPT connectors all do).",
       "You must have an active, set-up Strap to authorize. Finish onboarding first if the consent screen asks you to.",
+    ],
+  },
+  {
+    id: "keys-overview",
+    label: "Keys overview",
+    group: "Keys",
+    title: "Two key systems, two jobs",
+    paragraphs: [
+      "Strap has two key features, and they solve different problems. Agent access keys let a headless MCP client authenticate to one Strap. Vault items hold credentials for external services. They are deliberately separate.",
+      "Adding a provider credential to Vault does not connect an agent. Creating an agent access key does not expose Vault values. Choose the surface by what you are trying to authorize.",
+    ],
+    bullets: [
+      "Prefer browser OAuth when a client supports it. Use an agent access key when a headless client cannot complete interactive authorization.",
+      "Use Vault for credentials such as provider API keys that you need to store, rotate, copy, or explicitly reveal.",
+    ],
+  },
+  {
+    id: "agent-access-keys",
+    label: "Agent access keys",
+    group: "Keys",
+    title: "Connect a headless agent",
+    paragraphs: [
+      "Create a scoped agent access key from Connections when an MCP client can send a bearer token but cannot complete browser OAuth. Give it a clear name, choose an access mode, and choose a 30, 90, or 365 day expiry, or no expiry.",
+      "The full token starts with strap_key_ and is shown only once. Copy it before closing the confirmation. Strap stores a SHA-256 hash for verification and a short prefix for identification, never a recoverable copy of the token.",
+    ],
+    bullets: [
+      "Send the key as a bearer token to the hosted MCP endpoint at https://strap.bvdm.ai/mcp.",
+      "Each key belongs to one Strap and one creating user. Current membership, the key's mode, and live section permissions are checked on every request.",
+      "Connections shows the name, prefix, mode, creation date, expiry, and last use, but never the full token.",
+      "Revoke a key from Connections to disconnect clients using it immediately. Expired keys stop working automatically.",
+    ],
+  },
+  {
+    id: "vault-keys",
+    label: "API key Vault",
+    group: "Keys",
+    title: "Keep external credentials in Vault",
+    paragraphs: [
+      "Vault stores credentials for external services alongside one Personal or Company Strap. The list keeps only useful metadata such as name, description, and timestamps. The secret value remains behind an explicit signed-in operation.",
+      "Vault values are not included in ordinary Strap reads, MCP responses, list responses, logs, or audit metadata. A value crosses browser and server memory only while you create it, replace it, or explicitly reveal it.",
+    ],
+    bullets: [
+      "Add a secret with a name, optional description, and value. Names can be up to 120 characters, descriptions up to 500, and values up to 16,384.",
+      "Reveal is a deliberate, audited action. If Strap cannot record the audit event, it does not return the plaintext. The interface hides a revealed value again after 30 seconds.",
+      "Edit an item to change its name or description. Enter a new value to rotate the secret, or leave it empty to keep the current value.",
+      "Delete removes the stored secret and its metadata permanently.",
+      "A Personal Strap member can manage its Vault. For a Company Strap, only owners and admins can list, create, reveal, rotate, or delete secrets.",
     ],
   },
   {
@@ -406,6 +453,51 @@ const loopSteps: LoopStep[] = [
     step: "4",
     title: "You approve",
     body: "You accept the good proposals and skip the rest. The profile sharpens over time without you maintaining it by hand.",
+  },
+];
+
+const agentAccessModes = [
+  {
+    value: "read-only",
+    label: "Read only",
+    description:
+      "Reads the sections visible to the creating user. It cannot propose or apply changes.",
+  },
+  {
+    value: "proposal-only",
+    label: "Read and propose",
+    description:
+      "Reads visible sections and submits focused proposals. It cannot make direct edits.",
+    recommended: true,
+  },
+  {
+    value: "direct",
+    label: "Permitted direct edits",
+    description:
+      "Allows direct edits only where the live section policy also permits them. Section rules remain the final gate.",
+  },
+];
+
+const vaultWorkflow: LoopStep[] = [
+  {
+    step: "1",
+    title: "Store",
+    body: "Add a name, optional description, and secret value. List views return metadata, not plaintext.",
+  },
+  {
+    step: "2",
+    title: "Reveal",
+    body: "Reveal only when needed. Strap records the action first, then hides the value again after 30 seconds.",
+  },
+  {
+    step: "3",
+    title: "Rotate",
+    body: "Edit the item and enter a replacement value. Leave the value empty to keep the existing secret.",
+  },
+  {
+    step: "4",
+    title: "Delete",
+    body: "Permanently remove both the encrypted secret and the metadata that points to it.",
   },
 ];
 
@@ -955,6 +1047,7 @@ const docsToneByGroup: Record<string, DocsTone> = {
   "Start here": "context",
   "Company plan": "environments",
   "Connect your agents": "agents",
+  Keys: "secrets",
   "Agent guides": "skills",
   "How agents use Strap": "skills",
   "Keep it sharp": "environments",
@@ -1496,6 +1589,158 @@ export function DocsPageView({ configured }: { configured: boolean }) {
                       ))}
                     </ul>
                   </div>
+                ) : null}
+
+                {section.id === "keys-overview" ? (
+                  <div className="mt-8 grid gap-4 md:grid-cols-2">
+                    <a
+                      href="#agent-access-keys"
+                      onClick={(event) => {
+                        event.preventDefault();
+                        scrollToSection("agent-access-keys");
+                      }}
+                      className="strap-docs-card group block p-5 transition-colors hover:border-[var(--strap-accent)]"
+                    >
+                      <span className="text-[12px] font-medium tracking-[0.02em] text-[var(--strap-accent)]">
+                        Authenticate an agent
+                      </span>
+                      <h3 className="mt-3 text-[18px] font-medium text-[var(--strap-text-primary)]">
+                        Agent access key
+                      </h3>
+                      <p className="mt-2 text-[15px] leading-7 text-[var(--strap-text-secondary)] md:text-[16px]">
+                        A one-time-visible bearer credential with one Strap,
+                        one user, one mode ceiling, and an optional expiry.
+                      </p>
+                      <span className="mt-5 inline-block text-[14px] font-medium text-[var(--strap-accent)]">
+                        Read the access guide →
+                      </span>
+                    </a>
+                    <a
+                      href="#vault-keys"
+                      onClick={(event) => {
+                        event.preventDefault();
+                        scrollToSection("vault-keys");
+                      }}
+                      className="strap-docs-card group block p-5 transition-colors hover:border-[var(--strap-accent)]"
+                    >
+                      <span className="text-[12px] font-medium tracking-[0.02em] text-[var(--strap-accent)]">
+                        Protect an external credential
+                      </span>
+                      <h3 className="mt-3 text-[18px] font-medium text-[var(--strap-text-primary)]">
+                        Vault item
+                      </h3>
+                      <p className="mt-2 text-[15px] leading-7 text-[var(--strap-text-secondary)] md:text-[16px]">
+                        A server-side secret with visible metadata, controlled
+                        reveal, rotation, and permanent deletion.
+                      </p>
+                      <span className="mt-5 inline-block text-[14px] font-medium text-[var(--strap-accent)]">
+                        Read the Vault guide →
+                      </span>
+                    </a>
+                  </div>
+                ) : null}
+
+                {section.id === "agent-access-keys" ? (
+                  <>
+                    <div className="mt-8">
+                      <div className="text-[12px] font-medium tracking-[0.02em] text-[var(--strap-accent)]">
+                        Choose the narrowest mode
+                      </div>
+                      <div className="mt-4 grid gap-4 lg:grid-cols-3">
+                        {agentAccessModes.map((mode) => (
+                          <div
+                            key={mode.value}
+                            className="strap-docs-card p-5"
+                          >
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                              <h3 className="text-[16px] font-medium text-[var(--strap-text-primary)]">
+                                {mode.label}
+                              </h3>
+                              {mode.recommended ? (
+                                <span className="rounded-full bg-[var(--strap-docs-tint)] px-2 py-1 text-[11px] font-medium text-[var(--strap-accent)]">
+                                  Default
+                                </span>
+                              ) : null}
+                            </div>
+                            <div className="mt-2">
+                              <MonoCode>{mode.value}</MonoCode>
+                            </div>
+                            <p className="mt-3 text-[14px] leading-7 text-[var(--strap-text-secondary)] md:text-[15px]">
+                              {mode.description}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <FileBlock label="Bearer authentication">
+                      {"Authorization: Bearer strap_key_..."}
+                    </FileBlock>
+                    <p className="mt-5 text-[15px] leading-8 text-[var(--strap-text-secondary)] md:text-[16px]">
+                      Configure that header for the Strap MCP endpoint in your
+                      compatible headless client. Create and revoke credentials
+                      from{" "}
+                      <Link
+                        href="/connections"
+                        className="font-medium text-[var(--strap-accent)] hover:text-[var(--strap-accent-hover)]"
+                      >
+                        Connections
+                      </Link>
+                      .
+                    </p>
+                  </>
+                ) : null}
+
+                {section.id === "vault-keys" ? (
+                  <>
+                    <div className="mt-8 grid gap-4 sm:grid-cols-2">
+                      {vaultWorkflow.map((item) => (
+                        <div key={item.step} className="strap-docs-card p-5">
+                          <div className="flex items-center gap-3">
+                            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] bg-[var(--strap-accent)] text-[13px] font-medium text-[var(--strap-surface)]">
+                              {item.step}
+                            </span>
+                            <h3 className="text-[16px] font-medium text-[var(--strap-text-primary)]">
+                              {item.title}
+                            </h3>
+                          </div>
+                          <p className="mt-3 text-[14px] leading-7 text-[var(--strap-text-secondary)] md:text-[15px]">
+                            {item.body}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="strap-docs-card mt-6 overflow-hidden">
+                      <div className="grid gap-2 p-5 md:grid-cols-[minmax(0,160px)_minmax(0,1fr)] md:gap-6">
+                        <h3 className="text-[16px] font-medium text-[var(--strap-text-primary)]">
+                          Personal Strap
+                        </h3>
+                        <p className="text-[15px] leading-7 text-[var(--strap-text-secondary)]">
+                          The signed-in member can manage the Vault for that
+                          Personal Strap.
+                        </p>
+                      </div>
+                      <div className="grid gap-2 border-t border-[var(--strap-border)] p-5 md:grid-cols-[minmax(0,160px)_minmax(0,1fr)] md:gap-6">
+                        <h3 className="text-[16px] font-medium text-[var(--strap-text-primary)]">
+                          Company Strap
+                        </h3>
+                        <p className="text-[15px] leading-7 text-[var(--strap-text-secondary)]">
+                          Owners and admins can manage Vault secrets. Members
+                          cannot list or reveal them.
+                        </p>
+                      </div>
+                    </div>
+                    <p className="mt-6 text-[15px] leading-8 text-[var(--strap-text-secondary)] md:text-[16px]">
+                      Manage stored credentials from{" "}
+                      <Link
+                        href="/vault"
+                        className="font-medium text-[var(--strap-accent)] hover:text-[var(--strap-accent-hover)]"
+                      >
+                        Vault
+                      </Link>
+                      . Treat reveal and copy as short-lived actions, and rotate
+                      a value whenever its exposure is uncertain.
+                    </p>
+                  </>
                 ) : null}
 
                 {section.id.startsWith("agents-") &&

@@ -31,6 +31,10 @@ const oauthMetadata = readFileSync(
   new URL("../app/.well-known/oauth-authorization-server/route.ts", import.meta.url),
   "utf8",
 );
+const docsPage = readFileSync(
+  new URL("../components/marketing/docs-page-view.tsx", import.meta.url),
+  "utf8",
+);
 
 test("headless keys are prefixed, high entropy, and represented by a digest", () => {
   const first = createHeadlessKey();
@@ -135,6 +139,19 @@ test("OAuth discovery and token exchange advertise the RFC device grant", () => 
   assert.match(oauthMetadata, /urn:ietf:params:oauth:grant-type:device_code/);
   assert.match(tokenRoute, /pollDeviceAuthorization\(\{ deviceCode, clientId \}\)/);
   assert.match(tokenRoute, /creedGrants: \[\{ creedId: polled\.creedId, mode: polled\.mode \}\]/);
+});
+
+test("public docs distinguish agent access keys from Vault credentials", () => {
+  assert.match(docsPage, /id: "keys-overview"/);
+  assert.match(docsPage, /id: "agent-access-keys"/);
+  assert.match(docsPage, /full token starts with strap_key_ and is shown only once/);
+  assert.match(docsPage, /"read-only"/);
+  assert.match(docsPage, /"proposal-only"/);
+  assert.match(docsPage, /id: "vault-keys"/);
+  assert.match(docsPage, /does not return the plaintext/);
+  assert.match(docsPage, /hides a revealed value again after 30 seconds/);
+  assert.match(docsPage, /only owners and admins can list, create, reveal, rotate, or delete secrets/);
+  assert.match(docsPage, /not included in ordinary Strap reads, MCP responses, list responses, logs, or audit metadata/);
 });
 
 test("MCP discovery presents Strap while accepting both CLI attribution headers", () => {
