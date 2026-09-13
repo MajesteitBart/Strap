@@ -1039,6 +1039,11 @@
 }
 
 .strap-site *, .strap-site *::before, .strap-site *::after { box-sizing: border-box; }
+/* Public and consent pages keep light surfaces even with a saved dark theme. */
+.strap-site .strap-invert-on-dark,
+.strap-site .strap-brand-adaptive {
+  filter: none;
+}
 .strap-site h1, .strap-site h2, .strap-site h3 { color: var(--strap-ink-strong); font-family: var(--font-strap-display), sans-serif; font-weight: 600; }
 .strap-site h1 { max-width: 12ch; font-size: clamp(2.7rem, 5.2vw, 4.75rem); line-height: .99; letter-spacing: -.04em; }
 .strap-site h2 { font-size: clamp(2rem, 3.4vw, 3rem); line-height: 1.08; letter-spacing: -.03em; }
