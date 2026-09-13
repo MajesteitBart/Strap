@@ -990,7 +990,8 @@
 /* Strap public website: a warm, flat worktable with one persistent colour per
    agent resource. The scope prevents this identity layer from leaking into
    the authenticated product's canonical Strap CSS tokens. */
-.strap-site {
+.strap-site,
+.strap-public-theme {
   /* The public site is intentionally light-only, so it re-asserts the light
      worktable values even when the product theme is dark. */
   color-scheme: light;
@@ -1028,6 +1029,29 @@
   --strap-accent-hover: #1a35a8;
   --strap-success: #4a720d;
   --strap-danger: #b8321c;
+  /* Portaled primitives need the same light palette as their page. Keep this
+     token scope separate from the full-page geometry below. */
+  --background: var(--strap-paper);
+  --foreground: var(--strap-ink-strong);
+  --card: var(--strap-surface);
+  --card-foreground: var(--strap-ink-strong);
+  --popover: var(--strap-surface);
+  --popover-foreground: var(--strap-ink-strong);
+  --primary: var(--strap-ink-strong);
+  --primary-foreground: var(--strap-surface);
+  --secondary: var(--strap-surface-2);
+  --secondary-foreground: var(--strap-ink);
+  --muted: var(--strap-surface-2);
+  --muted-foreground: var(--strap-ink-soft);
+  --accent: var(--strap-surface-2);
+  --accent-foreground: var(--strap-ink-strong);
+  --destructive: var(--strap-danger);
+  --border: var(--strap-line);
+  --input: var(--strap-border-strong);
+  --ring: rgba(33, 30, 25, 0.4);
+}
+
+.strap-site {
   --strap-pad: clamp(1rem, 5vw, 4rem);
   --strap-section-gap: clamp(5rem, 10vw, 8.5rem);
   min-height: 100%;
@@ -1041,7 +1065,9 @@
 .strap-site *, .strap-site *::before, .strap-site *::after { box-sizing: border-box; }
 /* Public and consent pages keep light surfaces even with a saved dark theme. */
 .strap-site .strap-invert-on-dark,
-.strap-site .strap-brand-adaptive {
+.strap-site .strap-brand-adaptive,
+.strap-public-theme .strap-invert-on-dark,
+.strap-public-theme .strap-brand-adaptive {
   filter: none;
 }
 .strap-site h1, .strap-site h2, .strap-site h3 { color: var(--strap-ink-strong); font-family: var(--font-strap-display), sans-serif; font-weight: 600; }

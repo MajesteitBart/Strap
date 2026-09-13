@@ -66,7 +66,7 @@ export function AuthorizeSpacePicker({ spaces }: { spaces: SpaceOption[] }) {
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="start"
-          className="w-[var(--radix-dropdown-menu-trigger-width)] max-w-[min(24rem,90vw)]"
+          className="strap-public-theme w-[var(--radix-dropdown-menu-trigger-width)] max-w-[min(24rem,90vw)]"
         >
           {spaces.map((space) => {
             const isSelected = space.id === selectedId;
