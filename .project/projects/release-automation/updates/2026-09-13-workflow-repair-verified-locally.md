@@ -24,7 +24,8 @@ stream: WS-A
 - Run 34751901159 reached generated-page changes but exited with `Repository planning worker exited without submit_plan`. A direct tool-call smoke for Cohere North Mini Code passed; the next diagnostic uses that free model with room for a complete structured submission. No partial output from the failed run was published.
 
 ## Blockers
-- None
+- OpenRouter rejected further free-model calls with daily quota 50, remaining 0, reset 2026-09-14 00:00 UTC. Run 34752873604 had already failed when a worker submitted a different persisted plan. No failed output was published. A local completion-tool probe could not run because the quota was exhausted; no unverified vendor patch is included.
+- The passing release checks are being extracted to the independent release-verification contract and branch.
 
 ## Next Actions
 - Inspect the capped workflow run, fix any confirmed failure, then complete review and merge checks.

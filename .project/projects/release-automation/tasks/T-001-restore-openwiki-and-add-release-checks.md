@@ -1,21 +1,23 @@
 ---
 id: T-001
 name: Restore OpenWiki and add release checks
-status: in-progress
+status: blocked
 workstream: WS-A
 created: 2026-09-13T09:35:41Z
-updated: 2026-09-13T09:35:41Z
-linear_issue_id:
-github_issue:
-github_pr:
+updated: 2026-09-13T11:09:49Z
+linear_issue_id: 
+github_issue: 
+github_pr: 
 depends_on: []
 conflicts_with: []
 parallel: true
 priority: medium
 estimate: M
 operating_mode: patch
-story_id:
+story_id: 
 acceptance_criteria_ids: []
+blocked_owner: MajesteitBart
+blocked_check_back: 2026-09-14
 ---
 
 # Task: Restore OpenWiki and add release checks
@@ -44,6 +46,8 @@ Pin OpenWiki and actions, select OpenRouter explicitly, configure its project ke
 - [ ] Docs updated
 
 ## Evidence Log
+
+- 2026-09-13T11:09:49Z: Live OpenWiki verification is blocked by the OpenRouter free-model daily quota; earlier native-worker completion failures remain unverified. Independent CI is extracted to fix/release-verification.
 
 - 2026-09-13T09:35:41Z: Repairing the confirmed scheduled workflow failure.
 
