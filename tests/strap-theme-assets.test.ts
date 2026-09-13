@@ -234,6 +234,8 @@ test("toast labels, Refresh action and context text are readable in both themes"
   const css = await readFile("app/globals.css", "utf8");
   const toaster = await readFile("components/ui/toaster.tsx", "utf8");
   const notifier = await readFile("components/strap/app-version-notifier.tsx", "utf8");
+  const permissionSources = await Promise.all(["components/strap/settings-screen.tsx", "components/strap/section-permission-control.tsx"]
+    .map((path) => readFile(path, "utf8")));
   const root = css.match(/:root\s*\{([\s\S]*?)\n\}/)?.[1] ?? "";
   const dark = css.match(/\n\.dark\s*\{([\s\S]*?)\n\}/)?.[1] ?? "";
   const opacity = Number(notifier.match(/!opacity-(\d+)/)?.[1]) / 100;
@@ -241,7 +243,7 @@ test("toast labels, Refresh action and context text are readable in both themes"
   for (const theme of [root, root + dark]) {
     const vars = new Map([...theme.matchAll(/(--[\w-]+):\s*([^;]+);/g)].map((m) => [m[1], m[2]]));
     const rgb = (token: string): number[] => {
-      let value = vars.get(token) ?? "";
+      let value = token.startsWith("#") ? token : vars.get(token) ?? "";
       const reference = value.match(/^var\((--[\w-]+)\)$/)?.[1];
       if (reference) return rgb(reference);
       if (/^#[\da-f]{3}$/i.test(value)) value = "#" + value.slice(1).split("").map((c) => c + c).join("");
@@ -267,6 +269,13 @@ test("toast labels, Refresh action and context text are readable in both themes"
     }
     for (const surface of ["--strap-surface", "--strap-context-tint"]) {
       assert.ok(contrast(rgb("--strap-context"), rgb(surface)) >= 4.5, `Context text on ${surface} must meet 4.5:1`);
+    }
+    for (const source of permissionSources) {
+      const options = source.match(/const PERMISSION_OPTIONS[\s\S]*?= \[([\s\S]*?)\n\];/)?.[1] ?? "";
+      const fills = [...options.matchAll(/color: "([^"]+)"/g)].map((match) =>
+        match[1].match(/^var\((--[\w-]+)\)$/)?.[1] ?? match[1]);
+      assert.equal(fills.length, 4);
+      for (const fill of fills) assert.ok(contrast([1, 1, 1], rgb(fill)) >= 3, "Selected permission icons must meet 3:1");
     }
   }
 });

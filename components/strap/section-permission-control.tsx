@@ -35,14 +35,14 @@ export const PERMISSION_OPTIONS: Array<{
     value: "hidden",
     label: "Hidden from agent",
     icon: EyeOffIcon,
-    color: "var(--strap-danger)",
+    color: "var(--strap-danger-fill)",
   },
-  { value: "read-only", label: "Read-only", icon: EyeIcon, color: "var(--strap-caution)" },
+  { value: "read-only", label: "Read-only", icon: EyeIcon, color: "#9a5b00" },
   {
     value: "propose",
     label: "Propose (needs approval)",
     icon: ShieldCheckIcon,
-    color: "var(--strap-success)",
+    color: "var(--strap-success-fill)",
   },
   {
     value: "direct",

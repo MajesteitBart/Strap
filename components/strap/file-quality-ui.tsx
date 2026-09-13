@@ -531,7 +531,7 @@ export function OverallQualityPopover({
           <QualityCompactCard
             score={report.overall.score}
             label="Overall"
-            labelColor="var(--strap-accent)"
+            labelColor="var(--strap-context)"
             tags={report.overall.tags}
             strength={
               report.overall.strength ??
