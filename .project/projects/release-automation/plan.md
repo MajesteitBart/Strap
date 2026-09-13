@@ -4,7 +4,7 @@ status: active
 lead: Codex
 created: 2026-09-13T09:35:41Z
 updated: 2026-09-13T09:35:41Z
-linear_project_id: 
+linear_project_id:
 risk_level: medium
 spec_status_at_plan_time: planned
 operating_mode: patch
