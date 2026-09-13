@@ -52,7 +52,7 @@ function inlineElement(token: string, key: number): ReactNode {
   if (token.startsWith("[")) {
     const m = token.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
     return m ? (
-      <a key={key} href={m[2]} target="_blank" rel="noreferrer" className="text-[var(--strap-accent)] underline underline-offset-2">
+      <a key={key} href={m[2]} target="_blank" rel="noreferrer" className="text-[var(--strap-context)] underline underline-offset-2">
         {m[1]}
       </a>
     ) : (
