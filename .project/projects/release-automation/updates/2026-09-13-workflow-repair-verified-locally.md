@@ -29,3 +29,5 @@ stream: WS-A
 
 ## Next Actions
 - Inspect the capped workflow run, fix any confirmed failure, then complete review and merge checks.
+
+- Integrated the redesign and merged release checks. The application suite now passes 187 tests; strict types, lint, production build and brand audit pass. CI shipped independently in PR 10 and passed on main. OpenWiki generation remains blocked and no further provider calls were made after the daily quota was exhausted.

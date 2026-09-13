@@ -30,7 +30,7 @@ Pin OpenWiki and actions, select OpenRouter explicitly, configure its project ke
 
 - [ ] OpenWiki uses a pinned version and explicit configured provider with no credential output.
 - [ ] Generated pull requests contain only wiki files and never executable workflow edits.
-- [ ] Application and both CLI checks run for pull requests and main.
+- [x] Application and both CLI checks run for pull requests and main (shipped independently in PR 10, main run 34754241737).
 - [ ] A real scheduled-workflow execution and final-head PR checks pass.
 
 ## Traceability
