@@ -5,7 +5,7 @@ import { LoaderCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { CONTACT_MAILTO } from "@/lib/branding";
-import type { LegacySubscription } from "@/lib/legacy-subscriptions";
+import type { LegacySubscription, LegacySubscriptionFailure } from "@/lib/legacy-subscriptions";
 
 type NoticeState = {
   target: string;
@@ -30,11 +30,13 @@ export function LegacySubscriptionNotice({
       .then(async (response) => {
         if (!response.ok) throw new Error("Could not check legacy subscriptions.");
         const payload = await response.json() as {
-          configured: boolean; subscriptions: LegacySubscription[];
+          configured: boolean; subscriptions: LegacySubscription[]; failures?: LegacySubscriptionFailure[];
         };
         if (controller.signal.aborted) return;
         setState({
-          target, configured: payload.configured, error: null,
+          target, configured: payload.configured,
+          error: payload.failures?.find((item) =>
+            item.scope === scope && (scope === "personal" || item.strapId === creedId))?.error ?? null,
           subscription: payload.subscriptions.find((item) =>
             item.scope === scope && (scope === "personal" || item.strapId === creedId)) ?? null,
         });

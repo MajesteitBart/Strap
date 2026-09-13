@@ -1904,7 +1904,7 @@
       "file": "app/api/app/legacy-subscriptions/route.ts",
       "kind": "content",
       "occurrences": 14,
-      "fingerprint": "200e7b3b9ebd606d1422e9eb03594173676e835a57d28e5f294f7a4a64f7ebfb",
+      "fingerprint": "db03d1cc861132473da505bdebe12be8e8772ac2693c1327b152db90d06bf8e4",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -2497,8 +2497,8 @@
     {
       "file": "components/strap/legacy-subscription-notice.tsx",
       "kind": "content",
-      "occurrences": 6,
-      "fingerprint": "b55f055a166d0d5092a4d3cf112f68ff4d8c7d179d837b1c2722ace33701f245",
+      "occurrences": 7,
+      "fingerprint": "a8d64949e30e6e777ae6552a175b2d18652d2226e286e86e88b78b9b387fd1c9",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -2885,7 +2885,7 @@
       "file": "lib/legacy-subscriptions.ts",
       "kind": "content",
       "occurrences": 1,
-      "fingerprint": "9ab96dba4d6adb46c3ede43937810607dcc0de53831257ec291d2fce080b0e9e",
+      "fingerprint": "b0421b74dc4d229ef681207e1bd1e5f0249bf30114d5d3aa179d3e2e3a83c678",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."

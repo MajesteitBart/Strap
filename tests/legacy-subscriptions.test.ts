@@ -1,6 +1,6 @@
 import { strict as assert } from "node:assert";
 import { test } from "node:test";
-import { isOngoingSubscription, parseSubscriptionTarget, requestLegacySubscription } from "../lib/legacy-subscriptions.ts";
+import { isOngoingSubscription, parseSubscriptionTarget, readLegacySubscriptions, requestLegacySubscription } from "../lib/legacy-subscriptions.ts";
 
 const subscription = {
   id: "sub_fixture", status: "active", cancel_at_period_end: false,
@@ -62,8 +62,31 @@ test("upstream errors and malformed responses do not expose provider details", a
     (error: unknown) => error instanceof Error && !error.message.includes("private-provider-details"));
   await assert.rejects(requestLegacySubscription({ subscriptionId: "sub_fixture", secret: "test-secret",
     fetcher: async () => new Response("not JSON") }));
-  assert.equal(await requestLegacySubscription({ subscriptionId: "sub_fixture", secret: "test-secret",
-    fetcher: async () => new Response(null, { status: 404 }) }), null);
+});
+
+test("a Stripe 404 never confirms cancellation, including wrong-account or wrong-mode credentials", async () => {
+  for (const cancel of [false, true]) {
+    await assert.rejects(requestLegacySubscription({ subscriptionId: "sub_fixture", secret: "wrong-account-key", cancel,
+      fetcher: async () => Response.json({ error: { code: "resource_missing" } }, { status: 404 }) }));
+  }
+});
+
+test("one failed subscription cannot hide a healthy subscription from another profile", async () => {
+  const candidates = [
+    { subscriptionId: "sub_missing", subscription: { scope: "personal" as const, strapId: null,
+      status: "active", cancelAtPeriodEnd: false, currentPeriodEnd: null } },
+    { subscriptionId: "sub_fixture", subscription: { scope: "company" as const, strapId: "company-id",
+      status: "active", cancelAtPeriodEnd: false, currentPeriodEnd: null } },
+  ];
+  for (const status of [404, 503]) {
+    const result = await readLegacySubscriptions(candidates, "test-secret", async (url) =>
+      String(url).endsWith("sub_missing") ? Response.json({}, { status }) : Response.json(subscription));
+    assert.equal(result.subscriptions.length, 1);
+    assert.equal(result.subscriptions[0].scope, "company");
+    assert.equal(result.failures.length, 1);
+    assert.equal(result.failures[0].scope, "personal");
+    assert.doesNotMatch(JSON.stringify(result), /sub_missing|sub_fixture|test-secret/);
+  }
 });
 
 test("billing end dates support multiple items and reject invalid dates", async () => {

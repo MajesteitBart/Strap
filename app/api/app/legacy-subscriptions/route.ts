@@ -4,7 +4,7 @@ import { NO_STORE_HEADERS } from "@/lib/http-headers";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import type { SupabaseLikeClient } from "@/lib/supabase/types";
 import { recordAuditEvent } from "@/lib/audit-log";
-import { isOngoingSubscription, parseSubscriptionTarget, requestLegacySubscription, type LegacySubscription } from "@/lib/legacy-subscriptions";
+import { isOngoingSubscription, parseSubscriptionTarget, readLegacySubscriptions, requestLegacySubscription, type LegacySubscription } from "@/lib/legacy-subscriptions";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -54,20 +54,9 @@ export async function GET() {
       },
     });
   }
-  try {
-    // Webhooks were retired with billing. Read Stripe to avoid stale renewal notices.
-    const subscriptions = await Promise.all(candidates.map(async ({ subscriptionId, subscription }) => {
-      const live = secret
-        ? await requestLegacySubscription({ subscriptionId, secret })
-        : subscription;
-      return live && isOngoingSubscription(live.status) ? { ...subscription, ...live } : null;
-    }));
-    return NextResponse.json({
-      configured: Boolean(secret), subscriptions: subscriptions.filter((item) => item !== null),
-    }, { headers: NO_STORE_HEADERS });
-  } catch {
-    return errorResponse("Could not confirm legacy subscription status with Stripe. Please try again.", 502);
-  }
+  // Webhooks were retired with billing. Confirm each profile independently with Stripe.
+  const result = await readLegacySubscriptions(candidates, secret);
+  return NextResponse.json({ configured: Boolean(secret), ...result }, { headers: NO_STORE_HEADERS });
 }
 
 export async function DELETE(request: Request) {
@@ -97,14 +86,14 @@ export async function DELETE(request: Request) {
   try {
     const current = await requestLegacySubscription({ subscriptionId, secret });
     // Repeated requests and already-ended subscriptions do not restart billing.
-    const subscription = current && isOngoingSubscription(current.status) && !current.cancelAtPeriodEnd
+    const subscription = isOngoingSubscription(current.status) && !current.cancelAtPeriodEnd
       ? await requestLegacySubscription({ subscriptionId, secret, cancel: true })
       : current;
     const admin = getSupabaseAdminClient() as unknown as SupabaseLikeClient;
     const patch = {
-      ...(!subscription || !isOngoingSubscription(subscription.status) ? { status: "canceled" } : {}),
-      cancel_at_period_end: subscription?.cancelAtPeriodEnd ?? false,
-      current_period_end: subscription?.currentPeriodEnd ?? null,
+      ...(!isOngoingSubscription(subscription.status) ? { status: "canceled" } : {}),
+      cancel_at_period_end: subscription.cancelAtPeriodEnd,
+      current_period_end: subscription.currentPeriodEnd,
     };
     // Bind the local write to the exact owner and subscription that were authorized.
     const update = target.scope === "personal"
@@ -122,7 +111,7 @@ export async function DELETE(request: Request) {
     });
     return NextResponse.json({
       ok: true,
-      subscription: subscription && isOngoingSubscription(subscription.status)
+      subscription: isOngoingSubscription(subscription.status)
         ? { ...target, ...subscription } : null,
     }, { headers: NO_STORE_HEADERS });
   } catch {

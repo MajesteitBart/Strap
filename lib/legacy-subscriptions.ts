@@ -7,6 +7,10 @@ export type LegacySubscription = {
   cancelAtPeriodEnd: boolean;
 };
 
+export type LegacySubscriptionFailure = Pick<LegacySubscription, "scope" | "strapId"> & {
+  error: string;
+};
+
 export function isOngoingSubscription(status: string): boolean {
   return !["canceled", "incomplete_expired"].includes(status);
 }
@@ -38,7 +42,7 @@ export async function requestLegacySubscription({
   secret: string;
   cancel?: boolean;
   fetcher?: typeof fetch;
-}): Promise<Pick<LegacySubscription, "status" | "currentPeriodEnd" | "cancelAtPeriodEnd"> | null> {
+}): Promise<Pick<LegacySubscription, "status" | "currentPeriodEnd" | "cancelAtPeriodEnd">> {
   const response = await fetcher(
     `https://api.stripe.com/v1/subscriptions/${encodeURIComponent(subscriptionId)}`,
     {
@@ -53,7 +57,7 @@ export async function requestLegacySubscription({
       signal: AbortSignal.timeout(15_000),
     },
   );
-  if (response.status === 404 && !cancel) return null;
+  // A 404 can mean a wrong account or mode, not an ended subscription.
   const payload = record(await response.json().catch(() => null));
   if (!response.ok || !payload || typeof payload.status !== "string" ||
       typeof payload.cancel_at_period_end !== "boolean" || payload.id !== subscriptionId) {
@@ -75,5 +79,30 @@ export async function requestLegacySubscription({
     status: payload.status,
     cancelAtPeriodEnd: payload.cancel_at_period_end,
     currentPeriodEnd: end && Number.isFinite(end.getTime()) ? end.toISOString() : null,
+  };
+}
+
+/** A provider failure for one profile must not hide another profile's subscription. */
+export async function readLegacySubscriptions(
+  candidates: { subscriptionId: string; subscription: LegacySubscription }[],
+  secret?: string,
+  fetcher?: typeof fetch,
+): Promise<{ subscriptions: LegacySubscription[]; failures: LegacySubscriptionFailure[] }> {
+  const results = await Promise.all(candidates.map(async ({ subscriptionId, subscription }) => {
+    try {
+      const live = secret
+        ? await requestLegacySubscription({ subscriptionId, secret, fetcher })
+        : subscription;
+      return { subscription: isOngoingSubscription(live.status) ? { ...subscription, ...live } : null };
+    } catch {
+      return { failure: {
+        scope: subscription.scope, strapId: subscription.strapId,
+        error: "Could not confirm legacy subscription status with Stripe. Please try again.",
+      } };
+    }
+  }));
+  return {
+    subscriptions: results.flatMap((result) => result.subscription ? [result.subscription] : []),
+    failures: results.flatMap((result) => result.failure ? [result.failure] : []),
   };
 }
