@@ -3,6 +3,8 @@ import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import { requireApiAuth } from "@/lib/api-auth";
 import { recordAuditEvent } from "@/lib/audit-log";
 import { log } from "@/lib/observability";
+import { checkLegacyDeletion } from "@/lib/legacy-subscription-deletion";
+import type { SupabaseLikeClient } from "@/lib/supabase/types";
 
 export async function DELETE(request: Request) {
   const auth = await requireApiAuth();
@@ -13,6 +15,10 @@ export async function DELETE(request: Request) {
   // record because `requireApiAuth` returns the signed-in user.
   try {
     const admin = getSupabaseAdminClient();
+
+    const blocker = await checkLegacyDeletion(admin as unknown as SupabaseLikeClient,
+      { scope: "account", userId: auth.user.id });
+    if (blocker) return NextResponse.json({ error: blocker.error }, { status: blocker.status });
 
     // Audit BEFORE delete since the user row will be cascaded away.
     await recordAuditEvent({

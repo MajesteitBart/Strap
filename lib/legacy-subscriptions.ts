@@ -106,3 +106,24 @@ export async function readLegacySubscriptions(
     failures: results.flatMap((result) => result.failure ? [result.failure] : []),
   };
 }
+
+/** Deletion must not remove the last reference to a subscription that may renew. */
+export async function legacyDeletionBlocker(
+  subscriptionIds: string[], secret?: string, fetcher?: typeof fetch,
+): Promise<{ error: string; status: number } | null> {
+  if (!subscriptionIds.length) return null;
+  if (!secret) return {
+    error: "Contact support to confirm legacy subscription cancellation before deleting your account or Company.",
+    status: 503,
+  };
+  try {
+    const subscriptions = await Promise.all([...new Set(subscriptionIds)].map((subscriptionId) =>
+      requestLegacySubscription({ subscriptionId, secret, fetcher })));
+    if (subscriptions.some((item) => isOngoingSubscription(item.status) && !item.cancelAtPeriodEnd)) {
+      return { error: "Cancel your legacy subscription in Settings before deleting your account or Company.", status: 409 };
+    }
+    return null;
+  } catch {
+    return { error: "Could not confirm legacy subscription cancellation. Please try again before deleting.", status: 502 };
+  }
+}

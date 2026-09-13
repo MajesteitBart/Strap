@@ -1589,7 +1589,7 @@
       "file": "README.md",
       "kind": "content",
       "occurrences": 14,
-      "fingerprint": "4f7b6ca82e629374459bf276d9e0c97a4610a58dce6f08d749e8bd8f2672e73c",
+      "fingerprint": "d670e58c3c8e65da7e8c4255a4c0d4c488d731b95b79235090d2eadc2c659ea6",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -2704,8 +2704,8 @@
     {
       "file": "lib/company-admin.ts",
       "kind": "content",
-      "occurrences": 78,
-      "fingerprint": "3a54bb6cd1f67a021494b79d602485a4a1f4803ad7719c0ea80bb07d5b878e3b",
+      "occurrences": 79,
+      "fingerprint": "ddb92677aa2f399c686c048ce7f6a2c87cbb5a57c1b5faed11a1b942d8a1b85c",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -2877,6 +2877,15 @@
       "kind": "content",
       "occurrences": 1,
       "fingerprint": "180a05a75ebec790d9564ed107611c8c9f4d70faac8251936811a7ff153b265d",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "lib/legacy-subscription-deletion.ts",
+      "kind": "content",
+      "occurrences": 4,
+      "fingerprint": "66fb58c04549f3a6c0c846559123498009c918fc7d9ffc3a7f8bd75fe6f2cfcd",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -3732,6 +3741,15 @@
       "kind": "content",
       "occurrences": 11,
       "fingerprint": "004fa287da82fcdbc18a89524f4d08928700796619441a70300282ab28230fa8",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "scripts/verify-legacy-deletion.mjs",
+      "kind": "content",
+      "occurrences": 9,
+      "fingerprint": "32a150303f33134e64e1e1e322084e021a9f98861de4d289f4c1bc3adab7c5c0",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."

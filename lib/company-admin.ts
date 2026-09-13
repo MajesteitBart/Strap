@@ -7,6 +7,7 @@ import { encryptSecret, hashSecret } from "@/lib/secret-crypto";
 import type { AgentPermission } from "@/lib/strap-data";
 import { recordAuditEvent } from "@/lib/audit-log";
 import { getDisplayName } from "@/lib/user-name";
+import { checkLegacyDeletion } from "@/lib/legacy-subscription-deletion";
 
 // Owner/admin management operations for a Company Strap: roles, member removal,
 // per-section permissions, rename, ownership transfer, delete, and BYOK. All run
@@ -371,6 +372,8 @@ export async function deleteCompany(params: {
       status: 403,
     };
   }
+  const blocker = await checkLegacyDeletion(db, { scope: "company", strapId: params.creedId });
+  if (blocker) return { ok: false, ...blocker };
   await recordAuditEvent({
     userId: params.actor.id,
     action: "company.deleted",

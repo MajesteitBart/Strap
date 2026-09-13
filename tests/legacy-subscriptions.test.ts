@@ -1,6 +1,6 @@
 import { strict as assert } from "node:assert";
 import { test } from "node:test";
-import { isOngoingSubscription, parseSubscriptionTarget, readLegacySubscriptions, requestLegacySubscription } from "../lib/legacy-subscriptions.ts";
+import { isOngoingSubscription, legacyDeletionBlocker, parseSubscriptionTarget, readLegacySubscriptions, requestLegacySubscription } from "../lib/legacy-subscriptions.ts";
 
 const subscription = {
   id: "sub_fixture", status: "active", cancel_at_period_end: false,
@@ -97,4 +97,29 @@ test("billing end dates support multiple items and reject invalid dates", async 
   const invalid = await requestLegacySubscription({ subscriptionId: "sub_fixture", secret: "test-secret",
     fetcher: async () => Response.json({ ...subscription, items: { data: [{ current_period_end: 1e100 }] } }) });
   assert.equal(invalid?.currentPeriodEnd, null);
+});
+
+test("destructive deletion requires live proof that every recorded subscription cannot renew", async () => {
+  assert.equal(await legacyDeletionBlocker([]), null);
+  assert.equal((await legacyDeletionBlocker(["sub_fixture"]))?.status, 503);
+  assert.equal((await legacyDeletionBlocker(["sub_fixture"], "test-secret",
+    async () => Response.json(subscription)))?.status, 409);
+  for (const status of [404, 503]) {
+    assert.equal((await legacyDeletionBlocker(["sub_fixture"], "test-secret",
+      async () => Response.json({}, { status })))?.status, 502);
+  }
+  for (const payload of [{ ...subscription, status: "canceled" }, { ...subscription, cancel_at_period_end: true }]) {
+    assert.equal(await legacyDeletionBlocker(["sub_fixture"], "test-secret", async (_url, init) => {
+      assert.equal(init?.method, "GET");
+      return Response.json(payload);
+    }), null);
+  }
+});
+
+test("one renewing Company subscription blocks account deletion even when Personal is cancelled", async () => {
+  const result = await legacyDeletionBlocker(["sub_fixture", "sub_company"], "test-secret", async (url) =>
+    Response.json(String(url).endsWith("sub_fixture")
+      ? { ...subscription, status: "canceled" }
+      : { ...subscription, id: "sub_company" }));
+  assert.equal(result?.status, 409);
 });
