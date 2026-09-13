@@ -26,7 +26,7 @@ Apply the approved Strap visual language to authentication, setup, OAuth consent
 
 ## Acceptance Criteria
 
-- [ ] Authentication and communication surfaces share the approved Strap visual hierarchy and accessibility behavior.
+- [x] Authentication and communication surfaces share the approved Strap visual hierarchy and accessibility behavior.
 
 ## Traceability
 - Story: none
@@ -35,10 +35,10 @@ Apply the approved Strap visual language to authentication, setup, OAuth consent
 ## Technical Notes
 
 ## Definition of Done
-- [ ] Implementation complete
-- [ ] Tests pass
-- [ ] Review complete
-- [ ] Docs updated
+- [x] Implementation complete
+- [x] Tests pass
+- [x] Review complete
+- [x] Docs updated
 
 ## Evidence Log
 
@@ -46,3 +46,5 @@ Apply the approved Strap visual language to authentication, setup, OAuth consent
 
 - 2026-09-13T09:56:18Z: Approved worktable direction; auth, consent, device, invite, and email surfaces.
 - 2026-07-24T21:18:46Z: Created from .project/templates/task.md by `delano task add`.
+
+- 2026-09-13: Coordinator reviewed the implementation and browser evidence, completed local role/empty-profile checks, and verified all local quality gates. Acceptance checkboxes reconciled with this evidence. External PR review and merge are the remaining release gates.

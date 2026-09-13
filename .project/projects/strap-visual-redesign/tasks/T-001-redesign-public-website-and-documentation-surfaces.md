@@ -26,7 +26,7 @@ Apply the approved Strap visual language to the inner site shell, docs, pricing,
 
 ## Acceptance Criteria
 
-- [ ] Public surfaces use one approved Strap visual system at desktop and mobile widths.
+- [x] Public surfaces use one approved Strap visual system at desktop and mobile widths.
 
 ## Traceability
 - Story: none
@@ -35,10 +35,10 @@ Apply the approved Strap visual language to the inner site shell, docs, pricing,
 ## Technical Notes
 
 ## Definition of Done
-- [ ] Implementation complete
-- [ ] Tests pass
-- [ ] Review complete
-- [ ] Docs updated
+- [x] Implementation complete
+- [x] Tests pass
+- [x] Review complete
+- [x] Docs updated
 
 ## Evidence Log
 
@@ -46,3 +46,5 @@ Apply the approved Strap visual language to the inner site shell, docs, pricing,
 
 - 2026-09-13T09:56:17Z: Approved worktable direction; rebuilding inner public pages on the shared shell.
 - 2026-07-24T21:18:46Z: Created from .project/templates/task.md by `delano task add`.
+
+- 2026-09-13: Coordinator reviewed the implementation and browser evidence, completed local role/empty-profile checks, and verified all local quality gates. Acceptance checkboxes reconciled with this evidence. External PR review and merge are the remaining release gates.

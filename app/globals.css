@@ -1069,7 +1069,7 @@
 .strap-chip { position: absolute; top: -.82rem; left: 1.5rem; border: 1px solid var(--strap-ink-strong); background: var(--strap-surface); padding: .18rem .62rem; color: var(--strap-ink-strong); font-family: var(--font-strap-mono), monospace; font-size: .68rem; font-weight: 500; letter-spacing: .04em; text-transform: uppercase; }
 .strap-chip-ready { background: var(--strap-ready); }
 .strap-manifest-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .5rem; border-bottom: 1px solid var(--strap-ink-strong); padding-bottom: .85rem; }
-.strap-manifest-head b { color: var(--strap-environments); font-weight: 500; }
+.strap-manifest-head b { color: var(--strap-success); font-weight: 500; }
 .strap-swatch { display: inline-block; width: .78rem; height: .78rem; margin-right: .5rem; border: 1px solid var(--strap-ink-strong); vertical-align: baseline; }
 .strap-bg-context { background: var(--strap-context); }
 .strap-bg-skills { background: var(--strap-skills); }
@@ -1091,7 +1091,7 @@
 .strap-resource-context .strap-chip { background: var(--strap-context); color: #fff; }
 .strap-resource-skills .strap-chip { background: var(--strap-skills); color: #fff; }
 .strap-resource-secrets .strap-chip { background: var(--strap-secrets); color: #fff; }
-.strap-resource-environments .strap-chip { background: var(--strap-environments); color: #fff; }
+.strap-resource-environments .strap-chip { background: var(--strap-environments); color: var(--strap-ink-strong); }
 .strap-resource-agents .strap-chip { background: var(--strap-agents); }
 
 .strap-chapter-grid { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); align-items: center; gap: clamp(2rem, 5vw, 4.5rem); }

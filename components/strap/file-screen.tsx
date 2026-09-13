@@ -10,7 +10,6 @@ import {
   useSyncExternalStore,
   type ReactNode,
 } from "react";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 import {
   AnimatePresence,
@@ -808,7 +807,6 @@ function SaveStatus({
 }
 
 export function FileScreen() {
-  const router = useRouter();
   const {
     state,
     toggleLock,
@@ -2201,12 +2199,6 @@ export function FileScreen() {
   ]);
 
   useEffect(() => {
-    if (state.sections.length === 0) {
-      router.replace("/onboarding");
-    }
-  }, [router, state.sections.length]);
-
-  useEffect(() => {
     if (!pullDialogOpen || !pullPreview) {
       setShowPullPreview(false);
       return;
@@ -2930,11 +2922,14 @@ export function FileScreen() {
                   {visibleSections.length === 0 ? (
                     <div className="flex flex-col items-center justify-center gap-2 rounded-[var(--radius-xl)] border border-dashed border-[var(--strap-border)] px-4 py-16 text-center">
                       <div className="text-[15px] font-medium text-[var(--strap-text-primary)]">
-                        Every section is archived
+                        {state.sections.length > 0 ? "Every section is archived" : "Your Strap is empty"}
                       </div>
                       <div className="max-w-sm text-[13px] leading-6 text-[var(--strap-text-secondary)]">
-                        Restore a section from Settings, under Archived, to
-                        bring it back into your Strap.
+                        {state.sections.length > 0
+                          ? "Restore a section from Settings, under Archived, to bring it back into your Strap."
+                          : canCreateSections
+                            ? "Add a section to start building your context."
+                            : "Your team has not added any sections yet."}
                       </div>
                     </div>
                   ) : null}

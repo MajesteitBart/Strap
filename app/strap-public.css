@@ -132,8 +132,8 @@
 .strap-tone-context { --strap-tone: var(--strap-context); --strap-tone-tint: var(--strap-context-tint); --strap-tone-fg: #fff; }
 .strap-tone-skills { --strap-tone: var(--strap-skills); --strap-tone-tint: var(--strap-skills-tint); --strap-tone-fg: #fff; }
 .strap-tone-secrets { --strap-tone: var(--strap-secrets); --strap-tone-tint: var(--strap-secrets-tint); --strap-tone-fg: #fff; }
-.strap-tone-environments { --strap-tone: var(--strap-environments); --strap-tone-tint: var(--strap-environments-tint); --strap-tone-fg: #fff; }
-.strap-tone-agents { --strap-tone: var(--strap-agents); --strap-tone-tint: var(--strap-agents-tint); --strap-tone-fg: var(--strap-ink-strong); }
+.strap-tone-environments { --strap-tone: var(--strap-environments); --strap-tone-text: var(--strap-success); --strap-tone-tint: var(--strap-environments-tint); --strap-tone-fg: var(--strap-ink-strong); }
+.strap-tone-agents { --strap-tone: var(--strap-agents); --strap-tone-text: #9a5b00; --strap-tone-tint: var(--strap-agents-tint); --strap-tone-fg: var(--strap-ink-strong); }
 .strap-tone-warning { --strap-tone: var(--strap-warning); --strap-tone-tint: var(--strap-warning-tint); --strap-tone-fg: #fff; }
 
 /* ---------------------------------------------------------------------------
@@ -403,7 +403,7 @@
 .strap-plans { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; border: 1px solid var(--strap-ink-strong); background: var(--strap-ink-strong); }
 .strap-plan { position: relative; display: flex; min-width: 0; flex-direction: column; background: var(--strap-surface); padding: 2.1rem 1.5rem 1.5rem; }
 .strap-plan .strap-chip { background: var(--strap-tone, var(--strap-ink-strong)); color: var(--strap-tone-fg, #fff); }
-.strap-plan-name { color: var(--strap-tone, var(--strap-ink-strong)); font-family: var(--font-strap-display), sans-serif; font-size: clamp(1.75rem, 2.6vw, 2.25rem); font-weight: 600; letter-spacing: -.03em; line-height: 1; }
+.strap-site .strap-plan-name { color: var(--strap-tone-text, var(--strap-tone, var(--strap-ink-strong))); font-family: var(--font-strap-display), sans-serif; font-size: clamp(1.75rem, 2.6vw, 2.25rem); font-weight: 600; letter-spacing: -.03em; line-height: 1; }
 .strap-plan-price { display: flex; align-items: baseline; gap: .5rem; margin-top: 1rem; border-bottom: 1px solid var(--strap-ink-strong); padding-bottom: 1rem; }
 .strap-plan-price strong { color: var(--strap-ink-strong); font-family: var(--font-strap-display), sans-serif; font-size: 2.4rem; font-weight: 600; letter-spacing: -.03em; line-height: 1; }
 .strap-plan-price span { color: var(--strap-ink-soft); font-family: var(--font-strap-mono), ui-monospace, monospace; font-size: .74rem; }

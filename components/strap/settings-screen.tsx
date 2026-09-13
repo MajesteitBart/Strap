@@ -29,7 +29,6 @@ import {
   useAnimatedIconControls,
   type AnimatedIconHandle,
 } from "@/components/strap/animated-icon-controls";
-import { useRouter } from "next/navigation";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -135,7 +134,6 @@ export function SettingsScreen() {
 }
 
 function PersonalSettingsScreen() {
-  const router = useRouter();
   const {
     state,
     setDisplayName,
@@ -203,12 +201,6 @@ function PersonalSettingsScreen() {
     const wordCount = exportMarkdown().trim().split(/\s+/).filter(Boolean).length;
     return { sectionCount, wordCount };
   }, [state.sections, exportMarkdown]);
-
-  useEffect(() => {
-    if (state.sections.length === 0) {
-      router.replace("/onboarding");
-    }
-  }, [router, state.sections.length]);
 
   async function saveDisplayName() {
     const next = nameDraft.trim();

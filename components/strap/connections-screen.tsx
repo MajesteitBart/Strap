@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { AnimatedCheckmark } from "@/components/ui/animated-checkmark";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { CopyIcon } from "@/components/ui/copy";
 import { AgentIconStack } from "@/components/strap/agent-icon-stack";
@@ -72,7 +71,6 @@ const EMPTY_CLI_STATUS: CliConnectionStatus = {
 };
 
 export function ConnectionsScreen() {
-  const router = useRouter();
   const { state, refreshState } = useStrap();
   const [copied, setCopied] = useState<string | null>(null);
   const [setupOpen, setSetupOpen] = useState(false);
@@ -85,12 +83,6 @@ export function ConnectionsScreen() {
     setCopied(key);
     window.setTimeout(() => setCopied(null), 1600);
   }
-
-  useEffect(() => {
-    if (state.sections.length === 0) {
-      router.replace("/onboarding");
-    }
-  }, [router, state.sections.length]);
 
   const mcpAgentClients = useMemo(
     () => splitConnectionClients(state.mcpClients).mcp,
