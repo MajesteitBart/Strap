@@ -18,6 +18,7 @@
 ## Evidence So Far
 
 - Release verification PR 10 merged as `2b1de05` after a clean Codex review on `5063384` and green PR checks. All three jobs passed on the first main run: https://github.com/MajesteitBart/Strap/actions/runs/34754241737. Both CLIs finish independently even when one fails.
+- Visual redesign PR 9 merged reviewed head `6501ded` as `675ec97`. All review findings were repaired or refuted with evidence before merge. Main verification passed all three jobs in https://github.com/MajesteitBart/Strap/actions/runs/34756956495. Netlify production deploy `6aa695bcbc6cda0008fdec92` published that merge on 2026-09-13 at 12:24:43 UTC. Live checks passed seven public/auth routes, API/database/auth health, OAuth discovery, and unauthenticated app-route denial.
 
 - Delano research, Spec, plan, workstreams, decisions, and atomic tasks validate for `strap-rebrand`.
 - Fable approved the plan after compatibility blockers were resolved and later passed the grounded agent-contract review.
@@ -26,7 +27,7 @@
 - `@bvdm/strap@0.1.1` passes typecheck and 30 tests. The legacy CLI passes typecheck and 20 compatibility tests. The 51-file Strap tarball installs cleanly, returns Strap help and version `0.1.1`, and is published to npm as the public `latest` release.
 - A bounded, grounded Fable release review passed with no blockers. Its three actionable non-blocking findings were resolved in the same pass.
 - Cloudflare API and public DNS checks confirm `strap.bvdm.ai` resolves to `creed-bvdm.netlify.app`; HTTPS returns 200 with a valid Netlify certificate.
-- Netlify Git-backed production deploy `6a61edde4d776c00087bd686` is ready from commit `1499389` and serves the revised keys title and copy, `https://strap.bvdm.ai/home` canonical URL, healthy API/database/auth checks, and Strap OAuth/MCP discovery. The Git build failure came from the root TypeScript project scanning the independent `packages/strap` CLI without its separately installed dependencies; both CLI packages are now excluded from the web app project and retain their own type-checks and tests. The release uses Next.js `16.2.11` and a Webpack production bundle because Netlify's local Windows edge packager does not trace the generated middleware runtime; the equivalent clean Linux Netlify build and edge packaging pass.
+- Earlier production deploy `6a61edde4d776c00087bd686` from commit `1499389` verified the revised keys title and copy, `https://strap.bvdm.ai/home` canonical URL, healthy API/database/auth checks, and Strap OAuth/MCP discovery. Its Git build failure came from the root TypeScript project scanning the independent `packages/strap` CLI without its separately installed dependencies; both CLI packages are now excluded from the web app project and retain their own type-checks and tests. The release uses Next.js `16.2.11` and a Webpack production bundle because Netlify's local Windows edge packager does not trace the generated middleware runtime; the equivalent clean Linux Netlify build and edge packaging pass.
 - T3 collaborative browser evidence covers the production homepage at mobile, tablet, and desktop widths plus visible keyboard focus. Network requests were clean; the browser reported only Netlify's non-blocking report-only CSP warning.
 - On 2026-07-24 the operator explicitly approved T-009 despite the unavailable Computer Use native helper. The task, WS-D, plan, and Spec are closed, and `delano validate` passes with zero errors or warnings.
 - The follow-up inventory is folded into `.project/projects/strap-rebrand/inventory/index.md` with 111 schema-checked resolution files. All rename-first items are implemented or retained as explicit compatibility/history. The 33 visual-design entries point to the planned redesign follow-up.
@@ -37,7 +38,9 @@
 
 ## What Is Next
 
-- Complete final-head Codex review and merge for visual redesign PR 9. The delegate supplied 53 painted browser captures; coordinator review added empty-profile, Company-role and contrast checks.
+- Apply the additive Company provisioning migration before deploying PR 5. Local migration, concurrency, role and rollback checks pass, but the configured production project still lacks the RPC. Linking succeeded; management access still returns 403. The integrated billing branch passes 200 application tests and standard local checks.
+- Restore OpenWiki generation in draft PR 8 once a funded project key or free quota is available. The configured OpenRouter account has no paid balance, its free quota resets at 2026-09-14 00:00 UTC, and BWS exposes no matching replacement key. Native worker completion failures remain unverified; no failed output was published. BYOK remains available for application AI features.
+- Apply the committed confirmation and recovery email templates through Supabase management access. Hosted template configuration and mail-client rendering have not been verified.
 - Continue serving the `creed.md` compatibility origin during the migration window.
 
 ## Remaining Risks
