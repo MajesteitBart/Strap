@@ -1,75 +1,75 @@
 "use client";
 
-// Shared split-screen chrome for the auth surface: the branded left column
-// (wordmark, optional top-right link, centred content, footer) and the framed
-// image panel on the right. /login, /signup and /reset-password all render
-// inside it so they stay visually identical.
+// Shared worktable chrome for the auth surface: the form column (wordmark,
+// optional top-right link, centred content, footer) and the flat kit panel on
+// the right. /login, /signup and /reset-password all render inside it so they
+// stay visually identical to each other and to the public site.
 
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { BackdropImage } from "@/components/marketing/backdrop-image";
-import { StrapWordmark } from "@/components/strap/brand";
 import { CONTACT_MAILTO } from "@/lib/branding";
 
-const lightPanelImage = "/assets/landing/backdrops/light-auth.png";
-const darkPanelImage = "/assets/landing/backdrops/dark-auth.png";
+const manifest = [
+  { kind: "context", label: "context · available", source: "Personal + Company", ready: true },
+  { kind: "skills", label: "skills · roadmap", source: "not shipped", ready: false },
+  { kind: "secrets", label: "keys · available", source: "Vault + headless access", ready: true },
+] as const;
 
 export function AuthShell({ topRight, children }: { topRight?: ReactNode; children: ReactNode }) {
   return (
-    <div className="relative flex min-h-screen bg-[var(--strap-background)] text-[var(--strap-text-primary)]">
-      <div className="flex w-full flex-col px-6 py-6 md:w-1/2 md:px-12 md:py-8 lg:px-20">
-        <div className="flex items-center justify-between">
-          <Link
-            href="/home"
-            aria-label="Strap home"
-            className="-ml-1 inline-flex shrink-0 items-center transition-opacity duration-200 hover:opacity-60"
-          >
-            <StrapWordmark className="ml-0" />
+    <div className="strap-site strap-auth">
+      <div className="strap-auth-form">
+        <div className="strap-auth-top">
+          <Link className="strap-wordmark" href="/home" aria-label="Strap home">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/assets/brand/strap-logo.svg" width="1003" height="257" alt="Strap" />
           </Link>
           {topRight ? <div>{topRight}</div> : null}
         </div>
 
-        <div className="flex flex-1 items-center justify-center py-10">
-          <div className="w-full max-w-[380px]">{children}</div>
+        <div className="strap-auth-body">
+          <div className="strap-auth-card">{children}</div>
         </div>
 
-        <div className="flex items-center justify-between text-[13px] text-[var(--strap-text-tertiary)]">
+        <div className="strap-auth-foot">
           <span>© 2026 Strap</span>
-          <div className="flex items-center gap-5">
-            <a href={CONTACT_MAILTO} className="transition-colors hover:text-[var(--strap-accent)]">
-              Contact
-            </a>
-            <Link href="/docs" className="transition-colors hover:text-[var(--strap-accent)]">
-              Docs
-            </Link>
+          <span className="strap-footer-links">
+            <a href={CONTACT_MAILTO}>Contact</a>
+            <Link href="/docs">Docs</Link>
+            <Link href="/privacy">Privacy</Link>
+          </span>
+        </div>
+      </div>
+
+      {/* Decorative kit panel (hidden below the desktop breakpoint). It mirrors
+          the homepage manifest so the sign-in screen reads as the same product. */}
+      <aside className="strap-auth-panel" aria-hidden="true">
+        <div className="strap-kit">
+          <span className="strap-backing strap-backing-one" />
+          <span className="strap-backing strap-backing-two" />
+          <div className="strap-manifest">
+            <span className="strap-chip strap-chip-ready">Ready</span>
+            <div className="strap-manifest-head">
+              <span className="strap-mono">
+                <b>strap.md</b> · read before every task
+              </span>
+            </div>
+            {manifest.map((line) => (
+              <div className="strap-manifest-line" key={line.kind}>
+                <span className={`strap-swatch strap-bg-${line.kind}`} />
+                <span>{line.label}</span>
+                <span className="strap-manifest-source">{line.source}</span>
+                <span className="strap-check">{line.ready ? "✓" : "△"}</span>
+              </div>
+            ))}
+            <div className="strap-pattern" />
+          </div>
+          <div className="strap-manifest-cta">
+            <span>Connected agents read this first</span>
+            <span>→</span>
           </div>
         </div>
-      </div>
-
-      {/* Image panel (hidden on mobile). No framed card - the page background
-          fades over the inner edge so the art blends into the form column. */}
-      <div className="relative hidden w-1/2 md:block">
-        <BackdropImage
-          src={lightPanelImage}
-          fileName="light-auth.png"
-          label="Light auth"
-          priority
-          className="dark:hidden"
-        />
-        <BackdropImage
-          src={darkPanelImage}
-          fileName="dark-auth.png"
-          label="Dark auth"
-          hint="portrait"
-          className="hidden dark:block"
-        />
-        {/* Smooth, eased fade from the page bg on the inner (left) edge into
-            the image so it melts in rather than cutting off. */}
-        <div
-          className="pointer-events-none absolute inset-0"
-          style={{ backgroundImage: "var(--strap-backdrop-fade-in-x)" }}
-        />
-      </div>
+      </aside>
     </div>
   );
 }
