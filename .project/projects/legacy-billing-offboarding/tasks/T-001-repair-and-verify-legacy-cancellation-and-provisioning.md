@@ -31,7 +31,7 @@ Integrate PR 5 with current Strap paths, owner checks, reliable cancellation UX,
 - [x] Only the current subscription owner can schedule cancellation; existing cancellation is idempotent and failures recover.
 - [x] Company provisioning is atomic under concurrency and its RPC is unavailable to browser roles in the disposable verification database.
 - [x] Applied migration history is preserved and a clean local Supabase reset plus focused runtime checks pass.
-- [x] Root tests, TypeScript, lint, production build and brand audit pass after redesign integration (199 tests). Earlier browser and local API evidence covers the billing behavior.
+- [x] Root tests, TypeScript, lint, production build and brand audit pass after redesign integration (200 tests). Earlier browser and local API evidence covers the billing behavior.
 - [ ] Apply the additive migration to the configured production database, then merge after final integration checks and review.
 
 ## Traceability
