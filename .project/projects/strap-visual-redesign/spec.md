@@ -2,9 +2,9 @@
 name: Strap Visual Redesign
 slug: strap-visual-redesign
 owner: MajesteitBart
-status: complete
+status: active
 created: 2026-07-24T21:18:45Z
-updated: 2026-09-13T10:29:51Z
+updated: 2026-09-13T12:35:59Z
 outcome: Apply a cohesive Strap visual design language across public, authentication, signed-in product, and communication surfaces after the rename-first release.
 uncertainty: medium
 probe_required: false

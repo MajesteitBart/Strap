@@ -1,10 +1,10 @@
 ---
 name: Strap Visual Redesign
-status: done
+status: active
 lead: MajesteitBart
 created: 2026-07-24T21:18:45Z
-updated: 2026-09-13T10:29:51Z
-linear_project_id: 
+updated: 2026-09-13T12:35:59Z
+linear_project_id:
 risk_level: medium
 spec_status_at_plan_time: planned
 operating_mode: multi-stream

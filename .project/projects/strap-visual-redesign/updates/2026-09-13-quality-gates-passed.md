@@ -18,7 +18,7 @@ stream: WS-D
 - The second PR review found white labels on bright resource kickers. Skills and Environments badges, matching homepage chips, and the orange assembly marker now use dark ink. Public error and secondary card/map text use readable text tones. A second contrast regression checks all public resource kicker/chip pairs; all 186 tests, types, lint, build and brand gates pass.
 
 ## In Progress
-- None for the merged application redesign. PR 9 merged reviewed head 6501ded as 675ec97; all three main checks passed in run 34756956495. Netlify deploy 6aa695bcbc6cda0008fdec92 published the merge at 12:24:43 UTC. Live public/auth routes, API/database/auth health, discovery and unauthenticated app-route denial passed.
+- Hosted email application and rendering remain open under T-002 and T-005; both tasks are blocked on management access and their parent delivery lifecycle is reopened. No email gate is waived. The application portion shipped in PR 9: reviewed head 6501ded merged as 675ec97, all three main checks passed in run 34756956495, and Netlify deploy 6aa695bcbc6cda0008fdec92 published at 12:24:43 UTC. Live public/auth routes, API/database/auth health, discovery and unauthenticated app-route denial passed.
 
 ## Blockers
 - Hosted Supabase confirmation/recovery template application still requires management access; the committed templates and application-served Company invitation email are separate surfaces. Mail-client rendering was not exercised.

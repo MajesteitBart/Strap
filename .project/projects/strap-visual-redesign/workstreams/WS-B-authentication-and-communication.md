@@ -2,9 +2,9 @@
 id: WS-B
 name: WS-B Authentication and Communication
 owner: MajesteitBart
-status: done
+status: active
 created: 2026-07-24T21:18:45Z
-updated: 2026-09-13T10:29:12Z
+updated: 2026-09-13T12:35:59Z
 operating_mode: multi-stream
 ---
 

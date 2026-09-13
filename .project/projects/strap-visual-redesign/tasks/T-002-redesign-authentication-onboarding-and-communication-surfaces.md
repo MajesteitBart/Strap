@@ -1,21 +1,23 @@
 ---
 id: T-002
 name: Redesign authentication onboarding and communication surfaces
-status: done
+status: blocked
 workstream: WS-B
 created: 2026-07-24T21:18:46Z
-updated: 2026-09-13T10:29:12Z
-linear_issue_id: 
-github_issue: 
-github_pr: 
+updated: 2026-09-13T12:35:59Z
+linear_issue_id:
+github_issue:
+github_pr:
 depends_on: []
 conflicts_with: [components/auth, app/authorize, app/device, app/invite, app/onboarding, supabase/email-templates]
 parallel: true
 priority: high
 estimate: L
 operating_mode: multi-stream
-story_id: 
+story_id:
 acceptance_criteria_ids: []
+blocked_owner: MajesteitBart
+blocked_check_back: 2026-09-14
 ---
 
 # Task: Redesign authentication onboarding and communication surfaces
@@ -26,7 +28,7 @@ Apply the approved Strap visual language to authentication, setup, OAuth consent
 
 ## Acceptance Criteria
 
-- [x] Authentication and communication surfaces share the approved Strap visual hierarchy and accessibility behavior.
+- [ ] Authentication and communication surfaces share the approved Strap visual hierarchy and accessibility behavior, including applied hosted templates and delivered-email rendering checks.
 
 ## Traceability
 - Story: none
@@ -36,11 +38,15 @@ Apply the approved Strap visual language to authentication, setup, OAuth consent
 
 ## Definition of Done
 - [x] Implementation complete
-- [x] Tests pass
-- [x] Review complete
+- [ ] Tests pass
+- [ ] Review complete
 - [x] Docs updated
 
 ## Evidence Log
+
+- 2026-09-13T12:35:59Z: Supabase management access is required to apply confirmation and recovery templates, then verify delivered emails
+
+- 2026-09-13T12:35:59Z: Hosted email deployment and rendering remain unverified
 
 - 2026-09-13T10:29:12Z: Commit 49accf2: auth shell and labelled fields, sign-in, sign-up, reset, backend setup, OAuth consent, device authorization, invite, and three email templates on the worktable system with template variables and placeholder copy intact. Sign-in with the hosted test user succeeded through the redesigned form; login, signup, reset, device, invalid authorize, and invalid invite captured at 1440 and 390.
 

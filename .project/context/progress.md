@@ -38,9 +38,9 @@
 
 ## What Is Next
 
-- Apply the additive Company provisioning migration before deploying PR 5. Local migration, concurrency, role and rollback checks pass, but the configured production project still lacks the RPC. Linking succeeded; management access still returns 403. The integrated billing branch passes 200 application tests and standard local checks.
-- Restore OpenWiki generation in draft PR 8 once a funded project key or free quota is available. The configured OpenRouter account has no paid balance, its free quota resets at 2026-09-14 00:00 UTC, and BWS exposes no matching replacement key. Native worker completion failures remain unverified; no failed output was published. BYOK remains available for application AI features.
-- Apply the committed confirmation and recovery email templates through Supabase management access. Hosted template configuration and mail-client rendering have not been verified.
+- Complete final review and deployment for PR 5. The maintainer supplied the database password, and the pending Strap defaults and atomic Company migrations applied successfully to the confirmed production project on 2026-09-13. The service key reaches the RPC and the anonymous role is denied. The billing branch passes 202 application tests and standard local checks.
+- Restore OpenWiki generation in draft PR 8. The maintainer funded OpenRouter on 2026-09-13; the API reports $10 in purchased credits and the production function key matches this checkout's funded key. A new workflow run can now verify the outstanding native-worker completion issue. No output from failed runs has been published. BYOK also remains available.
+- Complete reopened redesign tasks T-002 and T-005: apply the committed confirmation and recovery email templates through Supabase management access and verify delivered emails in mail clients. The application UI is deployed, but the redesign contract remains open until this email gate passes.
 - Continue serving the `creed.md` compatibility origin during the migration window.
 
 ## Remaining Risks
