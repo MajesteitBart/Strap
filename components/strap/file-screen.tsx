@@ -205,7 +205,7 @@ const EMPTY_PROPOSALS: Proposal[] = [];
 
 function getProposalStatusStyles(status: ActivityStatus) {
   if (status === "pending") {
-    return "bg-[var(--strap-context-tint)] text-[var(--strap-accent-hover)]";
+    return "bg-[var(--strap-context-tint)] text-[var(--strap-context)]";
   }
 
   if (status === "direct") {
@@ -281,7 +281,7 @@ function ActivityFilterPill({
           ? "border-[var(--strap-caution)] bg-[var(--strap-agents-tint)] text-[var(--strap-caution)]"
           : tone === "purple"
             ? "border-[var(--strap-secrets)] bg-[var(--strap-secrets-tint)] text-[var(--strap-secrets-text)]"
-            : "border-[var(--strap-accent)] bg-[var(--strap-context-tint)] text-[var(--strap-accent)]";
+            : "border-[var(--strap-accent)] bg-[var(--strap-context-tint)] text-[var(--strap-context)]";
 
   return (
     <motion.button

@@ -27,3 +27,5 @@ stream: WS-D
 -
 
 - Public reduced-motion handling now includes every transitioning selector, including navigation, index rows, FAQ triggers and password visibility controls. All 186 tests, TypeScript, lint, build and brand audit pass after the change.
+
+- The info toast now uses primary text on its context tint, keeping its Refresh action readable at 70 percent opacity. Context links and badges use the text palette, and blue button hover fills support white labels. Regression checks cover all toast tones in both themes, the actual Refresh opacity, context text, and solid action fills. The full suite passes 187 tests.

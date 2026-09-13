@@ -83,7 +83,7 @@ function sectionAccent(accent: string): string {
 // Role pill colours: owner blue, admin green, member amber. Same shape as the
 // personal integration status pills (rounded-[6px] px-1.5 py-0.5 text-[12px]).
 const ROLE_PILL: Record<"owner" | "admin" | "member", string> = {
-  owner: "bg-[var(--strap-context-tint)] text-[var(--strap-accent-hover)]",
+  owner: "bg-[var(--strap-context-tint)] text-[var(--strap-context)]",
   admin: "bg-[var(--strap-environments-tint)] text-[var(--strap-success)]",
   member:
     "bg-[var(--strap-agents-tint)] text-[var(--strap-caution)]",
@@ -1603,7 +1603,7 @@ export function CompanySettings() {
                   target="_blank"
                   rel="noopener noreferrer"
                   title={state.settings.versionControl.lastRemoteMessage}
-                  className="truncate font-medium text-[var(--strap-accent)] transition-colors hover:text-[var(--strap-accent-hover)]"
+                  className="truncate font-medium text-[var(--strap-context)] transition-colors hover:text-[var(--strap-text-primary)]"
                 >
                   {state.settings.versionControl.lastRemoteMessage}
                 </a>

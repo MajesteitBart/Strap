@@ -59,7 +59,7 @@ export function Toaster() {
           error:
             "!bg-[var(--strap-warning-tint)] !text-[var(--strap-danger)] !border-[var(--strap-frame)]",
           info:
-            "!bg-[var(--strap-context-tint)] !text-[var(--strap-accent)] !border-[var(--strap-frame)]",
+            "!bg-[var(--strap-context-tint)] !text-[var(--strap-text-primary)] !border-[var(--strap-frame)]",
         },
       }}
     />

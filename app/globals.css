@@ -211,10 +211,9 @@
   --strap-button-primary-fg: #14120e;
   --strap-button-primary-hover: #d8d1c2;
   --strap-ring-track: rgba(236, 230, 217, 0.16);
-  /* Lifted so white button labels and link text keep contrast on the dark
-     canvas. */
+  /* Solid action fills support white labels. Text uses --strap-context. */
   --strap-accent: #3f62ea;
-  --strap-accent-hover: #5b7bf2;
+  --strap-accent-hover: #3b5be0;
 
   --strap-success: #a9cc3f;
   --strap-danger: #f0715a;

@@ -21,7 +21,7 @@
 
 - Delano research, Spec, plan, workstreams, decisions, and atomic tasks validate for `strap-rebrand`.
 - Fable approved the plan after compatibility blockers were resolved and later passed the grounded agent-contract review.
-- The latest redesign suite passes 186/186 tests, strict TypeScript and ESLint pass, and the production build succeeds with 102 generated routes.
+- The latest redesign suite passes 187/187 tests, strict TypeScript and ESLint pass, and the production build succeeds with 102 generated routes.
 - After integration with the release checks, the exact rebrand audit covers 1,102 tracked repository files and classifies 4,766 remaining case-insensitive Creed occurrences across 437 files and 65 Creed-named paths through 502 reviewed history or compatibility entries.
 - `@bvdm/strap@0.1.1` passes typecheck and 30 tests. The legacy CLI passes typecheck and 20 compatibility tests. The 51-file Strap tarball installs cleanly, returns Strap help and version `0.1.1`, and is published to npm as the public `latest` release.
 - A bounded, grounded Fable release review passed with no blockers. Its three actionable non-blocking findings were resolved in the same pass.
