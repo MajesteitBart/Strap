@@ -4,7 +4,7 @@ status: active
 lead: MajesteitBart
 created: 2026-09-13T11:02:57Z
 updated: 2026-09-13T11:03:32Z
-linear_project_id: 
+linear_project_id:
 risk_level: low
 spec_status_at_plan_time: planned
 operating_mode: patch

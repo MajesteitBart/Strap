@@ -5,16 +5,16 @@ status: in-progress
 workstream: WS-A
 created: 2026-09-13T11:03:32Z
 updated: 2026-09-13T11:03:32Z
-linear_issue_id: 
-github_issue: 
-github_pr: 
+linear_issue_id:
+github_issue:
+github_pr:
 depends_on: []
 conflicts_with: []
 parallel: true
 priority: medium
 estimate: M
 operating_mode: patch
-story_id: 
+story_id:
 acceptance_criteria_ids: []
 ---
 
