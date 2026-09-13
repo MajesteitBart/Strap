@@ -1,21 +1,23 @@
 ---
 id: T-005
 name: Run visual accessibility and browser quality gates
-status: done
+status: blocked
 workstream: WS-D
 created: 2026-07-24T21:18:47Z
-updated: 2026-09-13T10:29:51Z
-linear_issue_id: 
-github_issue: 
-github_pr: 
+updated: 2026-09-13T12:36:00Z
+linear_issue_id:
+github_issue:
+github_pr:
 depends_on: [T-001, T-002, T-003, T-004]
 conflicts_with: [repository-wide-quality]
 parallel: false
 priority: high
 estimate: L
 operating_mode: multi-stream
-story_id: 
+story_id:
 acceptance_criteria_ids: []
+blocked_owner: MajesteitBart
+blocked_check_back: 2026-09-14
 ---
 
 # Task: Run visual accessibility and browser quality gates
@@ -26,7 +28,7 @@ Verify the completed visual redesign across supported routes, responsive widths,
 
 ## Acceptance Criteria
 
-- [x] Visual regression review, accessibility checks, browser smoke, tests, lint, typecheck, and build all pass with evidence.
+- [ ] Visual regression review, accessibility checks, browser smoke, email rendering, tests, lint, typecheck, and build all pass with evidence.
 
 ## Traceability
 - Story: none
@@ -35,12 +37,16 @@ Verify the completed visual redesign across supported routes, responsive widths,
 ## Technical Notes
 
 ## Definition of Done
-- [x] Implementation complete
-- [x] Tests pass
-- [x] Review complete
+- [ ] Implementation complete
+- [ ] Tests pass
+- [ ] Review complete
 - [x] Docs updated
 
 ## Evidence Log
+
+- 2026-09-13T12:36:00Z: Await T-002 hosted email application and mail-client rendering evidence
+
+- 2026-09-13T12:36:00Z: Email rendering is still an outstanding release gate
 
 - 2026-09-13T10:29:51Z: tsc, lint, 184 tests, production build, renewed brand audit, and Delano validation pass. 53 headless Chrome captures cover public, auth, mobile, keyboard, reduced motion, signed-in, dark, and Company routes with no overflow, stalled boundaries, or console errors beyond the 404 document. Remaining gaps recorded in the T-005 update and the coordinator handoff.
 - 2026-07-24T21:18:47Z: Created from .project/templates/task.md by `delano task add`.

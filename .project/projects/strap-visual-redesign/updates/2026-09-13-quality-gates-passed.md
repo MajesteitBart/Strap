@@ -18,10 +18,10 @@ stream: WS-D
 - The second PR review found white labels on bright resource kickers. Skills and Environments badges, matching homepage chips, and the orange assembly marker now use dark ink. Public error and secondary card/map text use readable text tones. A second contrast regression checks all public resource kicker/chip pairs; all 186 tests, types, lint, build and brand gates pass.
 
 ## In Progress
-- Final-head review, CI and deployment for PR 9. PR 10 merged the independent app and CLI verification workflow; all three jobs passed on main commit 2b1de05 in run 34754241737.
+- Hosted email application and rendering remain open under T-002 and T-005; both tasks are blocked on management access and their parent delivery lifecycle is reopened. No email gate is waived. The application portion shipped in PR 9: reviewed head 6501ded merged as 675ec97, all three main checks passed in run 34756956495, and Netlify deploy 6aa695bcbc6cda0008fdec92 published at 12:24:43 UTC. Live public/auth routes, API/database/auth health, discovery and unauthenticated app-route denial passed.
 
 ## Blockers
-- None
+- Hosted Supabase confirmation/recovery template application still requires management access; the committed templates and application-served Company invitation email are separate surfaces. Mail-client rendering was not exercised.
 
 ## Next Actions
 -
@@ -29,3 +29,5 @@ stream: WS-D
 - Public reduced-motion handling now includes every transitioning selector, including navigation, index rows, FAQ triggers and password visibility controls. All 186 tests, TypeScript, lint, build and brand audit pass after the change.
 
 - The info toast now uses primary text on its context tint, keeping its Refresh action readable at 70 percent opacity. Context links and badges use the text palette, and blue button hover fills support white labels. Regression checks cover all toast tones in both themes, the actual Refresh opacity, context text, and solid action fills. The full suite passes 187 tests.
+- Later review repairs cover mobile-menu breakpoint visibility, every copy-animation frame, unfinished Company setup badges, permission icons, and light consent icons and portaled menus under a saved dark theme. Browser computed-style probes confirm the public menu palette remains light without full-page dimensions.
+- The final nested-landmark finding was refuted: the production /file loader tree and installed Next sources place the root error boundary above the signed-in layout, replacing its main element. Automatic approval review blocked a supplementary local test-server launch, so no runtime error-boundary pass is claimed. The temporary probe route was removed and the production build rerun successfully.
