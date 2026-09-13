@@ -20,4 +20,4 @@ updated: 2026-09-13T13:38:18Z
 - None.
 
 ## Open Decision Questions
-- No unresolved product decisions. Final-head review, CI, scoped CLI publication, merge, and production verification remain release gates.
+- No unresolved product decisions. Review, CI, scoped CLI publication, merge, and production verification are complete; see the release completion update.

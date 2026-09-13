@@ -1,10 +1,10 @@
 ---
 id: T-004
 name: Verify and release shared skills
-status: in-progress
+status: done
 workstream: WS-A
 created: 2026-09-13T13:38:19Z
-updated: 2026-09-13T15:18:44Z
+updated: 2026-09-13T16:27:12Z
 linear_issue_id:
 github_issue:
 github_pr:
@@ -25,8 +25,8 @@ Release only after final tests, local migration verification, browser acceptance
 
 ## Acceptance Criteria
 
-- [ ] App and both CLI suites, types, lint, build, database and browser checks pass.
-- [ ] Reviewed feature is merged, migration is applied, production and packaged CLI flows are verified.
+- [x] App and both CLI suites, types, lint, build, database and browser checks pass.
+- [x] Reviewed feature is merged, migration is applied, production and packaged CLI flows are verified.
 
 ## Traceability
 - Story: none
@@ -35,12 +35,16 @@ Release only after final tests, local migration verification, browser acceptance
 ## Technical Notes
 
 ## Definition of Done
-- [ ] Implementation complete
-- [ ] Tests pass
-- [ ] Review complete
-- [ ] Docs updated
+- [x] Implementation complete
+- [x] Tests pass
+- [x] Review complete
+- [x] Docs updated
 
 ## Evidence Log
+
+- 2026-09-13T16:27:12Z: PR 13 merged as ae692af after completed clean review and green CI; exact production deployment and hosted migrations verified. npm 0.2.0 published with matching integrity and fresh registry-installed two-device sync passed. Evidence: updates/2026-09-13-release-complete.md
+
+- 2026-09-13T16:23:07Z: App merged and production verified. CLI 0.2.0 is tested and publish-authorized, but npm requires a separate browser MFA approval; the interactive challenge expired without completion.
 
 - 2026-09-13T15:18:44Z: Browser acceptance complete; migration applied; final review, CI, package publication and production verification remain.
 - 2026-09-13T13:38:19Z: Created from .project/templates/task.md by `delano task add`.

@@ -8,7 +8,7 @@ updated: 2026-07-23T02:58:09Z
 linear_issue_id: 
 github_issue: 
 github_pr: 
-depends_on: [T-002 T-003 T-004 T-005 T-006 T-007]
+depends_on: [T-002, T-003, T-004, T-005, T-006, T-007]
 conflicts_with: []
 parallel: false
 priority: medium

@@ -1,9 +1,9 @@
 ---
 name: Runtime dependency security
-status: active
+status: done
 lead: MajesteitBart
 created: 2026-09-13T13:06:54Z
-updated: 2026-09-13T13:06:55Z
+updated: 2026-09-13T16:38:13Z
 linear_project_id:
 risk_level: medium
 spec_status_at_plan_time: planned

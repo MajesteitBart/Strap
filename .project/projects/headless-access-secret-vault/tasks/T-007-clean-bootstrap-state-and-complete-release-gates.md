@@ -8,7 +8,7 @@ updated: 2026-07-22T08:31:23Z
 linear_issue_id:
 github_issue:
 github_pr: https://github.com/MajesteitBart/Creed/pull/2
-depends_on: [T-004 T-006]
+depends_on: [T-004, T-006]
 conflicts_with: [BOOTSTRAP.md, .project/context, package scripts]
 parallel: false
 priority: high

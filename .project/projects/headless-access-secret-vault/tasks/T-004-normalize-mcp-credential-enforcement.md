@@ -8,7 +8,7 @@ updated: 2026-07-22T06:10:48Z
 linear_issue_id:
 github_issue:
 github_pr:
-depends_on: [T-002 T-003]
+depends_on: [T-002, T-003]
 conflicts_with: [app/mcp/route.ts, lib/oauth.ts]
 parallel: false
 priority: high

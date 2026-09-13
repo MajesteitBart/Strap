@@ -8,7 +8,7 @@ updated: 2026-07-22T06:18:05Z
 linear_issue_id:
 github_issue:
 github_pr:
-depends_on: [T-002 T-003 T-005]
+depends_on: [T-002, T-003, T-005]
 conflicts_with: [components/creed/connections-screen.tsx, components/creed/shell.tsx]
 parallel: false
 priority: high

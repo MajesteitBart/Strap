@@ -8,7 +8,7 @@ updated: 2026-07-24T20:51:13Z
 linear_issue_id:
 github_issue:
 github_pr:
-depends_on: [T-001 T-002 T-003 T-004 T-005 T-006 T-007 T-008]
+depends_on: [T-001, T-002, T-003, T-004, T-005, T-006, T-007, T-008]
 conflicts_with: [components/creed, app/(creed-app), lib/creed-*, .agents/skills/creed-repo, repository-wide-imports]
 parallel: false
 priority: high

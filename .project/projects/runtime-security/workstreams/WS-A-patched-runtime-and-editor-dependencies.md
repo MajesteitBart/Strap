@@ -2,9 +2,9 @@
 id: WS-A
 name: WS-A Patched runtime and editor dependencies
 owner: MajesteitBart
-status: active
+status: done
 created: 2026-09-13T13:06:54Z
-updated: 2026-09-13T13:06:55Z
+updated: 2026-09-13T16:38:13Z
 operating_mode: patch
 ---
 

@@ -2,9 +2,9 @@
 id: WS-A
 name: WS-A Library and device sync
 owner: MajesteitBart
-status: active
+status: done
 created: 2026-09-13T13:38:18Z
-updated: 2026-09-13T13:38:19Z
+updated: 2026-09-13T16:27:12Z
 operating_mode: feature
 ---
 
