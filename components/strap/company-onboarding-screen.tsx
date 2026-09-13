@@ -778,7 +778,7 @@ const ATTRIBUTION_ENTRIES: AttributionEntry[] = [
 // The exact activity-pill tokens from the app (getProposalStatusStyles): blue
 // for a pending proposal, amber for a direct edit, green for an accepted one.
 const ATTRIBUTION_STATUS_STYLES: Record<AttributionEntry["status"], string> = {
-  Proposed: "bg-[var(--strap-context-tint)] text-[var(--strap-accent-hover)]",
+  Proposed: "bg-[var(--strap-context-tint)] text-[var(--strap-context)]",
   Direct: "bg-[var(--strap-agents-tint)] text-[var(--strap-caution)]",
   Accepted: "bg-[var(--strap-environments-tint)] text-[var(--strap-success)]",
 };
@@ -963,7 +963,7 @@ const CONTROL_ACTIVITY_ITEMS = [
     before: "Agents should ask before changing finance or legal.",
     after: "Agents should ask before changing finance, legal, fundraising, or public positioning.",
     avatar: "C",
-    avatarClassName: "bg-[#E0F2FE] text-[var(--strap-accent)]",
+    avatarClassName: "bg-[var(--strap-context-tint)] text-[var(--strap-context)]",
     agent: null,
   },
   {
@@ -992,7 +992,7 @@ const CONTROL_ACTIVITY_ITEMS = [
 
 const CONTROL_STATUS_STYLES: Record<(typeof CONTROL_ACTIVITY_ITEMS)[number]["status"], string> = {
   Direct: "bg-[var(--strap-agents-tint)] text-[var(--strap-caution)]",
-  Proposed: "bg-[var(--strap-context-tint)] text-[var(--strap-accent-hover)]",
+  Proposed: "bg-[var(--strap-context-tint)] text-[var(--strap-context)]",
   Accepted: "bg-[var(--strap-environments-tint)] text-[var(--strap-success)]",
 };
 

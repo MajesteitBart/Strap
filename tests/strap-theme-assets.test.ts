@@ -184,9 +184,9 @@ test("solid status actions keep white labels readable in both themes", async () 
     });
     return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
   };
-  for (const tone of ["success", "danger"]) {
+  for (const base of ["--strap-success-fill", "--strap-danger-fill", "--strap-accent"]) {
     for (const state of ["", "-hover"]) {
-      const token = `--strap-${tone}-fill${state}`;
+      const token = `${base}${state}`;
       const pattern = new RegExp(`${token}: #([a-fA-F0-9]{6});`);
       for (const theme of [light, dark]) {
         const color = theme.match(pattern)?.[1] ?? light.match(pattern)?.[1];
@@ -226,6 +226,47 @@ test("public resource labels pair their fills with readable foregrounds", async 
       assert.ok(background && foreground, `${selector} must declare its colours`);
       const [a, b] = [luminance(background), luminance(foreground)].sort((x, y) => y - x);
       assert.ok((a + 0.05) / (b + 0.05) >= 4.5, `${selector} must meet 4.5:1 contrast`);
+    }
+  }
+});
+
+test("toast labels, Refresh action and context text are readable in both themes", async () => {
+  const css = await readFile("app/globals.css", "utf8");
+  const toaster = await readFile("components/ui/toaster.tsx", "utf8");
+  const notifier = await readFile("components/strap/app-version-notifier.tsx", "utf8");
+  const root = css.match(/:root\s*\{([\s\S]*?)\n\}/)?.[1] ?? "";
+  const dark = css.match(/\n\.dark\s*\{([\s\S]*?)\n\}/)?.[1] ?? "";
+  const opacity = Number(notifier.match(/!opacity-(\d+)/)?.[1]) / 100;
+  assert.ok(opacity > 0 && opacity <= 1);
+  for (const theme of [root, root + dark]) {
+    const vars = new Map([...theme.matchAll(/(--[\w-]+):\s*([^;]+);/g)].map((m) => [m[1], m[2]]));
+    const rgb = (token: string): number[] => {
+      let value = vars.get(token) ?? "";
+      const reference = value.match(/^var\((--[\w-]+)\)$/)?.[1];
+      if (reference) return rgb(reference);
+      if (/^#[\da-f]{3}$/i.test(value)) value = "#" + value.slice(1).split("").map((c) => c + c).join("");
+      assert.match(value, /^#[\da-f]{6}$/i);
+      return [1, 3, 5].map((i) => parseInt(value.slice(i, i + 2), 16) / 255);
+    };
+    const luminance = (channels: number[]) => {
+      const linear = channels.map((v) => v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
+      return linear[0] * 0.2126 + linear[1] * 0.7152 + linear[2] * 0.0722;
+    };
+    const contrast = (foreground: number[], background: number[], alpha = 1) => {
+      const mixed = foreground.map((v, i) => v * alpha + background[i] * (1 - alpha));
+      const [a, b] = [luminance(mixed), luminance(background)].sort((x, y) => y - x);
+      return (a + 0.05) / (b + 0.05);
+    };
+    for (const tone of ["success", "warning", "error", "info"]) {
+      const classes = toaster.match(new RegExp(`${tone}:\\s*"([^"]+)"`))?.[1] ?? "";
+      const fg = classes.match(/text-\[var\((--[\w-]+)\)\]/)?.[1];
+      const bg = classes.match(/bg-\[var\((--[\w-]+)\)\]/)?.[1];
+      assert.ok(fg && bg, `${tone} must specify its text and surface`);
+      assert.ok(contrast(rgb(fg), rgb(bg)) >= 4.5, `${tone} toast text must meet 4.5:1`);
+      if (tone === "info") assert.ok(contrast(rgb(fg), rgb(bg), opacity) >= 4.5, "Refresh must meet 4.5:1 at its resting opacity");
+    }
+    for (const surface of ["--strap-surface", "--strap-context-tint"]) {
+      assert.ok(contrast(rgb("--strap-context"), rgb(surface)) >= 4.5, `Context text on ${surface} must meet 4.5:1`);
     }
   }
 });

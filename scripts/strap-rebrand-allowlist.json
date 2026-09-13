@@ -2228,7 +2228,7 @@
       "file": "app/globals.css",
       "kind": "content",
       "occurrences": 87,
-      "fingerprint": "1a9e6df04dbc2058471c66ea94b1af8db00322bc11c622b626bc36600dcc2bd7",
+      "fingerprint": "8537dc68a09886f49c093034364971429749a9b080b7eccf7694a72f84017afd",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."

@@ -217,7 +217,7 @@ export function FeedbackMenuItem() {
                     Need help?{" "}
                     <a
                       href={CONTACT_MAILTO}
-                      className="font-medium text-[var(--strap-accent)] transition-colors hover:text-[var(--strap-accent-hover)]"
+                      className="font-medium text-[var(--strap-context)] transition-colors hover:text-[var(--strap-text-primary)]"
                     >
                       Contact us
                     </a>
@@ -227,7 +227,7 @@ export function FeedbackMenuItem() {
                         or{" "}
                         <Link
                           href="/docs"
-                          className="font-medium text-[var(--strap-accent)] transition-colors hover:text-[var(--strap-accent-hover)]"
+                          className="font-medium text-[var(--strap-context)] transition-colors hover:text-[var(--strap-text-primary)]"
                         >
                           see docs
                         </Link>

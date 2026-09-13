@@ -1181,7 +1181,7 @@ function PersonalSettingsScreen() {
                           target="_blank"
                           rel="noopener noreferrer"
                           title={versionStatus.remoteMessage}
-                          className="truncate font-medium text-[var(--strap-accent)] transition-colors hover:text-[var(--strap-accent-hover)]"
+                          className="truncate font-medium text-[var(--strap-context)] transition-colors hover:text-[var(--strap-text-primary)]"
                         >
                           {versionStatus.remoteMessage}
                         </a>
