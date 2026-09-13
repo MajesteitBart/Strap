@@ -22,8 +22,7 @@ export async function GET() {
       .select("status,current_period_end,cancel_at_period_end,stripe_subscription_id,billing_mode")
       .eq("user_id", auth.user.id).maybeSingle(),
     auth.supabase.from("creed_company_billing")
-      .select("creed_id,status,current_period_end,cancel_at_period_end,stripe_subscription_id,billing_mode")
-      .eq("owner_user_id", auth.user.id),
+      .select("creed_id,status,current_period_end,cancel_at_period_end,stripe_subscription_id,billing_mode"),
     auth.supabase.from("creeds").select("id")
       .eq("owner_user_id", auth.user.id).eq("type", "company"),
   ]);
@@ -48,6 +47,8 @@ export async function GET() {
     incomplete.push({ scope: "personal", strapId: null, error: incompleteMessage, requiresSupport: true });
   }
   for (const company of companyResult.data ?? []) {
+    // RLS limits the read; canonical Company ownership authorizes offboarding.
+    // The historical billing owner may still name a previous owner.
     if (!ownedIds.has(company.creed_id)) continue;
     if (!company.stripe_subscription_id?.trim()) {
       if (company.billing_mode === "subscription") {
@@ -88,7 +89,7 @@ export async function DELETE(request: Request) {
     ? await auth.supabase.from("creed_entitlements").select("stripe_subscription_id,billing_mode")
         .eq("user_id", auth.user.id).maybeSingle()
     : await auth.supabase.from("creed_company_billing").select("stripe_subscription_id,billing_mode")
-        .eq("creed_id", target.strapId).eq("owner_user_id", auth.user.id).maybeSingle();
+        .eq("creed_id", target.strapId).maybeSingle();
   if (result.error) return errorResponse("Could not check legacy subscriptions.", 500);
   const subscriptionId: unknown = result.data?.stripe_subscription_id;
   if (typeof subscriptionId !== "string" || !subscriptionId.trim()) {
@@ -109,12 +110,12 @@ export async function DELETE(request: Request) {
       cancel_at_period_end: subscription.cancelAtPeriodEnd,
       current_period_end: subscription.currentPeriodEnd,
     };
-    // Bind the local write to the exact owner and subscription that were authorized.
+    // Bind the write to the authorized profile and exact subscription.
     const update = target.scope === "personal"
       ? await admin.from("creed_entitlements").update(patch)
           .eq("user_id", auth.user.id).eq("stripe_subscription_id", subscriptionId).select("user_id")
       : await admin.from("creed_company_billing").update(patch)
-          .eq("creed_id", target.strapId).eq("owner_user_id", auth.user.id)
+          .eq("creed_id", target.strapId)
           .eq("stripe_subscription_id", subscriptionId).select("creed_id");
     if (update.error || !Array.isArray(update.data) || !update.data.length) {
       return errorResponse("Stripe confirmed cancellation, but local status could not be saved. Refresh to confirm.", 500);

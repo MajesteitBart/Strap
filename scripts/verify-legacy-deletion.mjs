@@ -20,6 +20,7 @@ const database = localOrigin(env.NEXT_PUBLIC_SUPABASE_URL);
 assert.equal(env.STRIPE_SECRET_KEY, "sk_test_local_fixture", "Fixture key required.");
 const admin = createClient(database, env.SUPABASE_SECRET_KEY, { auth: { persistSession: false } });
 let userId;
+let formerOwnerId;
 try {
   const password = randomUUID() + "aA9!";
   const email = `strap-deletion-${randomUUID()}@example.invalid`;
@@ -34,11 +35,21 @@ try {
   const company = await admin.rpc("provision_company_creed", { p_owner: userId });
   assert.ifError(company.error);
   const companyId = company.data;
+  const formerPassword = randomUUID() + "aA9!";
+  const formerEmail = `strap-former-owner-${randomUUID()}@example.invalid`;
+  const former = await admin.auth.admin.createUser({ email: formerEmail, password: formerPassword, email_confirm: true });
+  assert.ifError(former.error);
+  formerOwnerId = former.data.user.id;
+  const formerCookies = [];
+  const formerClient = createServerClient(database, env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, {
+    cookies: { getAll: () => [], setAll: (values) => formerCookies.push(...values) },
+  });
+  assert.ifError((await formerClient.auth.signInWithPassword({ email: formerEmail, password: formerPassword })).error);
   assert.ifError((await admin.from("creed_entitlements").insert({ user_id: userId, email,
     stripe_session_id: `cs_${randomUUID()}`, stripe_price_id: "price_fixture", amount_cents: 100,
     billing_mode: "subscription", status: "active", stripe_subscription_id: "sub_verification_active" })).error);
   assert.ifError((await admin.from("creed_company_billing").insert({ creed_id: companyId,
-    owner_user_id: userId, billing_mode: "subscription", status: "active",
+    owner_user_id: formerOwnerId, billing_mode: "subscription", status: "active",
     stripe_subscription_id: "sub_verification_active" })).error);
   async function remove(path, body) {
     const response = await fetch(origin + path, { method: "DELETE", redirect: "error",
@@ -52,6 +63,20 @@ try {
   const removeCompany = () => remove("/api/app/company", { strapId: companyId });
   const personalState = async (id) => assert.ifError((await admin.from("creed_entitlements")
     .update({ stripe_subscription_id: id }).eq("user_id", userId)).error);
+  const formerHeaders = { "Content-Type": "application/json",
+    Cookie: formerCookies.map(({ name, value }) => `${name}=${value}`).join("; ") };
+  const formerLookup = await fetch(origin + "/api/app/legacy-subscriptions", { headers: formerHeaders });
+  assert.equal(formerLookup.status, 200);
+  const formerNotices = await formerLookup.json();
+  assert.equal(formerNotices.subscriptions.length, 0, "Historical billing ownership must not grant access.");
+  assert.equal(formerNotices.failures.length, 0);
+  const forbidden = await fetch(origin + "/api/app/legacy-subscriptions", { method: "DELETE", headers: formerHeaders,
+    body: JSON.stringify({ scope: "company", strapId: companyId }) });
+  assert.equal(forbidden.status, 404, "A previous owner must not cancel the current Company's subscription.");
+  assert.equal(await remove("/api/app/legacy-subscriptions", { scope: "company", strapId: companyId }), 200,
+    "The current owner can cancel despite stale billing ownership.");
+  assert.equal((await admin.from("creed_company_billing").select("cancel_at_period_end")
+    .eq("creed_id", companyId).single()).data.cancel_at_period_end, true);
   assert.equal(await removeAccount(), 409);
   assert.equal(await removeCompany(), 409);
   assert.ifError((await admin.auth.admin.getUserById(userId)).error);
@@ -88,4 +113,5 @@ try {
   process.stdout.write("Legacy deletion API checks passed: renewal and provider errors preserve records; confirmed cancellations allow deletion.\n");
 } finally {
   if (userId) await admin.auth.admin.deleteUser(userId);
+  if (formerOwnerId) await admin.auth.admin.deleteUser(formerOwnerId);
 }

@@ -14,6 +14,7 @@ globalThis.fetch = async (input, init) => {
   if (!["sub_verification_active", "sub_verification_scheduled", "sub_verification_canceled"].includes(id)) {
     return Response.json({ error: { code: "resource_missing" } }, { status: 404 });
   }
+  const cancel = init?.method === "POST" && new URLSearchParams(init.body).get("cancel_at_period_end") === "true";
   return Response.json({ id, status: id.endsWith("canceled") ? "canceled" : "active",
-    cancel_at_period_end: id.endsWith("scheduled"), items: { data: [{ current_period_end: 1_800_000_000 }] } });
+    cancel_at_period_end: cancel || id.endsWith("scheduled"), items: { data: [{ current_period_end: 1_800_000_000 }] } });
 };

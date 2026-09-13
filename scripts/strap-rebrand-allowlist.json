@@ -1904,7 +1904,7 @@
       "file": "app/api/app/legacy-subscriptions/route.ts",
       "kind": "content",
       "occurrences": 15,
-      "fingerprint": "b5ba76f2e09ea3a1001fe0b157a534a29600c73b62ffcf5ee970dec600939916",
+      "fingerprint": "76c0c8969b2a95c4a8709ae3542c767d0fcf29d415436f831bf8edbe3228f023",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -3748,8 +3748,8 @@
     {
       "file": "scripts/verify-legacy-deletion.mjs",
       "kind": "content",
-      "occurrences": 13,
-      "fingerprint": "3c832f1d96e236ff2a306b615ca9a6a82d61a8b5a315880561436050a4a5912a",
+      "occurrences": 15,
+      "fingerprint": "30cb22d001f77727cdb5200c32a71ef4311aa870e6fc5ab4798d100a940f486b",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
