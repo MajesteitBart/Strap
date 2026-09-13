@@ -1,25 +1,32 @@
 import type { FaqItem } from "@/lib/marketing/faq";
 import { FaqAccordion } from "@/components/marketing/faq-accordion";
+import { cn } from "@/lib/utils";
 
 export function FaqSection({
   heading,
   items,
   className,
+  tone = "context",
+  lede,
 }: {
   heading?: string;
   items: FaqItem[];
   className?: string;
+  tone?: "context" | "skills" | "secrets" | "environments" | "agents";
+  lede?: string;
 }) {
   return (
-    <section className={className}>
+    <section className={cn("strap-page-section", `strap-tone-${tone}`, className)}>
       {heading ? (
-        <h2 className="text-[22px] font-medium tracking-[-0.01em] text-[var(--strap-text-primary)] md:text-[26px]">
-          {heading}
-        </h2>
+        <div className="strap-page-section-head">
+          <div>
+            <h2>{heading}</h2>
+            {lede ? <p>{lede}</p> : null}
+          </div>
+          <span className="strap-pill strap-pill-count">{items.length} answers</span>
+        </div>
       ) : null}
-      <div className="mt-6">
-        <FaqAccordion items={items} />
-      </div>
+      <FaqAccordion items={items} />
     </section>
   );
 }

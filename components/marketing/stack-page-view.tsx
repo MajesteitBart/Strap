@@ -1,152 +1,141 @@
-"use client";
-
-import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import {
-  ArrowUpRightIcon,
-  type ArrowUpRightIconHandle,
-} from "@/components/ui/arrow-up-right";
-import { AnimatedPageTitle } from "@/components/marketing/animated-page-title";
-import { MarketingFooter, MarketingHeroBanner } from "@/components/marketing/site-chrome";
+  StrapPageHero,
+  StrapSiteFooter,
+  StrapSiteHeader,
+} from "@/components/marketing/strap-site-shell";
+import { isSupabaseConfigured } from "@/lib/supabase/env";
 
 const stackRows = [
   {
     name: "Next.js, React, and TypeScript",
     purpose: "Application framework, user interface, and strict implementation language",
     website: "https://nextjs.org",
+    tone: "context",
   },
   {
     name: "Tailwind CSS, Tiptap, and Motion",
     purpose: "Styling, rich-text editing, and interaction motion",
     website: "https://tailwindcss.com",
+    tone: "context",
   },
   {
     name: "Supabase",
     purpose: "Authentication, Postgres, RLS, realtime, storage, and Vault",
     website: "https://supabase.com",
+    tone: "secrets",
   },
   {
     name: "Netlify",
     purpose: "Hosted application deployment and edge delivery",
     website: "https://netlify.com",
+    tone: "environments",
   },
   {
     name: "OpenRouter",
     purpose: "Included-key and bring-your-own-key AI model access",
     website: "https://openrouter.ai",
+    tone: "agents",
   },
   {
     name: "MCP and OAuth 2.1",
     purpose: "Browser, device, CLI, and scoped headless agent connections",
     website: "https://modelcontextprotocol.io",
+    tone: "agents",
   },
   {
     name: "GitHub",
     purpose: "Optional version control and synchronization for strap.md",
     website: "https://github.com",
+    tone: "skills",
   },
   {
     name: "Resend",
     purpose: "Transactional Company invitation email",
     website: "https://resend.com",
+    tone: "skills",
   },
 ] as const;
 
 export function StackPageView() {
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    function onScroll() {
-      setScrolled(window.scrollY > 20);
-    }
-
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
   return (
-    <div className="min-h-screen bg-[var(--strap-background)] text-[var(--strap-text-primary)]">
-      <MarketingHeroBanner configured scrolled={scrolled} />
+    <div className="strap-site">
+      <StrapSiteHeader configured={isSupabaseConfigured()} current="stack" />
 
-      <main className="mx-auto max-w-4xl px-6 pb-20 pt-8 md:px-10 md:pb-24 md:pt-10">
-        <div className="border-b border-[var(--strap-border)] pb-8">
-          <AnimatedPageTitle text="Stack" />
-          <p className="t-lede mt-5 max-w-2xl text-[var(--strap-text-secondary)]">
-            The technology Strap uses to run, store, and process your data.
-          </p>
+      <main>
+        <StrapPageHero
+          kicker={`Stack · ${stackRows.length} services`}
+          kickerTone="environments"
+          title="Stack"
+          lede="The technology Strap uses to run, store, and process your data."
+        />
+
+        <div className="strap-wrap strap-page-main">
+          <section className="strap-page-section" aria-labelledby="stack-services">
+            <div className="strap-page-section-head">
+              <div>
+                <h2 id="stack-services">Services and what they do</h2>
+                <p>
+                  Every service on the table, with the job it does for Strap and where
+                  to read its own documentation.
+                </p>
+              </div>
+            </div>
+            <div className="strap-table-wrap">
+              <table className="strap-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Purpose</th>
+                    <th scope="col">Website</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {stackRows.map((row) => (
+                    <tr key={row.name}>
+                      <td>
+                        <span className={`strap-tone-${row.tone}`}>
+                          <span className="strap-swatch" style={{ background: "var(--strap-tone)" }} aria-hidden="true" />
+                        </span>
+                        {row.name}
+                      </td>
+                      <td>{row.purpose}</td>
+                      <td>
+                        <a href={row.website} target="_blank" rel="noreferrer">
+                          {row.website.replace(/^https?:\/\//, "")}
+                          <span aria-hidden="true"> ↗</span>
+                        </a>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section className="strap-page-section strap-tone-secrets" aria-labelledby="stack-boundaries">
+            <div className="strap-card strap-card-offset strap-page-main-narrow">
+              <div className="strap-card-head">
+                <span>
+                  <b>Access boundaries</b> · how data stays put
+                </span>
+                <span className="strap-pill">Vault</span>
+              </div>
+              <div className="strap-card-body">
+                <h3 id="stack-boundaries">Credentials stay behind explicit boundaries</h3>
+                <p>
+                  Strap keeps application data and credentials behind the access boundaries
+                  described in the <Link className="strap-link-plain" href="/privacy">Privacy Policy</Link>.
+                  Vault values remain server-side, hidden sections stay out of agent payloads,
+                  and service-role operations require explicit application authorization.
+                </p>
+              </div>
+            </div>
+          </section>
         </div>
-
-        <section className="py-8 md:py-10">
-          <table className="w-full border-collapse text-left">
-            <thead>
-              <tr className="border-b border-[var(--strap-border)]">
-                <th className="px-1 py-4 text-[13px] font-medium text-[var(--strap-text-tertiary)] md:px-2">
-                  Name
-                </th>
-                <th className="px-1 py-4 text-[13px] font-medium text-[var(--strap-text-tertiary)] md:px-2">
-                  Purpose
-                </th>
-                <th className="px-1 py-4 text-[13px] font-medium text-[var(--strap-text-tertiary)] md:px-2">
-                  Website
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {stackRows.map((row, index) => (
-                <tr
-                  key={row.name}
-                  className={index === stackRows.length - 1 ? "" : "border-b border-[var(--strap-border)]"}
-                >
-                  <td className="px-1 py-5 text-[16px] font-medium text-[var(--strap-text-primary)] md:px-2 md:text-[17px]">
-                    {row.name}
-                  </td>
-                  <td className="px-1 py-5 text-[15px] leading-7 text-[var(--strap-text-secondary)] md:px-2 md:text-[16px]">
-                    {row.purpose}
-                  </td>
-                  <td className="px-1 py-5 md:px-2">
-                    <StackLink href={row.website} label={row.website.replace(/^https?:\/\//, "")} />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          <p className="mt-8 text-[15px] leading-7 text-[var(--strap-text-secondary)] md:text-[16px]">
-            Strap keeps application data and credentials behind the access
-            boundaries described in the{" "}
-            <a
-              href="/privacy"
-              className="font-medium text-[var(--strap-accent)] hover:text-[var(--strap-accent-hover)]"
-            >
-              Privacy Policy
-            </a>
-            . Vault values remain server-side, hidden sections stay out of
-            agent payloads, and service-role operations require explicit
-            application authorization.
-          </p>
-        </section>
       </main>
 
-      <MarketingFooter />
+      <StrapSiteFooter />
     </div>
-  );
-}
-
-// External-link row used by the stack table. Hovering the anchor triggers
-// the arrow's bounce-shrink animation via the icon's imperative handle.
-function StackLink({ href, label }: { href: string; label: string }) {
-  const arrowRef = useRef<ArrowUpRightIconHandle | null>(null);
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noreferrer"
-      onMouseEnter={() => arrowRef.current?.startAnimation()}
-      onMouseLeave={() => arrowRef.current?.stopAnimation()}
-      className="inline-flex items-center gap-1.5 text-[15px] font-medium text-[var(--strap-accent)] transition-colors hover:text-[var(--strap-accent-hover)] md:text-[16px]"
-    >
-      {label}
-      <ArrowUpRightIcon ref={arrowRef} size={16} className="inline-flex h-4 w-4 items-center justify-center" />
-    </a>
   );
 }

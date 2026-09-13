@@ -1,22 +1,17 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Check, Star, X } from "lucide-react";
 import {
-  ArrowUpRightIcon,
-  type ArrowUpRightIconHandle,
-} from "@/components/ui/arrow-up-right";
-import { AnimatedPageTitle } from "@/components/marketing/animated-page-title";
-import {
-  MarketingFooter,
-  MarketingHeroBanner,
-} from "@/components/marketing/site-chrome";
+  StrapPageHero,
+  StrapSiteFooter,
+  StrapSiteNav,
+  useStrapSiteCta,
+} from "@/components/marketing/strap-site-shell";
 import { useLandingAuthState } from "@/components/marketing/use-landing-auth-state";
-import { GoogleSignInButton } from "@/components/auth/google-sign-in-button";
+import { useOAuthSignIn } from "@/components/auth/use-oauth-sign-in";
 import { GITHUB_URL } from "@/lib/branding";
-import { cn } from "@/lib/utils";
 
 type Feature = { label: string; included: boolean; star?: boolean };
 
@@ -42,7 +37,7 @@ const PERSONAL_FEATURES: Feature[] = [
 ];
 
 // The Company card collapses all of Personal into a single ticked line, then
-// lists the company-workspace exclusives as gold stars.
+// lists the company-workspace exclusives as stars.
 const COMPANY_FEATURES: Feature[] = [
   { label: "Everything in Personal", included: true },
   { label: "Shared Company Strap", included: true, star: true },
@@ -51,92 +46,93 @@ const COMPANY_FEATURES: Feature[] = [
   { label: "Admin controls for members", included: true, star: true },
 ];
 
-export function PricingPageView({ reference }: { reference?: ReactNode }) {
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    function onScroll() {
-      setScrolled(window.scrollY > 20);
-    }
-
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  const githubHref = GITHUB_URL ?? "https://github.com";
+export function PricingPageView({
+  reference,
+  configured = true,
+}: {
+  reference?: ReactNode;
+  configured?: boolean;
+}) {
+  const cta = useStrapSiteCta(configured);
+  const githubHref = GITHUB_URL || "https://github.com";
 
   return (
-    <div className="min-h-screen bg-[var(--strap-background)] text-[var(--strap-text-primary)]">
-      <MarketingHeroBanner configured scrolled={scrolled} />
+    <div className="strap-site">
+      <StrapSiteNav cta={cta} current="pricing" />
 
-      <main className="mx-auto max-w-6xl px-6 pb-20 pt-8 md:px-10 md:pb-24 md:pt-10">
-        <div className="flex flex-col gap-6 border-b border-[var(--strap-border)] pb-8">
-          <div>
-            <AnimatedPageTitle text="Pricing" />
-            <p className="t-lede mt-5 max-w-2xl text-[var(--strap-text-secondary)]">
-              Strap is free. Run it yourself, or skip the setup and use the
-              hosted app.
+      <main>
+        <StrapPageHero
+          kicker="Pricing · three ways to run Strap"
+          kickerTone="environments"
+          title="Strap is free."
+          lede="Run it yourself, or skip the setup and use the hosted app. Personal and Company Straps cost nothing."
+        />
+
+        <div className="strap-wrap strap-page-main">
+          <section className="strap-page-section" aria-labelledby="pricing-plans">
+            <h2 id="pricing-plans" className="sr-only">
+              Plans
+            </h2>
+            <div className="strap-plans">
+              <PricingCard
+                name="Open"
+                tone="environments"
+                chip="Self-hosted"
+                price="$0"
+                cadence="forever"
+                tagline="Self-host the open source build."
+                features={[...SHARED_FEATURES, ...FREE_EXTRAS]}
+                cta={
+                  <a
+                    className="strap-button strap-button-secondary"
+                    href={githubHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    View on GitHub <span aria-hidden="true">↗</span>
+                  </a>
+                }
+              />
+              <PricingCard
+                name="Personal"
+                tone="context"
+                chip="Hosted"
+                price="$0"
+                cadence="forever"
+                tagline="Your hosted Strap, synced everywhere."
+                features={PERSONAL_FEATURES}
+                cta={<PersonalCta configured={configured} />}
+              />
+              <PricingCard
+                name="Company"
+                tone="agents"
+                chip="Hosted · team"
+                price="$0"
+                cadence="forever"
+                tagline="One shared Strap for your whole team."
+                features={COMPANY_FEATURES}
+                cta={<CompanyCta configured={configured} />}
+              />
+            </div>
+            <p className="strap-plans-note">
+              AI features run on the deployment&apos;s included key, with BYOK
+              available when you want model spend on your own key.
             </p>
-          </div>
+          </section>
+
+          {reference}
         </div>
-
-        <section className="py-10 md:py-12">
-          <div className="grid gap-4 md:grid-cols-3 md:gap-5">
-            <PricingCard
-              name="Open"
-              nameClassName="text-[var(--strap-border-strong)]"
-              price="$0"
-              cadence="forever"
-              tagline="Self-host the open source build."
-              features={[...SHARED_FEATURES, ...FREE_EXTRAS]}
-              cta={
-                <ExternalCta
-                  cta={{
-                    label: "View on GitHub",
-                    href: githubHref,
-                    style: "outline",
-                  }}
-                />
-              }
-            />
-            <PricingCard
-              name="Personal"
-              nameClassName="text-[var(--strap-accent)]"
-              price="$0"
-              cadence="forever"
-              tagline="Your hosted Strap, synced everywhere."
-              features={PERSONAL_FEATURES}
-              cta={<PersonalCta />}
-            />
-            <PricingCard
-              name="Company"
-              nameClassName="text-[#F59E0B] dark:text-[#F5A623]"
-              price="$0"
-              cadence="forever"
-              tagline="One shared Strap for your whole team."
-              features={COMPANY_FEATURES}
-              cta={<CompanyCta />}
-            />
-          </div>
-
-          <p className="mt-7 text-center text-[13px] leading-6 text-[var(--strap-text-tertiary)]">
-            AI features run on the deployment&apos;s included key, with BYOK
-            available when you want model spend on your own key.
-          </p>
-        </section>
-
-        {reference}
       </main>
 
-      <MarketingFooter />
+      <StrapSiteFooter />
     </div>
   );
 }
 
 function PricingCard({
   name,
-  nameClassName,
+  tone,
+  chip,
   price,
   cadence,
   tagline,
@@ -144,7 +140,8 @@ function PricingCard({
   cta,
 }: {
   name: string;
-  nameClassName: string;
+  tone: "context" | "environments" | "agents";
+  chip: string;
   price: string;
   cadence: string;
   tagline: string;
@@ -152,126 +149,72 @@ function PricingCard({
   cta: ReactNode;
 }) {
   return (
-    <div className="relative flex flex-col overflow-hidden rounded-xl bg-[var(--strap-surface)] p-6 md:p-7">
-      <div>
-        <div
-          className={cn(
-            "text-[40px] font-semibold leading-none tracking-[-0.02em]",
-            nameClassName,
-          )}
-        >
-          {name}
-        </div>
-        <div className="mt-5 flex items-baseline gap-2">
-          <span className="text-[36px] font-semibold leading-none tracking-[-0.02em] text-[var(--strap-text-primary)]">
-            {price}
-          </span>
-          <span className="text-[13px] font-medium text-[var(--strap-text-tertiary)]">
-            {cadence}
-          </span>
-        </div>
-        <p className="mt-3 text-[14px] leading-6 text-[var(--strap-text-secondary)]">
-          {tagline}
-        </p>
+    <article className={`strap-plan strap-tone-${tone}`} aria-label={`${name} plan`}>
+      <span className="strap-chip">{chip}</span>
+      <div className="strap-plan-name">{name}</div>
+      <div className="strap-plan-price">
+        <strong>{price}</strong>
+        <span>{cadence}</span>
       </div>
-
-      <div className="my-6 h-px bg-[var(--strap-border)]" />
-
-      <ul className="flex-1 space-y-2.5">
+      <p className="strap-plan-tagline">{tagline}</p>
+      <ul className="strap-plan-list">
         {features.map((feature) => (
-          <li key={feature.label} className="flex items-start gap-2.5">
-            <span className="mt-[5px] inline-flex h-[14px] w-[14px] shrink-0 items-center justify-center">
-              {feature.star ? (
-                <Star
-                  className="h-[14px] w-[14px] fill-[#F59E0B] text-[#F59E0B] dark:fill-[#F5A623] dark:text-[#F5A623]"
-                  strokeWidth={2.75}
-                />
-              ) : feature.included ? (
-                <Check
-                  className="h-[14px] w-[14px] text-[#16A34A]"
-                  strokeWidth={2.75}
-                />
-              ) : (
-                <X
-                  className="h-[14px] w-[14px] text-[#DC2626] dark:text-[#F87171]"
-                  strokeWidth={2.75}
-                />
-              )}
-            </span>
+          <li key={feature.label} data-included={feature.included ? "true" : "false"}>
             <span
-              className={cn(
-                "text-[14px] leading-6",
-                feature.included
-                  ? "text-[var(--strap-text-primary)]"
-                  : "text-[var(--strap-text-tertiary)]",
-              )}
+              className={
+                feature.star
+                  ? "strap-plan-glyph strap-plan-glyph-star"
+                  : feature.included
+                    ? "strap-plan-glyph"
+                    : "strap-plan-glyph strap-plan-glyph-no"
+              }
+              aria-label={feature.star ? "Company exclusive" : feature.included ? "Included" : "Not included"}
             >
-              {feature.label}
+              {feature.star ? "★" : feature.included ? "✓" : "×"}
             </span>
+            <span>{feature.label}</span>
           </li>
         ))}
       </ul>
-
-      <div className="mt-7">{cta}</div>
-    </div>
-  );
-}
-
-function ExternalCta({
-  cta,
-}: {
-  cta: { label: string; href: string; style: "solid" | "outline" };
-}) {
-  const arrowRef = useRef<ArrowUpRightIconHandle | null>(null);
-  return (
-    <a
-      href={cta.href}
-      target="_blank"
-      rel="noopener noreferrer"
-      onMouseEnter={() => arrowRef.current?.startAnimation()}
-      onMouseLeave={() => arrowRef.current?.stopAnimation()}
-      className={ctaClass(cta.style)}
-    >
-      {cta.label}
-      {cta.style === "outline" ? (
-        <ArrowUpRightIcon
-          ref={arrowRef}
-          size={16}
-          className="inline-flex h-4 w-4 items-center justify-center"
-        />
-      ) : null}
-    </a>
+      <div className="strap-plan-cta">{cta}</div>
+    </article>
   );
 }
 
 // Personal: signed-out visitors sign in and land in onboarding; signed-in
 // users go straight to their file.
-function PersonalCta() {
-  const authState = useLandingAuthState();
+function PersonalCta({ configured }: { configured: boolean }) {
+  const authState = useLandingAuthState(configured);
+  const { signIn, pendingProvider } = useOAuthSignIn(configured, "/onboarding");
+  const loading = pendingProvider === "google";
 
   if (authState === "signed-in") {
     return (
-      <Link href="/file" className={ctaClass("solid")}>
+      <Link href="/file" className="strap-button strap-button-primary">
         Go to app
       </Link>
     );
   }
   return (
-    <GoogleSignInButton
-      label="Get Started"
-      showIcon={false}
-      redirectTo="/onboarding"
-      className={ctaClass("solid")}
-    />
+    <button
+      type="button"
+      className="strap-button strap-button-primary"
+      onClick={() => void signIn("google")}
+      disabled={loading || !configured}
+    >
+      {loading ? "Redirecting" : "Get started"}
+    </button>
   );
 }
 
 // Company: a signed-in user creates (or resumes) their Company Strap directly;
 // signed-out visitors sign in first and land back here to create it.
-function CompanyCta() {
-  const authState = useLandingAuthState();
+function CompanyCta({ configured }: { configured: boolean }) {
+  const authState = useLandingAuthState(configured);
   const router = useRouter();
   const [creating, setCreating] = useState(false);
+  const { signIn, pendingProvider } = useOAuthSignIn(configured, "/pricing");
+  const loading = pendingProvider === "google";
 
   async function createCompany() {
     if (creating) return;
@@ -297,34 +240,20 @@ function CompanyCta() {
         type="button"
         onClick={() => void createCompany()}
         disabled={creating}
-        className={ctaClass("solid", "amber")}
+        className="strap-button strap-button-agents"
       >
         {creating ? "Creating" : "Create a company"}
       </button>
     );
   }
   return (
-    <GoogleSignInButton
-      label="Get Started"
-      showIcon={false}
-      redirectTo="/pricing"
-      className={ctaClass("solid", "amber")}
-    />
+    <button
+      type="button"
+      className="strap-button strap-button-agents"
+      onClick={() => void signIn("google")}
+      disabled={loading || !configured}
+    >
+      {loading ? "Redirecting" : "Get started"}
+    </button>
   );
-}
-
-function ctaClass(
-  style: "solid" | "outline",
-  tone: "blue" | "amber" = "blue",
-) {
-  if (style === "solid") {
-    // Company CTAs are amber to match the "Company" wordmark; everything else
-    // is the blue primary.
-    const color =
-      tone === "amber"
-        ? "bg-[#F59E0B] hover:bg-[#D97706] dark:bg-[#F5A623] dark:hover:bg-[#E0951E]"
-        : "bg-[var(--strap-accent)] hover:bg-[var(--strap-accent-hover)]";
-    return `inline-flex h-10 w-full items-center justify-center gap-1.5 rounded-md ${color} px-4 text-[14px] font-medium text-white transition-colors disabled:opacity-70`;
-  }
-  return "inline-flex h-10 w-full items-center justify-center gap-1.5 rounded-md border border-[var(--strap-border)] bg-transparent px-4 text-[14px] font-medium text-[var(--strap-text-primary)] transition-colors hover:bg-[var(--strap-surface-raised)]";
 }

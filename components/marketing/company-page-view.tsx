@@ -1,13 +1,12 @@
 import Link from "next/link";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
-import { AnimatedPageTitle } from "@/components/marketing/animated-page-title";
 import {
-  MarketingFooter,
-  MarketingHeroBanner,
-} from "@/components/marketing/site-chrome";
+  StrapPageHero,
+  StrapSiteFooter,
+  StrapSiteHeader,
+} from "@/components/marketing/strap-site-shell";
 import { FaqSection } from "@/components/marketing/faq-section";
 import { companyFaqItems } from "@/lib/marketing/faq";
-import { cn } from "@/lib/utils";
 
 // Server-rendered Company plan landing page. All content ships in the initial
 // HTML so crawlers and answer engines read the full pitch, roles, and pricing
@@ -17,22 +16,19 @@ const ROLES = [
   {
     name: "Owner",
     body: "Manages members, company settings, and content. Every team has one.",
-    fill: "bg-[#EFF6FF] dark:bg-[#102341]/60",
-    text: "text-[var(--strap-accent-hover)] dark:text-[#60A5FA]",
+    tone: "context",
   },
   {
     name: "Admin",
     body: "Manages members and content. Keeps the shared Strap sharp.",
-    fill: "bg-[#ECFDF5] dark:bg-[#052e1a]/50",
-    text: "text-[#047857] dark:text-[#4ade80]",
+    tone: "environments",
   },
   {
     name: "Member",
     body: "Reads the shared Strap and proposes updates their work reveals.",
-    fill: "bg-[#FFFBEB] dark:bg-[#3a2a12]/50",
-    text: "text-[#B45309] dark:text-[#FBBF24]",
+    tone: "agents",
   },
-];
+] as const;
 
 const HOW = [
   {
@@ -51,119 +47,133 @@ const HOW = [
     title: "See the activity",
     body: "The activity view shows reads, proposals, and edits across every member and agent, so the shared context stays accountable.",
   },
-];
+] as const;
+
+const MEMBERS = [
+  ["Owner", "company settings · members · content", "✓ Direct"],
+  ["Admin", "members · content", "✓ Direct"],
+  ["Member", "reads · proposes", "△ Proposes"],
+] as const;
 
 export function CompanyPageView() {
   return (
-    <div className="min-h-screen bg-[var(--strap-background)] text-[var(--strap-text-primary)]">
-      <MarketingHeroBanner configured={isSupabaseConfigured()} scrolled={false} />
+    <div className="strap-site">
+      <StrapSiteHeader configured={isSupabaseConfigured()} current="company" />
 
-      <main className="mx-auto max-w-4xl px-6 pb-20 pt-8 md:px-10 md:pb-24 md:pt-10">
-        <header className="border-b border-[var(--strap-border)] pb-10">
-          <AnimatedPageTitle
-            text="One shared context file your whole team's agents read"
-            className="max-w-3xl"
-          />
-          <p className="t-lede mt-5 max-w-2xl text-[var(--strap-text-secondary)]">
-            The Company plan adds one shared Company Strap on top of your
-            personal one. Every member&apos;s agents read the same company
-            context before they answer, so you stop re-explaining how the team
-            works to every tool. Roles, section permissions, an activity view,
-            and admin controls come built in.
-          </p>
-          <div className="mt-7 flex flex-wrap items-center gap-3">
-            <Link
-              href="/pricing"
-              className="inline-flex h-10 items-center justify-center rounded-md bg-[var(--strap-accent)] px-5 text-[14px] font-medium text-white transition-colors hover:bg-[var(--strap-accent-hover)]"
-            >
-              See Company pricing
-            </Link>
-            <Link
-              href="/learn/team-context-file"
-              className="inline-flex h-10 items-center justify-center rounded-md border border-[var(--strap-border)] px-5 text-[14px] font-medium text-[var(--strap-text-primary)] transition-colors hover:bg-[var(--strap-surface)]"
-            >
-              What is a team context file?
-            </Link>
-          </div>
-        </header>
-
-        <section className="py-12">
-          <h2 className="text-[24px] font-medium tracking-[-0.01em] text-[var(--strap-text-primary)] md:text-[28px]">
-            How a Company Strap works
-          </h2>
-          <div className="mt-8 grid gap-4 sm:grid-cols-2">
-            {HOW.map((item) => (
-              <div
-                key={item.title}
-                className="rounded-xl bg-[var(--strap-surface)] p-5"
-              >
-                <div className="line-clamp-1 text-[16px] font-medium text-[var(--strap-text-primary)]">
-                  {item.title}
-                </div>
-                <p className="mt-2 text-[15px] leading-7 text-[var(--strap-text-secondary)]">
-                  {item.body}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="border-t border-[var(--strap-border)] py-12">
-          <h2 className="text-[24px] font-medium tracking-[-0.01em] text-[var(--strap-text-primary)] md:text-[28px]">
-            Roles that keep the file trusted
-          </h2>
-          <p className="mt-3 max-w-2xl text-[16px] leading-7 text-[var(--strap-text-secondary)]">
-            A shared file only stays useful if edits are governed. Roles and
-            section permissions decide who can change what, and every edit is
-            attributed.
-          </p>
-          <div className="mt-8 grid gap-4 sm:grid-cols-3">
-            {ROLES.map((role) => (
-              <article
-                key={role.name}
-                className="flex flex-col overflow-hidden rounded-xl bg-[var(--strap-surface)]"
-              >
-                <div className={cn("px-5 py-2.5", role.fill)}>
-                  <span className={cn("text-[14px] font-medium", role.text)}>
-                    {role.name}
+      <main>
+        <StrapPageHero
+          kicker="Company Strap · free for every member"
+          kickerTone="agents"
+          title="One shared context file your whole team's agents read"
+          lede="The Company plan adds one shared Company Strap on top of your personal one. Every member's agents read the same company context before they answer, so you stop re-explaining how the team works to every tool. Roles, section permissions, an activity view, and admin controls come built in."
+          actions={
+            <>
+              <Link className="strap-button strap-button-primary" href="/pricing">
+                See Company pricing
+              </Link>
+              <Link className="strap-button strap-button-secondary" href="/learn/team-context-file">
+                What is a team context file?
+              </Link>
+            </>
+          }
+          aside={
+            <div className="strap-kit" aria-label="Company Strap roles summary">
+              <span className="strap-backing strap-backing-one" aria-hidden="true" />
+              <span className="strap-backing strap-backing-two" aria-hidden="true" />
+              <div className="strap-manifest">
+                <span className="strap-chip strap-chip-ready">Team</span>
+                <div className="strap-manifest-head">
+                  <span className="strap-mono">
+                    <b>company strap</b> · one file, three roles
                   </span>
                 </div>
-                <div className="flex flex-1 flex-col p-5">
-                  <p className="text-[14px] leading-6 text-[var(--strap-text-secondary)]">
-                    {role.body}
-                  </p>
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section className="border-t border-[var(--strap-border)] py-12">
-          <h2 className="text-[24px] font-medium tracking-[-0.01em] text-[var(--strap-text-primary)] md:text-[28px]">
-            Free for your whole team
-          </h2>
-          <p className="mt-3 max-w-2xl text-[16px] leading-7 text-[var(--strap-text-secondary)]">
-            A Company Strap is free: invite as many members as you need, and
-            run AI on the included key or your company&apos;s own key (BYOK).
-          </p>
-          <div className="mt-7">
-            <Link
-              href="/pricing"
-              className="text-[15px] font-medium text-[var(--strap-accent)] transition-colors hover:text-[var(--strap-accent-hover)]"
-            >
-              Get started
-            </Link>
-          </div>
-        </section>
-
-        <FaqSection
-          heading="Company plan questions"
-          items={companyFaqItems}
-          className="border-t border-[var(--strap-border)] py-12"
+                {MEMBERS.map(([role, scope, status]) => (
+                  <div className="strap-manifest-line" key={role}>
+                    <span
+                      className={`strap-swatch strap-bg-${role === "Owner" ? "context" : role === "Admin" ? "skills" : "secrets"}`}
+                      aria-hidden="true"
+                    />
+                    <span>{role.toLowerCase()}</span>
+                    <span className="strap-manifest-source">{scope}</span>
+                    <span className="strap-check">{status}</span>
+                  </div>
+                ))}
+                <div className="strap-pattern" aria-hidden="true" />
+              </div>
+            </div>
+          }
         />
+
+        <div className="strap-wrap strap-page-main">
+          <section className="strap-page-section strap-tone-context" aria-labelledby="company-how">
+            <div className="strap-page-section-head">
+              <div>
+                <h2 id="company-how">How a Company Strap works</h2>
+                <p>The same profile model as Personal, owned by the team and read by every member&apos;s agents.</p>
+              </div>
+            </div>
+            <div className="strap-cells" style={{ "--strap-cols": 2 } as React.CSSProperties}>
+              {HOW.map((item, index) => (
+                <article className="strap-cell" key={item.title}>
+                  <span className="strap-cell-number">{index + 1}</span>
+                  <h3>{item.title}</h3>
+                  <p>{item.body}</p>
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <section className="strap-page-section" aria-labelledby="company-roles">
+            <div className="strap-page-section-head">
+              <div>
+                <h2 id="company-roles">Roles that keep the file trusted</h2>
+                <p>
+                  A shared file only stays useful if edits are governed. Roles and
+                  section permissions decide who can change what, and every edit is
+                  attributed.
+                </p>
+              </div>
+            </div>
+            <div className="strap-cells" style={{ "--strap-cols": 3 } as React.CSSProperties}>
+              {ROLES.map((role) => (
+                <article className={`strap-cell strap-tone-${role.tone}`} key={role.name}>
+                  <span className="strap-cell-label strap-cell-label-solid">{role.name}</span>
+                  <p>{role.body}</p>
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <section className="strap-page-section strap-tone-environments" aria-labelledby="company-free">
+            <div className="strap-card strap-card-offset">
+              <div className="strap-card-head">
+                <span>
+                  <b>pricing</b> · Company Strap
+                </span>
+                <span className="strap-pill strap-pill-ready">$0 forever</span>
+              </div>
+              <div className="strap-card-body">
+                <h2 id="company-free" style={{ fontSize: "clamp(1.4rem, 2.2vw, 1.85rem)" }}>
+                  Free for your whole team
+                </h2>
+                <p>
+                  A Company Strap is free: invite as many members as you need, and
+                  run AI on the included key or your company&apos;s own key (BYOK).
+                </p>
+                <div className="strap-actions">
+                  <Link className="strap-button strap-button-primary" href="/pricing">
+                    Get started
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <FaqSection heading="Company plan questions" items={companyFaqItems} tone="agents" />
+        </div>
       </main>
 
-      <MarketingFooter />
+      <StrapSiteFooter />
     </div>
   );
 }

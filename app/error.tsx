@@ -8,9 +8,9 @@ import Link from "next/link";
 // nested `error.tsx`. Pairs with the existing `global-error.tsx`, which
 // only fires when the root layout itself throws.
 //
-// Visual style mirrors the marketing surface (legacy-compatible CSS variables,
-// `t-section` headline) so the page doesn't look orphaned when it
-// renders mid-flow.
+// Rendered on the public worktable so the page doesn't look orphaned when it
+// renders mid-flow. It stays chrome-free on purpose: the failing tree may be
+// the one that owns navigation state.
 export default function RouteError({
   error,
   reset,
@@ -28,34 +28,26 @@ export default function RouteError({
   }, [error]);
 
   return (
-    <div className="flex min-h-[60vh] flex-col items-center justify-center gap-6 px-6 text-center">
-      <h1 className="t-section text-[var(--strap-text-primary)]">
-        Something went sideways
-      </h1>
-      <p className="max-w-md text-[15px] leading-7 text-[var(--strap-text-secondary)]">
-        This is a temporary error. Try again, or head back to the home page -
-        if it keeps happening, the digest below helps us track it down.
-      </p>
-      {error.digest ? (
-        <code className="t-meta rounded-md bg-[var(--strap-surface-raised)] px-2.5 py-1 font-mono text-[12px] text-[var(--strap-text-tertiary)]">
-          digest: {error.digest}
-        </code>
-      ) : null}
-      <div className="mt-2 flex items-center gap-3">
-        <button
-          type="button"
-          onClick={reset}
-          className="inline-flex h-10 items-center justify-center rounded-md bg-[var(--strap-accent)] px-5 text-[14px] font-medium text-white transition-colors hover:bg-[var(--strap-accent-hover)]"
-        >
-          Try again
-        </button>
-        <Link
-          href="/home"
-          className="inline-flex h-10 items-center justify-center rounded-md border border-[var(--strap-border)] bg-transparent px-5 text-[14px] font-medium text-[var(--strap-text-primary)] transition-colors hover:bg-[var(--strap-surface-raised)]"
-        >
-          Back home
-        </Link>
-      </div>
+    <div className="strap-site">
+      <main className="strap-wrap strap-empty strap-tone-warning">
+        <span className="strap-empty-code">Temporary error</span>
+        <h1>Something went sideways</h1>
+        <p>
+          This is a temporary error. Try again, or head back to the home page.
+          If it keeps happening, the digest below helps us track it down.
+        </p>
+        <div className="strap-actions">
+          <button type="button" onClick={reset} className="strap-button strap-button-primary">
+            Try again
+          </button>
+          <Link href="/home" className="strap-button strap-button-secondary">
+            Back home
+          </Link>
+        </div>
+        {error.digest ? (
+          <code className="strap-empty-digest">digest: {error.digest}</code>
+        ) : null}
+      </main>
     </div>
   );
 }
