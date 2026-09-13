@@ -57,6 +57,8 @@ JSON is written to stdout and diagnostics are written to stderr. Interactive for
 
 ## Shared skills
 
+The CLI uses the profile selected during login. To switch from Personal to Company (or another Company), run `strap logout`, then `strap login` and select that profile. Use a separate sync directory for each profile.
+
 Version 0.2.0 adds device sync for the skill library in your connected Personal or Company profile:
 
 ```bash

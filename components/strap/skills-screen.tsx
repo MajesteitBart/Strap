@@ -141,10 +141,12 @@ function DeviceSetup() {
           </p>
         )}
         <p className="mt-3 text-xs leading-5 text-[var(--strap-text-secondary)]">
-          Use a separate directory for each profile. Pass{" "}
-          <code>--dir PATH</code> for another location, or{" "}
-          <code>--dry-run</code> to preview changes. Sync keeps replaced files
-          in a backup folder outside the agent’s skills directory.
+          Already connected to another profile? Run <code>strap logout</code>,
+          then <code>strap login</code> and select this profile. Use a separate
+          directory for each profile. Pass <code>--dir PATH</code> for another
+          location, or <code>--dry-run</code> to preview changes. Sync keeps
+          replaced files in a backup folder outside the agent’s skills
+          directory.
         </p>
         <p className="mt-4 text-sm leading-6">
           For agents connected through{" "}

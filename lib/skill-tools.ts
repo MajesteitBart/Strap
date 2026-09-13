@@ -1,8 +1,32 @@
 // Skill discovery is separate from section editing and its proposal lifecycle.
 import {
   fileBytes,
+  isRecord,
   type StoredSkill,
 } from "../packages/strap/src/skills/bundle.ts";
+
+/** Full bundles are loaded even for selected-file reads; do not multiply them in a batch. */
+export function isSkillPayloadBatch(requests: unknown[]): boolean {
+  return (
+    requests.length > 1 &&
+    requests.some((request) => {
+      if (
+        !isRecord(request) ||
+        request.method !== "tools/call" ||
+        !isRecord(request.params)
+      )
+        return false;
+      return (
+        typeof request.params.name === "string" &&
+        [
+          "strap_get_skill",
+          "strap_export_skill",
+          "strap_publish_skill",
+        ].includes(request.params.name)
+      );
+    })
+  );
+}
 
 export function skillReadPayload(skill: StoredSkill, filePath: unknown) {
   const { files, ...metadata } = skill;

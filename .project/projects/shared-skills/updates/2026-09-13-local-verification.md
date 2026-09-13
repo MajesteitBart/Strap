@@ -16,3 +16,11 @@ stream: WS-A
 - Release gates still pending: remaining GUI acceptance, final-head Codex review, CI, hosted migration, production deployment, and npm 0.2.0 publication. Windows npm authentication still returns 401 despite the user's login attempt; a fresh login was opened and user input is pending. OpenWiki automation remains paused.
 
 Private runtime logs and fixtures are stored outside the feature worktree under the maintainer checkout's ignored agent log directory. No credentials or production user data are included in these artifacts.
+
+## PR verification and repair
+
+- Draft PR #13 opened at d3269ff. All three CI jobs passed in run 34763608887; Netlify preview 6aa6b727a967a200084621e6 published that commit.
+- Codex review 5191067722 completed on that head and found one blocking aggregate-memory issue in MCP batches (comment 3999929035). Skill reads, exports, and publications now require an individual request, so a caller cannot buffer 64 complete bundles in one response. A regression test and live 64-export/mixed-batch rejection checks pass; individual exports still succeed. The app suite now has 212 passing tests.
+- The installed npm tarball passed actual CLI process tests on two isolated configuration/device directories: install, publish, update, binary integrity, and conflict exit code 4 with the local draft preserved.
+- Device setup and the CLI guide now explain that switching profiles requires logout/login and a separate sync directory. npm publication and the remaining browser acceptance are still pending.
+- The additive shared-skills migration was applied to the intended hosted project on 2026-09-13. Remote migration history matches local. Read-only post-migration checks confirm the table exists for the service role, anonymous table/RPC access is denied, and the service RPC rejects missing live membership.

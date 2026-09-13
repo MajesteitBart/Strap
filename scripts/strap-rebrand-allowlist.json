@@ -2246,7 +2246,7 @@
       "file": "app/mcp/route.ts",
       "kind": "content",
       "occurrences": 134,
-      "fingerprint": "a2b1383f0428dab626d84664c7531915918e4133e0942683d3f37762795294a9",
+      "fingerprint": "f8e9adfd1d746b9469ccdfb27053ab5b213a7335826f7aa06eaeda1b674ea37c",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -2606,7 +2606,7 @@
       "file": "components/strap/skills-screen.tsx",
       "kind": "content",
       "occurrences": 4,
-      "fingerprint": "f262e0dc33571be7ac4016b74fccbadf719b1f4e5c361df9ea5dac7fca4eb9e3",
+      "fingerprint": "627c36ca2077bf72196210f4f65d9934bac9783fb979dfad2c1e13001644b2ab",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -3695,7 +3695,7 @@
       "file": "packages/strap/README.md",
       "kind": "content",
       "occurrences": 4,
-      "fingerprint": "300a8f79acddd09ff9d818704c4b41d110cc1f88b1bb2a3150ca43d5f7716f08",
+      "fingerprint": "a6ee96660997d62a0a78f17eac18a5c064853879849d95dc326a536176473260",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."

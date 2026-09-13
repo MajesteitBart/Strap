@@ -11,7 +11,41 @@ import {
   canPublishSkills,
   skillToolsFor,
   skillReadPayload,
+  isSkillPayloadBatch,
 } from "../lib/skill-tools.ts";
+
+test("MCP cannot multiply large skill payloads through export, read, publish, or mixed batches", () => {
+  const call = (name: string) => ({
+    jsonrpc: "2.0",
+    id: 1,
+    method: "tools/call",
+    params: { name, arguments: { name: "review-code" } },
+  });
+  for (const name of [
+    "strap_get_skill",
+    "strap_export_skill",
+    "strap_publish_skill",
+  ]) {
+    assert.equal(isSkillPayloadBatch([call(name)]), false);
+    assert.equal(isSkillPayloadBatch([call(name), call(name)]), true);
+    assert.equal(
+      isSkillPayloadBatch([call("strap_list_skills"), call(name)]),
+      true,
+    );
+    assert.equal(
+      isSkillPayloadBatch(Array.from({ length: 64 }, () => call(name))),
+      true,
+    );
+  }
+  assert.equal(
+    isSkillPayloadBatch([call("strap_list_skills"), { id: 2, method: "ping" }]),
+    false,
+  );
+  assert.equal(
+    isSkillPayloadBatch([null, { method: "tools/call", params: null }]),
+    false,
+  );
+});
 
 const main = (
   content = "---\nname: review-code\ndescription: >-\n  Review changes before merging.\n  Use for pull requests.\n---\n\nRead the changed files.\n",

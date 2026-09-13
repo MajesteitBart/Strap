@@ -36,7 +36,7 @@ import { getSiteUrl, isSupabaseAdminConfigured } from "@/lib/supabase/env";
 import { readLatestQualityReport, validateQualityReport } from "@/lib/ai/quality";
 import type { StrapQualityReport } from "@/lib/ai/quality";
 import { markdownToRichHtml } from "@/lib/rich-text";
-import { SKILL_TOOLS, skillToolsFor } from "@/lib/skill-tools";
+import { SKILL_TOOLS, skillToolsFor, isSkillPayloadBatch } from "@/lib/skill-tools";
 import { callSkillTool } from "@/lib/skill-mcp";
 import { JsonBodyLimitError, readBoundedJson } from "@/lib/bounded-json";
 import { isRecord } from "@/packages/strap/src/skills/bundle";
@@ -2435,6 +2435,12 @@ export async function POST(request: Request) {
     );
   }
   const requests = Array.isArray(body) ? body : [body];
+  if (isSkillPayloadBatch(requests)) {
+    return NextResponse.json(
+      { jsonrpc: "2.0", id: null, error: { code: -32600, message: "Skill reads, exports, and publications require an individual request. Send each skill call separately." } },
+      { status: 400, headers: MCP_CORS_HEADERS },
+    );
+  }
   // Resolve which Strap this batch targets (Personal by default, or a Company
   // Strap named via the `creed` arg + granted to this token). Company Straps
   // load read-only. MCP only needs recent activity + a tight proposal cap.
