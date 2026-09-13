@@ -38,6 +38,15 @@
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
     },
     {
+      "file": ".github/workflows/verify.yml",
+      "kind": "content",
+      "occurrences": 1,
+      "fingerprint": "40ff88865a84dbc58a95f37793ed553e7a7a023117697563adae963aa060f0e6",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
       "file": ".gitignore",
       "kind": "content",
       "occurrences": 1,
