@@ -1,54 +1,41 @@
 "use client";
 
-// Shared FAQ accordion for the public site: the landing "Questions" section and
-// the /learn articles' FAQ sections both render through this so the
-// two stay visually identical. One item open at a time, the first open by
-// default. The answer text stays in the DOM even when collapsed (a grid-rows
-// collapse, not an unmount), so search and answer engines can still read every
-// answer regardless of which item is expanded.
+// Shared FAQ accordion for the public site in the worktable language: one
+// framed list, one item open at a time, the first open by default. The answer
+// text stays in the DOM even when collapsed (a grid-rows collapse, not an
+// unmount), so search and answer engines can still read every answer
+// regardless of which item is expanded.
 
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import type { FaqItem } from "@/lib/marketing/faq";
-import { cn } from "@/lib/utils";
 
 export function FaqAccordion({ items }: { items: FaqItem[] }) {
   const [openIndex, setOpenIndex] = useState(0);
 
   return (
-    <div>
+    <div className="strap-faq">
       {items.map((item, index) => {
         const open = openIndex === index;
 
         return (
-          <div key={item.question} className="border-b border-[var(--strap-border)]">
+          <div
+            key={item.question}
+            className="strap-faq-item"
+            data-open={open ? "true" : "false"}
+          >
             <button
               type="button"
               onClick={() => setOpenIndex(open ? -1 : index)}
               aria-expanded={open}
-              className="flex w-full items-center justify-between gap-6 py-7 text-left"
+              className="strap-faq-trigger"
             >
-              <span className="t-body-lg font-medium text-[var(--strap-text-primary)]">
-                {item.question}
-              </span>
-              <ChevronDown
-                className={cn(
-                  "h-4 w-4 shrink-0 text-[var(--strap-text-tertiary)] transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]",
-                  open && "rotate-180",
-                )}
-              />
+              <span>{item.question}</span>
+              <ChevronDown className="h-4 w-4" aria-hidden="true" />
             </button>
-
-            <div
-              className={cn(
-                "grid transition-[grid-template-rows,opacity] duration-300 ease-out",
-                open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
-              )}
-            >
-              <div className="overflow-hidden">
-                <p className="t-body max-w-3xl pb-7 text-[var(--strap-text-secondary)]">
-                  {item.answer}
-                </p>
+            <div className="strap-faq-panel">
+              <div>
+                <p className="strap-faq-answer">{item.answer}</p>
               </div>
             </div>
           </div>

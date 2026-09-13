@@ -9,7 +9,6 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { LoaderCircle } from "lucide-react";
 import { toast } from "sonner";
-import { AnimatedPageTitle } from "@/components/marketing/animated-page-title";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { AuthSubmitButton, PasswordField } from "@/components/auth/auth-fields";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
@@ -86,41 +85,35 @@ export function ResetPasswordScreen({ configured = true }: { configured?: boolea
   return (
     <AuthShell
       topRight={
-        <Link
-          href="/login"
-          className="text-[14px] font-medium text-[var(--strap-text-primary)] transition-colors hover:text-[var(--strap-accent)]"
-        >
+        <Link href="/login" className="strap-link-plain">
           Sign in
         </Link>
       }
     >
       {status === "checking" ? (
-        <div className="flex justify-center py-12">
-          <LoaderCircle className="h-5 w-5 animate-spin text-[var(--strap-text-tertiary)]" />
+        <div className="strap-auth-spinner" role="status" aria-live="polite">
+          <LoaderCircle className="h-5 w-5 animate-spin" aria-hidden="true" />
+          <span className="sr-only">Checking your reset link</span>
         </div>
       ) : status === "invalid" ? (
-        <div className="flex flex-col items-center text-center">
-          <AnimatedPageTitle
-            text="Link expired"
-            className="text-[30px] font-medium leading-tight tracking-[-0.02em] md:text-[34px]"
-          />
-          <p className="mt-3 text-[15px] leading-relaxed text-[var(--strap-text-secondary)]">
+        <div className="strap-auth-centered">
+          <span className="strap-kicker strap-kicker-paper">Reset link</span>
+          <h1>Link expired</h1>
+          <p>
             This password reset link is invalid or has already been used. Request a new one from the sign-in screen.
           </p>
-          <Link
-            href="/login"
-            className="mt-6 text-[14px] font-medium text-[var(--strap-text-primary)] transition-colors hover:text-[var(--strap-accent)]"
-          >
-            Back to sign in
-          </Link>
+          <div className="strap-actions">
+            <Link href="/login" className="strap-button strap-button-secondary">
+              Back to sign in
+            </Link>
+          </div>
         </div>
       ) : (
         <>
-          <AnimatedPageTitle
-            text="Set a new password"
-            className="text-[30px] font-medium leading-tight tracking-[-0.02em] md:text-[34px]"
-          />
-          <form onSubmit={handleSubmit} noValidate className="mt-8 flex flex-col gap-3">
+          <span className="strap-kicker strap-kicker-secrets">Reset password</span>
+          <h1>Set a new password</h1>
+          <p>Choose at least 8 characters. You will be signed in once it is saved.</p>
+          <form onSubmit={handleSubmit} noValidate className="strap-form" style={{ marginTop: "1.75rem" }}>
             <PasswordField
               inputRef={passwordRef}
               label="New password"

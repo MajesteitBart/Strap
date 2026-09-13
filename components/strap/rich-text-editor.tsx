@@ -1558,7 +1558,7 @@ export function RichTextEditor({
         : null}
 
       <Dialog open={linkDialogOpen} onOpenChange={setLinkDialogOpen}>
-        <DialogContent className="rounded-[var(--radius-xl)] border-[var(--strap-border)] bg-[var(--strap-surface)]">
+        <DialogContent className="rounded-[var(--radius-xl)] border-[var(--strap-frame)] bg-[var(--strap-surface)]">
           <DialogHeader>
             <DialogTitle>Add link</DialogTitle>
             <DialogDescription>

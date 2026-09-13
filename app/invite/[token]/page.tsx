@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { StrapWordmark } from "@/components/strap/brand";
+import { ConsentMessage, ConsentShell } from "@/components/strap/consent-shell";
 import { InviteAcceptCard } from "@/components/strap/invite-accept-card";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
@@ -8,7 +8,7 @@ import { resolveInviteByToken } from "@/lib/company-invites";
 import { getUserName, getAvatarUrl, getAvatarInitials } from "@/lib/strap-backend";
 
 // Company invite landing. Marketing-chrome-free, styled to match the MCP consent
-// screen (/authorize): wordmark above a borderless, centered card. Resolves the
+// screen (/authorize): wordmark above a framed, centred card. Resolves the
 // invite by its raw token on the server:
 //   - no/expired/revoked invite -> a calm one-line message.
 //   - signed out                -> bounce to /login with a return path.
@@ -16,60 +16,37 @@ import { getUserName, getAvatarUrl, getAvatarInitials } from "@/lib/strap-backen
 //   - signed in, email differs  -> tell them which email it was sent to.
 export const dynamic = "force-dynamic";
 
-function Shell({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="min-h-screen bg-[var(--strap-background)] text-[var(--strap-text-primary)]">
-      <div className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-6 py-16">
-        <StrapWordmark className="mb-10 h-[20px]" />
-        <div className="w-full rounded-[var(--radius-xl)] bg-[var(--strap-surface)] p-7 text-center">
-          {children}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Message({ title, body, children }: { title: string; body: string; children?: React.ReactNode }) {
-  return (
-    <>
-      <h1 className="text-[18px] font-medium text-[var(--strap-text-primary)]">{title}</h1>
-      <p className="mt-3 text-[14px] leading-7 text-[var(--strap-text-secondary)]">{body}</p>
-      {children}
-    </>
-  );
-}
-
 export default async function InvitePage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
 
   if (!isSupabaseConfigured()) {
     return (
-      <Shell>
-        <Message title="Invites unavailable" body="Invites are unavailable right now. Please try again later." />
-      </Shell>
+      <ConsentShell chip="Company invite" tone="warning">
+        <ConsentMessage title="Invites unavailable" body="Invites are unavailable right now. Please try again later." />
+      </ConsentShell>
     );
   }
 
   const resolved = await resolveInviteByToken(token);
   if (!resolved || resolved.invite.status !== "pending") {
     return (
-      <Shell>
-        <Message
+      <ConsentShell chip="Company invite" tone="warning">
+        <ConsentMessage
           title="This invite is no longer active"
           body="The link may have been used, revoked, or expired. Ask whoever invited you to send a new one."
         />
-      </Shell>
+      </ConsentShell>
     );
   }
 
   if (resolved.expired) {
     return (
-      <Shell>
-        <Message
+      <ConsentShell chip="Company invite" tone="warning">
+        <ConsentMessage
           title="This invite has expired"
           body="Invites last 7 days. Ask whoever invited you to send a fresh link."
         />
-      </Shell>
+      </ConsentShell>
     );
   }
 
@@ -86,26 +63,25 @@ export default async function InvitePage({ params }: { params: Promise<{ token: 
   const userEmail = user.email?.trim().toLowerCase() ?? "";
   if (userEmail !== resolved.invite.email.trim().toLowerCase()) {
     return (
-      <Shell>
-        <Message
+      <ConsentShell chip="Company invite" tone="agents">
+        <ConsentMessage
           title="This invite is for a different email"
           body={`It was sent to ${resolved.invite.email}. Sign in with that email to accept it, or ask for a new invite to ${userEmail}.`}
         >
-          <Link
-            href="/file"
-            className="mt-5 inline-block text-[14px] text-[var(--strap-text-secondary)] underline underline-offset-2 hover:text-[var(--strap-text-primary)]"
-          >
-            Go to your Strap
-          </Link>
-        </Message>
-      </Shell>
+          <p className="strap-consent-foot">
+            <Link href="/file" className="strap-link-plain">
+              Go to your Strap
+            </Link>
+          </p>
+        </ConsentMessage>
+      </ConsentShell>
     );
   }
 
   const youName = getUserName(user);
 
   return (
-    <Shell>
+    <ConsentShell chip="Company invite" tone="agents">
       <InviteAcceptCard
         token={token}
         companyName={resolved.companyName}
@@ -115,6 +91,6 @@ export default async function InvitePage({ params }: { params: Promise<{ token: 
         }
         you={{ avatarUrl: getAvatarUrl(user), initials: getAvatarInitials(youName), email: user.email ?? "" }}
       />
-    </Shell>
+    </ConsentShell>
   );
 }

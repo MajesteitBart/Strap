@@ -11,16 +11,18 @@
 - A 2026-07-24 follow-up inventory found substantial rebrand drift that the original narrow brand gate did not cover. The review spans visible copy, design language, active documentation, generated docs, CLI attribution, agent protocols, schema defaults, tests, internal paths, compatibility contracts, and historical delivery truth.
 - The rename-first follow-up now makes Strap canonical across active product, public website, CLI, MCP and HTTP discovery, package metadata, source modules, route/component paths, repository guidance, OpenWiki, tests, assets, configuration, and new persisted defaults. Retained Creed identifiers are explicit compatibility or immutable historical contracts.
 - The GitHub repository is now `MajesteitBart/Strap`; the rename-first tree is published in `main` history as `c92006069bea3beaece280e6c69e51918ca7e40d`, the canonical and redirected remotes resolve to the same current descendant, and local `origin` uses the Strap URL.
-- Visual redesign beyond the rename is intentionally deferred to the planned `.project/projects/strap-visual-redesign/` contract.
+- The `strap-visual-redesign` contract applied the approved worktable system to every remaining surface on 2026-09-13: shared tokens with a warm dark twin, typography, radii, and primitives; the inner public pages; authentication, consent, device, invite, backend setup, and transactional email; and the signed-in shell plus status colours across the product UI. Behaviour, permissions, persistence, agent contracts, and compatibility identifiers are unchanged.
 - `strap.bvdm.ai` is live as an unproxied Cloudflare CNAME to the existing Netlify production site. Netlify serves it as a verified domain alias with Strap's production build and canonical metadata.
 - The earlier `headless-access-secret-vault` project delivered scoped API keys, OAuth device authorization, Supabase Vault-backed secret storage, and the reviewed Strap CLI package workstream. Its remediation record covers the safe pack command, OAuth credential lifecycle, output and exit-code contracts, external install smoke, and publication guard.
 
 ## Evidence So Far
 
+- Release verification PR 10 merged as `2b1de05` after a clean Codex review on `5063384` and green PR checks. All three jobs passed on the first main run: https://github.com/MajesteitBart/Strap/actions/runs/34754241737. Both CLIs finish independently even when one fails.
+
 - Delano research, Spec, plan, workstreams, decisions, and atomic tasks validate for `strap-rebrand`.
 - Fable approved the plan after compatibility blockers were resolved and later passed the grounded agent-contract review.
-- The root suite passes 179/179 tests, strict TypeScript and ESLint pass, and the production build succeeds with 102 generated routes.
-- The exact rebrand audit covers 1,094 current repository files and classifies all 4,765 remaining case-insensitive Creed occurrences across 436 files and 65 Creed-named paths through 501 reviewed history or compatibility entries.
+- The latest redesign suite passes 186/186 tests, strict TypeScript and ESLint pass, and the production build succeeds with 102 generated routes.
+- After integration with the release checks, the exact rebrand audit covers 1,102 tracked repository files and classifies 4,766 remaining case-insensitive Creed occurrences across 437 files and 65 Creed-named paths through 502 reviewed history or compatibility entries.
 - `@bvdm/strap@0.1.1` passes typecheck and 30 tests. The legacy CLI passes typecheck and 20 compatibility tests. The 51-file Strap tarball installs cleanly, returns Strap help and version `0.1.1`, and is published to npm as the public `latest` release.
 - A bounded, grounded Fable release review passed with no blockers. Its three actionable non-blocking findings were resolved in the same pass.
 - Cloudflare API and public DNS checks confirm `strap.bvdm.ai` resolves to `creed-bvdm.netlify.app`; HTTPS returns 200 with a valid Netlify certificate.
@@ -35,7 +37,7 @@
 
 ## What Is Next
 
-- Start `.project/projects/strap-visual-redesign/` only after the user approves a visual direction and rollout priority.
+- Complete final-head Codex review and merge for visual redesign PR 9. The delegate supplied 53 painted browser captures; coordinator review added empty-profile, Company-role and contrast checks.
 - Continue serving the `creed.md` compatibility origin during the migration window.
 
 ## Remaining Risks

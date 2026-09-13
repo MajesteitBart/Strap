@@ -1492,7 +1492,7 @@ export function DocsPageView({ configured }: { configured: boolean }) {
                           className="strap-docs-card p-5"
                         >
                           <div className="flex items-center gap-3">
-                            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] bg-[var(--strap-accent)] text-[13px] font-medium text-[var(--strap-surface)]">
+                            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[var(--radius-lg)] bg-[var(--strap-accent)] text-[13px] font-medium text-[var(--strap-surface)]">
                               {loopStep.step}
                             </span>
                             <div className="text-[16px] font-medium text-[var(--strap-text-primary)]">
@@ -1696,7 +1696,7 @@ export function DocsPageView({ configured }: { configured: boolean }) {
                       {vaultWorkflow.map((item) => (
                         <div key={item.step} className="strap-docs-card p-5">
                           <div className="flex items-center gap-3">
-                            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] bg-[var(--strap-accent)] text-[13px] font-medium text-[var(--strap-surface)]">
+                            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[var(--radius-lg)] bg-[var(--strap-accent)] text-[13px] font-medium text-[var(--strap-surface)]">
                               {item.step}
                             </span>
                             <h3 className="text-[16px] font-medium text-[var(--strap-text-primary)]">

@@ -2,9 +2,9 @@
 name: Release verification
 slug: release-verification
 owner: MajesteitBart
-status: active
+status: complete
 created: 2026-09-13T11:02:57Z
-updated: 2026-09-13T11:03:32Z
+updated: 2026-09-13T11:24:20Z
 outcome: Run application and both CLI quality gates on pull requests and main without depending on AI documentation generation.
 uncertainty: low
 probe_required: false

@@ -6,7 +6,7 @@ import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
-  title: "Sign in | Strap",
+  title: "Sign in",
   description: "Sign in to your Strap.",
 };
 

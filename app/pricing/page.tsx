@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { PricingPageView } from "@/components/marketing/pricing-page-view";
 import { PricingReference } from "@/components/marketing/pricing-reference";
 import { JsonLd } from "@/components/marketing/json-ld";
+import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { pricingFaqItems } from "@/lib/marketing/faq";
 import {
   breadcrumbSchema,
@@ -43,7 +44,7 @@ export default function PricingPage() {
           faqPageSchema(pricingFaqItems)
         )}
       />
-      <PricingPageView reference={<PricingReference />} />
+      <PricingPageView configured={isSupabaseConfigured()} reference={<PricingReference />} />
     </>
   );
 }

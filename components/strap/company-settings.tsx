@@ -84,10 +84,10 @@ function sectionAccent(accent: string): string {
 // Role pill colours: owner blue, admin green, member amber. Same shape as the
 // personal integration status pills (rounded-[6px] px-1.5 py-0.5 text-[12px]).
 const ROLE_PILL: Record<"owner" | "admin" | "member", string> = {
-  owner: "bg-[#EFF6FF] text-[var(--strap-accent-hover)] dark:bg-[#172554]/50 dark:text-[#60A5FA]",
-  admin: "bg-[#ECFDF5] text-[#047857] dark:bg-[#052e1a]/50 dark:text-[#4ade80]",
+  owner: "bg-[var(--strap-context-tint)] text-[var(--strap-accent-hover)]",
+  admin: "bg-[var(--strap-environments-tint)] text-[var(--strap-success)]",
   member:
-    "bg-[#FFFBEB] text-[#B45309] dark:bg-[#422006]/50 dark:text-[#FBBF24]",
+    "bg-[var(--strap-agents-tint)] text-[var(--strap-caution)]",
 };
 
 function RolePill({ role }: { role: "owner" | "admin" | "member" }) {
@@ -124,7 +124,7 @@ const PRIMARY_BUTTON =
 const GHOST_BUTTON =
   "rounded-md px-3 text-[var(--strap-text-secondary)] hover:bg-[var(--strap-surface-raised)] hover:text-[var(--strap-text-primary)]";
 const DANGER_BUTTON =
-  "rounded-md bg-[#DC2626] px-4 text-white hover:bg-[#B91C1C] hover:text-white";
+  "rounded-md bg-[var(--strap-danger-fill)] px-4 text-white hover:bg-[var(--strap-danger-fill-hover)] hover:text-white";
 const FIELD_INPUT =
   "h-11 rounded-xl border-[var(--strap-border)] bg-[var(--strap-surface)] px-4 text-[15px]";
 const FIELD_LABEL =
@@ -1117,7 +1117,7 @@ export function CompanySettings() {
                     <span className="truncate text-[14px] font-medium text-[var(--strap-text-primary)]">
                       {invite.email}
                     </span>
-                    <span className="inline-flex items-center rounded-[6px] bg-[#F5F3FF] px-1.5 py-0.5 text-[12px] font-medium text-[#6D28D9] dark:bg-[#2E1065]/50 dark:text-[#A78BFA]">
+                    <span className="inline-flex items-center rounded-[6px] bg-[var(--strap-secrets-tint)] px-1.5 py-0.5 text-[12px] font-medium text-[var(--strap-secrets-text)]">
                       Pending
                     </span>
                   </div>
@@ -1389,7 +1389,7 @@ export function CompanySettings() {
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align="end"
-              className="min-w-32 space-y-1 border-[var(--strap-border)] bg-[var(--strap-surface)] p-1.5"
+              className="min-w-32 space-y-1 border-[var(--strap-frame)] bg-[var(--strap-surface)] p-1.5"
             >
               {(["credits", "byok"] as AiMode[]).map((mode) => (
                 <DropdownMenuItem
@@ -1842,13 +1842,13 @@ export function CompanySettings() {
         <LegacySubscriptionNotice scope="company" creedId={creedId} />
         <section className="scroll-mt-6">
           <h2 className={H2}>Danger zone</h2>
-          <div className="mt-4 rounded-[var(--radius-xl)] border border-[#FECACA] bg-[#FEF2F2] p-5 dark:border-[#7F1D1D]/40 dark:bg-[#3F1212]/30">
+          <div className="mt-4 rounded-[var(--radius-xl)] border border-[var(--strap-danger)] bg-[var(--strap-warning-tint)] p-5">
             <div className="flex items-center justify-between gap-5">
               <div className="min-w-0">
-                <div className="text-[15px] font-medium text-[#DC2626]">
+                <div className="text-[15px] font-medium text-[var(--strap-danger)]">
                   Delete Company Strap
                 </div>
-                <div className="mt-2 hidden text-[14px] leading-7 text-[#DC2626] md:block">
+                <div className="mt-2 hidden text-[14px] leading-7 text-[var(--strap-danger)] md:block">
                   Permanently deletes the Company Strap and all its content for
                   every member.
                 </div>
@@ -1869,7 +1869,7 @@ export function CompanySettings() {
   return (
     <div className="h-full overflow-y-auto bg-[var(--strap-surface)] strap-scrollbar">
       <div className="mx-auto max-w-3xl px-8 py-10 md:px-14">
-        <h1 className="font-heading text-[1.75rem] font-medium tracking-[-0.03em] text-[var(--strap-text-primary)]">
+        <h1 className="font-heading text-[1.75rem] font-semibold tracking-[-0.03em] text-[var(--strap-text-primary)]">
           Settings
         </h1>
 
@@ -1889,10 +1889,10 @@ export function CompanySettings() {
           if (!open) setArchivedDeleteTarget(null);
         }}
       >
-        <DialogContent className="rounded-[var(--radius-xl)] border-[var(--strap-border)] bg-[var(--strap-surface)]">
+        <DialogContent className="rounded-[var(--radius-xl)] border-[var(--strap-frame)] bg-[var(--strap-surface)]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-3">
-              <AlertTriangle className="h-5 w-5 text-[#B91C1C]" />
+              <AlertTriangle className="h-5 w-5 text-[var(--strap-danger)]" />
               Delete archived section
             </DialogTitle>
           </DialogHeader>
@@ -1909,7 +1909,7 @@ export function CompanySettings() {
               Cancel
             </Button>
             <Button
-              className="rounded-md bg-[#DC2626] text-white hover:bg-[#B91C1C]"
+              className="rounded-md bg-[var(--strap-danger-fill)] text-white hover:bg-[var(--strap-danger-fill-hover)]"
               onClick={() => {
                 if (archivedDeleteTarget)
                   void deleteArchivedSection(archivedDeleteTarget.id);
@@ -1928,7 +1928,7 @@ export function CompanySettings() {
           if (!open) setTransferTargetId("");
         }}
       >
-        <DialogContent className="rounded-[var(--radius-xl)] border-[var(--strap-border)] bg-[var(--strap-surface)]">
+        <DialogContent className="rounded-[var(--radius-xl)] border-[var(--strap-frame)] bg-[var(--strap-surface)]">
           <DialogHeader>
             <DialogTitle>
               Transfer ownership
@@ -1964,10 +1964,10 @@ export function CompanySettings() {
       </Dialog>
 
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-        <DialogContent className="rounded-[var(--radius-xl)] border-[var(--strap-border)] bg-[var(--strap-surface)]">
+        <DialogContent className="rounded-[var(--radius-xl)] border-[var(--strap-frame)] bg-[var(--strap-surface)]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-3">
-              <AlertTriangle className="h-5 w-5 text-[#B91C1C]" />
+              <AlertTriangle className="h-5 w-5 text-[var(--strap-danger)]" />
               Delete Company Strap
             </DialogTitle>
           </DialogHeader>
@@ -1990,7 +1990,7 @@ export function CompanySettings() {
               Cancel
             </Button>
             <Button
-              className="rounded-md bg-[#DC2626] text-white hover:bg-[#B91C1C]"
+              className="rounded-md bg-[var(--strap-danger-fill)] text-white hover:bg-[var(--strap-danger-fill-hover)]"
               onClick={doDelete}
               disabled={deleteConfirm !== company.creedName}
             >

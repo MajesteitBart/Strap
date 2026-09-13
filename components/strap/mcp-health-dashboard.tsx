@@ -73,8 +73,8 @@ const METRICS: { value: ChartMetric; label: string }[] = [
 
 const METRIC_COLOR: Record<Metric, string> = {
   reads: "#6366F1",
-  directs: "#16A34A",
-  proposals: "#D97706",
+  directs: "var(--strap-success)",
+  proposals: "var(--strap-caution)",
 };
 const METRIC_LABEL: Record<Metric, string> = {
   reads: "Reads",
@@ -89,8 +89,8 @@ const METRIC_BY_AGENT: Record<Metric, keyof HealthDay> = {
 
 // Proposal-outcome colors for the per-agent trust chart.
 const OUTCOME_CONFIG: ChartConfig = {
-  accepted: { label: "Accepted", color: "#16A34A" },
-  rejected: { label: "Rejected", color: "#DC2626" },
+  accepted: { label: "Accepted", color: "var(--strap-success)" },
+  rejected: { label: "Rejected", color: "var(--strap-danger)" },
   pending: { label: "Pending", color: "#3B82F6" },
 };
 
@@ -878,7 +878,7 @@ export function Dropdown({
       <DropdownMenuContent
         align={align ?? (iconSide === "right" ? "end" : "start")}
         className={cn(
-          "space-y-1 border-[var(--strap-border)] bg-[var(--strap-surface)] p-1.5",
+          "space-y-1 border-[var(--strap-frame)] bg-[var(--strap-surface)] p-1.5",
           menuWidthClass,
         )}
       >
