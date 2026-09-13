@@ -581,6 +581,8 @@ function PersonalSettingsScreen() {
     try {
       setDeleting(true);
       await deleteAccount();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not delete account.");
     } finally {
       setDeleting(false);
     }

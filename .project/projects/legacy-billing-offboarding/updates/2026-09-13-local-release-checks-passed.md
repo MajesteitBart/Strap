@@ -19,6 +19,8 @@ stream: WS-A
 - A read-only production check found zero recorded ongoing legacy subscriptions in either billing table and confirmed the new provisioning RPC is absent. Production has no Stripe key configured.
 - The second Codex review found that account and Company deletion could cascade away the last subscription reference. Both server deletion paths now require live non-renewal confirmation for every affected record. `node scripts/verify-legacy-deletion.mjs http://localhost:3102 .agents/logs/strap-verification/.env.local`, with the local-only Stripe fixture loaded into that disposable server, verified 409 responses for renewing billing, 502 for unconfirmed provider status, preserved accounts/Companies on refusal, and successful deletion after confirmed period-end cancellation or termination. The script creates and cleans up only its own synthetic user.
 
+- The third Codex review found that Personal Settings discarded deletion blockers. The provider now preserves the server message, and the confirmation handler displays it in a toast while resetting its pending state. All 194 tests, TypeScript, lint, build and brand checks pass after the fix.
+
 ## In Progress
 - Final-head pull-request checks and Codex review for PR 5.
 - Production migration readiness for the configured Supabase instance.
