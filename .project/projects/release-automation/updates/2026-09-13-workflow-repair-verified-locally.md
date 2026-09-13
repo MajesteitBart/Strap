@@ -25,9 +25,9 @@ stream: WS-A
 
 ## Blockers
 - OpenRouter rejected further free-model calls with daily quota 50, remaining 0, reset 2026-09-14 00:00 UTC. Run 34752873604 had already failed when a worker submitted a different persisted plan. No failed output was published. A local completion-tool probe could not run because the quota was exhausted; no unverified vendor patch is included.
-- The passing release checks are being extracted to the independent release-verification contract and branch.
+- No replacement OpenRouter key was found in the 86 secrets visible to the configured Bitwarden machine account. The maintainer has been asked to identify or share the intended secret; no unrelated client credentials were used.
 
 ## Next Actions
-- Inspect the capped workflow run, fix any confirmed failure, then complete review and merge checks.
+- Once a funded project key is available or the free quota resets, verify native worker completion in an isolated probe, repair confirmed failures, then run the full generator and complete review and merge checks.
 
-- Integrated the redesign and merged release checks. The application suite now passes 187 tests; strict types, lint, production build and brand audit pass. CI shipped independently in PR 10 and passed on main. OpenWiki generation remains blocked and no further provider calls were made after the daily quota was exhausted.
+- Integrated the redesign and merged release checks. The application suite now passes 188 tests; strict types, lint, production build and brand audit pass. CI shipped independently in PR 10 and passed on main. OpenWiki generation remains blocked and no further provider calls were made after the daily quota was exhausted.
