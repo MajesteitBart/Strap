@@ -1,0 +1,752 @@
+/* Strap public worktable primitives.
+
+   Everything here extends the `.strap-site` system that `/home` and `/docs`
+   established in globals.css: warm paper, flat white sheets, one-pixel ink
+   frames, persistent resource colours, display headings, and monospace
+   labels. Inner marketing pages, authentication, consent, invitation, and
+   error surfaces compose these classes instead of carrying route-local
+   styling. Colour tokens come from `.strap-site` (light-only); geometry and
+   motion respect `prefers-reduced-motion` at the bottom of this file. */
+
+/* ---------------------------------------------------------------------------
+   Navigation: primary page links, a signed-in aware CTA, and a disclosure
+   menu that lists every public route below the desktop breakpoint.
+   ------------------------------------------------------------------------ */
+.strap-navbar { position: relative; }
+.strap-nav-toggle {
+  display: none;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid var(--strap-ink-strong);
+  background: var(--strap-surface);
+  color: var(--strap-ink-strong);
+  cursor: pointer;
+  transition: background-color 160ms cubic-bezier(.22,1,.36,1);
+}
+.strap-nav-toggle:hover { background: var(--strap-context-tint); }
+.strap-nav-toggle:focus-visible { outline: 2px solid var(--strap-ink-strong); outline-offset: 3px; }
+.strap-nav-toggle-lines { position: relative; display: block; width: 1.05rem; height: 2px; background: currentColor; transition: background-color 160ms cubic-bezier(.22,1,.36,1); }
+.strap-nav-toggle-lines::before,
+.strap-nav-toggle-lines::after { content: ""; position: absolute; left: 0; width: 100%; height: 2px; background: currentColor; transition: transform 200ms cubic-bezier(.22,1,.36,1), top 200ms cubic-bezier(.22,1,.36,1); }
+.strap-nav-toggle-lines::before { top: -6px; }
+.strap-nav-toggle-lines::after { top: 6px; }
+.strap-nav-toggle[aria-expanded="true"] .strap-nav-toggle-lines { background: transparent; }
+.strap-nav-toggle[aria-expanded="true"] .strap-nav-toggle-lines::before { top: 0; transform: rotate(45deg); }
+.strap-nav-toggle[aria-expanded="true"] .strap-nav-toggle-lines::after { top: 0; transform: rotate(-45deg); }
+
+.strap-nav-menu {
+  display: none;
+  border-top: 1px solid var(--strap-ink-strong);
+  background: var(--strap-paper);
+}
+.strap-nav-menu[data-open="true"] { display: block; }
+.strap-nav-menu-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  border: 1px solid var(--strap-ink-strong);
+  border-top: 0;
+  background: var(--strap-ink-strong);
+}
+.strap-nav-menu-group { background: var(--strap-surface); padding: 1rem 1.1rem 1.1rem; }
+.strap-nav-menu-group h2 {
+  margin-bottom: .6rem;
+  color: var(--strap-ink-soft);
+  font-family: var(--font-strap-mono), ui-monospace, monospace;
+  font-size: .66rem;
+  font-weight: 500;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+.strap-nav-menu-group a {
+  display: block;
+  padding: .4rem 0;
+  color: var(--strap-ink-strong);
+  font-size: .95rem;
+  font-weight: 500;
+}
+.strap-nav-menu-group a:hover { color: var(--strap-context); text-decoration: underline; text-underline-offset: .25rem; }
+.strap-nav-menu-group a[aria-current="page"] { color: var(--strap-context); }
+
+/* ---------------------------------------------------------------------------
+   Page hero and section rhythm for inner pages.
+   ------------------------------------------------------------------------ */
+.strap-page-hero {
+  overflow: hidden;
+  border-bottom: 1px solid var(--strap-ink-strong);
+  padding-block: clamp(3.25rem, 6vw, 5.5rem);
+}
+.strap-page-hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr);
+  align-items: center;
+  gap: clamp(2rem, 5vw, 4.5rem);
+}
+.strap-page-hero h1 { max-width: 18ch; font-size: clamp(2.5rem, 4.6vw, 4.1rem); }
+.strap-page-hero-copy > p,
+.strap-lede { max-width: 46ch; margin-top: 1.25rem; color: var(--strap-ink-soft); font-size: clamp(1.05rem, 1.8vw, 1.2rem); line-height: 1.55; }
+.strap-page-hero .strap-actions { margin-top: 1.75rem; }
+.strap-page-hero-aside { position: relative; }
+
+.strap-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  margin-bottom: 1.25rem;
+  border: 1px solid var(--strap-ink-strong);
+  background: var(--strap-agents);
+  padding: .28rem .7rem;
+  color: var(--strap-ink-strong);
+  font-family: var(--font-strap-mono), ui-monospace, monospace;
+  font-size: .68rem;
+  font-weight: 500;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.strap-kicker-context { background: var(--strap-context); color: #fff; }
+.strap-kicker-skills { background: var(--strap-skills); color: #fff; }
+.strap-kicker-secrets { background: var(--strap-secrets); color: #fff; }
+.strap-kicker-environments { background: var(--strap-environments); color: #fff; }
+.strap-kicker-paper { background: var(--strap-surface-2); }
+
+.strap-page-main { padding-block: clamp(3rem, 6vw, 5rem) clamp(5rem, 10vw, 8rem); }
+.strap-page-main-narrow { width: min(100%, 52rem); }
+.strap-page-section + .strap-page-section { margin-top: clamp(3rem, 6vw, 5.5rem); }
+.strap-page-section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem 2rem;
+  margin-bottom: 1.75rem;
+}
+.strap-page-section-head h2 { max-width: 26ch; font-size: clamp(1.6rem, 2.6vw, 2.3rem); }
+.strap-page-section-head p { max-width: 58ch; margin-top: .6rem; color: var(--strap-ink-soft); }
+.strap-page-section-head > div { min-width: 0; }
+
+/* Tone scopes: set once on a container, read by cells, pills, cards, and
+   prose markers so a page can colour a whole block by resource. */
+.strap-tone-context { --strap-tone: var(--strap-context); --strap-tone-tint: var(--strap-context-tint); --strap-tone-fg: #fff; }
+.strap-tone-skills { --strap-tone: var(--strap-skills); --strap-tone-tint: var(--strap-skills-tint); --strap-tone-fg: #fff; }
+.strap-tone-secrets { --strap-tone: var(--strap-secrets); --strap-tone-tint: var(--strap-secrets-tint); --strap-tone-fg: #fff; }
+.strap-tone-environments { --strap-tone: var(--strap-environments); --strap-tone-tint: var(--strap-environments-tint); --strap-tone-fg: #fff; }
+.strap-tone-agents { --strap-tone: var(--strap-agents); --strap-tone-tint: var(--strap-agents-tint); --strap-tone-fg: var(--strap-ink-strong); }
+.strap-tone-warning { --strap-tone: var(--strap-warning); --strap-tone-tint: var(--strap-warning-tint); --strap-tone-fg: #fff; }
+
+/* ---------------------------------------------------------------------------
+   Cells: a framed grid with true one-pixel internal lines.
+   ------------------------------------------------------------------------ */
+.strap-cells {
+  display: grid;
+  grid-template-columns: repeat(var(--strap-cols, 3), minmax(0, 1fr));
+  gap: 1px;
+  border: 1px solid var(--strap-ink-strong);
+  background: var(--strap-ink-strong);
+}
+.strap-cells > * { min-width: 0; background: var(--strap-surface); }
+.strap-cell { display: flex; flex-direction: column; padding: 1.5rem 1.35rem 1.4rem; }
+.strap-cell h3 { font-size: 1.05rem; line-height: 1.3; }
+.strap-cell > p { margin-top: .5rem; color: var(--strap-ink-soft); font-size: .92rem; line-height: 1.6; }
+.strap-cell-label {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: .4rem;
+  margin-bottom: .9rem;
+  border: 1px solid var(--strap-ink-strong);
+  background: var(--strap-tone-tint, var(--strap-surface-2));
+  padding: .16rem .5rem;
+  color: var(--strap-ink-strong);
+  font-family: var(--font-strap-mono), ui-monospace, monospace;
+  font-size: .66rem;
+  font-weight: 500;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.strap-cell-label-solid { background: var(--strap-tone, var(--strap-ink-strong)); color: var(--strap-tone-fg, #fff); }
+.strap-cell-number {
+  display: grid;
+  width: 1.8rem;
+  height: 1.8rem;
+  margin-bottom: 1rem;
+  place-items: center;
+  border: 1px solid var(--strap-ink-strong);
+  background: var(--strap-tone, var(--strap-context));
+  color: var(--strap-tone-fg, #fff);
+  font-family: var(--font-strap-display), sans-serif;
+  font-size: .8rem;
+  font-weight: 700;
+}
+.strap-cell-link { transition: background-color 160ms cubic-bezier(.22,1,.36,1); }
+.strap-cell-link:hover { background: var(--strap-tone-tint, var(--strap-context-tint)); }
+.strap-cell-link:focus-visible { outline: 2px solid var(--strap-ink-strong); outline-offset: -4px; }
+.strap-cell-link .strap-cell-more { margin-top: auto; padding-top: 1rem; color: var(--strap-ink-strong); font-family: var(--font-strap-mono), ui-monospace, monospace; font-size: .74rem; font-weight: 500; }
+
+/* ---------------------------------------------------------------------------
+   Cards, tables, and pills.
+   ------------------------------------------------------------------------ */
+.strap-card { position: relative; border: 1px solid var(--strap-ink-strong); background: var(--strap-surface); }
+.strap-card-offset { box-shadow: .4rem .4rem 0 var(--strap-tone-tint, var(--strap-surface-2)); }
+.strap-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem 1rem;
+  border-bottom: 1px solid var(--strap-ink-strong);
+  padding: .65rem 1.1rem;
+  color: var(--strap-ink-strong);
+  font-family: var(--font-strap-mono), ui-monospace, monospace;
+  font-size: .7rem;
+  font-weight: 500;
+}
+.strap-card-head b { color: var(--strap-tone, var(--strap-environments)); font-weight: 500; }
+.strap-card-body { padding: 1.35rem 1.4rem; }
+.strap-card-body > * + * { margin-top: .85rem; }
+.strap-card-body h3,
+.strap-card-title { font-size: 1.05rem; }
+.strap-card-body p { color: var(--strap-ink); font-size: .95rem; line-height: 1.6; }
+
+/* Index rows: a compact monospace list of links inside a card. */
+.strap-index-list { margin: 0; padding: 0; list-style: none; }
+.strap-card-body .strap-index-list { border: 1px solid var(--strap-ink-strong); }
+.strap-index-list > li + li { border-top: 1px solid var(--strap-line); }
+.strap-index-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .62rem .95rem;
+  color: var(--strap-ink-strong);
+  font-family: var(--font-strap-mono), ui-monospace, monospace;
+  font-size: .72rem;
+  transition: background-color 160ms cubic-bezier(.22,1,.36,1);
+}
+.strap-index-row:hover { background: var(--strap-tone-tint, var(--strap-context-tint)); }
+.strap-index-row:focus-visible { outline: 2px solid var(--strap-ink-strong); outline-offset: -3px; }
+.strap-index-swatch { display: inline-block; width: .7rem; height: .7rem; margin-right: .55rem; border: 1px solid var(--strap-ink-strong); background: var(--strap-tone, var(--strap-context)); vertical-align: -1px; }
+
+.strap-table-wrap { overflow-x: auto; border: 1px solid var(--strap-ink-strong); background: var(--strap-surface); }
+.strap-table { width: 100%; border-collapse: collapse; text-align: left; font-size: .92rem; }
+.strap-table th {
+  border-bottom: 1px solid var(--strap-ink-strong);
+  background: var(--strap-surface-2);
+  padding: .7rem 1rem;
+  color: var(--strap-ink-strong);
+  font-family: var(--font-strap-mono), ui-monospace, monospace;
+  font-size: .66rem;
+  font-weight: 500;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.strap-table td { border-bottom: 1px solid var(--strap-line); padding: .95rem 1rem; color: var(--strap-ink); line-height: 1.55; vertical-align: top; }
+.strap-table tr:last-child td { border-bottom: 0; }
+.strap-table td:first-child { color: var(--strap-ink-strong); font-weight: 600; }
+.strap-table a { color: var(--strap-context); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .22rem; }
+.strap-table a:hover { color: var(--strap-ink-strong); }
+
+.strap-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  border: 1px solid var(--strap-ink-strong);
+  background: var(--strap-tone-tint, var(--strap-surface-2));
+  padding: .14rem .5rem;
+  color: var(--strap-ink-strong);
+  font-family: var(--font-strap-mono), ui-monospace, monospace;
+  font-size: .66rem;
+  font-weight: 500;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.strap-pill-solid { background: var(--strap-tone, var(--strap-ink-strong)); color: var(--strap-tone-fg, #fff); }
+.strap-pill-ready { background: var(--strap-ready); }
+.strap-pill-count { background: var(--strap-surface); color: var(--strap-ink-soft); }
+
+/* ---------------------------------------------------------------------------
+   Prose: long-form articles, changelog bodies, and legal text.
+   ------------------------------------------------------------------------ */
+.strap-prose { max-width: 68ch; color: var(--strap-ink); font-size: 1.02rem; line-height: 1.7; }
+.strap-prose > * + * { margin-top: 1.1rem; }
+.strap-prose > h2 { margin-top: 2.75rem; }
+.strap-prose > h3 { margin-top: 2rem; }
+.strap-prose h2 { max-width: 28ch; font-size: clamp(1.5rem, 2.4vw, 2rem); line-height: 1.12; }
+.strap-prose h3 { font-size: 1.15rem; font-weight: 700; line-height: 1.3; }
+.strap-prose .strap-lead { color: var(--strap-ink-strong); font-size: clamp(1.1rem, 1.6vw, 1.25rem); line-height: 1.6; }
+.strap-prose a { color: var(--strap-ink-strong); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .22rem; }
+.strap-prose a:hover { text-decoration-color: var(--strap-context); color: var(--strap-context); }
+.strap-prose ul,
+.strap-prose ol { padding: 0; list-style: none; }
+.strap-prose li { position: relative; padding-left: 1.4rem; }
+.strap-prose li + li { margin-top: .5rem; }
+.strap-prose ul > li::before {
+  content: "";
+  position: absolute;
+  top: .62em;
+  left: 0;
+  width: .5rem;
+  height: .5rem;
+  border: 1px solid var(--strap-ink-strong);
+  background: var(--strap-tone, var(--strap-context));
+}
+.strap-prose ol { counter-reset: strap-ol; }
+.strap-prose ol > li { padding-left: 2.1rem; counter-increment: strap-ol; }
+.strap-prose ol > li::before {
+  content: counter(strap-ol);
+  position: absolute;
+  top: .18em;
+  left: 0;
+  display: grid;
+  width: 1.4rem;
+  height: 1.4rem;
+  place-items: center;
+  border: 1px solid var(--strap-ink-strong);
+  background: var(--strap-tone-tint, var(--strap-context-tint));
+  color: var(--strap-ink-strong);
+  font-family: var(--font-strap-mono), ui-monospace, monospace;
+  font-size: .68rem;
+  font-weight: 500;
+  line-height: 1;
+}
+.strap-prose code {
+  border: 1px solid var(--strap-ink-strong);
+  background: var(--strap-surface-2);
+  padding: .05rem .38rem;
+  color: var(--strap-ink-strong);
+  font-family: var(--font-strap-mono), ui-monospace, monospace;
+  font-size: .82em;
+}
+.strap-prose pre {
+  overflow-x: auto;
+  border: 1px solid var(--strap-ink-strong);
+  background: var(--strap-ink-strong);
+  padding: 1rem 1.2rem;
+  color: var(--strap-paper);
+  font-family: var(--font-strap-mono), ui-monospace, monospace;
+  font-size: .82rem;
+  line-height: 1.6;
+  tab-size: 2;
+}
+.strap-prose pre code { border: 0; background: transparent; padding: 0; color: inherit; font-size: inherit; }
+.strap-prose blockquote {
+  border: 1px solid var(--strap-ink-strong);
+  border-left: .35rem solid var(--strap-tone, var(--strap-context));
+  background: var(--strap-surface);
+  padding: .9rem 1.2rem;
+  color: var(--strap-ink);
+}
+.strap-prose figure { margin: 0; }
+.strap-prose figure > p { margin-bottom: 1rem; }
+.strap-prose .strap-table-wrap { margin-top: 1.25rem; }
+.strap-prose-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .6rem 1rem;
+  margin-bottom: 1.5rem;
+  color: var(--strap-ink-soft);
+  font-family: var(--font-strap-mono), ui-monospace, monospace;
+  font-size: .72rem;
+}
+
+/* ---------------------------------------------------------------------------
+   FAQ accordion.
+   ------------------------------------------------------------------------ */
+.strap-faq { border: 1px solid var(--strap-ink-strong); background: var(--strap-surface); }
+.strap-faq-item + .strap-faq-item { border-top: 1px solid var(--strap-ink-strong); }
+.strap-faq-trigger {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  border: 0;
+  background: transparent;
+  padding: 1.1rem 1.25rem;
+  color: var(--strap-ink-strong);
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 160ms cubic-bezier(.22,1,.36,1);
+}
+.strap-faq-trigger:hover,
+.strap-faq-item[data-open="true"] .strap-faq-trigger { background: var(--strap-tone-tint, var(--strap-context-tint)); }
+.strap-faq-trigger:focus-visible { outline: 2px solid var(--strap-ink-strong); outline-offset: -3px; }
+.strap-faq-trigger svg { flex: 0 0 auto; transition: transform 200ms cubic-bezier(.22,1,.36,1); }
+.strap-faq-item[data-open="true"] .strap-faq-trigger svg { transform: rotate(180deg); }
+.strap-faq-panel { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 240ms cubic-bezier(.22,1,.36,1); }
+.strap-faq-item[data-open="true"] .strap-faq-panel { grid-template-rows: 1fr; }
+.strap-faq-panel > div { overflow: hidden; }
+.strap-faq-answer { max-width: 72ch; padding: .15rem 1.25rem 1.25rem; color: var(--strap-ink); font-size: .95rem; line-height: 1.65; }
+
+/* ---------------------------------------------------------------------------
+   Timeline for the changelog.
+   ------------------------------------------------------------------------ */
+.strap-timeline { border: 1px solid var(--strap-ink-strong); background: var(--strap-surface); }
+.strap-timeline-entry { display: grid; grid-template-columns: 11rem minmax(0, 1fr); gap: 1.5rem; padding: 1.6rem 1.5rem 1.7rem; }
+.strap-timeline-entry + .strap-timeline-entry { border-top: 1px solid var(--strap-ink-strong); }
+.strap-timeline-date { color: var(--strap-ink-soft); font-family: var(--font-strap-mono), ui-monospace, monospace; font-size: .74rem; padding-top: .35rem; }
+.strap-timeline-entry h2 { max-width: 30ch; font-size: clamp(1.25rem, 2vw, 1.6rem); line-height: 1.15; }
+.strap-timeline-body { max-width: 66ch; }
+.strap-timeline-body > p { margin-top: .6rem; color: var(--strap-ink); line-height: 1.65; }
+
+/* ---------------------------------------------------------------------------
+   Plans for the pricing page.
+   ------------------------------------------------------------------------ */
+.strap-plans { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; border: 1px solid var(--strap-ink-strong); background: var(--strap-ink-strong); }
+.strap-plan { position: relative; display: flex; min-width: 0; flex-direction: column; background: var(--strap-surface); padding: 2.1rem 1.5rem 1.5rem; }
+.strap-plan .strap-chip { background: var(--strap-tone, var(--strap-ink-strong)); color: var(--strap-tone-fg, #fff); }
+.strap-plan-name { color: var(--strap-tone, var(--strap-ink-strong)); font-family: var(--font-strap-display), sans-serif; font-size: clamp(1.75rem, 2.6vw, 2.25rem); font-weight: 600; letter-spacing: -.03em; line-height: 1; }
+.strap-plan-price { display: flex; align-items: baseline; gap: .5rem; margin-top: 1rem; border-bottom: 1px solid var(--strap-ink-strong); padding-bottom: 1rem; }
+.strap-plan-price strong { color: var(--strap-ink-strong); font-family: var(--font-strap-display), sans-serif; font-size: 2.4rem; font-weight: 600; letter-spacing: -.03em; line-height: 1; }
+.strap-plan-price span { color: var(--strap-ink-soft); font-family: var(--font-strap-mono), ui-monospace, monospace; font-size: .74rem; }
+.strap-plan-tagline { margin-top: 1rem; color: var(--strap-ink-soft); font-size: .92rem; line-height: 1.55; }
+.strap-plan-list { display: grid; flex: 1; gap: .55rem; margin: 1.25rem 0 0; padding: 0; list-style: none; }
+.strap-plan-list li { display: grid; grid-template-columns: 1.15rem minmax(0, 1fr); align-items: start; gap: .6rem; color: var(--strap-ink-strong); font-size: .9rem; line-height: 1.45; }
+.strap-plan-list li[data-included="false"] { color: var(--strap-ink-soft); }
+.strap-plan-glyph { display: grid; width: 1.15rem; height: 1.15rem; margin-top: .1rem; place-items: center; border: 1px solid var(--strap-ink-strong); background: var(--strap-ready); color: var(--strap-ink-strong); font-family: var(--font-strap-mono), ui-monospace, monospace; font-size: .64rem; font-weight: 500; line-height: 1; }
+.strap-plan-glyph-no { background: var(--strap-surface-2); color: var(--strap-ink-soft); }
+.strap-plan-glyph-star { background: var(--strap-agents); }
+.strap-plan-cta { margin-top: 1.75rem; }
+.strap-plan-cta .strap-button { width: 100%; }
+.strap-plans-note { margin-top: 1.25rem; color: var(--strap-ink-soft); font-size: .85rem; text-align: center; }
+
+/* ---------------------------------------------------------------------------
+   Buttons: extra tones and sizes on top of the home system.
+   ------------------------------------------------------------------------ */
+.strap-button { cursor: pointer; text-align: center; }
+.strap-button:focus-visible { outline: 2px solid var(--strap-ink-strong); outline-offset: 3px; }
+.strap-button:disabled,
+.strap-button[aria-disabled="true"] { cursor: not-allowed; opacity: .55; transform: none; }
+.strap-button-ink { background: var(--strap-ink-strong); color: var(--strap-surface) !important; }
+.strap-button-ink:hover { background: var(--strap-context); }
+.strap-button-agents { background: var(--strap-agents); color: var(--strap-ink-strong) !important; }
+.strap-button-agents:hover { background: var(--strap-ink-strong); color: var(--strap-surface) !important; }
+.strap-button-sm { min-height: 2.5rem; padding-inline: 1rem; font-size: .76rem; }
+.strap-button-block { width: 100%; }
+.strap-button-icon { gap: .6rem; }
+.strap-button-icon svg,
+.strap-button-icon img { flex: 0 0 auto; }
+.strap-link-plain { color: var(--strap-ink-strong); font-weight: 500; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .22rem; }
+.strap-link-plain:hover { color: var(--strap-context); }
+.strap-text-soft { color: var(--strap-ink-soft); }
+
+/* ---------------------------------------------------------------------------
+   Forms: sign-in, reset, device codes, and consent selects.
+   ------------------------------------------------------------------------ */
+.strap-form { display: grid; gap: .9rem; }
+.strap-field { display: grid; gap: .4rem; }
+.strap-field-label {
+  color: var(--strap-ink-strong);
+  font-family: var(--font-strap-mono), ui-monospace, monospace;
+  font-size: .68rem;
+  font-weight: 500;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.strap-input {
+  width: 100%;
+  min-height: 3rem;
+  border: 1px solid var(--strap-ink-strong);
+  background: var(--strap-surface);
+  padding: 0 1rem;
+  color: var(--strap-ink-strong);
+  font: inherit;
+  font-size: .95rem;
+  transition: box-shadow 160ms cubic-bezier(.22,1,.36,1), border-color 160ms cubic-bezier(.22,1,.36,1);
+}
+.strap-input::placeholder { color: var(--strap-ink-soft); }
+.strap-input:focus { outline: none; border-color: var(--strap-context); box-shadow: inset 0 0 0 1px var(--strap-context); }
+.strap-input:focus-visible { outline: 2px solid var(--strap-ink-strong); outline-offset: 2px; }
+.strap-input[aria-invalid="true"] { border-color: var(--strap-warning); box-shadow: inset 0 0 0 1px var(--strap-warning); }
+.strap-input:disabled { cursor: not-allowed; opacity: .6; }
+.strap-input-code { font-family: var(--font-strap-mono), ui-monospace, monospace; font-size: 1.15rem; letter-spacing: .18em; text-align: center; text-transform: uppercase; }
+.strap-input-wrap { position: relative; }
+.strap-input-wrap .strap-input { padding-right: 3rem; }
+.strap-input-trailing { position: absolute; top: 50%; right: .45rem; transform: translateY(-50%); }
+.strap-input-trailing button {
+  display: grid;
+  width: 2.1rem;
+  height: 2.1rem;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: var(--strap-ink-soft);
+  cursor: pointer;
+  transition: color 160ms cubic-bezier(.22,1,.36,1);
+}
+.strap-input-trailing button:hover { color: var(--strap-context); }
+.strap-input-trailing button:focus-visible { outline: 2px solid var(--strap-ink-strong); outline-offset: 1px; }
+.strap-field-error { color: var(--strap-warning); font-size: .8rem; line-height: 1.4; }
+.strap-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23211e19' stroke-width='1.6'/%3E%3C/svg%3E");
+  background-position: right 1rem center;
+  background-repeat: no-repeat;
+  padding-right: 2.6rem;
+}
+.strap-checkbox {
+  display: grid;
+  width: 1.05rem;
+  height: 1.05rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--strap-ink-strong);
+  background: var(--strap-surface);
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 160ms cubic-bezier(.22,1,.36,1);
+}
+.strap-checkbox[aria-checked="true"] { background: var(--strap-context); }
+.strap-checkbox:focus-visible { outline: 2px solid var(--strap-ink-strong); outline-offset: 2px; }
+.strap-form-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem 1rem; }
+.strap-form-row label { display: inline-flex; align-items: center; gap: .6rem; color: var(--strap-ink); font-size: .9rem; cursor: pointer; user-select: none; }
+.strap-form-link { border: 0; background: transparent; padding: 0; color: var(--strap-ink); font: inherit; font-size: .9rem; cursor: pointer; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .22rem; }
+.strap-form-link:hover { color: var(--strap-context); }
+.strap-form-link:disabled { cursor: not-allowed; opacity: .6; }
+.strap-form-link:focus-visible { outline: 2px solid var(--strap-ink-strong); outline-offset: 3px; }
+.strap-divider { display: flex; align-items: center; gap: .75rem; margin-block: 1.25rem; color: var(--strap-ink-soft); font-family: var(--font-strap-mono), ui-monospace, monospace; font-size: .66rem; letter-spacing: .05em; text-transform: uppercase; }
+.strap-divider::before,
+.strap-divider::after { content: ""; flex: 1; height: 1px; background: var(--strap-ink-strong); }
+.strap-provider { position: relative; }
+.strap-provider-badge {
+  position: absolute;
+  top: -.72rem;
+  right: .75rem;
+  border: 1px solid var(--strap-ink-strong);
+  background: var(--strap-agents);
+  padding: .12rem .45rem;
+  color: var(--strap-ink-strong);
+  font-family: var(--font-strap-mono), ui-monospace, monospace;
+  font-size: .62rem;
+  font-weight: 500;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.strap-notice {
+  border: 1px solid var(--strap-ink-strong);
+  border-left: .35rem solid var(--strap-tone, var(--strap-context));
+  background: var(--strap-tone-tint, var(--strap-context-tint));
+  padding: .8rem 1rem;
+  color: var(--strap-ink-strong);
+  font-size: .88rem;
+  line-height: 1.55;
+}
+.strap-notice-warning { --strap-tone: var(--strap-warning); --strap-tone-tint: var(--strap-warning-tint); }
+
+/* ---------------------------------------------------------------------------
+   Authentication shell: form column plus a flat kit panel.
+   ------------------------------------------------------------------------ */
+.strap-auth { display: grid; min-height: 100dvh; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.strap-auth-form { display: flex; flex-direction: column; min-width: 0; padding: 1.5rem var(--strap-pad) 1.5rem; }
+.strap-auth-top { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.strap-auth-top .strap-wordmark img { width: 6.5rem; }
+.strap-auth-body { display: flex; flex: 1; align-items: center; justify-content: center; padding-block: 3rem; }
+.strap-auth-card { width: 100%; max-width: 26rem; }
+.strap-auth-card h1 { max-width: none; font-size: clamp(1.9rem, 3vw, 2.4rem); line-height: 1.05; letter-spacing: -.03em; }
+.strap-auth-card > p { margin-top: .8rem; color: var(--strap-ink-soft); font-size: .95rem; line-height: 1.6; }
+.strap-auth-providers { display: grid; gap: .75rem; margin-top: 1.75rem; }
+.strap-auth-switch { margin-top: 1.75rem; color: var(--strap-ink-soft); font-size: .9rem; text-align: center; }
+.strap-auth-foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .75rem 1.25rem; color: var(--strap-ink-soft); font-family: var(--font-strap-mono), ui-monospace, monospace; font-size: .72rem; }
+.strap-auth-foot a:hover { color: var(--strap-ink-strong); text-decoration: underline; text-underline-offset: .25rem; }
+.strap-auth-panel {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-left: 1px solid var(--strap-ink-strong);
+  background-color: var(--strap-surface-2);
+  background-image: radial-gradient(var(--strap-line) 1.2px, transparent 1.2px);
+  background-size: 18px 18px;
+  padding: 4rem var(--strap-pad);
+}
+.strap-auth-panel .strap-kit { width: min(100%, 30rem); }
+.strap-auth-panel .strap-manifest-cta { pointer-events: none; }
+.strap-auth-centered { text-align: center; }
+.strap-auth-centered .strap-actions { justify-content: center; }
+.strap-auth-glyph {
+  display: grid;
+  width: 3rem;
+  height: 3rem;
+  margin: 0 auto 1.25rem;
+  place-items: center;
+  border: 1px solid var(--strap-ink-strong);
+  background: var(--strap-environments-tint);
+  color: var(--strap-ink-strong);
+}
+.strap-auth-spinner { display: flex; justify-content: center; padding-block: 3rem; color: var(--strap-ink-soft); }
+
+/* ---------------------------------------------------------------------------
+   Consent-style pages: OAuth authorize, device, invite, backend setup.
+   ------------------------------------------------------------------------ */
+.strap-consent { display: flex; min-height: 100dvh; flex-direction: column; align-items: center; justify-content: center; padding: 3rem var(--strap-pad) 4rem; }
+.strap-consent-brand { display: block; margin-bottom: 2.25rem; }
+.strap-consent-brand img { display: block; width: 7.25rem; height: auto; }
+.strap-consent-kit { position: relative; width: 100%; max-width: 27rem; }
+.strap-consent-kit-wide { max-width: 36rem; }
+.strap-consent-backing { position: absolute; z-index: 0; border: 1px solid var(--strap-ink-strong); }
+.strap-consent-backing-one { top: -.9rem; right: -.9rem; width: 42%; height: 46%; background: var(--strap-tone-tint, var(--strap-context-tint)); }
+.strap-consent-backing-two { bottom: -.9rem; left: -.9rem; width: 30%; height: 38%; background: var(--strap-environments-tint); }
+.strap-consent-card { position: relative; z-index: 1; border: 1px solid var(--strap-ink-strong); background: var(--strap-surface); padding: 2rem 1.75rem 1.75rem; text-align: center; }
+.strap-consent-card > .strap-chip { left: 50%; transform: translateX(-50%); white-space: nowrap; }
+.strap-consent-card h1 { max-width: none; font-size: 1.5rem; line-height: 1.15; letter-spacing: -.02em; }
+.strap-consent-card > p { margin-top: .75rem; color: var(--strap-ink); font-size: .93rem; line-height: 1.6; }
+.strap-consent-meta { margin-top: .7rem; color: var(--strap-ink-soft); font-family: var(--font-strap-mono), ui-monospace, monospace; font-size: .7rem; }
+.strap-consent-glyphs { display: flex; align-items: center; justify-content: center; gap: .9rem; margin-bottom: 1.4rem; }
+.strap-consent-glyph { display: grid; width: 3.5rem; height: 3.5rem; place-items: center; border: 1px solid var(--strap-ink-strong); background: var(--strap-surface-2); overflow: hidden; }
+.strap-consent-glyph-join { color: var(--strap-ink-soft); font-family: var(--font-strap-mono), ui-monospace, monospace; font-size: 1rem; }
+.strap-consent-actions { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; margin-top: 1.5rem; }
+.strap-consent-actions .strap-button { width: 100%; }
+.strap-consent-actions-single { grid-template-columns: 1fr; }
+.strap-consent-form { display: grid; gap: 1rem; margin-top: 1.5rem; text-align: left; }
+.strap-consent-foot { margin-top: 1.4rem; color: var(--strap-ink-soft); font-size: .85rem; }
+.strap-consent-list { margin: 1.25rem 0 0; padding: 0; list-style: none; text-align: left; border: 1px solid var(--strap-ink-strong); }
+.strap-consent-list li { display: flex; justify-content: space-between; gap: 1rem; padding: .55rem .85rem; font-family: var(--font-strap-mono), ui-monospace, monospace; font-size: .72rem; }
+.strap-consent-list li + li { border-top: 1px solid var(--strap-line); }
+.strap-consent-list li span:last-child { color: var(--strap-ink-soft); }
+
+/* ---------------------------------------------------------------------------
+   Empty and error states.
+   ------------------------------------------------------------------------ */
+.strap-empty { display: flex; min-height: 72vh; flex-direction: column; align-items: center; justify-content: center; padding: 3rem var(--strap-pad); text-align: center; }
+.strap-empty-code {
+  margin-bottom: 1.25rem;
+  border: 1px solid var(--strap-ink-strong);
+  background: var(--strap-tone-tint, var(--strap-surface-2));
+  padding: .22rem .65rem;
+  color: var(--strap-ink-strong);
+  font-family: var(--font-strap-mono), ui-monospace, monospace;
+  font-size: .72rem;
+  font-weight: 500;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.strap-empty h1 { max-width: 16ch; font-size: clamp(2rem, 4.2vw, 3.2rem); }
+.strap-empty p { max-width: 46ch; margin-top: 1rem; color: var(--strap-ink-soft); line-height: 1.6; }
+.strap-empty .strap-actions { justify-content: center; }
+.strap-empty-digest { margin-top: 1.25rem; color: var(--strap-ink-soft); font-family: var(--font-strap-mono), ui-monospace, monospace; font-size: .72rem; }
+
+/* ---------------------------------------------------------------------------
+   Footer with route columns.
+   ------------------------------------------------------------------------ */
+.strap-footer-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) repeat(3, minmax(0, .6fr)); gap: 2rem; padding-block: 2.5rem 2rem; border-bottom: 1px solid var(--strap-line); margin-bottom: 1.5rem; }
+.strap-footer-brand img { display: block; width: 7.25rem; height: auto; }
+.strap-footer-brand p { max-width: 30ch; margin-top: 1rem; color: var(--strap-ink-soft); font-size: .9rem; line-height: 1.55; }
+.strap-footer-col h2 { margin-bottom: .75rem; color: var(--strap-ink-strong); font-family: var(--font-strap-mono), ui-monospace, monospace; font-size: .66rem; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; }
+.strap-footer-col a { display: block; padding: .28rem 0; color: var(--strap-ink); font-size: .9rem; }
+.strap-footer-col a:hover { color: var(--strap-ink-strong); text-decoration: underline; text-underline-offset: .25rem; }
+.strap-footer-status { display: inline-flex; align-items: center; gap: .5rem; margin-top: 1.25rem; border: 1px solid var(--strap-ink-strong); background: var(--strap-surface); padding: .35rem .7rem; color: var(--strap-ink-strong); font-family: var(--font-strap-mono), ui-monospace, monospace; font-size: .68rem; font-weight: 500; }
+.strap-footer-status-dot { width: .55rem; height: .55rem; border: 1px solid var(--strap-ink-strong); background: var(--strap-ready); }
+.strap-footer-status-dot[data-color="yellow"] { background: var(--strap-agents); }
+.strap-footer-status-dot[data-color="red"] { background: var(--strap-warning); }
+
+/* ---------------------------------------------------------------------------
+   Sidebar page layout reused by examples.
+   ------------------------------------------------------------------------ */
+.strap-examples-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; border: 1px solid var(--strap-ink-strong); background: var(--strap-ink-strong); }
+.strap-example { min-width: 0; background: var(--strap-surface); padding: 1.35rem 1.35rem 1.4rem; scroll-margin-top: 6.5rem; }
+.strap-example h3 { font-size: 1.02rem; line-height: 1.3; }
+.strap-example p { margin-top: .5rem; color: var(--strap-ink); font-size: .92rem; line-height: 1.6; }
+.strap-example-group { scroll-margin-top: 6.5rem; }
+.strap-example-group + .strap-example-group { margin-top: 3rem; }
+.strap-example-group-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: .6rem 1rem; margin-bottom: 1.1rem; }
+.strap-example-group-head h2 { font-size: clamp(1.4rem, 2.2vw, 1.85rem); }
+.strap-example-group-head p { color: var(--strap-ink-soft); font-size: .95rem; }
+
+/* ---------------------------------------------------------------------------
+   Roadmap board.
+   ------------------------------------------------------------------------ */
+.strap-board { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; border: 1px solid var(--strap-ink-strong); background: var(--strap-ink-strong); }
+.strap-board-column { display: flex; min-width: 0; flex-direction: column; background: var(--strap-surface-2); }
+.strap-board-column-head { display: flex; align-items: center; justify-content: space-between; gap: .75rem; border-bottom: 1px solid var(--strap-ink-strong); background: var(--strap-surface); padding: .75rem 1rem; }
+.strap-board-cards { display: grid; gap: .75rem; padding: .85rem; align-content: start; }
+.strap-board-card { border: 1px solid var(--strap-ink-strong); background: var(--strap-surface); padding: .95rem 1rem 1rem; }
+.strap-board-card h3 { font-size: .98rem; line-height: 1.3; }
+.strap-board-card > p { margin-top: .45rem; color: var(--strap-ink-soft); font-size: .86rem; line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.strap-board-code { display: block; margin-bottom: .35rem; color: var(--strap-ink-soft); font-family: var(--font-strap-mono), ui-monospace, monospace; font-size: .66rem; }
+.strap-board-labels { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .7rem; }
+.strap-board-empty { padding: 2rem 1rem; color: var(--strap-ink-soft); font-family: var(--font-strap-mono), ui-monospace, monospace; font-size: .74rem; text-align: center; }
+
+/* ---------------------------------------------------------------------------
+   Bench skeleton.
+   ------------------------------------------------------------------------ */
+.strap-bench { border: 1px solid var(--strap-ink-strong); background: var(--strap-surface); padding: 1.25rem 1.25rem 1.5rem; }
+.strap-bench-row { display: grid; grid-template-columns: 1.6rem minmax(0, 1fr) 3.5rem; align-items: center; gap: .75rem; }
+.strap-bench-row + .strap-bench-row { margin-top: .6rem; }
+.strap-bench-rank { display: grid; height: 1.6rem; place-items: center; border: 1px solid var(--strap-ink-strong); background: var(--strap-surface-2); color: var(--strap-ink-soft); font-family: var(--font-strap-mono), ui-monospace, monospace; font-size: .66rem; }
+.strap-bench-track { height: 1.6rem; border: 1px solid var(--strap-ink-strong); background: var(--strap-surface); }
+.strap-bench-fill { height: 100%; background: repeating-linear-gradient(135deg, var(--strap-line) 0 4px, transparent 4px 10px); }
+.strap-bench-score { color: var(--strap-ink-soft); font-family: var(--font-strap-mono), ui-monospace, monospace; font-size: .7rem; text-align: right; }
+
+/* ---------------------------------------------------------------------------
+   Responsive behaviour.
+   ------------------------------------------------------------------------ */
+@media (max-width: 1199px) {
+  .strap-footer-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .strap-footer-brand { grid-column: span 2; }
+}
+
+@media (max-width: 1023px) {
+  .strap-page-hero-grid { grid-template-columns: 1fr; }
+  .strap-page-hero-aside { max-width: 40rem; }
+  .strap-cells { grid-template-columns: repeat(min(var(--strap-cols, 3), 2), minmax(0, 1fr)); }
+  .strap-plans { grid-template-columns: 1fr; }
+  .strap-board { grid-template-columns: 1fr; }
+  .strap-auth { grid-template-columns: 1fr; }
+  .strap-auth-panel { display: none; }
+}
+
+@media (max-width: 767px) {
+  .strap-nav-toggle { display: inline-flex; order: 3; }
+  .strap-nav-cta { margin-left: auto; }
+  .strap-nav-menu-grid { grid-template-columns: 1fr 1fr; }
+  .strap-nav-menu-group:last-child:nth-child(odd) { grid-column: span 2; }
+  .strap-page-hero { padding-block: 2.75rem 3rem; }
+  .strap-page-hero h1 { font-size: clamp(2.1rem, 9.5vw, 3rem); }
+  .strap-page-main { padding-block: 2.5rem 4.5rem; }
+  .strap-page-section-head { margin-bottom: 1.25rem; }
+  .strap-cells { grid-template-columns: 1fr; }
+  .strap-cell { padding: 1.2rem 1rem 1.15rem; }
+  .strap-card-body { padding: 1.1rem 1rem; }
+  .strap-table th,
+  .strap-table td { padding-inline: .75rem; }
+  .strap-timeline-entry { grid-template-columns: 1fr; gap: .4rem; padding: 1.25rem 1rem 1.35rem; }
+  .strap-timeline-date { padding-top: 0; }
+  .strap-plan { padding: 1.9rem 1.1rem 1.25rem; }
+  .strap-examples-grid { grid-template-columns: 1fr; }
+  .strap-footer-grid { grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+  .strap-footer-brand { grid-column: span 2; }
+  .strap-consent { padding-inline: 1rem; }
+  .strap-consent-card { padding: 1.75rem 1.15rem 1.25rem; }
+  .strap-consent-backing-one { display: none; }
+  .strap-consent-actions { grid-template-columns: 1fr; }
+  .strap-auth-form { padding-inline: 1.25rem; }
+  .strap-empty { min-height: 60vh; }
+}
+
+@media (max-width: 479px) {
+  .strap-nav-menu-grid { grid-template-columns: 1fr; }
+  .strap-nav-menu-group:last-child:nth-child(odd) { grid-column: auto; }
+  .strap-footer-grid { grid-template-columns: 1fr; }
+  .strap-footer-brand { grid-column: auto; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .strap-nav-toggle-lines,
+  .strap-nav-toggle-lines::before,
+  .strap-nav-toggle-lines::after,
+  .strap-faq-trigger svg,
+  .strap-faq-panel,
+  .strap-button,
+  .strap-input,
+  .strap-checkbox,
+  .strap-cell-link { transition: none; }
+}

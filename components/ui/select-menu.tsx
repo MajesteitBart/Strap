@@ -46,7 +46,7 @@ export function SelectMenu<T extends string>({
           type="button"
           disabled={disabled}
           className={cn(
-            "inline-flex h-9 items-center justify-between gap-2 rounded-md border border-[var(--strap-border)] bg-[var(--strap-surface)] px-3 text-[13px] text-[var(--strap-text-primary)] transition-colors duration-150 hover:bg-[var(--strap-surface-raised)] aria-expanded:bg-[var(--strap-surface-raised)] disabled:pointer-events-none disabled:opacity-60",
+            "inline-flex h-9 items-center justify-between gap-2 rounded-md border border-[var(--strap-border-strong)] bg-[var(--strap-surface)] px-3 text-[13px] text-[var(--strap-text-primary)] transition-colors duration-150 hover:bg-[var(--strap-surface-raised)] aria-expanded:bg-[var(--strap-surface-raised)] disabled:pointer-events-none disabled:opacity-60",
             className,
           )}
         >

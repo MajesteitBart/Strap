@@ -35,29 +35,31 @@ export function Toaster() {
           // padding to leave room for the absolutely-positioned close
           // button which now lives on the right edge of the toast.
           toast:
-            "group !rounded-lg !border !text-[13px] !leading-5 !shadow-[0_10px_30px_rgba(28,28,26,0.10)] !p-3.5 !pr-10",
+            "group !rounded-lg !border !text-[13px] !leading-5 !shadow-[0.3rem_0.3rem_0_var(--strap-surface-raised)] !p-3.5 !pr-10",
           title: "!font-medium",
           // Close button: anchored on the right (sonner defaults to left)
           // and inherits the toast's text colour via `text-current` so a
           // success toast gets a green X, an error toast a red X, etc.
           //
           // Sizing matches the toast's main icon (~20px glyph). Shape is a
-          // squircle (`rounded-[8px]`) rather than a circle. Hover fill is
+          // squircle (`rounded-[var(--radius-lg)]`) rather than a circle. Hover fill is
           // a tinted-darker version of the toast's own background (via
           // `bg-current/[0.10]` on the same accent colour) so the hover
           // surface stays inside the toast's colour family.
           closeButton:
-            "!absolute !top-1/2 !right-2.5 !left-auto !-translate-y-1/2 !transform-none !h-7 !w-7 !rounded-[8px] !bg-transparent !border-0 !text-current !opacity-70 hover:!opacity-100 hover:!bg-current/[0.10] !transition-all [&_svg]:!h-4 [&_svg]:!w-4",
-          // Per-tone surfaces. Background hues match the quality tag pills
-          // so the visual language across the app stays consistent.
+            "!absolute !top-1/2 !right-2.5 !left-auto !-translate-y-1/2 !transform-none !h-7 !w-7 !rounded-[var(--radius-md)] !bg-transparent !border-0 !text-current !opacity-70 hover:!opacity-100 hover:!bg-current/[0.10] !transition-all [&_svg]:!h-4 [&_svg]:!w-4",
+          // Per-tone surfaces use the resource tints so toasts match the rest of
+          // the worktable in both themes: environments green for success, agents
+          // yellow for warnings, the warning red for errors, and context blue for
+          // information.
           success:
-            "!bg-[#ECFDF5] !text-[#047857] !border-[#A7F3D0] dark:!bg-[#052e1a] dark:!text-[#4ade80] dark:!border-[#064e3b]",
+            "!bg-[var(--strap-environments-tint)] !text-[var(--strap-success)] !border-[var(--strap-frame)]",
           warning:
-            "!bg-[#FFFBEB] !text-[#92400E] !border-[#FCD34D] dark:!bg-[#451a03] dark:!text-[#fbbf24] dark:!border-[#78350F]",
+            "!bg-[var(--strap-agents-tint)] !text-[var(--strap-text-primary)] !border-[var(--strap-frame)]",
           error:
-            "!bg-[#FEF2F2] !text-[#B91C1C] !border-[#FCA5A5] dark:!bg-[#3F1212] dark:!text-[#fca5a5] dark:!border-[#7F1D1D]",
+            "!bg-[var(--strap-warning-tint)] !text-[var(--strap-danger)] !border-[var(--strap-frame)]",
           info:
-            "!bg-[#EFF6FF] !text-[var(--strap-accent-hover)] !border-[#BFDBFE] dark:!bg-[#0B1F4A] dark:!text-[#93C5FD] dark:!border-[#1E3A8A]",
+            "!bg-[var(--strap-context-tint)] !text-[var(--strap-accent)] !border-[var(--strap-frame)]",
         },
       }}
     />

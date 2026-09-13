@@ -1,5 +1,6 @@
 @import "tailwindcss" source(none);
 @import "tw-animate-css";
+@import "./strap-public.css";
 
 @source "./";
 @source "../components";
@@ -25,71 +26,103 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --radius-sm: 0.625rem;
-  --radius-md: 0.75rem;
-  --radius-lg: 0.875rem;
-  --radius-xl: 1rem;
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-geist-sans);
+  --color-strap-context: var(--strap-context);
+  --color-strap-skills: var(--strap-skills);
+  --color-strap-secrets: var(--strap-secrets);
+  --color-strap-environments: var(--strap-environments);
+  --color-strap-agents: var(--strap-agents);
+  /* Worktable geometry: crisp, near-square corners everywhere. Radii stay
+     tokens so rounded-md and friends snap in one place. */
+  --radius-sm: 2px;
+  --radius-md: 3px;
+  --radius-lg: 4px;
+  --radius-xl: 6px;
+  /* Strap typography: Inter for reading, Bricolage Grotesque for display, and
+     JetBrains Mono for operational labels. Geist stays loaded only as the
+     fallback for content saved before the switch. */
+  --font-sans: var(--font-strap-sans), var(--font-geist-sans);
+  --font-mono: var(--font-strap-mono), var(--font-geist-mono);
+  --font-heading: var(--font-strap-display), var(--font-strap-sans);
 }
 
 :root {
-  --background: #f9f9f8;
-  --foreground: #1f1f1a;
+  /* Worktable paper. The signed-in product and every public surface share
+     one warm, flat palette: paper canvas, white sheets, dark hairline frames,
+     and one persistent colour per agent resource. */
+  --background: #fbf6ee;
+  --foreground: #211e19;
   --card: #ffffff;
-  --card-foreground: #1f1f1a;
+  --card-foreground: #211e19;
   --popover: #ffffff;
-  --popover-foreground: #1f1f1a;
-  --primary: #1f1f1a;
+  --popover-foreground: #211e19;
+  --primary: #211e19;
   --primary-foreground: #ffffff;
-  --secondary: #f3f3f1;
-  --secondary-foreground: #2d2c27;
-  --muted: #f3f3f1;
-  --muted-foreground: #636360;
-  --accent: #f3f3f1;
-  --accent-foreground: #1f1f1a;
-  --destructive: #b5483d;
-  --border: #e6e6e2;
-  --input: #e6e6e2;
-  --ring: rgba(31, 31, 26, 0.15);
-  --radius: 0.875rem;
+  --secondary: #f1ece1;
+  --secondary-foreground: #363430;
+  --muted: #f1ece1;
+  --muted-foreground: #7a756b;
+  --accent: #f1ece1;
+  --accent-foreground: #211e19;
+  --destructive: #b8321c;
+  --border: #e7e1d4;
+  --input: #cfc7b6;
+  --ring: rgba(33, 30, 25, 0.4);
+  --radius: 4px;
 
-  --strap-background: #f9f9f8;
+  --strap-paper: #fbf6ee;
+  --strap-surface-2: #f1ece1;
+  --strap-ink: #363430;
+  --strap-ink-strong: #211e19;
+  --strap-ink-soft: #7a756b;
+  --strap-line: #e7e1d4;
+  /* The crisp frame line drawn around primary containers. Ink in light mode;
+     the dark theme softens it so framed cards do not glare. */
+  --strap-frame: #211e19;
+  --strap-context: #2547d0;
+  --strap-context-tint: #dfe6fb;
+  --strap-skills: #e86a1c;
+  --strap-skills-tint: #ffe6d6;
+  --strap-secrets: #7b5ce5;
+  --strap-secrets-tint: #e9e2fb;
+  --strap-environments: #7fa31b;
+  --strap-environments-tint: #eef3d2;
+  --strap-agents: #ffc93c;
+  --strap-agents-tint: #fff0c8;
+  --strap-ready: #c3e45c;
+  --strap-warning: #e5482f;
+  --strap-warning-tint: #fde3dd;
+
+  --strap-background: #fbf6ee;
   --strap-surface: #ffffff;
-  --strap-surface-raised: #f3f3f1;
-  /* Selected row in menus/selects. Sits ~6 off the hover tone (surface-raised
-     #f3f3f1): lighter in light mode, darker in dark mode, same magnitude. */
-  --strap-surface-selected: #f9f9f8;
-  --strap-border: #e6e6e2;
-  --strap-border-strong: #d6d6d0;
-  --strap-text-primary: #1f1f1a;
-  --strap-text-secondary: #636360;
-  --strap-text-tertiary: #9a9a96;
+  --strap-surface-raised: #f1ece1;
+  /* Selected row in menus/selects: a step lighter than the hover tone. */
+  --strap-surface-selected: #f7f2e8;
+  --strap-border: #e7e1d4;
+  --strap-border-strong: #cfc7b6;
+  --strap-text-primary: #211e19;
+  --strap-text-secondary: #5c574d;
+  --strap-text-tertiary: #7a756b;
   --strap-button-primary-fg: #ffffff;
-  --strap-button-primary-hover: #2b2b28;
-  --strap-ring-track: rgba(17, 17, 13, 0.12);
-  /* Brand action / accent - used by primary CTAs (dialog confirm buttons,
-     accept-all, push/pull, etc.). Constant across both themes so the brand
-     blue reads identically in light and dark mode. */
-  --strap-accent: #2563eb;
-  --strap-accent-hover: #1d4ed8;
+  --strap-button-primary-hover: #363430;
+  --strap-ring-track: rgba(33, 30, 25, 0.12);
+  /* Brand action / accent: the Context blue from the resource palette. Used by
+     primary CTAs (dialog confirm buttons, accept-all, push/pull, etc.). */
+  --strap-accent: #2547d0;
+  --strap-accent-hover: #1a35a8;
 
-  /* Flat fills for the below-hero section panels (replacing the old image
-     plates). These light values are deepened in the .dark block below. */
-  --plate-proposal: #4f9eff;
-  --plate-direct: #ff9c5e;
-  --plate-create: #ff6fc1;
-  --plate-connect: #84d678;
-  --plate-improve: #7fbcff;
-
-  /* Numeric stat / status colours. Brightened so `+57 -304`-style stats stay
-     legible everywhere; the dark-mode block below picks even brighter shades. */
-  --strap-success: #16a34a;
-  --strap-danger: #dc2626;
-  --strap-score-good: #16a34a;
-  --strap-score-mid: #d97706;
-  --strap-score-bad: #dc2626;
+  /* Numeric stat / status colours. Deep enough to read as text on white. */
+  --strap-success: #4f7a0e;
+  --strap-danger: #b8321c;
+  --strap-danger-hover: #962613;
+  --strap-success-hover: #3f6209;
+  /* Caution reads as ink-brown on the Agents tint; the deeper secrets tone
+     keeps purple labels legible on their tint. */
+  --strap-caution: #9a5b00;
+  --strap-caution-tint: #fff0c8;
+  --strap-secrets-text: #5a3fc7;
+  --strap-score-good: #4f7a0e;
+  --strap-score-mid: #c4841a;
+  --strap-score-bad: #b8321c;
 
   --accent-tint-identity: #f3e8ff;
   --accent-tint-stack: #dbeafe;
@@ -106,80 +139,87 @@
   --accent-tint-output: #ccfbf1;
   --accent-tint-rose: #ffe4e6;
   --accent-tint-yellow: #fef9c3;
-  /* Mono - theme-aware accent. Light mode: near-black foreground with a
-     soft warm grey tint. Dark mode definitions below flip these so the
-     same `accent: "mono"` value reads white on a dark grey tint. */
-  --accent-color-mono: #1c1c1a;
-  --accent-tint-mono: #ebebe6;
-  --accent-tint-custom: #ebebe6;
-
-  /* Backdrop fades. The art (hero, auth panel, inner banner, closing band)
-     melts into the page background through these. Stops are densely sampled
-     along an ease curve so the ramp reads as a smooth blur, not banding.
-     Redefined per theme in .dark; surfaces reference them by name so the fade
-     is identical everywhere. `fade-down` melts art into the bg downward;
-     `fade-band` frames the closing band with two smootherstep fades sharing one
-     curve around a clear centre, so the top and bottom blurs read as a matched
-     pair; the bottom sits a touch higher than a pure mirror with a small solid
-     tail so the art clears the footer; it melts to full page colour at the top
-     edge so it joins the section above seamlessly;
-     `fade-in-x` melts the inner vertical edge of the auth panel. */
-  --strap-backdrop-fade-down: linear-gradient(180deg, rgba(249,249,248,0) 0%, rgba(249,249,248,0.012) 14%, rgba(249,249,248,0.05) 26%, rgba(249,249,248,0.11) 37%, rgba(249,249,248,0.2) 47%, rgba(249,249,248,0.32) 56%, rgba(249,249,248,0.45) 64%, rgba(249,249,248,0.59) 72%, rgba(249,249,248,0.73) 80%, rgba(249,249,248,0.85) 87%, rgba(249,249,248,0.94) 93%, rgba(249,249,248,1) 100%);
-  --strap-backdrop-fade-band: linear-gradient(180deg, rgba(249,249,248,1) 0%, rgba(249,249,248,0.99) 2%, rgba(249,249,248,0.98) 4%, rgba(249,249,248,0.95) 6%, rgba(249,249,248,0.9) 8%, rgba(249,249,248,0.82) 10%, rgba(249,249,248,0.74) 12%, rgba(249,249,248,0.62) 14%, rgba(249,249,248,0.5) 16%, rgba(249,249,248,0.38) 18%, rgba(249,249,248,0.26) 20%, rgba(249,249,248,0.18) 22%, rgba(249,249,248,0.1) 24%, rgba(249,249,248,0.05) 26%, rgba(249,249,248,0.016) 28%, rgba(249,249,248,0.002) 30%, rgba(249,249,248,0) 32%, rgba(249,249,248,0) 65%, rgba(249,249,248,0.002) 67%, rgba(249,249,248,0.016) 69%, rgba(249,249,248,0.05) 71%, rgba(249,249,248,0.1) 73%, rgba(249,249,248,0.18) 75%, rgba(249,249,248,0.26) 77%, rgba(249,249,248,0.38) 79%, rgba(249,249,248,0.5) 81%, rgba(249,249,248,0.62) 83%, rgba(249,249,248,0.74) 85%, rgba(249,249,248,0.82) 87%, rgba(249,249,248,0.9) 89%, rgba(249,249,248,0.95) 91%, rgba(249,249,248,0.98) 93%, rgba(249,249,248,0.99) 95%, rgba(249,249,248,1) 97%, rgba(249,249,248,1) 100%);
-  --strap-backdrop-fade-in-x: linear-gradient(90deg, rgba(249,249,248,1) 0%, rgba(249,249,248,0.97) 5%, rgba(249,249,248,0.9) 10%, rgba(249,249,248,0.78) 15%, rgba(249,249,248,0.62) 20%, rgba(249,249,248,0.46) 25%, rgba(249,249,248,0.3) 30%, rgba(249,249,248,0.17) 35%, rgba(249,249,248,0.07) 40%, rgba(249,249,248,0) 46%);
-
-  --font-heading: var(--font-geist-sans);
+  /* Mono - theme-aware accent. Light mode: ink foreground with a warm grey
+     tint. Dark mode definitions below flip these so the same
+     accent: "mono" value reads light on a dark tint. */
+  --accent-color-mono: #211e19;
+  --accent-tint-mono: #ece6d9;
+  --accent-tint-custom: #ece6d9;
 }
 
-/* Notion × Obsidian × Cursor inspired dark mode. Designed around a near-black
-   canvas with two slightly-raised surface tints, hairline borders, and reduced
-   text contrast so prose stays comfortable for long-form reading. */
+/* Warm dark twin of the worktable: a deep umber canvas with two lifted
+   surface tints, warm hairlines, and resource colours brightened just enough
+   to keep their identity without flashing. */
 .dark {
-  --background: #0e0e0d;
-  --foreground: #e7e7e2;
-  --card: #161615;
-  --card-foreground: #e7e7e2;
-  --popover: #1a1a19;
-  --popover-foreground: #e7e7e2;
-  --primary: #e7e7e2;
-  --primary-foreground: #0e0e0d;
-  --secondary: #1f1f1d;
-  --secondary-foreground: #d3d3cd;
-  --muted: #1f1f1d;
-  --muted-foreground: #9c9c95;
-  --accent: #1f1f1d;
-  --accent-foreground: #e7e7e2;
-  --destructive: #f87171;
-  --border: #262624;
-  --input: #262624;
-  --ring: rgba(231, 231, 226, 0.18);
+  --background: #14120e;
+  --foreground: #ece6d9;
+  --card: #1b1813;
+  --card-foreground: #ece6d9;
+  --popover: #1f1c16;
+  --popover-foreground: #ece6d9;
+  --primary: #ece6d9;
+  --primary-foreground: #14120e;
+  --secondary: #262218;
+  --secondary-foreground: #d8d1c2;
+  --muted: #262218;
+  --muted-foreground: #a39b8b;
+  --accent: #262218;
+  --accent-foreground: #ece6d9;
+  --destructive: #f0715a;
+  --border: #34302a;
+  --input: #4a443a;
+  --ring: rgba(236, 230, 217, 0.4);
 
-  --strap-background: #0e0e0d;
-  --strap-surface: #161615;
-  --strap-surface-raised: #1f1f1d;
-  /* Darker than the hover tone (a recessed "selected" look) but kept off the
-     near-black page background so it doesn't read as a hole. */
-  --strap-surface-selected: #121211;
-  --strap-border: #262624;
-  --strap-border-strong: #34342f;
-  --strap-text-primary: #e7e7e2;
-  --strap-text-secondary: #9c9c95;
-  --strap-text-tertiary: #6b6b65;
-  --strap-button-primary-fg: #0e0e0d;
-  --strap-button-primary-hover: #cfcfc8;
-  --strap-ring-track: rgba(231, 231, 226, 0.16);
+  --strap-paper: #14120e;
+  --strap-surface-2: #262218;
+  --strap-ink: #d8d1c2;
+  --strap-ink-strong: #f2ede3;
+  --strap-ink-soft: #a39b8b;
+  --strap-line: #34302a;
+  --strap-frame: #4a443a;
+  --strap-context: #6f8cf5;
+  --strap-context-tint: #1c2647;
+  --strap-skills: #f5844a;
+  --strap-skills-tint: #3d2415;
+  --strap-secrets: #a68ff5;
+  --strap-secrets-tint: #2b2347;
+  --strap-environments: #a9cc3f;
+  --strap-environments-tint: #26301a;
+  --strap-agents: #ffd35c;
+  --strap-agents-tint: #3d3417;
+  --strap-ready: #35461a;
+  --strap-warning: #f0715a;
+  --strap-warning-tint: #3f1d16;
 
-  --plate-proposal: #2069d6;
-  --plate-direct: #d46d2d;
-  --plate-create: #d62b8f;
-  --plate-connect: #4bc03b;
-  --plate-improve: #3a86e8;
+  --strap-background: #14120e;
+  --strap-surface: #1b1813;
+  --strap-surface-raised: #262218;
+  /* Recessed "selected" look, kept off the canvas so it does not read as a
+     hole. */
+  --strap-surface-selected: #17140f;
+  --strap-border: #34302a;
+  --strap-border-strong: #4a443a;
+  --strap-text-primary: #ece6d9;
+  --strap-text-secondary: #b3ab9c;
+  --strap-text-tertiary: #857d6e;
+  --strap-button-primary-fg: #14120e;
+  --strap-button-primary-hover: #d8d1c2;
+  --strap-ring-track: rgba(236, 230, 217, 0.16);
+  /* Lifted so white button labels and link text keep contrast on the dark
+     canvas. */
+  --strap-accent: #3f62ea;
+  --strap-accent-hover: #5b7bf2;
 
-  --strap-success: #4ade80;
-  --strap-danger: #f87171;
-  --strap-score-good: #4ade80;
-  --strap-score-mid: #fbbf24;
-  --strap-score-bad: #f87171;
+  --strap-success: #a9cc3f;
+  --strap-danger: #f0715a;
+  --strap-danger-hover: #f58a76;
+  --strap-success-hover: #bcd95d;
+  --strap-caution: #ffd35c;
+  --strap-caution-tint: #3d3417;
+  --strap-secrets-text: #c4b5fd;
+  --strap-score-good: #a9cc3f;
+  --strap-score-mid: #ffd35c;
+  --strap-score-bad: #f0715a;
 
   /* Same hue, dropped saturation + lifted off the canvas just enough to hint
      the colour family without flashing pastel against the dark surface. */
@@ -198,16 +238,10 @@
   --accent-tint-output: rgba(94, 234, 212, 0.18);
   --accent-tint-rose: rgba(251, 113, 133, 0.18);
   --accent-tint-yellow: rgba(250, 204, 21, 0.20);
-  /* Mono in dark mode: white on a near-canvas grey tint so it still reads
-     as a distinct accent without flashing. */
-  --accent-color-mono: #e7e7e2;
-  --accent-tint-mono: rgba(231, 231, 226, 0.10);
-  --accent-tint-custom: rgba(231, 231, 226, 0.10);
-
-  /* Dark-canvas twins of the backdrop fades (see :root for the shape notes). */
-  --strap-backdrop-fade-down: linear-gradient(180deg, rgba(14,14,13,0) 0%, rgba(14,14,13,0.012) 14%, rgba(14,14,13,0.05) 26%, rgba(14,14,13,0.11) 37%, rgba(14,14,13,0.2) 47%, rgba(14,14,13,0.32) 56%, rgba(14,14,13,0.45) 64%, rgba(14,14,13,0.59) 72%, rgba(14,14,13,0.73) 80%, rgba(14,14,13,0.85) 87%, rgba(14,14,13,0.94) 93%, rgba(14,14,13,1) 100%);
-  --strap-backdrop-fade-band: linear-gradient(180deg, rgba(14,14,13,1) 0%, rgba(14,14,13,0.99) 2%, rgba(14,14,13,0.98) 4%, rgba(14,14,13,0.95) 6%, rgba(14,14,13,0.9) 8%, rgba(14,14,13,0.82) 10%, rgba(14,14,13,0.74) 12%, rgba(14,14,13,0.62) 14%, rgba(14,14,13,0.5) 16%, rgba(14,14,13,0.38) 18%, rgba(14,14,13,0.26) 20%, rgba(14,14,13,0.18) 22%, rgba(14,14,13,0.1) 24%, rgba(14,14,13,0.05) 26%, rgba(14,14,13,0.016) 28%, rgba(14,14,13,0.002) 30%, rgba(14,14,13,0) 32%, rgba(14,14,13,0) 65%, rgba(14,14,13,0.002) 67%, rgba(14,14,13,0.016) 69%, rgba(14,14,13,0.05) 71%, rgba(14,14,13,0.1) 73%, rgba(14,14,13,0.18) 75%, rgba(14,14,13,0.26) 77%, rgba(14,14,13,0.38) 79%, rgba(14,14,13,0.5) 81%, rgba(14,14,13,0.62) 83%, rgba(14,14,13,0.74) 85%, rgba(14,14,13,0.82) 87%, rgba(14,14,13,0.9) 89%, rgba(14,14,13,0.95) 91%, rgba(14,14,13,0.98) 93%, rgba(14,14,13,0.99) 95%, rgba(14,14,13,1) 97%, rgba(14,14,13,1) 100%);
-  --strap-backdrop-fade-in-x: linear-gradient(90deg, rgba(14,14,13,1) 0%, rgba(14,14,13,0.97) 5%, rgba(14,14,13,0.9) 10%, rgba(14,14,13,0.78) 15%, rgba(14,14,13,0.62) 20%, rgba(14,14,13,0.46) 25%, rgba(14,14,13,0.3) 30%, rgba(14,14,13,0.17) 35%, rgba(14,14,13,0.07) 40%, rgba(14,14,13,0) 46%);
+  /* Mono in dark mode: light on a near-canvas warm tint. */
+  --accent-color-mono: #ece6d9;
+  --accent-tint-mono: rgba(236, 230, 217, 0.10);
+  --accent-tint-custom: rgba(236, 230, 217, 0.10);
 }
 
 @layer base {
@@ -384,7 +418,7 @@
 
 .ProseMirror {
   min-height: 56px;
-  font-family: var(--font-geist-sans), sans-serif;
+  font-family: var(--font-sans), sans-serif;
   color: var(--strap-text-primary);
   font-size: 16px;
   line-height: 1.75;
@@ -406,7 +440,7 @@
 .ProseMirror h2,
 .ProseMirror h3,
 .ProseMirror h4 {
-  font-family: var(--font-geist-sans), sans-serif;
+  font-family: var(--font-sans), sans-serif;
   font-weight: 500;
   letter-spacing: -0.03em;
   color: var(--strap-text-primary);
@@ -429,7 +463,7 @@
 
 .ProseMirror ul,
 .ProseMirror ol {
-  font-family: var(--font-geist-sans), sans-serif;
+  font-family: var(--font-sans), sans-serif;
   font-size: 14px;
   line-height: 1.75;
   padding-left: 1.45rem;
@@ -497,7 +531,7 @@
 
 .ProseMirror :is(.strap-list-item, .creed-list-item) > p {
   margin: 0;
-  font-family: var(--font-geist-sans), sans-serif;
+  font-family: var(--font-sans), sans-serif;
   font-size: 14px;
   line-height: 1.75;
 }
@@ -525,7 +559,7 @@
   border-radius: 0 0.75rem 0.75rem 0;
   background: var(--section-accent-tint, #faf9f6);
   padding: 0.7rem 0.95rem 0.7rem 1.35rem;
-  font-family: var(--font-geist-sans), sans-serif;
+  font-family: var(--font-sans), sans-serif;
   color: var(--strap-text-primary);
 }
 
@@ -542,7 +576,7 @@
 
 .ProseMirror :is(.strap-callout, .creed-callout) p {
   margin: 0;
-  font-family: var(--font-geist-sans), sans-serif;
+  font-family: var(--font-sans), sans-serif;
   font-size: 14px;
   line-height: 1.75;
 }
@@ -551,7 +585,7 @@
   border-radius: 0.45rem;
   background: var(--strap-surface-raised);
   padding: 0.15rem 0.35rem;
-  font-family: var(--font-geist-mono), monospace;
+  font-family: var(--font-mono), monospace;
   font-size: 0.92em;
 }
 
@@ -561,7 +595,7 @@
   border-radius: 0.75rem;
   background: var(--strap-surface-raised);
   padding: 0.7rem 0.95rem;
-  font-family: var(--font-geist-mono), monospace;
+  font-family: var(--font-mono), monospace;
   font-size: 0.92em;
   line-height: 1.5;
   color: var(--strap-text-primary);
@@ -728,7 +762,7 @@
   padding: 1px 6px;
   margin: 0 1px;
   border-radius: 6px;
-  font-family: var(--font-geist-sans), sans-serif;
+  font-family: var(--font-sans), sans-serif;
   font-size: 0.92em;
   font-weight: 500;
   background: var(--section-accent-tint, rgba(37, 99, 235, 0.08));
@@ -791,7 +825,7 @@
   border: 1px solid var(--strap-border);
   border-radius: 4px;
   background: var(--strap-surface-raised);
-  font-family: var(--font-geist-sans), sans-serif;
+  font-family: var(--font-sans), sans-serif;
   font-size: 10px;
   font-weight: 500;
   line-height: 1;
@@ -831,7 +865,7 @@
 
 /* Cursor-style inline diff for proposal review. */
 .strap-diff-block {
-  font-family: var(--font-geist-sans), sans-serif;
+  font-family: var(--font-sans), sans-serif;
   font-size: 14px;
   line-height: 1.7;
   color: var(--strap-text-primary);
@@ -931,18 +965,22 @@
    dark foreground so text stays legible under the tint; dark mode brightens the
    selected text against the deeper wash. */
 ::selection {
-  background: rgba(37, 99, 235, 0.24);
+  background: var(--strap-agents);
+  color: #211e19;
 }
 
 .dark ::selection {
-  background: rgba(59, 130, 246, 0.42);
-  color: #f5f5f0;
+  background: rgba(63, 98, 234, 0.45);
+  color: #f5f2ea;
 }
 
 /* Strap public website: a warm, flat worktable with one persistent colour per
    agent resource. The scope prevents this identity layer from leaking into
    the authenticated product's canonical Strap CSS tokens. */
 .strap-site {
+  /* The public site is intentionally light-only, so it re-asserts the light
+     worktable values even when the product theme is dark. */
+  color-scheme: light;
   --strap-paper: #fbf6ee;
   --strap-surface: #ffffff;
   --strap-surface-2: #f1ece1;
@@ -950,6 +988,7 @@
   --strap-ink-strong: #211e19;
   --strap-ink-soft: #7a756b;
   --strap-line: #e7e1d4;
+  --strap-frame: #211e19;
   --strap-context: #2547d0;
   --strap-context-tint: #dfe6fb;
   --strap-skills: #e86a1c;
@@ -962,6 +1001,20 @@
   --strap-agents-tint: #fff0c8;
   --strap-ready: #c3e45c;
   --strap-warning: #e5482f;
+  --strap-warning-tint: #fde3dd;
+  /* Shared product primitives rendered inside public pages read the same
+     light palette. */
+  --strap-background: var(--strap-paper);
+  --strap-surface-raised: var(--strap-surface-2);
+  --strap-border: var(--strap-line);
+  --strap-border-strong: #cfc7b6;
+  --strap-text-primary: var(--strap-ink-strong);
+  --strap-text-secondary: var(--strap-ink);
+  --strap-text-tertiary: var(--strap-ink-soft);
+  --strap-accent: var(--strap-context);
+  --strap-accent-hover: #1a35a8;
+  --strap-success: #4f7a0e;
+  --strap-danger: var(--strap-warning);
   --strap-pad: clamp(1rem, 5vw, 4rem);
   --strap-section-gap: clamp(5rem, 10vw, 8.5rem);
   min-height: 100%;
@@ -1092,16 +1145,7 @@
 /* Strap Docs uses the homepage's flat worktable language while retaining the
    long-form reference structure and scrollspy behavior. */
 .strap-docs {
-  --strap-background: var(--strap-paper);
-  --strap-surface-raised: var(--strap-surface-2);
-  --strap-border: var(--strap-line);
-  --strap-text-primary: var(--strap-ink-strong);
-  --strap-text-secondary: var(--strap-ink);
-  --strap-text-tertiary: var(--strap-ink-soft);
-  --strap-accent: var(--strap-context);
   --strap-accent-hover: var(--strap-ink-strong);
-  --strap-success: var(--strap-environments);
-  --strap-danger: var(--strap-warning);
 }
 
 .strap-nav-links a[aria-current="page"] {
