@@ -184,7 +184,7 @@ test("solid status actions keep white labels readable in both themes", async () 
     });
     return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
   };
-  for (const base of ["--strap-success-fill", "--strap-danger-fill", "--strap-accent"]) {
+  for (const base of ["--strap-success-fill", "--strap-danger-fill", "--strap-caution-fill", "--strap-accent"]) {
     for (const state of ["", "-hover"]) {
       const token = `${base}${state}`;
       const pattern = new RegExp(`${token}: #([a-fA-F0-9]{6});`);
@@ -277,5 +277,9 @@ test("toast labels, Refresh action and context text are readable in both themes"
       assert.equal(fills.length, 4);
       for (const fill of fills) assert.ok(contrast([1, 1, 1], rgb(fill)) >= 3, "Selected permission icons must meet 3:1");
     }
+    const cycle = css.split("@keyframes strap-copy-cycle {")[1]?.split("@media")[0] ?? "";
+    const frames = [...cycle.matchAll(/background-color: (#[\da-f]{6});/gi)];
+    assert.equal(frames.length, 5);
+    for (const frame of frames) assert.ok(contrast([1, 1, 1], rgb(frame[1])) >= 4.5, "Every copy animation keyframe must support white labels");
   }
 });

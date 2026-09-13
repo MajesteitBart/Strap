@@ -2219,7 +2219,7 @@
       "file": "app/globals.css",
       "kind": "content",
       "occurrences": 87,
-      "fingerprint": "8537dc68a09886f49c093034364971429749a9b080b7eccf7694a72f84017afd",
+      "fingerprint": "fcc535db9dd482e7086eedd34dc2cc64172c764b7a9623bb30ac9f84649de800",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -2597,7 +2597,7 @@
       "file": "components/strap/strap-switcher.tsx",
       "kind": "content",
       "occurrences": 59,
-      "fingerprint": "b3d2158cf083a5e3fe1af6d138ad7719f38e04accdf373df6de81fec37036df6",
+      "fingerprint": "eb20441bdb1607678dfe20398ea1dad9a0a6725a93d3b9ef91ef659e6fa9e38d",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."

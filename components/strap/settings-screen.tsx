@@ -1776,7 +1776,7 @@ const PERMISSION_OPTIONS: Array<{
   color: string;
 }> = [
   { value: "hidden", label: "Hidden from agent", icon: EyeOffIcon, color: "var(--strap-danger-fill)" },
-  { value: "read-only", label: "Read-only", icon: EyeIcon, color: "#9a5b00" },
+  { value: "read-only", label: "Read-only", icon: EyeIcon, color: "var(--strap-caution-fill)" },
   { value: "propose", label: "Propose (needs approval)", icon: ShieldCheckIcon, color: "var(--strap-success-fill)" },
   { value: "direct", label: "Direct edit", icon: PenToolIcon, color: "var(--strap-accent)" },
 ];

@@ -37,7 +37,7 @@ export const PERMISSION_OPTIONS: Array<{
     icon: EyeOffIcon,
     color: "var(--strap-danger-fill)",
   },
-  { value: "read-only", label: "Read-only", icon: EyeIcon, color: "#9a5b00" },
+  { value: "read-only", label: "Read-only", icon: EyeIcon, color: "var(--strap-caution-fill)" },
   {
     value: "propose",
     label: "Propose (needs approval)",
