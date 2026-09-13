@@ -2885,7 +2885,7 @@
       "file": "lib/legacy-subscription-deletion.ts",
       "kind": "content",
       "occurrences": 4,
-      "fingerprint": "66fb58c04549f3a6c0c846559123498009c918fc7d9ffc3a7f8bd75fe6f2cfcd",
+      "fingerprint": "768d33a01b5d151db917d40512a21663d1faa7a5dc38fde21eff698e488094a5",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -3748,8 +3748,8 @@
     {
       "file": "scripts/verify-legacy-deletion.mjs",
       "kind": "content",
-      "occurrences": 9,
-      "fingerprint": "32a150303f33134e64e1e1e322084e021a9f98861de4d289f4c1bc3adab7c5c0",
+      "occurrences": 13,
+      "fingerprint": "e1a0bf8a67574a02e55da1b26c689dc55bd037e515fae29fddf8cb90186121f7",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."

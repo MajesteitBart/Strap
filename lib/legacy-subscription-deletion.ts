@@ -20,7 +20,7 @@ export async function checkLegacyDeletion(
     let billingRows: Record<string, unknown>[] = [];
     if (target.scope === "account") {
       const [personal, owned] = await Promise.all([
-        db.from("creed_entitlements").select("stripe_subscription_id").eq("user_id", target.userId),
+        db.from("creed_entitlements").select("stripe_subscription_id, billing_mode").eq("user_id", target.userId),
         db.from("creeds").select("id").eq("owner_user_id", target.userId).eq("type", "company"),
       ]);
       if (personal.error || owned.error) throw new Error("Legacy billing lookup failed.");
@@ -35,13 +35,17 @@ export async function checkLegacyDeletion(
     if (companyIds.length) {
       // Match the cascading Company ids, even if old billing ownership is stale.
       const company = await db.from("creed_company_billing")
-        .select("stripe_subscription_id").in("creed_id", companyIds);
+        .select("stripe_subscription_id, billing_mode").in("creed_id", companyIds);
       if (company.error) throw new Error("Legacy billing lookup failed.");
       billingRows.push(...rows(company.data));
     }
+    if (billingRows.some((item) => item.billing_mode === "subscription" &&
+      (typeof item.stripe_subscription_id !== "string" || !item.stripe_subscription_id.trim()))) {
+      return { error: "A legacy subscription record is incomplete. Contact support to verify billing before deleting.", status: 409 };
+    }
     const subscriptionIds = billingRows.flatMap((item) =>
-      typeof item.stripe_subscription_id === "string" && item.stripe_subscription_id
-        ? [item.stripe_subscription_id] : []);
+      typeof item.stripe_subscription_id === "string" && item.stripe_subscription_id.trim()
+        ? [item.stripe_subscription_id.trim()] : []);
     return legacyDeletionBlocker(subscriptionIds, process.env.STRIPE_SECRET_KEY?.trim());
   } catch {
     return { error: "Could not check legacy subscriptions before deletion. Please try again.", status: 500 };

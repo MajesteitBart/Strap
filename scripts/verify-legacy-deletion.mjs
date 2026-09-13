@@ -36,7 +36,7 @@ try {
   const companyId = company.data;
   assert.ifError((await admin.from("creed_entitlements").insert({ user_id: userId, email,
     stripe_session_id: `cs_${randomUUID()}`, stripe_price_id: "price_fixture", amount_cents: 100,
-    status: "active", stripe_subscription_id: "sub_verification_active" })).error);
+    billing_mode: "subscription", status: "active", stripe_subscription_id: "sub_verification_active" })).error);
   assert.ifError((await admin.from("creed_company_billing").insert({ creed_id: companyId,
     owner_user_id: userId, billing_mode: "subscription", status: "active",
     stripe_subscription_id: "sub_verification_active" })).error);
@@ -56,6 +56,15 @@ try {
   assert.equal(await removeCompany(), 409);
   assert.ifError((await admin.auth.admin.getUserById(userId)).error);
   assert.ok((await admin.from("creeds").select("id").eq("id", companyId).single()).data);
+  for (const id of [null, "", "   "]) {
+    await personalState(id);
+    assert.equal(await removeAccount(), 409, "Incomplete Personal subscription must preserve the account.");
+    assert.ifError((await admin.from("creed_company_billing").update({ stripe_subscription_id: id })
+      .eq("creed_id", companyId)).error);
+    assert.equal(await removeCompany(), 409, "Incomplete Company subscription must preserve the Company.");
+  }
+  assert.ifError((await admin.from("creed_company_billing").update({ stripe_subscription_id: "sub_verification_active" })
+    .eq("creed_id", companyId)).error);
   await personalState("sub_verification_missing");
   assert.equal(await removeAccount(), 502);
   await personalState("sub_verification_canceled");

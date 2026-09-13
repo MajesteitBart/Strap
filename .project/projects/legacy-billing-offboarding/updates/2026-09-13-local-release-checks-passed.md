@@ -21,6 +21,8 @@ stream: WS-A
 
 - The third Codex review found that Personal Settings discarded deletion blockers. The provider now preserves the server message, and the confirmation handler displays it in a toast while resetting its pending state. All 194 tests, TypeScript, lint, build and brand checks pass after the fix.
 
+- The fourth Codex review identified incomplete recurring billing records. Null, empty and whitespace-only subscription identifiers now block both deletion paths with a support message; the disposable API regression covers all three cases for Personal and Company records.
+
 ## In Progress
 - Final-head pull-request checks and Codex review for PR 5.
 - Production migration readiness for the configured Supabase instance.
