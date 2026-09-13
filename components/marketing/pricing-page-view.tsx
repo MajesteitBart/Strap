@@ -89,7 +89,7 @@ export function PricingPageView({
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    View on GitHub <span aria-hidden="true">↗</span>
+                    View on GitHub <span aria-hidden="true">→</span>
                   </a>
                 }
               />

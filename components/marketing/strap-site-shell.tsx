@@ -9,7 +9,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useId, useState, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { SystemStatusPill } from "@/components/marketing/system-status";
 import { useLandingAuthState } from "@/components/marketing/use-landing-auth-state";
 import { useOnboardingResume } from "@/components/marketing/use-onboarding-resume";
@@ -127,9 +127,13 @@ export function StrapSiteNav({
   const [menuOpen, setMenuOpen] = useState(false);
   const menuId = useId();
   const pathname = usePathname();
+  const toggleRef = useRef<HTMLButtonElement | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
 
   // The disclosure closes on route change and on Escape so keyboard users
-  // are never left inside a menu that no longer matches the page.
+  // are never left inside a menu that no longer matches the page. When the
+  // focused element lives inside the menu, focus returns to the toggle so it
+  // does not fall back to the document body.
   useEffect(() => {
     setMenuOpen(false);
   }, [pathname]);
@@ -137,7 +141,12 @@ export function StrapSiteNav({
   useEffect(() => {
     if (!menuOpen) return;
     function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") setMenuOpen(false);
+      if (event.key !== "Escape") return;
+      const active = document.activeElement;
+      if (active && menuRef.current?.contains(active)) {
+        toggleRef.current?.focus();
+      }
+      setMenuOpen(false);
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
@@ -167,6 +176,7 @@ export function StrapSiteNav({
           {cta.appLabel}
         </Link>
         <button
+          ref={toggleRef}
           type="button"
           className="strap-nav-toggle"
           aria-expanded={menuOpen}
@@ -177,7 +187,13 @@ export function StrapSiteNav({
           <span className="strap-nav-toggle-lines" aria-hidden="true" />
         </button>
       </div>
-      <div id={menuId} className="strap-nav-menu" data-open={menuOpen ? "true" : "false"} hidden={!menuOpen}>
+      <div
+        ref={menuRef}
+        id={menuId}
+        className="strap-nav-menu"
+        data-open={menuOpen ? "true" : "false"}
+        hidden={!menuOpen}
+      >
         <div className="strap-wrap">
           <div className="strap-nav-menu-grid">
             {siteLinkGroups.map((group) => (

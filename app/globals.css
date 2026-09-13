@@ -60,7 +60,7 @@
   --secondary: #f1ece1;
   --secondary-foreground: #363430;
   --muted: #f1ece1;
-  --muted-foreground: #7a756b;
+  --muted-foreground: #6a655b;
   --accent: #f1ece1;
   --accent-foreground: #211e19;
   --destructive: #b8321c;
@@ -73,7 +73,7 @@
   --strap-surface-2: #f1ece1;
   --strap-ink: #363430;
   --strap-ink-strong: #211e19;
-  --strap-ink-soft: #7a756b;
+  --strap-ink-soft: #6a655b;
   --strap-line: #e7e1d4;
   /* The crisp frame line drawn around primary containers. Ink in light mode;
      the dark theme softens it so framed cards do not glare. */
@@ -101,7 +101,7 @@
   --strap-border-strong: #cfc7b6;
   --strap-text-primary: #211e19;
   --strap-text-secondary: #5c574d;
-  --strap-text-tertiary: #7a756b;
+  --strap-text-tertiary: #6a655b;
   --strap-button-primary-fg: #ffffff;
   --strap-button-primary-hover: #363430;
   --strap-ring-track: rgba(33, 30, 25, 0.12);
@@ -111,7 +111,7 @@
   --strap-accent-hover: #1a35a8;
 
   /* Numeric stat / status colours. Deep enough to read as text on white. */
-  --strap-success: #4f7a0e;
+  --strap-success: #4a720d;
   --strap-danger: #b8321c;
   --strap-danger-hover: #962613;
   --strap-success-hover: #3f6209;
@@ -120,7 +120,7 @@
   --strap-caution: #9a5b00;
   --strap-caution-tint: #fff0c8;
   --strap-secrets-text: #5a3fc7;
-  --strap-score-good: #4f7a0e;
+  --strap-score-good: #4a720d;
   --strap-score-mid: #c4841a;
   --strap-score-bad: #b8321c;
 
@@ -201,7 +201,7 @@
   --strap-border-strong: #4a443a;
   --strap-text-primary: #ece6d9;
   --strap-text-secondary: #b3ab9c;
-  --strap-text-tertiary: #857d6e;
+  --strap-text-tertiary: #958d7d;
   --strap-button-primary-fg: #14120e;
   --strap-button-primary-hover: #d8d1c2;
   --strap-ring-track: rgba(236, 230, 217, 0.16);
@@ -394,7 +394,7 @@
     background-color: #2547d0;
   }
   25% {
-    background-color: #4f7a0e;
+    background-color: #4a720d;
   }
   50% {
     background-color: #e86a1c;
@@ -938,6 +938,14 @@
   filter: invert(1);
 }
 
+/* The Strap wordmark and mark carry dark lettering next to a coloured mark.
+   Inverting and rotating the hue keeps each mark colour in its family while
+   the lettering flips to light, so the brand stays legible on the dark
+   product canvas. The public site stays light-only and never applies it. */
+.dark .strap-brand-adaptive {
+  filter: invert(1) hue-rotate(180deg);
+}
+
 /* Inline tag in dark mode: lift the tint a touch so it sits well on the
    darker canvas. */
 .dark :is(.strap-inline-tag, .creed-inline-tag) {
@@ -984,7 +992,7 @@
   --strap-surface-2: #f1ece1;
   --strap-ink: #363430;
   --strap-ink-strong: #211e19;
-  --strap-ink-soft: #7a756b;
+  --strap-ink-soft: #6a655b;
   --strap-line: #e7e1d4;
   --strap-frame: #211e19;
   --strap-context: #2547d0;
@@ -1011,7 +1019,7 @@
   --strap-text-tertiary: var(--strap-ink-soft);
   --strap-accent: var(--strap-context);
   --strap-accent-hover: #1a35a8;
-  --strap-success: #4f7a0e;
+  --strap-success: #4a720d;
   --strap-danger: var(--strap-warning);
   --strap-pad: clamp(1rem, 5vw, 4rem);
   --strap-section-gap: clamp(5rem, 10vw, 8.5rem);

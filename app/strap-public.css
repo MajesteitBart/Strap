@@ -52,7 +52,7 @@
   background: var(--strap-ink-strong);
 }
 .strap-nav-menu-group { background: var(--strap-surface); padding: 1rem 1.1rem 1.1rem; }
-.strap-nav-menu-group h2 {
+.strap-site .strap-nav-menu-group h2 {
   margin-bottom: .6rem;
   color: var(--strap-ink-soft);
   font-family: var(--font-strap-mono), ui-monospace, monospace;
@@ -85,7 +85,7 @@
   align-items: center;
   gap: clamp(2rem, 5vw, 4.5rem);
 }
-.strap-page-hero h1 { max-width: 18ch; font-size: clamp(2.5rem, 4.6vw, 4.1rem); }
+.strap-site .strap-page-hero h1 { max-width: 18ch; font-size: clamp(2.5rem, 4.6vw, 4.1rem); }
 .strap-page-hero-copy > p,
 .strap-lede { max-width: 46ch; margin-top: 1.25rem; color: var(--strap-ink-soft); font-size: clamp(1.05rem, 1.8vw, 1.2rem); line-height: 1.55; }
 .strap-page-hero .strap-actions { margin-top: 1.75rem; }
@@ -123,7 +123,7 @@
   gap: 1rem 2rem;
   margin-bottom: 1.75rem;
 }
-.strap-page-section-head h2 { max-width: 26ch; font-size: clamp(1.6rem, 2.6vw, 2.3rem); }
+.strap-site .strap-page-section-head h2 { max-width: 26ch; font-size: clamp(1.6rem, 2.6vw, 2.3rem); }
 .strap-page-section-head p { max-width: 58ch; margin-top: .6rem; color: var(--strap-ink-soft); }
 .strap-page-section-head > div { min-width: 0; }
 
@@ -148,7 +148,7 @@
 }
 .strap-cells > * { min-width: 0; background: var(--strap-surface); }
 .strap-cell { display: flex; flex-direction: column; padding: 1.5rem 1.35rem 1.4rem; }
-.strap-cell h3 { font-size: 1.05rem; line-height: 1.3; }
+.strap-site .strap-cell h3 { font-size: 1.05rem; line-height: 1.3; }
 .strap-cell > p { margin-top: .5rem; color: var(--strap-ink-soft); font-size: .92rem; line-height: 1.6; }
 .strap-cell-label {
   display: inline-flex;
@@ -206,8 +206,8 @@
 .strap-card-head b { color: var(--strap-tone, var(--strap-environments)); font-weight: 500; }
 .strap-card-body { padding: 1.35rem 1.4rem; }
 .strap-card-body > * + * { margin-top: .85rem; }
-.strap-card-body h3,
-.strap-card-title { font-size: 1.05rem; }
+.strap-site .strap-card-body h3,
+.strap-site .strap-card-title { font-size: 1.05rem; }
 .strap-card-body p { color: var(--strap-ink); font-size: .95rem; line-height: 1.6; }
 
 /* Index rows: a compact monospace list of links inside a card. */
@@ -275,8 +275,8 @@
 .strap-prose > * + * { margin-top: 1.1rem; }
 .strap-prose > h2 { margin-top: 2.75rem; }
 .strap-prose > h3 { margin-top: 2rem; }
-.strap-prose h2 { max-width: 28ch; font-size: clamp(1.5rem, 2.4vw, 2rem); line-height: 1.12; }
-.strap-prose h3 { font-size: 1.15rem; font-weight: 700; line-height: 1.3; }
+.strap-site .strap-prose h2 { max-width: 28ch; font-size: clamp(1.5rem, 2.4vw, 2rem); line-height: 1.12; }
+.strap-site .strap-prose h3 { font-size: 1.15rem; font-weight: 700; line-height: 1.3; }
 .strap-prose .strap-lead { color: var(--strap-ink-strong); font-size: clamp(1.1rem, 1.6vw, 1.25rem); line-height: 1.6; }
 .strap-prose a { color: var(--strap-ink-strong); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .22rem; }
 .strap-prose a:hover { text-decoration-color: var(--strap-context); color: var(--strap-context); }
@@ -393,7 +393,7 @@
 .strap-timeline-entry { display: grid; grid-template-columns: 11rem minmax(0, 1fr); gap: 1.5rem; padding: 1.6rem 1.5rem 1.7rem; }
 .strap-timeline-entry + .strap-timeline-entry { border-top: 1px solid var(--strap-ink-strong); }
 .strap-timeline-date { color: var(--strap-ink-soft); font-family: var(--font-strap-mono), ui-monospace, monospace; font-size: .74rem; padding-top: .35rem; }
-.strap-timeline-entry h2 { max-width: 30ch; font-size: clamp(1.25rem, 2vw, 1.6rem); line-height: 1.15; }
+.strap-site .strap-timeline-entry h2 { max-width: 30ch; font-size: clamp(1.25rem, 2vw, 1.6rem); line-height: 1.15; }
 .strap-timeline-body { max-width: 66ch; }
 .strap-timeline-body > p { margin-top: .6rem; color: var(--strap-ink); line-height: 1.65; }
 
@@ -550,7 +550,7 @@
 .strap-auth-top .strap-wordmark img { width: 6.5rem; }
 .strap-auth-body { display: flex; flex: 1; align-items: center; justify-content: center; padding-block: 3rem; }
 .strap-auth-card { width: 100%; max-width: 26rem; }
-.strap-auth-card h1 { max-width: none; font-size: clamp(1.9rem, 3vw, 2.4rem); line-height: 1.05; letter-spacing: -.03em; }
+.strap-site .strap-auth-card h1 { max-width: none; font-size: clamp(1.9rem, 3vw, 2.4rem); line-height: 1.05; letter-spacing: -.03em; }
 .strap-auth-card > p { margin-top: .8rem; color: var(--strap-ink-soft); font-size: .95rem; line-height: 1.6; }
 .strap-auth-providers { display: grid; gap: .75rem; margin-top: 1.75rem; }
 .strap-auth-switch { margin-top: 1.75rem; color: var(--strap-ink-soft); font-size: .9rem; text-align: center; }
@@ -597,7 +597,7 @@
 .strap-consent-backing-two { bottom: -.9rem; left: -.9rem; width: 30%; height: 38%; background: var(--strap-environments-tint); }
 .strap-consent-card { position: relative; z-index: 1; border: 1px solid var(--strap-ink-strong); background: var(--strap-surface); padding: 2rem 1.75rem 1.75rem; text-align: center; }
 .strap-consent-card > .strap-chip { left: 50%; transform: translateX(-50%); white-space: nowrap; }
-.strap-consent-card h1 { max-width: none; font-size: 1.5rem; line-height: 1.15; letter-spacing: -.02em; }
+.strap-site .strap-consent-card h1 { max-width: none; font-size: 1.5rem; line-height: 1.15; letter-spacing: -.02em; }
 .strap-consent-card > p { margin-top: .75rem; color: var(--strap-ink); font-size: .93rem; line-height: 1.6; }
 .strap-consent-meta { margin-top: .7rem; color: var(--strap-ink-soft); font-family: var(--font-strap-mono), ui-monospace, monospace; font-size: .7rem; }
 .strap-consent-glyphs { display: flex; align-items: center; justify-content: center; gap: .9rem; margin-bottom: 1.4rem; }
@@ -629,7 +629,7 @@
   letter-spacing: .04em;
   text-transform: uppercase;
 }
-.strap-empty h1 { max-width: 16ch; font-size: clamp(2rem, 4.2vw, 3.2rem); }
+.strap-site .strap-empty h1 { max-width: 16ch; font-size: clamp(2rem, 4.2vw, 3.2rem); }
 .strap-empty p { max-width: 46ch; margin-top: 1rem; color: var(--strap-ink-soft); line-height: 1.6; }
 .strap-empty .strap-actions { justify-content: center; }
 .strap-empty-digest { margin-top: 1.25rem; color: var(--strap-ink-soft); font-family: var(--font-strap-mono), ui-monospace, monospace; font-size: .72rem; }
@@ -640,7 +640,7 @@
 .strap-footer-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) repeat(3, minmax(0, .6fr)); gap: 2rem; padding-block: 2.5rem 2rem; border-bottom: 1px solid var(--strap-line); margin-bottom: 1.5rem; }
 .strap-footer-brand img { display: block; width: 7.25rem; height: auto; }
 .strap-footer-brand p { max-width: 30ch; margin-top: 1rem; color: var(--strap-ink-soft); font-size: .9rem; line-height: 1.55; }
-.strap-footer-col h2 { margin-bottom: .75rem; color: var(--strap-ink-strong); font-family: var(--font-strap-mono), ui-monospace, monospace; font-size: .66rem; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; }
+.strap-site .strap-footer-col h2 { margin-bottom: .75rem; color: var(--strap-ink-strong); font-family: var(--font-strap-mono), ui-monospace, monospace; font-size: .66rem; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; }
 .strap-footer-col a { display: block; padding: .28rem 0; color: var(--strap-ink); font-size: .9rem; }
 .strap-footer-col a:hover { color: var(--strap-ink-strong); text-decoration: underline; text-underline-offset: .25rem; }
 .strap-footer-status { display: inline-flex; align-items: center; gap: .5rem; margin-top: 1.25rem; border: 1px solid var(--strap-ink-strong); background: var(--strap-surface); padding: .35rem .7rem; color: var(--strap-ink-strong); font-family: var(--font-strap-mono), ui-monospace, monospace; font-size: .68rem; font-weight: 500; }
@@ -653,12 +653,12 @@
    ------------------------------------------------------------------------ */
 .strap-examples-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; border: 1px solid var(--strap-ink-strong); background: var(--strap-ink-strong); }
 .strap-example { min-width: 0; background: var(--strap-surface); padding: 1.35rem 1.35rem 1.4rem; scroll-margin-top: 6.5rem; }
-.strap-example h3 { font-size: 1.02rem; line-height: 1.3; }
+.strap-site .strap-example h3 { font-size: 1.02rem; line-height: 1.3; }
 .strap-example p { margin-top: .5rem; color: var(--strap-ink); font-size: .92rem; line-height: 1.6; }
 .strap-example-group { scroll-margin-top: 6.5rem; }
 .strap-example-group + .strap-example-group { margin-top: 3rem; }
 .strap-example-group-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: .6rem 1rem; margin-bottom: 1.1rem; }
-.strap-example-group-head h2 { font-size: clamp(1.4rem, 2.2vw, 1.85rem); }
+.strap-site .strap-example-group-head h2 { font-size: clamp(1.4rem, 2.2vw, 1.85rem); }
 .strap-example-group-head p { color: var(--strap-ink-soft); font-size: .95rem; }
 
 /* ---------------------------------------------------------------------------
@@ -669,7 +669,7 @@
 .strap-board-column-head { display: flex; align-items: center; justify-content: space-between; gap: .75rem; border-bottom: 1px solid var(--strap-ink-strong); background: var(--strap-surface); padding: .75rem 1rem; }
 .strap-board-cards { display: grid; gap: .75rem; padding: .85rem; align-content: start; }
 .strap-board-card { border: 1px solid var(--strap-ink-strong); background: var(--strap-surface); padding: .95rem 1rem 1rem; }
-.strap-board-card h3 { font-size: .98rem; line-height: 1.3; }
+.strap-site .strap-board-card h3 { font-size: .98rem; line-height: 1.3; }
 .strap-board-card > p { margin-top: .45rem; color: var(--strap-ink-soft); font-size: .86rem; line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .strap-board-code { display: block; margin-bottom: .35rem; color: var(--strap-ink-soft); font-family: var(--font-strap-mono), ui-monospace, monospace; font-size: .66rem; }
 .strap-board-labels { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .7rem; }

@@ -109,7 +109,7 @@ function ShellNavLink({
         // a square, not a slight rectangle; lg restores the full-width row.
         // When the sidebar is collapsed (S key) the lg styles are dropped so
         // desktop renders the same icon rail as mobile.
-        "flex h-8 w-8 mx-auto items-center justify-center rounded-sm border-l-2 border-transparent text-[14px] font-medium text-[var(--strap-text-secondary)] transition-colors duration-150 hover:bg-[var(--strap-surface-raised)] hover:text-[var(--strap-text-primary)]",
+        "flex h-8 w-8 mx-auto items-center justify-center rounded-sm border-l-2 border-transparent text-[14px] font-medium text-[var(--strap-text-secondary)] outline-none transition-colors duration-150 hover:bg-[var(--strap-surface-raised)] hover:text-[var(--strap-text-primary)] focus-visible:ring-2 focus-visible:ring-[var(--ring)]",
         !collapsed &&
           "lg:h-auto lg:w-auto lg:mx-0 lg:min-h-0 lg:justify-start lg:gap-3 lg:px-2 lg:py-2",
         active &&
@@ -523,7 +523,7 @@ export function StrapShell({
                     type="button"
                     onClick={() => handleSectionClick(section.id)}
                     className={cn(
-                      "flex h-8 w-8 mx-auto items-center justify-center rounded-sm border-l-2 border-transparent text-left text-[14px] font-medium text-[var(--strap-text-secondary)] transition-colors duration-150 hover:bg-[var(--strap-surface-raised)] hover:text-[var(--strap-text-primary)]",
+                      "flex h-8 w-8 mx-auto items-center justify-center rounded-sm border-l-2 border-transparent text-left text-[14px] font-medium text-[var(--strap-text-secondary)] outline-none transition-colors duration-150 hover:bg-[var(--strap-surface-raised)] hover:text-[var(--strap-text-primary)] focus-visible:ring-2 focus-visible:ring-[var(--ring)]",
                       !collapsed &&
                         "lg:h-auto lg:w-full lg:mx-0 lg:min-h-0 lg:justify-start lg:gap-3 lg:px-2 lg:py-2",
                       isActive &&
