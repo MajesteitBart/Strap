@@ -45,7 +45,7 @@ test("worktable tokens define the shared palette, typography, and geometry", asy
   assert.match(css, /@import "\.\/strap-public\.css";/);
 
   // The public site stays light-only and re-asserts its palette.
-  assert.match(css, /\.strap-site \{[\s\S]*color-scheme: light;/);
+  assert.match(css, /\.strap-site,\s*\.strap-public-theme \{[\s\S]*color-scheme: light;/);
 
   // Shared public primitives and reduced-motion handling exist.
   for (const selector of [
@@ -202,7 +202,7 @@ test("public resource labels pair their fills with readable foregrounds", async 
   const css = await readFile("app/strap-public.css", "utf8");
   const vars = new Map<string, string>();
   for (const block of [globals.match(/:root\s*\{([\s\S]*?)\n\}/)?.[1],
-    globals.match(/\.strap-site\s*\{([\s\S]*?)\n\}/)?.[1]]) {
+    globals.match(/\.strap-public-theme\s*\{([\s\S]*?)\n\}/)?.[1]]) {
     for (const match of (block ?? "").matchAll(/(--[\w-]+):\s*([^;]+);/g)) vars.set(match[1], match[2]);
   }
   const resolve = (value: string): string => {
