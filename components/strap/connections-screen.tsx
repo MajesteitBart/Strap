@@ -257,7 +257,7 @@ export function ConnectionsScreen() {
                       className={cn(
                         "h-2 w-2 rounded-[3px]",
                         connected
-                          ? "bg-[var(--strap-success)]"
+                          ? "bg-[var(--strap-success-fill)]"
                           : "bg-[var(--strap-border-strong)]",
                       )}
                     />
@@ -384,7 +384,7 @@ export function ConnectionsScreen() {
                       className={cn(
                         "h-2 w-2 rounded-[3px]",
                         cliConnected
-                          ? "bg-[var(--strap-success)]"
+                          ? "bg-[var(--strap-success-fill)]"
                           : "bg-[var(--strap-border-strong)]",
                       )}
                     />

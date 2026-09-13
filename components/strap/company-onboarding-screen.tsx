@@ -613,7 +613,7 @@ export function CompanyOnboardingScreen({
                                       </div>
                                     </div>
                                     <Button
-                                      className="rounded-md bg-[var(--strap-danger)] px-3 text-white hover:bg-[var(--strap-danger-hover)] hover:text-white"
+                                      className="rounded-md bg-[var(--strap-danger-fill)] px-3 text-white hover:bg-[var(--strap-danger-fill-hover)] hover:text-white"
                                       onClick={() => void revokeInvite(invite)}
                                     >
                                       Revoke

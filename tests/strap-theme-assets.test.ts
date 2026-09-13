@@ -171,3 +171,28 @@ test("transactional emails use the worktable palette and keep their template var
   assert.match(invite, /\$\{acceptUrl\}/);
   assert.match(invite, /\$\{siteUrl\}\/privacy/);
 });
+
+test("solid status actions keep white labels readable in both themes", async () => {
+  const css = await readFile("app/globals.css", "utf8");
+  const darkStart = css.indexOf("\n.dark {");
+  const light = css.slice(0, darkStart);
+  const dark = css.slice(darkStart, css.indexOf("\n}", darkStart));
+  const luminance = (hex: string) => {
+    const channels = [0, 2, 4].map((offset) => {
+      const value = parseInt(hex.slice(offset, offset + 2), 16) / 255;
+      return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+    });
+    return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
+  };
+  for (const tone of ["success", "danger"]) {
+    for (const state of ["", "-hover"]) {
+      const token = `--strap-${tone}-fill${state}`;
+      const pattern = new RegExp(`${token}: #([a-fA-F0-9]{6});`);
+      for (const theme of [light, dark]) {
+        const color = theme.match(pattern)?.[1] ?? light.match(pattern)?.[1];
+        assert.ok(color, `${token} must be defined`);
+        assert.ok(1.05 / (luminance(color) + 0.05) >= 4.5, `${token} must support white text`);
+      }
+    }
+  }
+});

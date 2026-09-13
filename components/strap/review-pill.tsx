@@ -390,7 +390,7 @@ export function ReviewPill({
                             type="button"
                             aria-label="Delete proposal"
                             onClick={() => onDeleteOne(item.proposal.id)}
-                            className="inline-flex h-7 items-center gap-1 rounded-md bg-[var(--strap-danger)] px-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--strap-danger-hover)]"
+                            className="inline-flex h-7 items-center gap-1 rounded-md bg-[var(--strap-danger-fill)] px-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--strap-danger-fill-hover)]"
                           >
                             <Trash2 className="h-3.5 w-3.5 sm:hidden" />
                             <span className="hidden sm:inline">Delete</span>
@@ -417,9 +417,9 @@ export function ReviewPill({
                               // operations: red for delete-section, green for
                               // new-section, default blue for content updates.
                               isDeleteProposal
-                                ? "bg-[var(--strap-danger)] hover:bg-[var(--strap-danger-hover)]"
+                                ? "bg-[var(--strap-danger-fill)] hover:bg-[var(--strap-danger-fill-hover)]"
                                 : isNewSectionProposal
-                                  ? "bg-[var(--strap-success)] hover:bg-[var(--strap-success-hover)]"
+                                  ? "bg-[var(--strap-success-fill)] hover:bg-[var(--strap-success-fill-hover)]"
                                   : "bg-[var(--strap-accent)] hover:bg-[var(--strap-accent-hover)]",
                             )}
                           >
@@ -581,7 +581,7 @@ function ReviewPillItem({
                       event.stopPropagation();
                       onDeleteOne(item.proposal.id);
                     }}
-                    className="inline-flex h-7 items-center gap-1 rounded-md bg-[var(--strap-danger)] px-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--strap-danger-hover)]"
+                    className="inline-flex h-7 items-center gap-1 rounded-md bg-[var(--strap-danger-fill)] px-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--strap-danger-fill-hover)]"
                   >
                     <Trash2 className="h-3.5 w-3.5 sm:hidden" />
                     <span className="hidden sm:inline">Delete</span>
@@ -619,9 +619,9 @@ function ReviewPillItem({
                     className={cn(
                       "inline-flex h-7 items-center gap-1 rounded-md px-2.5 text-sm font-medium text-white transition-colors",
                       isDeleteProposal
-                        ? "bg-[var(--strap-danger)] hover:bg-[var(--strap-danger-hover)]"
+                        ? "bg-[var(--strap-danger-fill)] hover:bg-[var(--strap-danger-fill-hover)]"
                         : isNewSectionProposal
-                          ? "bg-[var(--strap-success)] hover:bg-[var(--strap-success-hover)]"
+                          ? "bg-[var(--strap-success-fill)] hover:bg-[var(--strap-success-fill-hover)]"
                           : "bg-[var(--strap-accent)] hover:bg-[var(--strap-accent-hover)]",
                     )}
                   >

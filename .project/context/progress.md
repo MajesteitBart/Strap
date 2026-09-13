@@ -19,7 +19,7 @@
 
 - Delano research, Spec, plan, workstreams, decisions, and atomic tasks validate for `strap-rebrand`.
 - Fable approved the plan after compatibility blockers were resolved and later passed the grounded agent-contract review.
-- The root suite passes 179/179 tests, strict TypeScript and ESLint pass, and the production build succeeds with 102 generated routes.
+- The latest redesign suite passes 185/185 tests, strict TypeScript and ESLint pass, and the production build succeeds with 102 generated routes.
 - The exact rebrand audit covers 1,094 current repository files and classifies all 4,765 remaining case-insensitive Creed occurrences across 436 files and 65 Creed-named paths through 501 reviewed history or compatibility entries.
 - `@bvdm/strap@0.1.1` passes typecheck and 30 tests. The legacy CLI passes typecheck and 20 compatibility tests. The 51-file Strap tarball installs cleanly, returns Strap help and version `0.1.1`, and is published to npm as the public `latest` release.
 - A bounded, grounded Fable release review passed with no blockers. Its three actionable non-blocking findings were resolved in the same pass.
@@ -35,7 +35,7 @@
 
 ## What Is Next
 
-- Review the visual redesign branch `feature/strap-visual-redesign` in a painted browser for screenshot-level sign-off; the delegate preview could only verify structure, computed styles, and responsive layout through DOM evaluation.
+- Complete final-head Codex review and merge for visual redesign PR 9. The delegate supplied 53 painted browser captures; coordinator review added empty-profile, Company-role and contrast checks.
 - Continue serving the `creed.md` compatibility origin during the migration window.
 
 ## Remaining Risks

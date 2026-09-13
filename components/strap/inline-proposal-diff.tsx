@@ -241,7 +241,7 @@ export function InlineProposalDiff({
             <button
               type="button"
               onClick={onDelete}
-              className="inline-flex h-7 items-center gap-1 rounded-md bg-[var(--strap-danger)] px-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--strap-danger-hover)]"
+              className="inline-flex h-7 items-center gap-1 rounded-md bg-[var(--strap-danger-fill)] px-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--strap-danger-fill-hover)]"
               aria-label="Delete proposal"
             >
               <Trash2 className="h-3.5 w-3.5 sm:hidden" />
@@ -399,7 +399,7 @@ export function InlineNewSectionProposal({
               type="button"
               onClick={onAccept}
               aria-label="Accept proposal"
-              className="inline-flex h-7 items-center gap-1 rounded-md bg-[var(--strap-success)] px-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--strap-success-hover)]"
+              className="inline-flex h-7 items-center gap-1 rounded-md bg-[var(--strap-success-fill)] px-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--strap-success-fill-hover)]"
             >
               <Check className="h-3.5 w-3.5 sm:hidden" />
               <span className="hidden sm:inline">Accept</span>
@@ -563,7 +563,7 @@ export function InlineMetaProposal({
               className={cn(
                 "inline-flex h-7 items-center gap-1 rounded-md px-2.5 text-sm font-medium text-white transition-colors",
                 isDelete
-                  ? "bg-[var(--strap-danger)] hover:bg-[var(--strap-danger-hover)]"
+                  ? "bg-[var(--strap-danger-fill)] hover:bg-[var(--strap-danger-fill-hover)]"
                   : "bg-[var(--strap-accent)] hover:bg-[var(--strap-accent-hover)]",
               )}
             >

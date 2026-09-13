@@ -2723,7 +2723,7 @@ export function FileScreen() {
                         ) : null}
                         <AnimatedMenuIconItem
                           icon={DeleteIcon}
-                          className="mt-1 bg-[var(--strap-danger)] text-sm text-white hover:bg-[var(--strap-danger-hover)] hover:text-white focus:bg-[var(--strap-danger-hover)] focus:text-white data-[highlighted]:bg-[var(--strap-danger-hover)] data-[highlighted]:text-white not-data-[variant=destructive]:focus:**:text-white"
+                          className="mt-1 bg-[var(--strap-danger-fill)] text-sm text-white hover:bg-[var(--strap-danger-fill-hover)] hover:text-white focus:bg-[var(--strap-danger-fill-hover)] focus:text-white data-[highlighted]:bg-[var(--strap-danger-fill-hover)] data-[highlighted]:text-white not-data-[variant=destructive]:focus:**:text-white"
                           onSelect={() => {
                             // Let the menu close first, then open the dialog on
                             // the next tick so its enter animation plays (two
@@ -3305,7 +3305,7 @@ export function FileScreen() {
               Cancel
             </Button>
             <Button
-              className="rounded-md bg-[var(--strap-danger)] text-white hover:bg-[var(--strap-danger-hover)]"
+              className="rounded-md bg-[var(--strap-danger-fill)] text-white hover:bg-[var(--strap-danger-fill-hover)]"
               onClick={() => {
                 if (!deleteSectionState) {
                   return;
@@ -3341,7 +3341,7 @@ export function FileScreen() {
               Cancel
             </Button>
             <Button
-              className="rounded-md bg-[var(--strap-danger)] text-white hover:bg-[var(--strap-danger-hover)]"
+              className="rounded-md bg-[var(--strap-danger-fill)] text-white hover:bg-[var(--strap-danger-fill-hover)]"
               onClick={() => {
                 clearSections();
                 setDeleteFileOpen(false);
@@ -3917,7 +3917,7 @@ function SectionCard({
                   {/* Solid red, matching the file menu's Delete. */}
                   <AnimatedMenuIconItem
                     icon={DeleteIcon}
-                    className="mt-1 bg-[var(--strap-danger)] text-sm text-white hover:bg-[var(--strap-danger-hover)] hover:text-white focus:bg-[var(--strap-danger-hover)] focus:text-white data-[highlighted]:bg-[var(--strap-danger-hover)] data-[highlighted]:text-white not-data-[variant=destructive]:focus:**:text-white"
+                    className="mt-1 bg-[var(--strap-danger-fill)] text-sm text-white hover:bg-[var(--strap-danger-fill-hover)] hover:text-white focus:bg-[var(--strap-danger-fill-hover)] focus:text-white data-[highlighted]:bg-[var(--strap-danger-fill-hover)] data-[highlighted]:text-white not-data-[variant=destructive]:focus:**:text-white"
                     onSelect={onDelete}
                   >
                     Delete

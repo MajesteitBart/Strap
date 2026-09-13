@@ -123,7 +123,7 @@ const PRIMARY_BUTTON =
 const GHOST_BUTTON =
   "rounded-md px-3 text-[var(--strap-text-secondary)] hover:bg-[var(--strap-surface-raised)] hover:text-[var(--strap-text-primary)]";
 const DANGER_BUTTON =
-  "rounded-md bg-[var(--strap-danger)] px-4 text-white hover:bg-[var(--strap-danger-hover)] hover:text-white";
+  "rounded-md bg-[var(--strap-danger-fill)] px-4 text-white hover:bg-[var(--strap-danger-fill-hover)] hover:text-white";
 const FIELD_INPUT =
   "h-11 rounded-xl border-[var(--strap-border)] bg-[var(--strap-surface)] px-4 text-[15px]";
 const FIELD_LABEL =
@@ -1905,7 +1905,7 @@ export function CompanySettings() {
               Cancel
             </Button>
             <Button
-              className="rounded-md bg-[var(--strap-danger)] text-white hover:bg-[var(--strap-danger-hover)]"
+              className="rounded-md bg-[var(--strap-danger-fill)] text-white hover:bg-[var(--strap-danger-fill-hover)]"
               onClick={() => {
                 if (archivedDeleteTarget)
                   void deleteArchivedSection(archivedDeleteTarget.id);
@@ -1986,7 +1986,7 @@ export function CompanySettings() {
               Cancel
             </Button>
             <Button
-              className="rounded-md bg-[var(--strap-danger)] text-white hover:bg-[var(--strap-danger-hover)]"
+              className="rounded-md bg-[var(--strap-danger-fill)] text-white hover:bg-[var(--strap-danger-fill-hover)]"
               onClick={doDelete}
               disabled={deleteConfirm !== company.creedName}
             >

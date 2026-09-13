@@ -13,6 +13,8 @@ stream: WS-D
 - Coordinator integration checked empty persisted Personal File, Connections and Settings against disposable local Supabase. Removed section-count redirects while retaining the persisted-profile layout gate, corrected the empty File message, and confirmed the add-section affordance. Company member Settings renders read-only controls without owner danger actions; an outsider receives 403 when attempting Company activation and stays in their Personal Strap. An owner with unfinished Company setup resumes the 15-step onboarding screen. These were DOM/runtime checks in the hidden T3 Preview, with queued streaming boundaries flushed for inspection; they do not add screenshot evidence.
 - Pricing label colours now use accessible text tones and dark text on bright green/yellow chips. Browser computed styles confirm the intended colours. The historical bootstrap updates placeholder is included so complete Delano validation succeeds.
 
+- PR 9 review found low-contrast white labels on the bright dark-mode status palette. Solid success/danger actions now use dedicated deep fill and hover tokens, while text-only statuses retain their dark-mode colours. A contrast regression measures white-label contrast in both themes; 185 tests, TypeScript, lint and production build pass.
+
 ## In Progress
 -
 

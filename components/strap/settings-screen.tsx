@@ -1255,7 +1255,7 @@ function PersonalSettingsScreen() {
                               Restore
                             </Button>
                             <Button
-                              className="rounded-md bg-[var(--strap-danger)] text-white hover:bg-[var(--strap-danger-hover)] hover:text-white"
+                              className="rounded-md bg-[var(--strap-danger-fill)] text-white hover:bg-[var(--strap-danger-fill-hover)] hover:text-white"
                               onClick={() =>
                                 setArchivedDeleteTarget({ id: section.id, name: section.name })
                               }
@@ -1379,7 +1379,7 @@ function PersonalSettingsScreen() {
                   </div>
                 </div>
                 <Button
-                  className="rounded-md bg-[var(--strap-danger)] px-4 text-white hover:bg-[var(--strap-danger-hover)] hover:text-white"
+                  className="rounded-md bg-[var(--strap-danger-fill)] px-4 text-white hover:bg-[var(--strap-danger-fill-hover)] hover:text-white"
                   onClick={() => setDeleteOpen(true)}
                 >
                   Delete
@@ -1406,7 +1406,7 @@ function PersonalSettingsScreen() {
               Cancel
             </Button>
             <Button
-              className="rounded-md bg-[var(--strap-danger)] text-white hover:bg-[var(--strap-danger-hover)]"
+              className="rounded-md bg-[var(--strap-danger-fill)] text-white hover:bg-[var(--strap-danger-fill-hover)]"
               onClick={() => void handleDeleteAccount()}
               disabled={deleting}
             >
@@ -1446,7 +1446,7 @@ function PersonalSettingsScreen() {
               Cancel
             </Button>
             <Button
-              className="rounded-md bg-[var(--strap-danger)] px-4 text-white hover:bg-[var(--strap-danger-hover)] hover:text-white"
+              className="rounded-md bg-[var(--strap-danger-fill)] px-4 text-white hover:bg-[var(--strap-danger-fill-hover)] hover:text-white"
               onClick={() => {
                 if (archivedDeleteTarget) deleteSection(archivedDeleteTarget.id);
                 setArchivedDeleteTarget(null);
@@ -1473,7 +1473,7 @@ export function ConnectButton({
   return (
     <Button
       aria-label={`Connect ${label}`}
-      className="rounded-md bg-[var(--strap-success)] text-white hover:bg-[var(--strap-success-hover)] hover:text-white max-md:size-9 max-md:p-0 md:px-4 md:text-sm"
+      className="rounded-md bg-[var(--strap-success-fill)] text-white hover:bg-[var(--strap-success-fill-hover)] hover:text-white max-md:size-9 max-md:p-0 md:px-4 md:text-sm"
       onClick={onClick}
       disabled={loading}
     >
@@ -1501,7 +1501,7 @@ export function DisconnectButton({
   return (
     <Button
       aria-label={`Disconnect ${label}`}
-      className="rounded-md bg-[var(--strap-danger)] text-white hover:bg-[var(--strap-danger-hover)] hover:text-white max-md:size-9 max-md:p-0 md:px-4 md:text-sm"
+      className="rounded-md bg-[var(--strap-danger-fill)] text-white hover:bg-[var(--strap-danger-fill-hover)] hover:text-white max-md:size-9 max-md:p-0 md:px-4 md:text-sm"
       onClick={onClick}
       disabled={loading}
     >

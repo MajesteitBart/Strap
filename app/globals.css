@@ -115,6 +115,12 @@
   --strap-danger: #b8321c;
   --strap-danger-hover: #962613;
   --strap-success-hover: #3f6209;
+  /* Solid actions keep white labels readable in both themes. Text-only status
+     colours brighten in dark mode; these fills deliberately remain deep. */
+  --strap-success-fill: #4a720d;
+  --strap-success-fill-hover: #3f6209;
+  --strap-danger-fill: #b8321c;
+  --strap-danger-fill-hover: #962613;
   /* Caution reads as ink-brown on the Agents tint; the deeper secrets tone
      keeps purple labels legible on their tint. */
   --strap-caution: #9a5b00;
