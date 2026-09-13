@@ -2,9 +2,9 @@
 name: Legacy billing offboarding
 slug: legacy-billing-offboarding
 owner: MajesteitBart
-status: active
+status: complete
 created: 2026-09-13T09:25:18Z
-updated: 2026-09-13T09:25:19Z
+updated: 2026-09-13T16:38:13Z
 outcome: Merge PR 5 with owner-authorized legacy cancellation and atomic Company provisioning while preserving Strap compatibility and migration history.
 uncertainty: low
 probe_required: false

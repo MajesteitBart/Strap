@@ -49,5 +49,5 @@
 
 - Brand classifications are exact-file fingerprints rather than semantic proofs. Any changed Creed-bearing file or path invalidates the gate and requires renewed review.
 - The old production origin must continue serving MCP/OAuth endpoints directly during the migration window.
-- Dependency audits still report seven inherited advisories in the dependency graph after the Next.js patch upgrade (one low, one moderate, and five high); resolving unrelated transitive advisories was not included in this deployment fix.
+- The inherited dependency advisories were resolved in runtime security PR 12; its recorded release audit reports zero vulnerabilities.
 - Computer Use loaded its safety and confirmation guidance, but runtime bootstrap failed because the native Windows helper pipe was unavailable. T3 Preview supplied production public-route evidence; the operator accepted the missing Computer Use authenticated-route pass as a known coverage gap when closing T-009.

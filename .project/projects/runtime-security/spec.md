@@ -2,9 +2,9 @@
 name: Runtime dependency security
 slug: runtime-security
 owner: MajesteitBart
-status: active
+status: complete
 created: 2026-09-13T13:06:54Z
-updated: 2026-09-13T13:06:55Z
+updated: 2026-09-13T16:38:13Z
 outcome: Deploy a patched Next runtime and remove current fixable dependency advisories while preserving app behavior
 uncertainty: low
 probe_required: false

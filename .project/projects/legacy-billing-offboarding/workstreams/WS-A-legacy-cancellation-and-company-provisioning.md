@@ -2,9 +2,9 @@
 id: WS-A
 name: WS-A Legacy cancellation and Company provisioning
 owner: Codex
-status: active
+status: done
 created: 2026-09-13T09:25:19Z
-updated: 2026-09-13T09:25:19Z
+updated: 2026-09-13T16:38:13Z
 operating_mode: feature
 ---
 

@@ -1,9 +1,9 @@
 ---
 name: Legacy billing offboarding
-status: active
+status: done
 lead: Codex
 created: 2026-09-13T09:25:18Z
-updated: 2026-09-13T09:25:19Z
+updated: 2026-09-13T16:38:13Z
 linear_project_id:
 risk_level: high
 spec_status_at_plan_time: planned
