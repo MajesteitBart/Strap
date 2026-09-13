@@ -53,6 +53,7 @@ const NO_STORE_PATHS = [
   "/connections/:path*",
   "/device/:path*",
   "/vault/:path*",
+  "/skills/:path*",
   "/settings/:path*",
   "/payment/success/:path*",
 ];

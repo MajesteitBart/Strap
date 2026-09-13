@@ -118,6 +118,7 @@ export function HeadlessAccessCard() {
                 <option value="never">No expiry</option>
               </select>
             </div>
+            <p className="text-xs leading-5 text-[var(--strap-text-secondary)]">All modes can read shared skills. Direct access also permits skill publication for profile owners and Company admins.</p>
             <Button onClick={() => void createKey()} disabled={busy || !name.trim()}>{busy ? "Creating…" : "Create API key"}</Button>
           </div>
         </div>

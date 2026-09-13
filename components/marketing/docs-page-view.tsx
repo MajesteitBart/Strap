@@ -127,14 +127,15 @@ const sections: DocsSection[] = [
     title: "What Strap ships today",
     paragraphs: [
       "Strap ships a compact Context profile, MCP connections, scoped headless API keys, the Strap CLI, GitHub synchronization, and a per-profile Vault for external API keys.",
-      "Skills, named Environments, and per-agent manifests are roadmap resources. The homepage previews that direction, but those workflows are not available in the product or CLI yet.",
+      "Shared Skills are available in Personal and Company profiles. Import a SKILL.md folder, publish versions, and sync it between devices with strap skills sync. Named Environments and per-agent manifests remain on the roadmap.",
     ],
     bullets: [
       "Context: a Personal or Company Strap in portable Markdown, with per-section permissions.",
       "Agents: browser OAuth, RFC 8628 device authorization, or scoped headless API keys over MCP.",
       "Keys: scoped, one-time-visible agent access keys plus a Vault for external service credentials.",
       "CLI: live discovery of Strap MCP tools, resources, prompts, and schemas.",
-      "Roadmap: reusable Skills, named Environments, and per-agent resource manifests.",
+      "Skills: a profile library with scripts and assets, version restore, CLI sync, and MCP discovery. Company members can read; owners and admins publish.",
+      "Roadmap: named Environments and per-agent resource manifests.",
     ],
   },
   {

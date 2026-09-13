@@ -111,8 +111,17 @@ security and audit records may remain for their documented retention period.
 
 Context profiles, MCP connections, scoped headless access, the Strap CLI,
 GitHub synchronization, and the per-profile API-key Vault are shipped today.
-Reusable skills, named environments, and per-agent manifests are roadmap
-resources. They are not available as current Strap product flows.
+Shared Skills are available in Personal and Company libraries. Publish a
+SKILL.md folder with scripts, references, and binary assets in /skills, or use
+strap skills push <directory>. Run strap skills sync --target codex --global
+on each device; use --target claude for Claude Code. The CLI rejects conflicting
+edits and preserves replaced copies outside the agent skill directory.
+The latest 20 versions can be restored in the app. Bundles are limited to
+128 files and 2 MiB, with up to 100 skills per profile. Company members read
+shared skills; owners and admins publish. MCP exposes strap_list_skills,
+strap_get_skill, strap_export_skill, and direct-grant-only strap_publish_skill.
+Skills never execute automatically or authorize secret access.
+Named environments and per-agent manifests remain roadmap resources.
 
 ## The Company plan
 

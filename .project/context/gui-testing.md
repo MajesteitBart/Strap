@@ -6,6 +6,7 @@
 ## Smoke Routes
 - Public: `/home`, `/docs`, `/pricing`, `/company`, `/examples`, `/roadmap`, `/learn`, `/bench`, `/changelog`, `/privacy`, `/terms`, and `/stack` without user-state loading, plus the 404 and route error states.
 - Authenticated: `/file`, `/connections`, and `/settings` in relevant Personal and Company states.
+- Skills: `/skills` in Personal owner, Company admin, and Company member states. Exercise create/import, draft conflicts, publication, archive, history restore, supporting files, profile switching, and device setup. Native confirmation dialogs need a visible Preview panel; do not trigger one while the panel is hidden.
 - First-run and auth: `/onboarding`, OAuth authorization/callback, and MCP connection flows when touched.
 
 ## Console Filtering

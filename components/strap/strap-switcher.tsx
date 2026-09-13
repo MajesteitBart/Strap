@@ -23,7 +23,7 @@ const LAST_ACTIVE_CREED_KEY = "creed:last-active-creed";
 const TITLE_CLASS =
   "font-heading text-[1.22rem] font-semibold tracking-[-0.03em] text-[var(--strap-text-primary)] md:text-[1.45rem]";
 
-export function StrapSwitcher() {
+export function StrapSwitcher({ beforeSwitch }: { beforeSwitch?: () => boolean } = {}) {
   const { state, switchCreed } = useStrap();
   const router = useRouter();
   const [switching, setSwitching] = useState(false);
@@ -54,6 +54,7 @@ export function StrapSwitcher() {
   const switchTo = useCallback(
     async (creed: { id: string; needsSetup?: boolean }) => {
       if (creed.id === activeId && !creed.needsSetup) return;
+      if (beforeSwitch && !beforeSwitch()) return;
       setSwitching(true);
       setOptimisticId(creed.id);
       try {
@@ -91,7 +92,7 @@ export function StrapSwitcher() {
         setSwitching(false);
       }
     },
-    [activeId, router, switchCreed],
+    [activeId, beforeSwitch, router, switchCreed],
   );
 
   useEffect(() => {
