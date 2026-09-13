@@ -27,3 +27,4 @@
 - OAuth browser and device grants plus scoped `strap_key_` API keys resolve one explicit profile and a maximum access mode before MCP dispatch; `creed_key_` remains an accepted compatibility prefix.
 - Supabase Vault stores secret plaintext behind signed-in, authorized, audited reveal operations; lists and ordinary context expose metadata or references only.
 - Delano uses `.project/` as delivery truth, `.agents/` as its canonical runtime, and `.codex/hooks.json` as an opt-in session hook.
+- Hosted migration history alone does not prove effective database privileges. A 2026-09-13 audit found older service-only RPC grants had drifted; the existing migration-defined grants were restored and verified with `has_function_privilege`. Check effective client and service execution rights after hosted schema changes.

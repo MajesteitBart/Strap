@@ -109,13 +109,18 @@ export function encodeSkillFile(
       fatal: true,
       ignoreBOM: true,
     }).decode(bytes);
-    if (content.includes("\0")) throw new Error("Binary file");
-    return { path, content, encoding: "utf8", executable };
+    // Escaped control bytes can expand sixfold in JSON. Keep the manifest
+    // editable, but use base64 for assets when it gives a smaller wire value.
+    const textBytes = new TextEncoder().encode(JSON.stringify(content)).length;
+    const base64Bytes = 4 * Math.ceil(bytes.length / 3) + 2;
+    if (!content.includes("\0") && (path === "SKILL.md" || textBytes <= base64Bytes))
+      return { path, content, encoding: "utf8", executable };
   } catch {
-    let binary = "";
-    for (const byte of bytes) binary += String.fromCharCode(byte);
-    return { path, content: btoa(binary), encoding: "base64", executable };
+    // Invalid UTF-8 is retained losslessly below.
   }
+  let binary = "";
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return { path, content: btoa(binary), encoding: "base64", executable };
 }
 
 export function validateSkillBundle(input: unknown): SkillBundle {

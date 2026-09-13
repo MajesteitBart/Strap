@@ -13,6 +13,9 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import {
   validateSkillBundle,
+  fileBytes,
+  MAX_SKILL_BYTES,
+  MAX_SKILL_FILE_BYTES,
   type SkillBundle,
   type StoredSkill,
 } from "../src/skills/bundle.js";
@@ -87,6 +90,34 @@ async function fixture(t: TestContext) {
   t.after(() => rm(root, { recursive: true, force: true }));
   return root;
 }
+
+test("maximum-size control-byte bundles fit JSON limits and preserve bytes", () => {
+  const manifest = "---\nname: controls\ndescription: Preserve control-byte assets.\n---\n";
+  for (const largeManifest of [false, true]) {
+    const main = largeManifest
+      ? manifest + "\u0001".repeat(MAX_SKILL_FILE_BYTES - Buffer.byteLength(manifest))
+      : manifest;
+    const files: SkillBundle["files"] = [
+      { path: "SKILL.md", content: main, encoding: "utf8", executable: false },
+    ];
+    let remaining = MAX_SKILL_BYTES - Buffer.byteLength(main);
+    while (remaining > 0) {
+      const size = Math.min(remaining, MAX_SKILL_FILE_BYTES);
+      files.push({ path: `assets/control-${files.length}.bin`, content: "\u0001".repeat(size), encoding: "utf8", executable: true });
+      remaining -= size;
+    }
+    const value = validateSkillBundle({ files });
+    assert.equal(value.files.reduce((total, file) => total + fileBytes(file).length, 0), MAX_SKILL_BYTES);
+    assert.ok(Buffer.byteLength(JSON.stringify({ ...value, baseRevision: 0 })) < 6 * 1024 * 1024);
+    for (const original of files) {
+      const encoded = value.files.find(file => file.path === original.path)!;
+      assert.equal(encoded.encoding, original.path === "SKILL.md" ? "utf8" : "base64");
+      assert.equal(encoded.executable, original.executable);
+      assert.deepEqual(fileBytes(encoded), new TextEncoder().encode(original.content));
+    }
+    assert.deepEqual(validateSkillBundle(JSON.parse(JSON.stringify(value))), value);
+  }
+});
 
 test("an empty library binds the directory while dry-run stays read-only", async (t) => {
   const root = await fixture(t), dir = join(root, "skills");
