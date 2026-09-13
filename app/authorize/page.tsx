@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { IntegrationGlyph, StrapWordmark } from "@/components/strap/brand";
+import { IntegrationGlyph } from "@/components/strap/brand";
 import { AuthorizeSpacePicker, type SpaceOption } from "@/components/strap/authorize-space-picker";
-import { Button } from "@/components/ui/button";
+import { ConsentMessage, ConsentShell } from "@/components/strap/consent-shell";
 import { getAgentIconKind } from "@/lib/agent-icon";
 import { getOAuthClient, isAllowedRedirectUri } from "@/lib/oauth";
 import {
@@ -29,28 +29,6 @@ type SearchParams = {
   scope?: string;
 };
 
-function Shell({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="min-h-screen bg-[var(--strap-background)] text-[var(--strap-text-primary)]">
-      <div className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-6 py-16">
-        <StrapWordmark className="mb-10 h-[20px]" />
-        <div className="w-full rounded-[var(--radius-xl)] bg-[var(--strap-surface)] p-7 text-center">
-          {children}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Message({ title, body }: { title: string; body: string }) {
-  return (
-    <>
-      <h1 className="text-[18px] font-medium text-[var(--strap-text-primary)]">{title}</h1>
-      <p className="mt-3 text-[14px] leading-7 text-[var(--strap-text-secondary)]">{body}</p>
-    </>
-  );
-}
-
 export default async function AuthorizePage({
   searchParams,
 }: {
@@ -60,12 +38,12 @@ export default async function AuthorizePage({
 
   if (!isSupabaseConfigured()) {
     return (
-      <Shell>
-        <Message
+      <ConsentShell chip="Connect an agent" tone="warning">
+        <ConsentMessage
           title="Connection unavailable"
           body="Strap is not fully configured on this deployment. Try again later."
         />
-      </Shell>
+      </ConsentShell>
     );
   }
 
@@ -85,24 +63,24 @@ export default async function AuthorizePage({
     params.code_challenge_method !== "S256"
   ) {
     return (
-      <Shell>
-        <Message
+      <ConsentShell chip="Connect an agent" tone="warning">
+        <ConsentMessage
           title="Invalid connection request"
           body="This connection link is missing required parameters or uses an unsupported method. Start the connection again from your agent."
         />
-      </Shell>
+      </ConsentShell>
     );
   }
 
   const client = await getOAuthClient(clientId);
   if (!client || !isAllowedRedirectUri(redirectUri, client.redirectUris)) {
     return (
-      <Shell>
-        <Message
+      <ConsentShell chip="Connect an agent" tone="warning">
+        <ConsentMessage
           title="Invalid connection request"
           body="We couldn't verify the app requesting access. Start the connection again from your agent."
         />
-      </Shell>
+      </ConsentShell>
     );
   }
 
@@ -123,20 +101,20 @@ export default async function AuthorizePage({
 
   if (!user) {
     return (
-      <Shell>
-        <Message
+      <ConsentShell chip="Connect an agent">
+        <ConsentMessage
           title="Sign in to connect"
           body={`Sign in to your Strap account to let ${client.clientName} read and update your Strap.`}
         />
-        <div className="mt-6 flex justify-center">
+        <div className="strap-consent-actions strap-consent-actions-single">
           <Link
             href={`/login?next=${encodeURIComponent(returnTo)}`}
-            className="inline-flex h-10 items-center justify-center rounded-md bg-[var(--strap-text-primary)] px-5 text-[14px] font-medium text-[var(--strap-button-primary-fg)] transition-colors hover:bg-[var(--strap-button-primary-hover)]"
+            className="strap-button strap-button-primary"
           >
             Log in
           </Link>
         </div>
-      </Shell>
+      </ConsentShell>
     );
   }
 
@@ -150,20 +128,17 @@ export default async function AuthorizePage({
   const creeds = await listUserStraps(supabase, user.id);
   if (creeds.length === 0) {
     return (
-      <Shell>
-        <Message
+      <ConsentShell chip="Connect an agent">
+        <ConsentMessage
           title="Set up your Strap first"
           body={`Finish creating your Strap before connecting ${client.clientName}. Then start the connection again from your agent.`}
         />
-        <div className="mt-6 flex justify-center">
-          <Link
-            href="/onboarding"
-            className="inline-flex h-10 items-center justify-center rounded-md bg-[var(--strap-text-primary)] px-5 text-[14px] font-medium text-[var(--strap-button-primary-fg)] transition-colors hover:bg-[var(--strap-button-primary-hover)]"
-          >
+        <div className="strap-consent-actions strap-consent-actions-single">
+          <Link href="/onboarding" className="strap-button strap-button-primary">
             Set up Strap
           </Link>
         </div>
-      </Shell>
+      </ConsentShell>
     );
   }
   // Show each space by its real name - the person's name for their personal
@@ -182,51 +157,52 @@ export default async function AuthorizePage({
   const showPicker = spaces.length > 1;
 
   return (
-    <Shell>
-      <div className="flex items-center justify-center gap-4">
-        <IntegrationGlyph kind="mcp" framed={false} className="h-14 w-14" />
-        <span className="text-[18px] text-[var(--strap-text-tertiary)]">+</span>
-        <IntegrationGlyph kind={iconKind} framed={false} className="h-14 w-14" />
+    <ConsentShell chip="Connect an agent">
+      <div className="strap-consent-glyphs">
+        <span className="strap-consent-glyph">
+          <IntegrationGlyph kind="mcp" framed={false} className="h-12 w-12" />
+        </span>
+        <span className="strap-consent-glyph-join" aria-hidden="true">
+          +
+        </span>
+        <span className="strap-consent-glyph">
+          <IntegrationGlyph kind={iconKind} framed={false} className="h-12 w-12" />
+        </span>
       </div>
 
-      <h1 className="mt-6 text-[18px] font-medium text-[var(--strap-text-primary)]">
-        Connect {client.clientName} to your Strap
-      </h1>
-      <p className="mt-3 text-[14px] leading-7 text-[var(--strap-text-secondary)]">
+      <h1>Connect {client.clientName} to your Strap</h1>
+      <p>
         {client.clientName} can read your Strap and propose updates, and edits a
         section directly only where you allow direct edits.
       </p>
-      <p className="mt-2 text-[13px] text-[var(--strap-text-tertiary)]">
-        Signed in as {user.email}
-      </p>
+      <p className="strap-consent-meta">Signed in as {user.email}</p>
 
-      <form method="post" action="/authorize/decision" className="mt-5">
+      <form method="post" action="/authorize/decision" className="strap-consent-form">
         <input type="hidden" name="client_id" value={clientId} />
         <input type="hidden" name="redirect_uri" value={redirectUri} />
         <input type="hidden" name="code_challenge" value={codeChallenge} />
         {params.state ? <input type="hidden" name="state" value={params.state} /> : null}
         {params.scope ? <input type="hidden" name="scope" value={params.scope} /> : null}
         {showPicker ? <AuthorizeSpacePicker spaces={spaces} /> : null}
-        <div className="mt-6 flex items-center gap-3">
-          <Button
+        <div className="strap-consent-actions" style={{ marginTop: 0 }}>
+          <button
             type="submit"
             name="decision"
             value="deny"
-            variant="secondary"
-            className="h-9 flex-1 rounded-md"
+            className="strap-button strap-button-secondary"
           >
             Deny
-          </Button>
-          <Button
+          </button>
+          <button
             type="submit"
             name="decision"
             value="allow"
-            className="h-9 flex-1 rounded-md bg-[var(--strap-accent)] text-white hover:bg-[var(--strap-accent-hover)]"
+            className="strap-button strap-button-primary"
           >
             Allow
-          </Button>
+          </button>
         </div>
       </form>
-    </Shell>
+    </ConsentShell>
   );
 }

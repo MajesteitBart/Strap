@@ -61,7 +61,7 @@ const stepAccentMap = [
   accentColorMap.workflows, // 4 explainer: proposals
   accentColorMap.preferences, // 5 Q3 preferences
   accentColorMap.rose, // 6 explainer: ownership
-  "#2563EB", // 7 prompt
+  "var(--strap-accent)", // 7 prompt
   accentColorMap.identity, // 8 paste
   accentColorMap.identity, // 9 preview
 ];
@@ -441,13 +441,13 @@ export function OnboardingScreen({
                           className={cn(
                             "min-h-[220px] max-h-[44vh] resize-none overflow-y-auto rounded-xl px-4 py-4 font-mono text-[14px] leading-7",
                             pasteError
-                              ? "border-[#DC2626] focus-visible:border-[#DC2626] focus-visible:ring-[#DC2626]/15"
+                              ? "border-[var(--strap-danger)] focus-visible:border-[var(--strap-danger)] focus-visible:ring-[var(--strap-danger)]/15"
                               : "border-[var(--strap-border)]"
                           )}
                           placeholder={"## Identity\n\nPaste the full markdown your assistant produced here."}
                         />
                         {pasteError ? (
-                          <p className="mt-3 text-[13px] text-[#DC2626]">{pasteError}</p>
+                          <p className="mt-3 text-[13px] text-[var(--strap-danger)]">{pasteError}</p>
                         ) : null}
                       </AnimatedBlock>
                     </OnboardingStep>
@@ -514,7 +514,7 @@ export function OnboardingScreen({
                 ↵ to continue
               </span>
               <Button
-                style={{ borderRadius: "0.875rem" }}
+                style={{ borderRadius: "var(--radius-lg)" }}
                 className="bg-[var(--strap-text-primary)] px-5 text-[var(--strap-button-primary-fg)] hover:bg-[var(--strap-button-primary-hover)] disabled:bg-[var(--strap-border-strong)] disabled:text-[var(--strap-text-tertiary)]"
                 onClick={handleContinue}
                 disabled={
@@ -533,7 +533,7 @@ export function OnboardingScreen({
             </div>
           ) : (
             <Button
-              style={{ borderRadius: "0.875rem" }}
+              style={{ borderRadius: "var(--radius-lg)" }}
               className="bg-[var(--strap-text-primary)] px-5 text-[var(--strap-button-primary-fg)] hover:bg-[var(--strap-button-primary-hover)]"
               onClick={handleFinish}
             >
@@ -732,7 +732,7 @@ function SectionStripsCard() {
           transition={{ duration: 0.5, delay: 0.15 + index * 0.1, ease: [0.22, 1, 0.36, 1] }}
         >
           <span
-            className="mt-0.5 h-9 w-[3px] shrink-0 rounded-full"
+            className="mt-0.5 h-9 w-[3px] shrink-0 rounded-none"
             style={{ backgroundColor: accentColorMap[row.accent] }}
           />
           <div className="min-w-0 flex-1">
@@ -981,7 +981,7 @@ function StrapPreview({ sections }: { sections: StrapSection[] }) {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-3">
                       <span
-                        className="inline-block h-9 w-[3px] rounded-full"
+                        className="inline-block h-9 w-[3px] rounded-none"
                         style={{ backgroundColor: accentColorMap[section.accent] }}
                       />
                       <div className="flex min-w-0 flex-wrap items-center gap-3">

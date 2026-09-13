@@ -99,7 +99,7 @@ function ChipRowView({ node, updateAttributes, editor }: NodeViewProps) {
           {chips.map((chip) => (
             <span
               key={chip}
-              className="inline-flex items-center gap-2 rounded-full px-3 py-2 text-[12px] font-medium"
+              className="inline-flex items-center gap-2 rounded-[var(--radius-md)] px-3 py-2 text-[12px] font-medium"
               style={{
                 backgroundColor: "var(--section-accent-tint, var(--strap-surface-raised))",
                 color: "var(--section-accent, var(--strap-text-primary))",
@@ -110,7 +110,7 @@ function ChipRowView({ node, updateAttributes, editor }: NodeViewProps) {
                 <button
                   type="button"
                   onClick={() => removeChip(chip)}
-                  className="rounded-full transition-opacity hover:opacity-75"
+                  className="rounded-[var(--radius-md)] transition-opacity hover:opacity-75"
                   style={{ color: "inherit" }}
                 >
                   <X className="h-3 w-3" />
@@ -123,7 +123,7 @@ function ChipRowView({ node, updateAttributes, editor }: NodeViewProps) {
             <input
               type="text"
               placeholder="Add tag"
-              className="h-9 min-w-[120px] rounded-full border border-dashed border-[var(--strap-border-strong)] bg-[var(--strap-surface)] px-3 font-sans text-[12px] text-[var(--strap-text-primary)] outline-none transition-colors placeholder:text-[var(--strap-text-tertiary)] focus:border-[var(--strap-accent)] focus:ring-2 focus:ring-[var(--strap-accent)]/15"
+              className="h-9 min-w-[120px] rounded-[var(--radius-md)] border border-dashed border-[var(--strap-border-strong)] bg-[var(--strap-surface)] px-3 font-sans text-[12px] text-[var(--strap-text-primary)] outline-none transition-colors placeholder:text-[var(--strap-text-tertiary)] focus:border-[var(--strap-accent)] focus:ring-2 focus:ring-[var(--strap-accent)]/15"
               onKeyDown={(event) => {
                 if (event.key === "Enter" || event.key === ",") {
                   event.preventDefault();

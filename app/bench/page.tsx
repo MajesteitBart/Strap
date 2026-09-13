@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
-import { AnimatedPageTitle } from "@/components/marketing/animated-page-title";
 import {
-  MarketingFooter,
-  MarketingHeroBanner,
-} from "@/components/marketing/site-chrome";
+  StrapPageHero,
+  StrapSiteFooter,
+  StrapSiteHeader,
+} from "@/components/marketing/strap-site-shell";
 import { JsonLd } from "@/components/marketing/json-ld";
 import { breadcrumbSchema, graph, webPageSchema } from "@/lib/seo/structured-data";
 
@@ -19,10 +20,28 @@ export const metadata: Metadata = {
   alternates: { canonical: PATH },
 };
 
-// Placeholder rows for the skeleton chart. Widths are deliberately unlabeled
-// and unranked; the page promises the benchmark without pre-announcing any
-// model's score.
+// Placeholder rows for the skeleton leaderboard. Widths are deliberately
+// unlabeled and unranked; the page promises the benchmark without
+// pre-announcing any model's score.
 const SKELETON_BARS = [78, 64, 91, 52, 70];
+
+const MEASURES = [
+  {
+    title: "Reads the context",
+    body: "Does the model read the allowed sections before it answers, and does the answer reflect them?",
+    tone: "context",
+  },
+  {
+    title: "Respects what it says",
+    body: "Do boundaries, preferences, and settled decisions hold across a multi-step task?",
+    tone: "secrets",
+  },
+  {
+    title: "Proposes updates worth keeping",
+    body: "Are proposed changes narrow, durable, and accepted rather than rejected as noise?",
+    tone: "environments",
+  },
+] as const;
 
 export default function BenchPage() {
   return (
@@ -36,49 +55,70 @@ export default function BenchPage() {
           ])
         )}
       />
-      <div className="flex min-h-screen flex-col bg-[var(--strap-background)] text-[var(--strap-text-primary)]">
-        <MarketingHeroBanner configured={isSupabaseConfigured()} scrolled={false} />
+      <div className="strap-site">
+        <StrapSiteHeader configured={isSupabaseConfigured()} current="bench" />
 
-        <main className="mx-auto w-full max-w-3xl flex-1 px-6 pb-20 pt-8 md:px-10 md:pb-24 md:pt-10">
-          <div className="border-b border-[var(--strap-border)] pb-8">
-            <p className="mb-3 font-mono text-[12px] uppercase tracking-[0.12em] text-[var(--strap-text-tertiary)]">
-              Roadmap
-            </p>
-            <AnimatedPageTitle text={TITLE} />
-            <p className="mt-5 max-w-2xl text-[18px] leading-8 text-[var(--strap-text-secondary)]">
-              Independent results are planned but not published yet. The
-              benchmark will measure how models read Strap context, respect
-              what it says, and propose updates worth keeping.
-            </p>
-          </div>
-
-          {/* Skeleton leaderboard: unlabeled bars that gesture at the coming
-              chart without ranking anyone yet. */}
-          <div
-            aria-hidden="true"
-            className="mt-12 w-full max-w-md space-y-3"
-            style={{
-              maskImage:
-                "linear-gradient(to bottom, black 30%, transparent 100%)",
-              WebkitMaskImage:
-                "linear-gradient(to bottom, black 30%, transparent 100%)",
-            }}
-          >
-            {SKELETON_BARS.map((width, index) => (
-              <div key={index} className="flex items-center gap-3">
-                <div className="h-6 w-6 shrink-0 rounded-[8px] bg-[var(--strap-surface-raised)]" />
-                <div className="h-6 flex-1 overflow-hidden rounded-[8px] bg-[var(--strap-surface)]">
-                  <div
-                    className="h-full rounded-[8px] bg-[var(--strap-surface-raised)]"
-                    style={{ width: `${width}%` }}
-                  />
+        <main>
+          <StrapPageHero
+            kicker="Roadmap"
+            kickerTone="agents"
+            title="Benchmarks"
+            lede="Independent results are planned but not published yet. The benchmark will measure how models read Strap context, respect what it says, and propose updates worth keeping."
+            actions={
+              <>
+                <Link className="strap-button strap-button-secondary" href="/roadmap">
+                  Read the roadmap
+                </Link>
+                <Link className="strap-button strap-button-secondary" href="/docs">
+                  How agents read Strap
+                </Link>
+              </>
+            }
+            aside={
+              <div className="strap-card strap-card-offset strap-tone-agents">
+                <div className="strap-card-head">
+                  <span>
+                    <b>leaderboard</b> · not yet published
+                  </span>
+                  <span className="strap-pill">Preview</span>
+                </div>
+                <div className="strap-bench" aria-hidden="true" style={{ border: 0 }}>
+                  {SKELETON_BARS.map((width, index) => (
+                    <div className="strap-bench-row" key={index}>
+                      <span className="strap-bench-rank">{index + 1}</span>
+                      <span className="strap-bench-track">
+                        <span className="strap-bench-fill" style={{ width: `${width}%`, display: "block" }} />
+                      </span>
+                      <span className="strap-bench-score">tbd</span>
+                    </div>
+                  ))}
                 </div>
               </div>
-            ))}
+            }
+          />
+
+          <div className="strap-wrap strap-page-main">
+            <section className="strap-page-section" aria-labelledby="bench-measures">
+              <div className="strap-page-section-head">
+                <div>
+                  <h2 id="bench-measures">What the benchmark will measure</h2>
+                  <p>Three questions, scored per model, once the method is published.</p>
+                </div>
+              </div>
+              <div className="strap-cells" style={{ "--strap-cols": 3 } as React.CSSProperties}>
+                {MEASURES.map((measure, index) => (
+                  <article className={`strap-cell strap-tone-${measure.tone}`} key={measure.title}>
+                    <span className="strap-cell-number">{index + 1}</span>
+                    <h3>{measure.title}</h3>
+                    <p>{measure.body}</p>
+                  </article>
+                ))}
+              </div>
+            </section>
           </div>
         </main>
 
-        <MarketingFooter />
+        <StrapSiteFooter />
       </div>
     </>
   );

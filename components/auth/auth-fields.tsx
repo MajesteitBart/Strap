@@ -1,16 +1,16 @@
 "use client";
 
 // Shared form primitives for the auth surface (/login, /signup,
-// /reset-password): the text field, the password field with the animated eye
-// toggle, the checkbox, and the submit button with the animated arrow. Kept
-// here so every auth screen stays visually and behaviourally identical.
+// /reset-password): the labelled text field, the password field with the
+// animated eye toggle, the checkbox, and the submit button with the animated
+// arrow. Kept here so every auth screen stays visually and behaviourally
+// identical, in the worktable form language from app/strap-public.css.
 
-import { useState, type ReactNode, type Ref } from "react";
+import { useId, useState, type ReactNode, type Ref } from "react";
 import { Check, LoaderCircle } from "lucide-react";
 import { ArrowRightIcon } from "@/components/ui/arrow-right";
 import { EyeToggleIcon } from "@/components/ui/eye-toggle";
 import { useAnimatedIconControls } from "@/components/strap/animated-icon-controls";
-import { cn } from "@/lib/utils";
 
 type AuthFieldProps = {
   label: string;
@@ -35,32 +35,41 @@ export function AuthField({
   error,
   trailing,
 }: AuthFieldProps) {
+  const id = useId();
+  const errorId = `${id}-error`;
+  const input = (
+    <input
+      id={id}
+      ref={ref}
+      type={type}
+      aria-invalid={error ? true : undefined}
+      aria-describedby={error ? errorId : undefined}
+      autoComplete={autoComplete}
+      value={value}
+      disabled={disabled}
+      onChange={(event) => onChange(event.target.value)}
+      className="strap-input"
+    />
+  );
+
   return (
-    <div>
-      <div className="relative">
-        <input
-          ref={ref}
-          type={type}
-          placeholder={label}
-          aria-label={label}
-          aria-invalid={error ? true : undefined}
-          autoComplete={autoComplete}
-          value={value}
-          disabled={disabled}
-          onChange={(event) => onChange(event.target.value)}
-          className={cn(
-            "h-12 w-full rounded-[var(--radius-md)] border bg-[var(--strap-surface)] px-4 text-[15px] text-[var(--strap-text-primary)] outline-none transition-colors placeholder:text-[var(--strap-text-tertiary)] focus:ring-2 disabled:cursor-not-allowed disabled:opacity-60",
-            trailing ? "pr-12" : "",
-            error
-              ? "border-[#DC2626] focus:border-[#DC2626] focus:ring-[#DC2626]/15"
-              : "border-[var(--strap-border)] focus:border-[var(--strap-accent)] focus:ring-[var(--strap-accent)]/15"
-          )}
-        />
-        {trailing ? (
-          <div className="absolute right-2 top-1/2 -translate-y-1/2">{trailing}</div>
-        ) : null}
-      </div>
-      {error ? <p className="mt-1.5 text-[13px] text-[#DC2626]">{error}</p> : null}
+    <div className="strap-field">
+      <label className="strap-field-label" htmlFor={id}>
+        {label}
+      </label>
+      {trailing ? (
+        <div className="strap-input-wrap">
+          {input}
+          <div className="strap-input-trailing">{trailing}</div>
+        </div>
+      ) : (
+        input
+      )}
+      {error ? (
+        <p id={errorId} className="strap-field-error" role="alert">
+          {error}
+        </p>
+      ) : null}
     </div>
   );
 }
@@ -98,12 +107,11 @@ export function PasswordField({
       trailing={
         <button
           type="button"
-          tabIndex={-1}
           aria-label={show ? "Hide password" : "Show password"}
+          aria-pressed={show}
           onClick={() => setShow((v) => !v)}
           onMouseEnter={eyeShake.start}
           onMouseLeave={eyeShake.settle}
-          className="flex h-8 w-8 items-center justify-center rounded-[8px] text-[var(--strap-text-tertiary)] transition-colors hover:text-[var(--strap-accent)]"
         >
           <EyeToggleIcon
             ref={eyeShake.iconRef}
@@ -124,14 +132,9 @@ export function AuthCheckbox({ checked, onChange }: { checked: boolean; onChange
       role="checkbox"
       aria-checked={checked}
       onClick={onChange}
-      className={cn(
-        "flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[5px] border transition-colors",
-        checked
-          ? "border-[var(--strap-accent)] bg-[var(--strap-accent)] text-white"
-          : "border-[var(--strap-border-strong)] bg-[var(--strap-surface)] hover:border-[var(--strap-text-tertiary)]"
-      )}
+      className="strap-checkbox"
     >
-      {checked ? <Check className="h-3 w-3" strokeWidth={3} /> : null}
+      {checked ? <Check className="h-3 w-3" strokeWidth={3} aria-hidden="true" /> : null}
     </button>
   );
 }
@@ -151,16 +154,17 @@ export function AuthSubmitButton({
     <button
       type="submit"
       disabled={disabled}
+      aria-busy={loading || undefined}
       onMouseEnter={arrow.start}
       onMouseLeave={arrow.settle}
       onPointerDown={(event) => {
         if (event.pointerType !== "mouse") arrow.start();
       }}
-      className="mt-2 inline-flex h-12 w-full items-center justify-center gap-2 rounded-[var(--radius-md)] bg-[var(--strap-accent)] text-[15px] font-medium text-white transition-colors hover:bg-[var(--strap-accent-hover)] disabled:cursor-not-allowed disabled:opacity-50"
+      className="strap-button strap-button-primary strap-button-block strap-button-icon"
     >
       {label}
       {loading ? (
-        <LoaderCircle className="h-4 w-4 animate-spin" />
+        <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
       ) : (
         <ArrowRightIcon
           ref={arrow.iconRef}

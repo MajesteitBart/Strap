@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { StrapWordmark } from "@/components/strap/brand";
+import { ConsentMessage, ConsentShell } from "@/components/strap/consent-shell";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getDeviceApproval } from "@/lib/oauth-device";
 import { deviceGrantModesForScope } from "@/lib/oauth-device-shared";
@@ -9,19 +8,6 @@ export const dynamic = "force-dynamic";
 
 type Params = { request?: string; result?: string; error?: string };
 
-function Shell({ children }: { children: React.ReactNode }) {
-  return (
-    <main className="min-h-screen bg-[var(--strap-background)] px-6 py-16 text-[var(--strap-text-primary)]">
-      <div className="mx-auto flex min-h-[calc(100vh-8rem)] max-w-md flex-col items-center justify-center">
-        <StrapWordmark className="mb-10 h-5" />
-        <section className="w-full rounded-[var(--radius-xl)] bg-[var(--strap-surface)] p-7">
-          {children}
-        </section>
-      </div>
-    </main>
-  );
-}
-
 export default async function DevicePage({ searchParams }: { searchParams: Promise<Params> }) {
   const params = await searchParams;
   const supabase = await createSupabaseServerClient();
@@ -29,24 +15,33 @@ export default async function DevicePage({ searchParams }: { searchParams: Promi
 
   if (!user) {
     return (
-      <Shell>
-        <h1 className="text-lg font-medium">Sign in to connect a device</h1>
-        <p className="mt-3 text-sm leading-6 text-[var(--strap-text-secondary)]">
-          Sign in first, then enter the code shown by your headless agent.
-        </p>
-        <Button asChild className="mt-6 w-full"><Link href="/login?next=/device">Sign in</Link></Button>
-      </Shell>
+      <ConsentShell chip="Device authorization" tone="secrets">
+        <ConsentMessage
+          title="Sign in to connect a device"
+          body="Sign in first, then enter the code shown by your headless agent."
+        />
+        <div className="strap-consent-actions strap-consent-actions-single">
+          <Link className="strap-button strap-button-primary" href="/login?next=/device">
+            Sign in
+          </Link>
+        </div>
+      </ConsentShell>
     );
   }
 
   if (params.result) {
+    const approved = params.result === "approved";
     return (
-      <Shell>
-        <h1 className="text-lg font-medium">{params.result === "approved" ? "Device connected" : "Connection denied"}</h1>
-        <p className="mt-3 text-sm leading-6 text-[var(--strap-text-secondary)]">
-          {params.result === "approved" ? "Return to your agent. It can finish connecting now." : "The device was not given access to your Strap."}
-        </p>
-      </Shell>
+      <ConsentShell chip="Device authorization" tone={approved ? "environments" : "warning"}>
+        <ConsentMessage
+          title={approved ? "Device connected" : "Connection denied"}
+          body={
+            approved
+              ? "Return to your agent. It can finish connecting now."
+              : "The device was not given access to your Strap."
+          }
+        />
+      </ConsentShell>
     );
   }
 
@@ -62,42 +57,83 @@ export default async function DevicePage({ searchParams }: { searchParams: Promi
       direct: "Allow permitted direct edits",
     } as const;
     return (
-      <Shell>
-        <h1 className="text-lg font-medium">Connect {approval.client.clientName}</h1>
-        <p className="mt-3 text-sm leading-6 text-[var(--strap-text-secondary)]">
-          Confirm the app name and choose the single Strap this device may access. Only approve a code you started on your own device.
-        </p>
-        <form method="post" action="/device/decision" className="mt-6 space-y-4">
+      <ConsentShell chip="Device authorization" tone="secrets">
+        <ConsentMessage
+          title={`Connect ${approval.client.clientName}`}
+          body="Confirm the app name and choose the single Strap this device may access. Only approve a code you started on your own device."
+        />
+        <form method="post" action="/device/decision" className="strap-consent-form">
           <input type="hidden" name="request_id" value={approval.request.id} />
-          <label className="block text-sm font-medium" htmlFor="creed_id">Strap</label>
-          <select id="creed_id" name="creed_id" className="h-10 w-full rounded-md border border-[var(--strap-border)] bg-transparent px-3 text-sm">
-            {approval.creeds.map((creed) => <option key={creed.id} value={creed.id}>{creed.type === "personal" ? "Personal Strap" : creed.name}</option>)}
-          </select>
-          <label className="block text-sm font-medium" htmlFor="mode">Maximum access</label>
-          <select id="mode" name="mode" defaultValue={allowedModes[allowedModes.length - 1]} className="h-10 w-full rounded-md border border-[var(--strap-border)] bg-transparent px-3 text-sm">
-            {allowedModes.map((mode) => <option key={mode} value={mode}>{modeLabels[mode]}</option>)}
-          </select>
-          <div className="flex gap-3 pt-2">
-            <Button type="submit" name="decision" value="deny" variant="secondary" className="flex-1">Deny</Button>
-            <Button type="submit" name="decision" value="allow" className="flex-1">Allow</Button>
+          <div className="strap-field">
+            <label className="strap-field-label" htmlFor="creed_id">Strap</label>
+            <select id="creed_id" name="creed_id" className="strap-input strap-select">
+              {approval.creeds.map((creed) => (
+                <option key={creed.id} value={creed.id}>
+                  {creed.type === "personal" ? "Personal Strap" : creed.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="strap-field">
+            <label className="strap-field-label" htmlFor="mode">Maximum access</label>
+            <select
+              id="mode"
+              name="mode"
+              defaultValue={allowedModes[allowedModes.length - 1]}
+              className="strap-input strap-select"
+            >
+              {allowedModes.map((mode) => (
+                <option key={mode} value={mode}>
+                  {modeLabels[mode]}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="strap-consent-actions" style={{ marginTop: ".25rem" }}>
+            <button type="submit" name="decision" value="deny" className="strap-button strap-button-secondary">
+              Deny
+            </button>
+            <button type="submit" name="decision" value="allow" className="strap-button strap-button-primary">
+              Allow
+            </button>
           </div>
         </form>
-      </Shell>
+      </ConsentShell>
     );
   }
 
   return (
-    <Shell>
-      <h1 className="text-lg font-medium">Connect a headless device</h1>
-      <p className="mt-3 text-sm leading-6 text-[var(--strap-text-secondary)]">
-        Enter the eight-character code shown by your agent. Codes expire after ten minutes.
-      </p>
-      {params.error ? <p className="mt-4 text-sm text-[var(--strap-danger)]">{params.error === "rate" ? "Too many attempts. Wait a minute and try again." : "That code is invalid or expired."}</p> : null}
-      <form method="post" action="/device/verify" className="mt-6">
-        <label className="sr-only" htmlFor="user_code">Device code</label>
-        <input id="user_code" name="user_code" autoComplete="one-time-code" maxLength={9} placeholder="ABCD-EFGH" className="h-12 w-full rounded-md border border-[var(--strap-border)] bg-transparent px-4 text-center font-mono text-lg uppercase tracking-[0.15em]" required />
-        <Button type="submit" className="mt-4 w-full">Continue</Button>
+    <ConsentShell chip="Device authorization" tone="secrets">
+      <ConsentMessage
+        title="Connect a headless device"
+        body="Enter the eight-character code shown by your agent. Codes expire after ten minutes."
+      />
+      <form method="post" action="/device/verify" className="strap-consent-form">
+        <div className="strap-field">
+          <label className="strap-field-label" htmlFor="user_code">Device code</label>
+          <input
+            id="user_code"
+            name="user_code"
+            autoComplete="one-time-code"
+            maxLength={9}
+            placeholder="ABCD-EFGH"
+            className="strap-input strap-input-code"
+            aria-invalid={params.error ? true : undefined}
+            aria-describedby={params.error ? "user_code_error" : undefined}
+            required
+          />
+          {params.error ? (
+            <p id="user_code_error" className="strap-field-error" role="alert">
+              {params.error === "rate"
+                ? "Too many attempts. Wait a minute and try again."
+                : "That code is invalid or expired."}
+            </p>
+          ) : null}
+        </div>
+        <button type="submit" className="strap-button strap-button-primary strap-button-block">
+          Continue
+        </button>
       </form>
-    </Shell>
+    </ConsentShell>
   );
 }

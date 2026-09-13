@@ -5,41 +5,39 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { LoaderCircle, Send } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 
 type Person = { name?: string; avatarUrl?: string; initials: string };
 
-// One squircle profile avatar with an initials fallback, mirroring the shell/
+// One framed profile tile with an initials fallback, mirroring the shell/
 // roster avatar pattern (no-referrer, unoptimized, error falls back to initials).
 function PersonAvatar({ person, label }: { person: Person; label: string }) {
   const [failed, setFailed] = useState(false);
   const showImage = Boolean(person.avatarUrl) && !failed;
   return (
-    <Avatar className="h-11 w-11 shrink-0 overflow-hidden rounded-lg border border-[var(--strap-border)] bg-[var(--strap-surface-raised)] after:rounded-lg">
+    <span className="strap-consent-glyph" style={{ position: "relative" }}>
       {showImage && person.avatarUrl ? (
         <Image
           key={person.avatarUrl}
           src={person.avatarUrl}
           alt={label}
           fill
-          className="rounded-lg object-cover"
+          className="object-cover"
           referrerPolicy="no-referrer"
           unoptimized
           onError={() => setFailed(true)}
         />
       ) : (
-        <AvatarFallback className="bg-transparent text-[14px] font-medium text-[var(--strap-text-secondary)]">
+        <span className="strap-mono" style={{ fontWeight: 500 }} aria-label={label}>
           {person.initials}
-        </AvatarFallback>
+        </span>
       )}
-    </Avatar>
+    </span>
   );
 }
 
 // The accept / reject action for a valid, signed-in invite. Styled to match the
-// MCP consent screen (/authorize): avatars of the inviter and you joined by a
-// send glyph, then a secondary Reject (left) and a blue Accept (right).
+// MCP consent screen (/authorize): tiles of the inviter and you joined by a
+// send glyph, then a secondary Reject (left) and a primary Accept (right).
 export function InviteAcceptCard({
   token,
   companyName,
@@ -110,43 +108,46 @@ export function InviteAcceptCard({
 
   return (
     <div>
-      <div className="flex items-center justify-center gap-6">
+      <div className="strap-consent-glyphs">
         <PersonAvatar person={inviter} label={inviter.name ?? "The person who invited you"} />
-        <Send className="h-3.5 w-3.5 shrink-0 text-[var(--strap-text-tertiary)]" />
+        <span className="strap-consent-glyph-join" aria-hidden="true">
+          <Send className="h-3.5 w-3.5" />
+        </span>
         <PersonAvatar person={{ initials: you.initials, avatarUrl: you.avatarUrl }} label="You" />
       </div>
 
-      <h1 className="mt-6 text-[18px] font-medium text-[var(--strap-text-primary)]">
-        Join {companyName}
-      </h1>
-      <p className="mt-3 text-[14px] leading-7 text-[var(--strap-text-secondary)]">
+      <h1>Join {companyName}</h1>
+      <p>
         {inviter.name ?? "A teammate"} invited you to the {companyName} Strap as{" "}
         {role === "admin" ? "an admin" : "a member"}. It is the shared context file this company&apos;s AI
         agents read before they work.
       </p>
-      <p className="mt-2 text-[13px] text-[var(--strap-text-tertiary)]">Signed in as {you.email}</p>
+      <p className="strap-consent-meta">Signed in as {you.email}</p>
 
-      <div className="mt-6 flex items-center gap-3">
-        <Button
+      <div className="strap-consent-actions">
+        <button
           type="button"
-          variant="secondary"
-          className="h-9 flex-1 rounded-md"
+          className="strap-button strap-button-secondary"
           onClick={decline}
           disabled={busy}
         >
-          {action === "decline" ? <LoaderCircle className="h-4 w-4 animate-spin" /> : "Reject"}
-        </Button>
-        <Button
+          {action === "decline" ? <LoaderCircle className="h-4 w-4 animate-spin" aria-label="Declining" /> : "Reject"}
+        </button>
+        <button
           type="button"
-          className="h-9 flex-1 rounded-md bg-[var(--strap-accent)] text-white hover:bg-[var(--strap-accent-hover)]"
+          className="strap-button strap-button-primary"
           onClick={accept}
           disabled={busy}
         >
-          {action === "accept" ? <LoaderCircle className="h-4 w-4 animate-spin" /> : "Accept"}
-        </Button>
+          {action === "accept" ? <LoaderCircle className="h-4 w-4 animate-spin" aria-label="Accepting" /> : "Accept"}
+        </button>
       </div>
 
-      {error ? <p className="mt-3 text-[13px] text-[var(--strap-danger)]">{error}</p> : null}
+      {error ? (
+        <p className="strap-field-error" role="alert" style={{ marginTop: ".75rem" }}>
+          {error}
+        </p>
+      ) : null}
     </div>
   );
 }

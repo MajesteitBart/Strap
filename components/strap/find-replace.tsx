@@ -326,9 +326,9 @@ export function StrapFindReplace({
   }, [activeIndex, matches.length, query]);
 
   const iconButton =
-    "flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] text-[var(--strap-text-secondary)] transition-colors duration-150 hover:bg-[var(--strap-surface-raised)] hover:text-[var(--strap-text-primary)] disabled:pointer-events-none disabled:opacity-40";
+    "flex h-7 w-7 shrink-0 items-center justify-center rounded-[var(--radius-lg)] text-[var(--strap-text-secondary)] transition-colors duration-150 hover:bg-[var(--strap-surface-raised)] hover:text-[var(--strap-text-primary)] disabled:pointer-events-none disabled:opacity-40";
   const textButton =
-    "flex h-7 shrink-0 items-center rounded-[8px] px-2 text-[12px] font-medium text-[var(--strap-text-secondary)] transition-colors duration-150 hover:bg-[var(--strap-surface-raised)] hover:text-[var(--strap-text-primary)] disabled:pointer-events-none disabled:opacity-40";
+    "flex h-7 shrink-0 items-center rounded-[var(--radius-lg)] px-2 text-[12px] font-medium text-[var(--strap-text-secondary)] transition-colors duration-150 hover:bg-[var(--strap-surface-raised)] hover:text-[var(--strap-text-primary)] disabled:pointer-events-none disabled:opacity-40";
 
   return (
     <AnimatePresence>

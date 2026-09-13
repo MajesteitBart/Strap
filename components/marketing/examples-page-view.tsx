@@ -1,30 +1,24 @@
 "use client";
 
 // Public /examples page. The "what it looks like" companion to /docs and
-// the learn library: short, concrete moments where one shared file changes the answer,
-// grouped by the kind of work and life they fit (professional lanes first,
-// everyday and health last). Reuses the /docs sidebar: collapsible group
-// dropdowns with short sub-item labels, scrollspy, and a one-open-at-a-time
+// the learn library: short, concrete moments where one shared file changes the
+// answer, grouped by the kind of work and life they fit (professional lanes
+// first, everyday and health last). Reuses the /docs worktable index: a sticky
+// chapter list with collapsible groups, scrollspy, and a one-open-at-a-time
 // accordion (useOpenSections). Every group holds the same number of cards.
-// Content is first-party constant data; each example anchors a sidebar item.
+// Content is first-party constant data; each example anchors an index item.
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
 import {
-  AnimatedPageTitle,
-  AnimatedSectionHeading,
-} from "@/components/marketing/animated-page-title";
-import {
-  MarketingFooter,
-  MarketingHeroBanner,
-} from "@/components/marketing/site-chrome";
+  StrapPageHero,
+  StrapSiteFooter,
+  StrapSiteNav,
+  useStrapSiteCta,
+} from "@/components/marketing/strap-site-shell";
 import { useOpenSections } from "@/components/marketing/use-open-sections";
-import {
-  ArrowRightIcon,
-  type ArrowRightIconHandle,
-} from "@/components/ui/arrow-right";
 import { cn } from "@/lib/utils";
 
 type Example = {
@@ -39,6 +33,7 @@ type ExampleGroup = {
   slug: string;
   name: string;
   intro: string;
+  tone: "context" | "skills" | "secrets" | "environments" | "agents";
 };
 
 // Professional lanes lead; everyday and health and safety sit at the bottom.
@@ -47,43 +42,51 @@ const groups: ExampleGroup[] = [
     slug: "builders",
     name: "Builders",
     intro: "Your stack and standards, carried across every coding agent.",
+    tone: "context",
   },
   {
     slug: "writers",
     name: "Writers",
     intro: "One voice, in every tool you write with.",
+    tone: "skills",
   },
   {
     slug: "researchers",
     name: "Researchers",
     intro: "The rules of your field, applied without a reminder.",
+    tone: "secrets",
   },
   {
     slug: "operators",
     name: "Operators",
     intro: "How you decide and communicate, read before any draft.",
+    tone: "environments",
   },
   {
     slug: "ownership",
     name: "Ownership",
     intro: "Plain Markdown you own, portable across tools and providers.",
+    tone: "agents",
   },
   {
     slug: "boundaries",
     name: "Boundaries",
     intro:
       "Lines an agent reads first and never crosses, long after you set them.",
+    tone: "context",
   },
   {
     slug: "everyday",
     name: "Everyday",
     intro: "The ordinary wins, for anyone.",
+    tone: "skills",
   },
   {
     slug: "health",
     name: "Health and safety",
     intro:
       "Facts that have to hold in every tool, even ones with no medical context of their own.",
+    tone: "secrets",
   },
 ];
 
@@ -489,12 +492,13 @@ const examples: Example[] = [
   },
 ];
 
-// Sidebar groups: each group header is a collapsible dropdown; each example
+// Index groups: each group header is a collapsible dropdown; each example
 // under it is a scroll target with a short label. Built from the data so the
 // two can't drift.
 const navGroups = groups.map((group) => ({
   slug: group.slug,
   name: group.name,
+  tone: group.tone,
   items: examples
     .filter((example) => example.group === group.slug)
     .map((example) => ({ id: example.id, label: example.label })),
@@ -510,10 +514,10 @@ const examplesByGroup = new Map(
   ]),
 );
 
-export function ExamplesPageView() {
-  const [scrolled, setScrolled] = useState(false);
+export function ExamplesPageView({ configured = true }: { configured?: boolean }) {
+  const cta = useStrapSiteCta(configured);
   const [activeId, setActiveId] = useState(examples[0]?.id ?? "");
-  // One group open at a time so the sidebar stays compact.
+  // One group open at a time so the index stays compact.
   const { isOpen, toggle } = useOpenSections(
     groups.map((group) => group.slug),
     1,
@@ -528,16 +532,6 @@ export function ExamplesPageView() {
   const unlockTimerRef = useRef<number | null>(null);
 
   const exampleIds = useMemo(() => examples.map((example) => example.id), []);
-
-  useEffect(() => {
-    function onScroll() {
-      setScrolled(window.scrollY > 20);
-    }
-
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   useEffect(() => {
     const elements = exampleIds
@@ -579,7 +573,8 @@ export function ExamplesPageView() {
     lockedRef.current = true;
     if (unlockTimerRef.current) window.clearTimeout(unlockTimerRef.current);
 
-    target.scrollIntoView({ behavior: "smooth", block: "start" });
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    target.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
     window.history.replaceState(null, "", `#${id}`);
 
     const unlock = () => {
@@ -594,218 +589,182 @@ export function ExamplesPageView() {
     unlockTimerRef.current = window.setTimeout(unlock, 1200);
   }
 
-  return (
-    <div className="min-h-screen bg-[var(--strap-background)] text-[var(--strap-text-primary)]">
-      <MarketingHeroBanner configured scrolled={scrolled} />
-
-      <main className="mx-auto max-w-6xl px-6 pb-20 pt-8 md:px-10 md:pb-24 md:pt-10">
-        <div className="border-b border-[var(--strap-border)] pb-8">
-          <AnimatedPageTitle text="Examples" />
-          <p className="mt-5 max-w-3xl t-lede text-[var(--strap-text-secondary)]">
-            What changes when every AI you use reads the same file before it
-            answers. You write your Strap once, each agent reads it before it
-            replies, and it stays plain Markdown you own.
-          </p>
-        </div>
-
-        {/* Below the desktop sidebar breakpoint, the same collapsible dropdown
-            nav as desktop (one group open at a time, click to scroll), without
-            the scrollspy highlight since this nav isn't on screen while you
-            scroll, so the links stay plain. */}
-        <div className="mt-8 block lg:hidden">
-          <div className="text-[18px] font-semibold tracking-[-0.01em] text-[var(--strap-text-primary)]">
-            On this page
-          </div>
-          <nav className="mt-5 space-y-1">
-            {navGroups.map((entry) => {
-              const open = isOpen(entry.slug);
-              return (
-                <div key={entry.slug}>
-                  <button
-                    type="button"
-                    onClick={() => toggle(entry.slug)}
-                    aria-expanded={open}
-                    className="flex w-full items-center justify-between gap-2 py-1.5 text-left text-[15px] font-medium text-[var(--strap-text-primary)] transition-opacity hover:opacity-70"
+  function renderIndex(highlight: boolean) {
+    return (
+      <nav aria-label="Example groups">
+        {navGroups.map((entry) => {
+          const open = isOpen(entry.slug);
+          const isActiveGroup = highlight && entry.slug === activeGroup;
+          return (
+            <div key={entry.slug} className={cn("strap-docs-nav-group", `strap-docs-tone-${entry.tone}`)}>
+              <button
+                type="button"
+                onClick={() => toggle(entry.slug)}
+                aria-expanded={open}
+                className={cn("strap-docs-nav-toggle", isActiveGroup && "is-active")}
+              >
+                <span className="strap-docs-nav-label">
+                  <span className="strap-docs-nav-swatch" aria-hidden="true" />
+                  {entry.name}
+                </span>
+                <ChevronDown
+                  className={cn(
+                    "h-[18px] w-[18px] shrink-0 transition-transform duration-200",
+                    open ? "" : "-rotate-90",
+                  )}
+                />
+              </button>
+              <AnimatePresence initial={false}>
+                {open ? (
+                  <motion.div
+                    key="items"
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+                    className="overflow-hidden"
                   >
-                    <span>{entry.name}</span>
-                    <ChevronDown
-                      className={cn(
-                        "h-[18px] w-[18px] shrink-0 transition-transform duration-200",
-                        open ? "" : "-rotate-90",
-                      )}
-                    />
-                  </button>
-                  <AnimatePresence initial={false}>
-                    {open ? (
-                      <motion.div
-                        key="items"
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
-                        className="overflow-hidden"
-                      >
-                        <div className="mb-3 mt-1 space-y-3">
-                          {entry.items.map((item) => (
-                            <a
-                              key={item.id}
-                              href={`#${item.id}`}
-                              onClick={(event) => {
-                                event.preventDefault();
-                                scrollToExample(item.id);
-                              }}
-                              className="block text-[14px] leading-6 text-[var(--strap-text-secondary)] transition-colors hover:text-[var(--strap-text-primary)]"
-                            >
-                              {item.label}
-                            </a>
-                          ))}
-                        </div>
-                      </motion.div>
-                    ) : null}
-                  </AnimatePresence>
-                </div>
-              );
-            })}
-          </nav>
+                    <div className="strap-docs-nav-items">
+                      {entry.items.map((item) => (
+                        <a
+                          key={item.id}
+                          href={`#${item.id}`}
+                          onClick={(event) => {
+                            event.preventDefault();
+                            scrollToExample(item.id);
+                          }}
+                          className={cn(
+                            "strap-docs-nav-link",
+                            highlight && activeId === item.id && "is-active",
+                          )}
+                        >
+                          {item.label}
+                        </a>
+                      ))}
+                    </div>
+                  </motion.div>
+                ) : null}
+              </AnimatePresence>
+            </div>
+          );
+        })}
+      </nav>
+    );
+  }
+
+  return (
+    <div className="strap-site strap-docs">
+      <StrapSiteNav cta={cta} current="examples" />
+
+      <StrapPageHero
+        kicker={`Examples · ${examples.length} moments`}
+        kickerTone="skills"
+        title="What changes when every AI reads the same file"
+        lede="You write your Strap once, each agent reads it before it replies, and it stays plain Markdown you own. These are the moments where that shows."
+        actions={
+          <>
+            <Link className="strap-button strap-button-primary" href={cta.appHref}>
+              {cta.appLabel}
+            </Link>
+            <Link className="strap-button strap-button-secondary" href="/docs">
+              Read the docs
+            </Link>
+          </>
+        }
+        aside={
+          <div className="strap-card strap-card-offset strap-tone-skills">
+            <div className="strap-card-head">
+              <span>
+                <b>example groups</b> · {groups.length} lanes
+              </span>
+              <span className="strap-pill">Index</span>
+            </div>
+            <ul className="strap-index-list">
+              {groups.map((group) => (
+                <li key={group.slug} className={`strap-tone-${group.tone}`}>
+                  <a
+                    href={`#${group.slug}`}
+                    className="strap-index-row"
+                    onClick={(event) => {
+                      event.preventDefault();
+                      const first = examplesByGroup.get(group.slug)?.[0]?.id;
+                      if (first) scrollToExample(first);
+                    }}
+                  >
+                    <span>
+                      <span className="strap-index-swatch" aria-hidden="true" />
+                      {group.name}
+                    </span>
+                    <span className="strap-text-soft">
+                      {examplesByGroup.get(group.slug)?.length ?? 0} examples
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        }
+      />
+
+      <main className="strap-wrap strap-docs-main">
+        {/* Below the desktop sidebar breakpoint, the same collapsible index as
+            desktop (one group open at a time, click to scroll), without the
+            scrollspy highlight since this index isn't on screen while you
+            scroll. */}
+        <div className="strap-docs-mobile-index">
+          <div className="strap-docs-index-title">
+            <span>On this page</span>
+            <span>{examples.length} examples</span>
+          </div>
+          {renderIndex(false)}
         </div>
 
-        <div className="mt-10 grid gap-14 lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-20">
-          <aside className="hidden lg:block">
-            <div className="sticky top-8 pb-10">
-              <div className="text-[18px] font-semibold tracking-[-0.01em] text-[var(--strap-text-primary)]">
-                On this page
+        <div className="strap-docs-layout">
+          <aside className="strap-docs-sidebar">
+            <div className="strap-docs-index">
+              <div className="strap-docs-index-title">
+                <span>On this page</span>
+                <span>{examples.length} examples</span>
               </div>
-              <nav className="mt-5 space-y-1">
-                {navGroups.map((entry) => {
-                  const open = isOpen(entry.slug);
-                  const isActiveGroup = entry.slug === activeGroup;
-                  return (
-                    <div key={entry.slug}>
-                      <button
-                        type="button"
-                        onClick={() => toggle(entry.slug)}
-                        aria-expanded={open}
-                        className={cn(
-                          "flex w-full items-center justify-between gap-2 py-1.5 text-left text-[15px] font-medium transition-opacity hover:opacity-70",
-                          isActiveGroup
-                            ? "text-[var(--strap-accent)]"
-                            : "text-[var(--strap-text-primary)]",
-                        )}
-                      >
-                        <span>{entry.name}</span>
-                        <ChevronDown
-                          className={cn(
-                            "h-[18px] w-[18px] shrink-0 transition-transform duration-200",
-                            open ? "" : "-rotate-90",
-                          )}
-                        />
-                      </button>
-                      <AnimatePresence initial={false}>
-                        {open ? (
-                          <motion.div
-                            key="items"
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{
-                              duration: 0.24,
-                              ease: [0.22, 1, 0.36, 1],
-                            }}
-                            className="overflow-hidden"
-                          >
-                            <div className="mb-3 mt-1 space-y-3">
-                              {entry.items.map((item) => (
-                                <a
-                                  key={item.id}
-                                  href={`#${item.id}`}
-                                  onClick={(event) => {
-                                    event.preventDefault();
-                                    scrollToExample(item.id);
-                                  }}
-                                  className={cn(
-                                    "block text-[14px] leading-6 transition-colors",
-                                    activeId === item.id
-                                      ? "font-medium text-[var(--strap-accent)]"
-                                      : "text-[var(--strap-text-secondary)] hover:text-[var(--strap-text-primary)]",
-                                  )}
-                                >
-                                  {item.label}
-                                </a>
-                              ))}
-                            </div>
-                          </motion.div>
-                        ) : null}
-                      </AnimatePresence>
-                    </div>
-                  );
-                })}
-              </nav>
+              {renderIndex(true)}
             </div>
           </aside>
 
-          <div className="min-w-0">
-            {groups.map((group, index) => (
+          <div className="strap-docs-content">
+            {groups.map((group) => (
               <section
                 key={group.slug}
                 id={group.slug}
-                className={cn(
-                  "scroll-mt-28 py-8 md:py-10",
-                  index === groups.length - 1
-                    ? ""
-                    : "border-b border-[var(--strap-border)]",
-                )}
+                className={cn("strap-example-group", `strap-tone-${group.tone}`)}
+                aria-labelledby={`${group.slug}-title`}
               >
-                <AnimatedSectionHeading text={group.name} className="t-step" />
-                <p className="mt-4 max-w-2xl text-[15px] leading-8 text-[var(--strap-text-secondary)] md:text-[16px]">
-                  {group.intro}
-                </p>
-                <div className="mt-7 grid gap-4 md:grid-cols-2">
+                <div className="strap-example-group-head">
+                  <span className="strap-pill strap-pill-solid">{group.name}</span>
+                  <h2 id={`${group.slug}-title`}>{group.intro}</h2>
+                </div>
+                <div className="strap-examples-grid">
                   {(examplesByGroup.get(group.slug) ?? []).map((example) => (
-                    <div
-                      key={example.id}
-                      id={example.id}
-                      className="scroll-mt-28 rounded-xl bg-[var(--strap-surface)] p-5 md:p-6"
-                    >
-                      <h3 className="text-[17px] font-medium leading-7 text-[var(--strap-text-primary)] md:text-[18px]">
-                        {example.title}
-                      </h3>
-                      <p className="mt-2.5 text-[15px] leading-7 text-[var(--strap-text-secondary)]">
-                        {example.scenario}
-                      </p>
-                    </div>
+                    <article key={example.id} id={example.id} className="strap-example">
+                      <h3>{example.title}</h3>
+                      <p>{example.scenario}</p>
+                    </article>
                   ))}
                 </div>
               </section>
             ))}
 
-            <div className="pt-10">
-              <ExamplesCta />
+            <div className="strap-closing-box" style={{ marginTop: "3rem" }}>
+              <h2>Write it once. Every agent reads it.</h2>
+              <p>Create your Strap and connect the tools you already use.</p>
+              <Link className="strap-button strap-button-secondary" href={cta.appHref}>
+                {cta.appLabel}
+              </Link>
             </div>
           </div>
         </div>
       </main>
 
-      <MarketingFooter />
+      <StrapSiteFooter />
     </div>
-  );
-}
-
-function ExamplesCta() {
-  const arrowRef = useRef<ArrowRightIconHandle | null>(null);
-
-  return (
-    <Link
-      href="/pricing"
-      onMouseEnter={() => arrowRef.current?.startAnimation()}
-      onMouseLeave={() => arrowRef.current?.stopAnimation()}
-      className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[var(--strap-accent)] pl-4 pr-3 text-[14px] font-medium text-white transition-colors hover:bg-[var(--strap-accent-hover)]"
-    >
-      <span className="leading-none">Create your Strap</span>
-      <ArrowRightIcon
-        ref={arrowRef}
-        size={16}
-        className="inline-flex shrink-0 items-center justify-center leading-none"
-      />
-    </Link>
   );
 }

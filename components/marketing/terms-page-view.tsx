@@ -1,40 +1,53 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { AnimatedPageTitle } from "@/components/marketing/animated-page-title";
+import Link from "next/link";
 import {
-  MarketingFooter,
-  MarketingHeroBanner,
-} from "@/components/marketing/site-chrome";
+  StrapPageHero,
+  StrapSiteFooter,
+  StrapSiteHeader,
+} from "@/components/marketing/strap-site-shell";
+import { isSupabaseConfigured } from "@/lib/supabase/env";
 
+// Legal placeholder. The published sentence is the product's current claim
+// and stays verbatim until terms replace it.
 export function TermsPageView() {
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    function onScroll() {
-      setScrolled(window.scrollY > 20);
-    }
-
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
   return (
-    <div className="min-h-screen bg-[var(--strap-background)] text-[var(--strap-text-primary)]">
-      <MarketingHeroBanner configured scrolled={scrolled} />
+    <div className="strap-site">
+      <StrapSiteHeader configured={isSupabaseConfigured()} current="terms" />
 
-      <main className="mx-auto max-w-3xl px-6 pb-20 pt-8 md:px-10 md:pb-24 md:pt-10">
-        <div className="border-b border-[var(--strap-border)] pb-8">
-          <AnimatedPageTitle text="Terms" />
-          <p className="t-lede mt-5 max-w-2xl text-[var(--strap-text-secondary)]">
-            Terms will be published here before Strap introduces terms that
-            require your agreement.
-          </p>
+      <main>
+        <StrapPageHero
+          kicker="Legal"
+          kickerTone="paper"
+          title="Terms"
+          lede="Terms will be published here before Strap introduces terms that require your agreement."
+        />
+
+        <div className="strap-wrap strap-page-main">
+          <div className="strap-card strap-card-offset strap-tone-secrets strap-page-main-narrow">
+            <div className="strap-card-head">
+              <span>
+                <b>Terms and conditions</b> · status
+              </span>
+              <span className="strap-pill">Not yet published</span>
+            </div>
+            <div className="strap-card-body">
+              <p>
+                Until then, the pricing page describes what Strap offers today, and the
+                documentation describes how the product behaves.
+              </p>
+              <div className="strap-actions">
+                <Link className="strap-button strap-button-secondary" href="/pricing">
+                  See pricing
+                </Link>
+                <Link className="strap-button strap-button-secondary" href="/docs">
+                  Read the docs
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
       </main>
 
-      <MarketingFooter />
+      <StrapSiteFooter />
     </div>
   );
 }

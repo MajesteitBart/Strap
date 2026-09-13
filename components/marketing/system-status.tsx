@@ -10,13 +10,6 @@ export type SystemStatus =
   | "outage"
   | "unknown";
 
-type StatusVariant = {
-  label: string;
-  dot: string;
-  pulse: string;
-  text: string;
-};
-
 type LiveStatusColor = "green" | "yellow" | "red";
 
 type LiveStatusResponse = {
@@ -25,61 +18,23 @@ type LiveStatusResponse = {
 };
 
 const DEFAULT_STATUS: SystemStatus = "operational";
-const DEFAULT_LABEL = "Fully operational";
 const STATUS_ENDPOINT = "/api/status";
 
-const STATUS_COLOR_CLASSES: Record<LiveStatusColor, Pick<StatusVariant, "dot" | "pulse">> = {
-  green: {
-    dot: "bg-[#22C55E]",
-    pulse: "bg-[#22C55E]/60",
-  },
-  yellow: {
-    dot: "bg-[#F59E0B]",
-    pulse: "bg-[#F59E0B]/60",
-  },
-  red: {
-    dot: "bg-[#DC2626]",
-    pulse: "bg-[#DC2626]/60",
-  },
-};
-
-const STATUS_VARIANTS: Record<SystemStatus, StatusVariant> = {
-  operational: {
-    label: DEFAULT_LABEL,
-    dot: "bg-[#22C55E]",
-    pulse: "bg-[#22C55E]/60",
-    text: "text-[var(--strap-text-secondary)]",
-  },
-  degraded: {
-    label: "Degraded performance",
-    dot: "bg-[#F59E0B]",
-    pulse: "bg-[#F59E0B]/60",
-    text: "text-[var(--strap-text-secondary)]",
-  },
-  maintenance: {
-    label: "Scheduled maintenance",
-    dot: "bg-[var(--strap-accent)]",
-    pulse: "bg-[var(--strap-accent)]/60",
-    text: "text-[var(--strap-text-secondary)]",
-  },
-  outage: {
-    label: "Service disruption",
-    dot: "bg-[#DC2626]",
-    pulse: "bg-[#DC2626]/60",
-    text: "text-[var(--strap-text-secondary)]",
-  },
-  unknown: {
-    label: "Status unavailable",
-    dot: "bg-[var(--strap-text-tertiary)]",
-    pulse: "bg-transparent",
-    text: "text-[var(--strap-text-tertiary)]",
-  },
+const STATUS_DEFAULTS: Record<SystemStatus, { label: string; color: LiveStatusColor }> = {
+  operational: { label: "Fully operational", color: "green" },
+  degraded: { label: "Degraded performance", color: "yellow" },
+  maintenance: { label: "Scheduled maintenance", color: "yellow" },
+  outage: { label: "Service disruption", color: "red" },
+  unknown: { label: "Status unavailable", color: "yellow" },
 };
 
 function isLiveStatusColor(value: unknown): value is LiveStatusColor {
   return value === "green" || value === "yellow" || value === "red";
 }
 
+// Footer status pill in the worktable language: a framed monospace label
+// with a square swatch in the ready, agents, or warning colour. Polls the
+// status route while visible so the label tracks the live deployment.
 export function SystemStatusPill({
   status = DEFAULT_STATUS,
   href,
@@ -89,14 +44,7 @@ export function SystemStatusPill({
   href?: string;
   className?: string;
 }) {
-  const initialVariant = STATUS_VARIANTS[status];
-  const [liveStatus, setLiveStatus] = useState<{
-    label: string;
-    color: LiveStatusColor;
-  }>({
-    label: initialVariant.label,
-    color: status === "outage" ? "red" : status === "operational" ? "green" : "yellow",
-  });
+  const [liveStatus, setLiveStatus] = useState(STATUS_DEFAULTS[status]);
 
   useEffect(() => {
     let cancelled = false;
@@ -131,32 +79,25 @@ export function SystemStatusPill({
     };
   }, []);
 
-  const variant = {
-    ...initialVariant,
-    label: liveStatus.label,
-    ...STATUS_COLOR_CLASSES[liveStatus.color],
-  };
-  const Tag = href ? "a" : "div";
-
-  return (
-    <Tag
-      {...(href ? { href, target: "_blank", rel: "noreferrer" } : {})}
-      className={cn(
-        "t-meta inline-flex items-center gap-2 rounded-sm bg-[var(--strap-surface-raised)] px-3 py-2 font-medium leading-none transition-colors hover:bg-[var(--strap-border)] hover:text-[var(--strap-text-primary)]",
-        variant.text,
-        className
-      )}
-    >
-      <span className="relative flex h-2 w-2">
-        <span
-          className={cn(
-            "absolute inline-flex h-full w-full animate-ping rounded-full opacity-75",
-            variant.pulse
-          )}
-        />
-        <span className={cn("relative inline-flex h-2 w-2 rounded-full", variant.dot)} />
-      </span>
-      <span className="leading-none">{variant.label}</span>
-    </Tag>
+  const content = (
+    <>
+      <span className="strap-footer-status-dot" data-color={liveStatus.color} aria-hidden="true" />
+      <span>{liveStatus.label}</span>
+    </>
   );
+
+  if (href) {
+    return (
+      <a
+        href={href}
+        target="_blank"
+        rel="noreferrer"
+        className={cn("strap-footer-status", className)}
+      >
+        {content}
+      </a>
+    );
+  }
+
+  return <div className={cn("strap-footer-status", className)}>{content}</div>;
 }

@@ -42,7 +42,7 @@ export function StrapWordmark({
         height={18}
         decoding="async"
         style={{ shapeRendering: "geometricPrecision" }}
-        className={cn("block h-full w-auto select-none", imageClassName)}
+        className={cn("strap-brand-adaptive block h-full w-auto select-none", imageClassName)}
         draggable={false}
       />
     </div>
@@ -59,7 +59,7 @@ export function StrapMark({ className }: { className?: string }) {
         width={18}
         height={18}
         decoding="async"
-        className="block h-[18px] w-[18px] select-none"
+        className="strap-brand-adaptive block h-[18px] w-[18px] select-none"
         draggable={false}
       />
     </div>

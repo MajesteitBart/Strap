@@ -241,7 +241,7 @@ export function InlineProposalDiff({
             <button
               type="button"
               onClick={onDelete}
-              className="inline-flex h-7 items-center gap-1 rounded-md bg-[#DC2626] px-2.5 text-sm font-medium text-white transition-colors hover:bg-[#B91C1C]"
+              className="inline-flex h-7 items-center gap-1 rounded-md bg-[var(--strap-danger-fill)] px-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--strap-danger-fill-hover)]"
               aria-label="Delete proposal"
             >
               <Trash2 className="h-3.5 w-3.5 sm:hidden" />
@@ -341,7 +341,7 @@ export function InlineNewSectionProposal({
     // Mirror the delete-meta proposal card but tinted green so additions
     // and removals read as opposites with the same chrome. Border, surface,
     // dividers, and the Accept button all share a single green hue.
-    <div className="rounded-xl border border-dashed border-[#10b981]/35 bg-[#ECFDF5]/40 shadow-[0_8px_24px_rgba(16,185,129,0.05)] dark:border-[#22c55e]/35 dark:bg-[#052e1a]/40 dark:shadow-none">
+    <div className="rounded-xl border border-dashed border-[var(--strap-success)]/35 bg-[var(--strap-environments-tint)]/40 shadow-[0_8px_24px_rgba(16,185,129,0.05)] dark:shadow-none">
       <div className="flex items-center justify-between gap-3 px-3 py-2">
         <button
           type="button"
@@ -353,7 +353,7 @@ export function InlineNewSectionProposal({
               // Chevron tinted green to match the proposal tone - same
               // affordance as the destructive (red) chevron on the delete
               // card so the colour also carries semantic information.
-              "h-3.5 w-3.5 shrink-0 text-[#10b981] transition-transform duration-200 dark:text-[#4ade80]",
+              "h-3.5 w-3.5 shrink-0 text-[var(--strap-success)] transition-transform duration-200",
               expanded ? "rotate-0" : "-rotate-90",
             )}
           />
@@ -368,12 +368,12 @@ export function InlineNewSectionProposal({
           </span>
           {/* Tinted green to match the chevron / `+` glyph - the colour
               now also carries the meaning of the headline. */}
-          <span className="text-[#10b981] dark:text-[#4ade80]">
+          <span className="text-[var(--strap-success)]">
             proposed a new section
           </span>
           <span className="text-[var(--strap-text-tertiary)]">·</span>
           <span className="inline-flex items-center gap-1 text-sm">
-            <span className="font-medium text-[#10b981] dark:text-[#4ade80]">
+            <span className="font-medium text-[var(--strap-success)]">
               +
             </span>
             <span className="text-[var(--strap-text-primary)]">
@@ -390,7 +390,7 @@ export function InlineNewSectionProposal({
               // Weaker green tint by default, full green on hover. Hover
               // background is a soft green wash so the reject affordance
               // stays inside the proposal's colour family.
-              className="inline-flex h-7 items-center gap-1 rounded-md px-2 text-sm font-medium text-[#10b981]/65 transition-colors hover:bg-[#10b981]/10 hover:text-[#10b981] dark:text-[#4ade80]/65 dark:hover:bg-[#22c55e]/15 dark:hover:text-[#4ade80]"
+              className="inline-flex h-7 items-center gap-1 rounded-md px-2 text-sm font-medium text-[var(--strap-success)]/65 transition-colors hover:bg-[var(--strap-success-hover)]/10 hover:text-[var(--strap-success)]"
             >
               <X className="h-3.5 w-3.5 sm:hidden" />
               <span className="hidden sm:inline">Reject</span>
@@ -399,20 +399,20 @@ export function InlineNewSectionProposal({
               type="button"
               onClick={onAccept}
               aria-label="Accept proposal"
-              className="inline-flex h-7 items-center gap-1 rounded-md bg-[#16A34A] px-2.5 text-sm font-medium text-white transition-colors hover:bg-[#15803d]"
+              className="inline-flex h-7 items-center gap-1 rounded-md bg-[var(--strap-success-fill)] px-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--strap-success-fill-hover)]"
             >
               <Check className="h-3.5 w-3.5 sm:hidden" />
               <span className="hidden sm:inline">Accept</span>
             </button>
           </div>
         ) : (
-          <span className="shrink-0 whitespace-nowrap text-[13px] text-[#10b981]/80 dark:text-[#4ade80]/80">
+          <span className="shrink-0 whitespace-nowrap text-[13px] text-[var(--strap-success)]/80">
             Awaiting review
           </span>
         )}
       </div>
       <ExpandRegion open={expanded}>
-        <div className="border-t border-[#10b981]/20" />
+        <div className="border-t border-[var(--strap-success)]/20" />
         {/* Clean padded text block - no inner green highlight bar. The
             card's outer green wash + colour signalling already conveys
             "this is an addition", and matching the delete card's plain
@@ -423,7 +423,7 @@ export function InlineNewSectionProposal({
         {proposal.reason ? (
           // Reason text tinted green to match the rest of the card's
           // colour signalling. Same hue as the chevron / `+` / headline.
-          <div className="border-t border-[#10b981]/20 px-4 py-2.5 text-sm leading-5 text-[#10b981] dark:text-[#4ade80]">
+          <div className="border-t border-[var(--strap-success)]/20 px-4 py-2.5 text-sm leading-5 text-[var(--strap-success)]">
             {proposal.reason}
           </div>
         ) : null}
@@ -470,11 +470,11 @@ export function InlineMetaProposal({
       : "proposed to recolour";
 
   const containerClass = isDelete
-    ? "rounded-xl border border-dashed border-[#dc2626]/35 bg-[#FEF2F2]/40 shadow-[0_8px_24px_rgba(220,38,38,0.05)] dark:border-[#ef4444]/35 dark:bg-[#7f1d1d]/15 dark:shadow-none"
+    ? "rounded-xl border border-dashed border-[var(--strap-danger)]/35 bg-[var(--strap-warning-tint)]/40 shadow-[0_8px_24px_rgba(220,38,38,0.05)] dark:shadow-none"
     : "rounded-xl border border-dashed border-[var(--strap-border)] bg-[var(--strap-surface)] shadow-[0_8px_24px_rgba(28,28,26,0.04)]";
 
   const dividerClass = isDelete
-    ? "border-t border-[#dc2626]/20"
+    ? "border-t border-[var(--strap-danger)]/20"
     : "border-t border-[var(--strap-border)]";
 
   return (
@@ -492,7 +492,7 @@ export function InlineMetaProposal({
               // tertiary for the non-destructive meta kinds.
               "h-3.5 w-3.5 shrink-0 transition-transform duration-200",
               isDelete
-                ? "text-[#dc2626] dark:text-[#f87171]"
+                ? "text-[var(--strap-danger)]"
                 : "text-[var(--strap-text-tertiary)]",
               expanded ? "rotate-0" : "-rotate-90",
             )}
@@ -512,7 +512,7 @@ export function InlineMetaProposal({
           <span
             className={cn(
               isDelete
-                ? "text-[#dc2626] dark:text-[#f87171]"
+                ? "text-[var(--strap-danger)]"
                 : "text-[var(--strap-text-tertiary)]",
             )}
           >
@@ -524,7 +524,7 @@ export function InlineMetaProposal({
               recolor) stay neutral. */}
           {isDelete ? (
             <span className="inline-flex items-center gap-1 text-sm">
-              <span className="font-medium text-[#dc2626] dark:text-[#f87171]">
+              <span className="font-medium text-[var(--strap-danger)]">
                 −
               </span>
               <span className="truncate text-[var(--strap-text-primary)]">
@@ -549,7 +549,7 @@ export function InlineMetaProposal({
                 // with a soft red wash backdrop. Rename / recolor keep the
                 // neutral secondary→primary text behaviour.
                 isDelete
-                  ? "text-[#dc2626]/65 hover:bg-[#dc2626]/10 hover:text-[#dc2626] dark:text-[#f87171]/65 dark:hover:bg-[#ef4444]/15 dark:hover:text-[#f87171]"
+                  ? "text-[var(--strap-danger)]/65 hover:bg-[var(--strap-danger-hover)]/10 hover:text-[var(--strap-danger)]"
                   : "text-[var(--strap-text-secondary)] hover:bg-[var(--strap-surface-raised)] hover:text-[var(--strap-text-primary)]",
               )}
             >
@@ -563,7 +563,7 @@ export function InlineMetaProposal({
               className={cn(
                 "inline-flex h-7 items-center gap-1 rounded-md px-2.5 text-sm font-medium text-white transition-colors",
                 isDelete
-                  ? "bg-[#dc2626] hover:bg-[#b91c1c]"
+                  ? "bg-[var(--strap-danger-fill)] hover:bg-[var(--strap-danger-fill-hover)]"
                   : "bg-[var(--strap-accent)] hover:bg-[var(--strap-accent-hover)]",
               )}
             >
@@ -633,7 +633,7 @@ export function InlineMetaProposal({
               "px-4 py-2.5 text-sm leading-5",
               dividerClass,
               isDelete
-                ? "text-[#dc2626] dark:text-[#f87171]"
+                ? "text-[var(--strap-danger)]"
                 : "text-[var(--strap-text-secondary)]",
             )}
           >
