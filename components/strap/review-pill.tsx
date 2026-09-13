@@ -226,7 +226,7 @@ export function ReviewPill({
           // upward, bridging the visible gap to the trigger pill. Same idea
           // on the right side so the cursor can pass through to the
           // side-popping per-section submenu without triggering close.
-          className="relative w-[min(100vw-48px,300px)] border-[var(--strap-border)] bg-[var(--strap-surface)] p-1 before:pointer-events-auto before:absolute before:-top-5 before:left-0 before:right-0 before:h-5 before:content-[''] md:w-[280px]"
+          className="relative w-[min(100vw-48px,300px)] border-[var(--strap-frame)] bg-[var(--strap-surface)] p-1 before:pointer-events-auto before:absolute before:-top-5 before:left-0 before:right-0 before:h-5 before:content-[''] md:w-[280px]"
           onMouseEnter={isMobile ? undefined : cancelClose}
           onMouseLeave={isMobile ? undefined : scheduleClose}
           onCloseAutoFocus={(event) => {
@@ -296,7 +296,7 @@ export function ReviewPill({
                     // Pseudo-element bridges the 12px sideOffset gap so the
                     // cursor can travel from the row in the parent dropdown
                     // into this side panel without triggering close.
-                    className="relative w-[320px] border-[var(--strap-border)] bg-[var(--strap-surface)] p-0 before:pointer-events-auto before:absolute before:-left-4 before:top-0 before:bottom-0 before:w-4 before:content-['']"
+                    className="relative w-[320px] border-[var(--strap-frame)] bg-[var(--strap-surface)] p-0 before:pointer-events-auto before:absolute before:-left-4 before:top-0 before:bottom-0 before:w-4 before:content-['']"
                     onMouseEnter={isMobile ? undefined : cancelClose}
                     onMouseLeave={isMobile ? undefined : scheduleClose}
                   >
@@ -390,7 +390,7 @@ export function ReviewPill({
                             type="button"
                             aria-label="Delete proposal"
                             onClick={() => onDeleteOne(item.proposal.id)}
-                            className="inline-flex h-7 items-center gap-1 rounded-md bg-[#DC2626] px-2.5 text-sm font-medium text-white transition-colors hover:bg-[#B91C1C]"
+                            className="inline-flex h-7 items-center gap-1 rounded-md bg-[var(--strap-danger-fill)] px-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--strap-danger-fill-hover)]"
                           >
                             <Trash2 className="h-3.5 w-3.5 sm:hidden" />
                             <span className="hidden sm:inline">Delete</span>
@@ -417,9 +417,9 @@ export function ReviewPill({
                               // operations: red for delete-section, green for
                               // new-section, default blue for content updates.
                               isDeleteProposal
-                                ? "bg-[#dc2626] hover:bg-[#b91c1c]"
+                                ? "bg-[var(--strap-danger-fill)] hover:bg-[var(--strap-danger-fill-hover)]"
                                 : isNewSectionProposal
-                                  ? "bg-[#16A34A] hover:bg-[#15803d]"
+                                  ? "bg-[var(--strap-success-fill)] hover:bg-[var(--strap-success-fill-hover)]"
                                   : "bg-[var(--strap-accent)] hover:bg-[var(--strap-accent-hover)]",
                             )}
                           >
@@ -581,7 +581,7 @@ function ReviewPillItem({
                       event.stopPropagation();
                       onDeleteOne(item.proposal.id);
                     }}
-                    className="inline-flex h-7 items-center gap-1 rounded-md bg-[#DC2626] px-2.5 text-sm font-medium text-white transition-colors hover:bg-[#B91C1C]"
+                    className="inline-flex h-7 items-center gap-1 rounded-md bg-[var(--strap-danger-fill)] px-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--strap-danger-fill-hover)]"
                   >
                     <Trash2 className="h-3.5 w-3.5 sm:hidden" />
                     <span className="hidden sm:inline">Delete</span>
@@ -619,9 +619,9 @@ function ReviewPillItem({
                     className={cn(
                       "inline-flex h-7 items-center gap-1 rounded-md px-2.5 text-sm font-medium text-white transition-colors",
                       isDeleteProposal
-                        ? "bg-[#dc2626] hover:bg-[#b91c1c]"
+                        ? "bg-[var(--strap-danger-fill)] hover:bg-[var(--strap-danger-fill-hover)]"
                         : isNewSectionProposal
-                          ? "bg-[#16A34A] hover:bg-[#15803d]"
+                          ? "bg-[var(--strap-success-fill)] hover:bg-[var(--strap-success-fill-hover)]"
                           : "bg-[var(--strap-accent)] hover:bg-[var(--strap-accent-hover)]",
                     )}
                   >

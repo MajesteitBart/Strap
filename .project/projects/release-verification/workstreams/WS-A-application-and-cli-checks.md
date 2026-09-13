@@ -2,9 +2,9 @@
 id: WS-A
 name: WS-A Application and CLI checks
 owner: MajesteitBart
-status: active
+status: done
 created: 2026-09-13T11:03:32Z
-updated: 2026-09-13T11:03:32Z
+updated: 2026-09-13T11:24:20Z
 operating_mode: patch
 ---
 

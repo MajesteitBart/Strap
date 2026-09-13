@@ -10,7 +10,6 @@ import {
   useSyncExternalStore,
   type ReactNode,
 } from "react";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 import {
   AnimatePresence,
@@ -206,22 +205,22 @@ const EMPTY_PROPOSALS: Proposal[] = [];
 
 function getProposalStatusStyles(status: ActivityStatus) {
   if (status === "pending") {
-    return "bg-[#EFF6FF] text-[var(--strap-accent-hover)] dark:bg-[#1e3a8a]/25 dark:text-[#93c5fd]";
+    return "bg-[var(--strap-context-tint)] text-[var(--strap-context)]";
   }
 
   if (status === "direct") {
-    return "bg-[#FFF6E8] text-[#C26A00] dark:bg-[#451a03]/40 dark:text-[#fbbf24]";
+    return "bg-[var(--strap-agents-tint)] text-[var(--strap-caution)]";
   }
 
   if (status === "accepted") {
-    return "bg-[#F0FDF4] text-[#15803D] dark:bg-[#052e1a]/50 dark:text-[#4ade80]";
+    return "bg-[var(--strap-environments-tint)] text-[var(--strap-success)]";
   }
 
   if (status === "stale") {
-    return "bg-[#F5F3FF] text-[#7C3AED] dark:bg-[#2e1065]/40 dark:text-[#c4b5fd]";
+    return "bg-[var(--strap-secrets-tint)] text-[var(--strap-secrets-text)]";
   }
 
-  return "bg-[#FEF2F2] text-[#B91C1C] dark:bg-[#3F1212]/40 dark:text-[#fca5a5]";
+  return "bg-[var(--strap-warning-tint)] text-[var(--strap-danger)]";
 }
 
 function formatRelativeTime(timestamp?: string, fallbackLabel?: string) {
@@ -275,14 +274,14 @@ function ActivityFilterPill({
 }) {
   const activeClass =
     tone === "green"
-      ? "border-[#22C55E] bg-[#F0FDF4] text-[#15803D] shadow-[inset_0_0_0_1px_#22C55E] dark:border-[#4ade80] dark:bg-[#052e1a]/50 dark:text-[#4ade80] dark:shadow-[inset_0_0_0_1px_#4ade80]"
+      ? "border-[var(--strap-success)] bg-[var(--strap-environments-tint)] text-[var(--strap-success)]"
       : tone === "red"
-        ? "border-[#EF4444] bg-[#FEF2F2] text-[#B91C1C] shadow-[inset_0_0_0_1px_#EF4444] dark:border-[#F87171] dark:bg-[#3F1212]/40 dark:text-[#fca5a5] dark:shadow-[inset_0_0_0_1px_#F87171]"
+        ? "border-[var(--strap-danger)] bg-[var(--strap-warning-tint)] text-[var(--strap-danger)]"
         : tone === "orange"
-          ? "border-[#F59E0B] bg-[#FFF7ED] text-[#C26A00] shadow-[inset_0_0_0_1px_#F59E0B] dark:border-[#fbbf24] dark:bg-[#451a03]/40 dark:text-[#fbbf24] dark:shadow-[inset_0_0_0_1px_#fbbf24]"
+          ? "border-[var(--strap-caution)] bg-[var(--strap-agents-tint)] text-[var(--strap-caution)]"
           : tone === "purple"
-            ? "border-[#8B5CF6] bg-[#F5F3FF] text-[#7C3AED] shadow-[inset_0_0_0_1px_#8B5CF6] dark:border-[#c4b5fd] dark:bg-[#2e1065]/40 dark:text-[#c4b5fd] dark:shadow-[inset_0_0_0_1px_#c4b5fd]"
-            : "border-[var(--strap-accent)] bg-[#EFF6FF] text-[#1447E6] shadow-[inset_0_0_0_1px_#2563EB] dark:border-[#93c5fd] dark:bg-[#1e3a8a]/30 dark:text-[#93c5fd] dark:shadow-[inset_0_0_0_1px_#93c5fd]";
+            ? "border-[var(--strap-secrets)] bg-[var(--strap-secrets-tint)] text-[var(--strap-secrets-text)]"
+            : "border-[var(--strap-accent)] bg-[var(--strap-context-tint)] text-[var(--strap-context)]";
 
   return (
     <motion.button
@@ -543,12 +542,12 @@ function SectionChangeRow({ change }: { change: SectionChange }) {
     const added = kind === "added";
     const content = added ? change.nextContent : change.existingContent;
     const containerClass = added
-      ? "border-[#10b981]/35 bg-[#ECFDF5]/40 dark:border-[#22c55e]/35 dark:bg-[#052e1a]/40"
-      : "border-[#dc2626]/35 bg-[#FEF2F2]/40 dark:border-[#ef4444]/35 dark:bg-[#7f1d1d]/15";
+      ? "border-[var(--strap-success)]/35 bg-[var(--strap-environments-tint)]/40"
+      : "border-[var(--strap-danger)]/35 bg-[var(--strap-warning-tint)]/40";
     const toneClass = added
-      ? "text-[#10b981] dark:text-[#4ade80]"
-      : "text-[#dc2626] dark:text-[#f87171]";
-    const dividerClass = added ? "border-[#10b981]/20" : "border-[#dc2626]/20";
+      ? "text-[var(--strap-success)]"
+      : "text-[var(--strap-danger)]";
+    const dividerClass = added ? "border-[var(--strap-success)]/20" : "border-[var(--strap-danger)]/20";
 
     return (
       <div
@@ -569,7 +568,7 @@ function SectionChangeRow({ change }: { change: SectionChange }) {
           <span className="flex shrink-0 items-center gap-2.5">
             <span
               className={cn(
-                "inline-flex items-center gap-1 rounded-[7px] bg-[var(--strap-surface)] px-2 py-1 text-[11px] font-medium",
+                "inline-flex items-center gap-1 rounded-[var(--radius-md)] bg-[var(--strap-surface)] px-2 py-1 text-[11px] font-medium",
                 toneClass,
               )}
             >
@@ -621,7 +620,7 @@ function SectionChangeRow({ change }: { change: SectionChange }) {
         <span className="flex shrink-0 items-center gap-2.5">
           {/* The +/- numbers sit in their own surface-coloured mini card so
               they stay legible on top of the section's accent tint. */}
-          <span className="inline-flex items-center gap-1.5 rounded-[7px] bg-[var(--strap-surface)] px-2 py-1">
+          <span className="inline-flex items-center gap-1.5 rounded-[var(--radius-md)] bg-[var(--strap-surface)] px-2 py-1">
             <DiffBadge tone="added" count={stats.added} />
             <DiffBadge tone="removed" count={stats.removed} />
           </span>
@@ -808,7 +807,6 @@ function SaveStatus({
 }
 
 export function FileScreen() {
-  const router = useRouter();
   const {
     state,
     toggleLock,
@@ -2201,12 +2199,6 @@ export function FileScreen() {
   ]);
 
   useEffect(() => {
-    if (state.sections.length === 0) {
-      router.replace("/onboarding");
-    }
-  }, [router, state.sections.length]);
-
-  useEffect(() => {
     if (!pullDialogOpen || !pullPreview) {
       setShowPullPreview(false);
       return;
@@ -2352,7 +2344,7 @@ export function FileScreen() {
                       >
                         <button
                           type="button"
-                          className="inline-flex h-7 w-7 items-center justify-center rounded-full text-[var(--strap-text-primary)] transition-colors duration-150 hover:bg-[var(--strap-surface-raised)] data-[state=open]:bg-[var(--strap-surface-raised)]"
+                          className="inline-flex h-7 w-7 items-center justify-center rounded-[var(--radius-md)] text-[var(--strap-text-primary)] transition-colors duration-150 hover:bg-[var(--strap-surface-raised)] data-[state=open]:bg-[var(--strap-surface-raised)]"
                           aria-label={
                             canRunQuality &&
                             (fullQualityDirty || qualityCanRunInitialAnalysis)
@@ -2362,7 +2354,7 @@ export function FileScreen() {
                         >
                           <QualityRing
                             score={qualityReport?.overall.score ?? 0}
-                            color="#2563EB"
+                            color="var(--strap-accent)"
                             loading={qualityLoading}
                             actionable={
                               canRunQuality &&
@@ -2474,7 +2466,7 @@ export function FileScreen() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent
                           align="end"
-                          className="border-[var(--strap-border)] bg-[var(--strap-surface)]"
+                          className="border-[var(--strap-frame)] bg-[var(--strap-surface)]"
                         >
                           <AnimatedMenuIconItem
                             icon={CloudUploadIcon}
@@ -2515,7 +2507,7 @@ export function FileScreen() {
                       }
                       aria-pressed={fileViewMode === "nexus"}
                       style={{
-                        borderRadius: 13,
+                        borderRadius: 4,
                         height: 32,
                         width: 32,
                         minHeight: 32,
@@ -2552,7 +2544,7 @@ export function FileScreen() {
                       variant="outline"
                       size="sm"
                       aria-pressed={fileViewMode === "nexus"}
-                      style={{ borderRadius: 13, height: 32, minHeight: 32 }}
+                      style={{ borderRadius: 4, height: 32, minHeight: 32 }}
                       className={cn(
                         "hidden border-[var(--strap-border)] bg-[var(--strap-surface)] px-3 text-[12px] md:inline-flex md:px-3.5 md:text-sm",
                         fileViewMode === "nexus" &&
@@ -2589,7 +2581,7 @@ export function FileScreen() {
                       size="icon-sm"
                       aria-label="Activity"
                       style={{
-                        borderRadius: 13,
+                        borderRadius: 4,
                         height: 32,
                         width: 32,
                         minHeight: 32,
@@ -2614,7 +2606,7 @@ export function FileScreen() {
                     <Button
                       variant="outline"
                       size="sm"
-                      style={{ borderRadius: 13, height: 32, minHeight: 32 }}
+                      style={{ borderRadius: 4, height: 32, minHeight: 32 }}
                       className={cn(
                         "hidden border-[var(--strap-border)] bg-[var(--strap-surface)] px-3 text-[12px] md:inline-flex md:px-3.5 md:text-sm",
                         activityOpen && "bg-[var(--strap-surface-raised)]",
@@ -2644,7 +2636,7 @@ export function FileScreen() {
                           variant="outline"
                           size="icon-sm"
                           style={{
-                            borderRadius: 13,
+                            borderRadius: 4,
                             height: 32,
                             width: 32,
                             minHeight: 32,
@@ -2657,7 +2649,7 @@ export function FileScreen() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent
                         align="end"
-                        className="border-[var(--strap-border)] bg-[var(--strap-surface)]"
+                        className="border-[var(--strap-frame)] bg-[var(--strap-surface)]"
                       >
                         <AnimatedMenuIconItem
                           icon={FolderUpIcon}
@@ -2731,7 +2723,7 @@ export function FileScreen() {
                         ) : null}
                         <AnimatedMenuIconItem
                           icon={DeleteIcon}
-                          className="mt-1 bg-[#DC2626] text-sm text-white hover:bg-[#B91C1C] hover:text-white focus:bg-[#B91C1C] focus:text-white data-[highlighted]:bg-[#B91C1C] data-[highlighted]:text-white not-data-[variant=destructive]:focus:**:text-white"
+                          className="mt-1 bg-[var(--strap-danger-fill)] text-sm text-white hover:bg-[var(--strap-danger-fill-hover)] hover:text-white focus:bg-[var(--strap-danger-fill-hover)] focus:text-white data-[highlighted]:bg-[var(--strap-danger-fill-hover)] data-[highlighted]:text-white not-data-[variant=destructive]:focus:**:text-white"
                           onSelect={() => {
                             // Let the menu close first, then open the dialog on
                             // the next tick so its enter animation plays (two
@@ -2930,11 +2922,14 @@ export function FileScreen() {
                   {visibleSections.length === 0 ? (
                     <div className="flex flex-col items-center justify-center gap-2 rounded-[var(--radius-xl)] border border-dashed border-[var(--strap-border)] px-4 py-16 text-center">
                       <div className="text-[15px] font-medium text-[var(--strap-text-primary)]">
-                        Every section is archived
+                        {state.sections.length > 0 ? "Every section is archived" : "Your Strap is empty"}
                       </div>
                       <div className="max-w-sm text-[13px] leading-6 text-[var(--strap-text-secondary)]">
-                        Restore a section from Settings, under Archived, to
-                        bring it back into your Strap.
+                        {state.sections.length > 0
+                          ? "Restore a section from Settings, under Archived, to bring it back into your Strap."
+                          : canCreateSections
+                            ? "Add a section to start building your context."
+                            : "Your team has not added any sections yet."}
                       </div>
                     </div>
                   ) : null}
@@ -3102,7 +3097,7 @@ export function FileScreen() {
       <StrapFindReplace scrollRef={editorScrollRef} />
 
       <Dialog open={pushDialogOpen} onOpenChange={setPushDialogOpen}>
-        <DialogContent className="rounded-[var(--radius-xl)] border-[var(--strap-border)] bg-[var(--strap-surface)]">
+        <DialogContent className="rounded-[var(--radius-xl)] border-[var(--strap-frame)] bg-[var(--strap-surface)]">
           <DialogHeader>
             <DialogTitle>Push Strap</DialogTitle>
             <DialogDescription>
@@ -3115,7 +3110,7 @@ export function FileScreen() {
           </DialogHeader>
           <div className="space-y-4">
             {pushPreview?.warnings.length ? (
-              <div className="rounded-[var(--radius-lg)] border border-[#FDE68A] bg-[#FFFBEB] px-4 py-4 text-[14px] leading-7 text-[#92400E] dark:border-[#fbbf24]/40 dark:bg-[#451a03]/40 dark:text-[#fbbf24]">
+              <div className="rounded-[var(--radius-lg)] border border-[var(--strap-caution)] bg-[var(--strap-agents-tint)] px-4 py-4 text-[14px] leading-7 text-[var(--strap-caution)]">
                 {pushPreview.warnings.join(" ")}
               </div>
             ) : null}
@@ -3171,7 +3166,7 @@ export function FileScreen() {
       </Dialog>
 
       <Dialog open={pullDialogOpen} onOpenChange={setPullDialogOpen}>
-        <DialogContent className="rounded-[var(--radius-xl)] border-[var(--strap-border)] bg-[var(--strap-surface)]">
+        <DialogContent className="rounded-[var(--radius-xl)] border-[var(--strap-frame)] bg-[var(--strap-surface)]">
           <DialogHeader>
             <DialogTitle>Pull from GitHub</DialogTitle>
             <DialogDescription>
@@ -3190,7 +3185,7 @@ export function FileScreen() {
           ) : pullPreview ? (
             <div className="space-y-4">
               {pullPreview.warnings.length > 0 ? (
-                <div className="rounded-[var(--radius-lg)] border border-[#FDE68A] bg-[#FFFBEB] px-4 py-4 text-[14px] leading-7 text-[#92400E] dark:border-[#fbbf24]/40 dark:bg-[#451a03]/40 dark:text-[#fbbf24]">
+                <div className="rounded-[var(--radius-lg)] border border-[var(--strap-caution)] bg-[var(--strap-agents-tint)] px-4 py-4 text-[14px] leading-7 text-[var(--strap-caution)]">
                   {pullPreview.warnings.join(" ")}
                 </div>
               ) : null}
@@ -3244,7 +3239,7 @@ export function FileScreen() {
         open={Boolean(renameSectionState)}
         onOpenChange={(open) => !open && setRenameSectionState(null)}
       >
-        <DialogContent className="rounded-[var(--radius-xl)] border-[var(--strap-border)] bg-[var(--strap-surface)]">
+        <DialogContent className="rounded-[var(--radius-xl)] border-[var(--strap-frame)] bg-[var(--strap-surface)]">
           <DialogHeader>
             <DialogTitle>Rename section</DialogTitle>
             <DialogDescription>
@@ -3294,7 +3289,7 @@ export function FileScreen() {
         open={Boolean(deleteSectionState)}
         onOpenChange={(open) => !open && setDeleteSectionState(null)}
       >
-        <DialogContent className="rounded-[var(--radius-xl)] border-[var(--strap-border)] bg-[var(--strap-surface)]">
+        <DialogContent className="rounded-[var(--radius-xl)] border-[var(--strap-frame)] bg-[var(--strap-surface)]">
           <DialogHeader>
             <DialogTitle>Delete section</DialogTitle>
             <DialogDescription>
@@ -3310,7 +3305,7 @@ export function FileScreen() {
               Cancel
             </Button>
             <Button
-              className="rounded-md bg-[#DC2626] text-white hover:bg-[#B91C1C]"
+              className="rounded-md bg-[var(--strap-danger-fill)] text-white hover:bg-[var(--strap-danger-fill-hover)]"
               onClick={() => {
                 if (!deleteSectionState) {
                   return;
@@ -3326,10 +3321,10 @@ export function FileScreen() {
       </Dialog>
 
       <Dialog open={deleteFileOpen} onOpenChange={setDeleteFileOpen}>
-        <DialogContent className="rounded-[var(--radius-xl)] border-[var(--strap-border)] bg-[var(--strap-surface)]">
+        <DialogContent className="rounded-[var(--radius-xl)] border-[var(--strap-frame)] bg-[var(--strap-surface)]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-3">
-              <AlertTriangle className="h-5 w-5 text-[#B91C1C]" />
+              <AlertTriangle className="h-5 w-5 text-[var(--strap-danger)]" />
               Delete Strap file
             </DialogTitle>
             <DialogDescription>
@@ -3346,7 +3341,7 @@ export function FileScreen() {
               Cancel
             </Button>
             <Button
-              className="rounded-md bg-[#DC2626] text-white hover:bg-[#B91C1C]"
+              className="rounded-md bg-[var(--strap-danger-fill)] text-white hover:bg-[var(--strap-danger-fill-hover)]"
               onClick={() => {
                 clearSections();
                 setDeleteFileOpen(false);
@@ -3359,7 +3354,7 @@ export function FileScreen() {
       </Dialog>
 
       <Dialog open={archiveAllOpen} onOpenChange={setArchiveAllOpen}>
-        <DialogContent className="rounded-[var(--radius-xl)] border-[var(--strap-border)] bg-[var(--strap-surface)]">
+        <DialogContent className="rounded-[var(--radius-xl)] border-[var(--strap-frame)] bg-[var(--strap-surface)]">
           <DialogHeader>
             <DialogTitle>Archive all sections</DialogTitle>
             <DialogDescription>
@@ -3677,7 +3672,7 @@ function SectionCard({
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-3">
               <span
-                className="inline-block h-9 w-[3px] rounded-full"
+                className="inline-block h-9 w-[3px] rounded-none"
                 style={{ backgroundColor: accent }}
               />
               <div className="flex min-w-0 flex-wrap items-center gap-2.5">
@@ -3697,10 +3692,10 @@ function SectionCard({
                 />
                 {editingBy && editingBy.length > 0 ? (
                   <span
-                    className="inline-flex items-center gap-1.5 rounded-full border border-[var(--strap-border)] bg-[var(--strap-surface-raised)] px-2 py-1 text-[11px] leading-none text-[var(--strap-text-secondary)]"
+                    className="inline-flex items-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--strap-border)] bg-[var(--strap-surface-raised)] px-2 py-1 text-[11px] leading-none text-[var(--strap-text-secondary)]"
                     title={`${editingBy.join(", ")} ${editingBy.length === 1 ? "is" : "are"} editing this section`}
                   >
-                    <span className="h-1.5 w-1.5 rounded-full bg-[#F59E0B]" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-[var(--strap-caution)]" />
                     {editingBy[0]}
                     {editingBy.length > 1 ? ` +${editingBy.length - 1}` : ""}
                     {" editing"}
@@ -3794,7 +3789,7 @@ function SectionCard({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   align="end"
-                  className="border-[var(--strap-border)] bg-[var(--strap-surface)]"
+                  className="border-[var(--strap-frame)] bg-[var(--strap-surface)]"
                 >
                   <AnimatedMenuIconItem
                     icon={SquarePenIcon}
@@ -3838,7 +3833,7 @@ function SectionCard({
                         // between trigger row and picker doesn't dismiss it.
                         sideOffset={14}
                         alignOffset={0}
-                        className="relative w-auto border-[var(--strap-border)] bg-[var(--strap-surface)] p-2 before:pointer-events-auto before:absolute before:-left-4 before:top-0 before:bottom-0 before:w-4 before:content-['']"
+                        className="relative w-auto border-[var(--strap-frame)] bg-[var(--strap-surface)] p-2 before:pointer-events-auto before:absolute before:-left-4 before:top-0 before:bottom-0 before:w-4 before:content-['']"
                       >
                         <div className="grid grid-cols-4 gap-1.5">
                           {VISIBLE_ACCENT_KEYS.map((accentKey) => {
@@ -3922,7 +3917,7 @@ function SectionCard({
                   {/* Solid red, matching the file menu's Delete. */}
                   <AnimatedMenuIconItem
                     icon={DeleteIcon}
-                    className="mt-1 bg-[#DC2626] text-sm text-white hover:bg-[#B91C1C] hover:text-white focus:bg-[#B91C1C] focus:text-white data-[highlighted]:bg-[#B91C1C] data-[highlighted]:text-white not-data-[variant=destructive]:focus:**:text-white"
+                    className="mt-1 bg-[var(--strap-danger-fill)] text-sm text-white hover:bg-[var(--strap-danger-fill-hover)] hover:text-white focus:bg-[var(--strap-danger-fill-hover)] focus:text-white data-[highlighted]:bg-[var(--strap-danger-fill-hover)] data-[highlighted]:text-white not-data-[variant=destructive]:focus:**:text-white"
                     onSelect={onDelete}
                   >
                     Delete
@@ -4123,7 +4118,7 @@ function HeaderLockButton({
         aria-label={title}
         aria-pressed={locked}
         style={{
-          borderRadius: 13,
+          borderRadius: 4,
           height: 32,
           width: 32,
           minHeight: 32,
@@ -4153,7 +4148,7 @@ function HeaderLockButton({
         variant="outline"
         size="sm"
         aria-pressed={locked}
-        style={{ borderRadius: 13, height: 32, minHeight: 32 }}
+        style={{ borderRadius: 4, height: 32, minHeight: 32 }}
         className="hidden border-[var(--strap-border)] bg-[var(--strap-surface)] px-3 text-[12px] md:inline-flex md:px-3.5 md:text-sm"
         onClick={() => trigger({ lock: desktopLockRef, open: desktopOpenRef })}
       >

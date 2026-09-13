@@ -558,7 +558,7 @@ export function WelcomeDialog({
                 className="flex items-center gap-2.5 px-7 pt-5"
               >
                 <SlideTitleIcon slide={slide} />
-                <h2 className="font-heading text-[1.4rem] font-medium leading-tight tracking-[-0.02em] text-[var(--strap-text-primary)]">
+                <h2 className="font-heading text-[1.4rem] font-semibold leading-tight tracking-[-0.02em] text-[var(--strap-text-primary)]">
                   {slide.title}
                 </h2>
               </motion.div>

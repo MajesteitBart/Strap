@@ -14,7 +14,6 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { LoaderCircle, MailCheck } from "lucide-react";
 import { toast } from "sonner";
-import { AnimatedPageTitle } from "@/components/marketing/animated-page-title";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { AuthCheckbox, AuthField, AuthSubmitButton, PasswordField } from "@/components/auth/auth-fields";
 import { readLastAuthProvider, useOAuthSignIn, type OAuthProvider } from "@/components/auth/use-oauth-sign-in";
@@ -26,6 +25,7 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const copy: Record<AuthMode, {
   heading: string;
+  lede: string;
   submit: string;
   switchPrompt: string;
   switchAction: string;
@@ -35,6 +35,7 @@ const copy: Record<AuthMode, {
 }> = {
   login: {
     heading: "Welcome back",
+    lede: "Sign in to open your Strap and the agents connected to it.",
     submit: "Sign in",
     switchPrompt: "New to Strap?",
     switchAction: "Create an account",
@@ -44,6 +45,7 @@ const copy: Record<AuthMode, {
   },
   signup: {
     heading: "Create your account",
+    lede: "One profile every connected agent reads before it works.",
     submit: "Create account",
     switchPrompt: "Already have an account?",
     switchAction: "Sign in",
@@ -261,10 +263,7 @@ export function AuthScreen({
   return (
     <AuthShell
       topRight={
-        <Link
-          href={withNext(t.topHref)}
-          className="text-[14px] font-medium text-[var(--strap-text-primary)] transition-colors hover:text-[var(--strap-accent)]"
-        >
+        <Link href={withNext(t.topHref)} className="strap-link-plain">
           {t.topAction}
         </Link>
       }
@@ -280,12 +279,11 @@ export function AuthScreen({
         />
       ) : (
         <>
-          <AnimatedPageTitle
-            text={t.heading}
-            className="text-[30px] font-medium leading-tight tracking-[-0.02em] md:text-[34px]"
-          />
+          <span className="strap-kicker strap-kicker-context">{isSignup ? "Create account" : "Sign in"}</span>
+          <h1>{t.heading}</h1>
+          <p>{t.lede}</p>
 
-          <div className="mt-8 flex flex-col gap-3">
+          <div className="strap-auth-providers">
             <ProviderButton
               onClick={() => void oauthSignIn("google")}
               disabled={busy || !configured}
@@ -295,7 +293,7 @@ export function AuthScreen({
               {pendingProvider === "google" ? (
                 <>
                   Redirecting
-                  <LoaderCircle className="h-4 w-4 animate-spin" />
+                  <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
                 </>
               ) : (
                 <>Sign in with Google</>
@@ -311,7 +309,7 @@ export function AuthScreen({
               {pendingProvider === "x" ? (
                 <>
                   Redirecting
-                  <LoaderCircle className="h-4 w-4 animate-spin" />
+                  <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
                 </>
               ) : (
                 <>Sign in with X</>
@@ -319,13 +317,11 @@ export function AuthScreen({
             </ProviderButton>
           </div>
 
-          <div className="my-5 flex items-center gap-3" aria-hidden="true">
-            <span className="h-px flex-1 bg-[var(--strap-border)]" />
-            <span className="text-[13px] text-[var(--strap-text-tertiary)]">or</span>
-            <span className="h-px flex-1 bg-[var(--strap-border)]" />
+          <div className="strap-divider" aria-hidden="true">
+            or
           </div>
 
-          <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-3">
+          <form onSubmit={handleSubmit} noValidate className="strap-form">
             <AuthField
               ref={emailRef}
               type="email"
@@ -354,8 +350,8 @@ export function AuthScreen({
             />
 
             {!isSignup ? (
-              <div className="flex items-center justify-between">
-                <label className="flex cursor-pointer select-none items-center gap-2.5 text-[14px] text-[var(--strap-text-secondary)]">
+              <div className="strap-form-row">
+                <label>
                   <AuthCheckbox checked={remember} onChange={() => setRemember((v) => !v)} />
                   Remember me
                 </label>
@@ -363,7 +359,7 @@ export function AuthScreen({
                   type="button"
                   onClick={() => void handleForgotPassword()}
                   disabled={busy}
-                  className="text-[14px] text-[var(--strap-text-secondary)] transition-colors hover:text-[var(--strap-accent)] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="strap-form-link"
                 >
                   Forgot password?
                 </button>
@@ -377,12 +373,9 @@ export function AuthScreen({
             />
           </form>
 
-          <p className="mt-7 text-center text-[14px] text-[var(--strap-text-tertiary)]">
+          <p className="strap-auth-switch">
             {t.switchPrompt}{" "}
-            <Link
-              href={withNext(t.switchHref)}
-              className="font-medium text-[var(--strap-text-primary)] transition-colors hover:text-[var(--strap-accent)]"
-            >
+            <Link href={withNext(t.switchHref)} className="strap-link-plain">
               {t.switchAction}
             </Link>
           </p>
@@ -408,21 +401,19 @@ function ConfirmationNotice({
   const lead = kind === "signup" ? "We sent a confirmation link to" : "We sent a password reset link to";
 
   return (
-    <div className="flex flex-col items-center text-center">
-      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#ECFDF5] text-[#16A34A] dark:bg-[#052e1a]/60 dark:text-[#4ade80]">
-        <MailCheck className="h-6 w-6" />
+    <div className="strap-auth-centered">
+      <div className="strap-auth-glyph">
+        <MailCheck className="h-6 w-6" aria-hidden="true" />
       </div>
-      <h1 className="mt-5 text-[26px] font-medium leading-tight tracking-[-0.02em]">Check your inbox</h1>
-      <p className="mt-3 text-[15px] leading-relaxed text-[var(--strap-text-secondary)]">
-        {lead} <span className="font-medium text-[var(--strap-text-primary)]">{email}</span>. {body}
+      <h1>Check your inbox</h1>
+      <p>
+        {lead} <strong>{email}</strong>. {body}
       </p>
-      <button
-        type="button"
-        onClick={onBack}
-        className="mt-6 text-[14px] font-medium text-[var(--strap-text-primary)] transition-colors hover:text-[var(--strap-accent)]"
-      >
-        Use a different email
-      </button>
+      <div className="strap-actions">
+        <button type="button" onClick={onBack} className="strap-button strap-button-secondary">
+          Use a different email
+        </button>
+      </div>
     </div>
   );
 }
@@ -441,20 +432,20 @@ function ProviderButton({
   lastUsed?: boolean;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      className="relative inline-flex h-12 w-full items-center justify-center gap-2.5 rounded-[var(--radius-md)] border border-[var(--strap-border)] bg-[var(--strap-surface)] text-[15px] font-medium text-[var(--strap-text-primary)] transition-colors hover:bg-[var(--strap-surface-raised)] disabled:cursor-not-allowed disabled:opacity-50"
-    >
-      {lastUsed ? (
-        <span className="pointer-events-none absolute -top-2.5 right-3 z-10 rounded-[6px] border border-[var(--strap-accent)]/30 bg-[#EFF6FF] px-2 py-1 text-[12px] font-medium leading-none text-[var(--strap-accent)] dark:border-[var(--strap-accent)]/45 dark:bg-[#0e1b30] dark:text-[#60A5FA]">
-          Last used
+    <span className="strap-provider">
+      {lastUsed ? <span className="strap-provider-badge">Last used</span> : null}
+      <button
+        type="button"
+        onClick={onClick}
+        disabled={disabled}
+        className="strap-button strap-button-secondary strap-button-block strap-button-icon"
+      >
+        <span className="flex h-[18px] w-[18px] shrink-0 items-center justify-center" aria-hidden="true">
+          {icon}
         </span>
-      ) : null}
-      <span className="flex h-[18px] w-[18px] shrink-0 items-center justify-center">{icon}</span>
-      {children}
-    </button>
+        {children}
+      </button>
+    </span>
   );
 }
 

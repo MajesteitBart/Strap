@@ -101,11 +101,11 @@ const TAG_TONES: Record<string, "green" | "amber" | "red"> = {
 
 const TAG_TONE_CLASS: Record<"green" | "amber" | "red" | "neutral", string> = {
   green:
-    "bg-[#ECFDF5] text-[#047857] dark:bg-[#052e1a]/55 dark:text-[#4ade80]",
+    "bg-[var(--strap-environments-tint)] text-[var(--strap-success)]",
   amber:
-    "bg-[#FFFBEB] text-[#92400E] dark:bg-[#451a03]/55 dark:text-[#fbbf24]",
+    "bg-[var(--strap-agents-tint)] text-[var(--strap-caution)]",
   red:
-    "bg-[#FEF2F2] text-[#B91C1C] dark:bg-[#3F1212]/55 dark:text-[#fca5a5]",
+    "bg-[var(--strap-warning-tint)] text-[var(--strap-danger)]",
   neutral:
     "bg-[var(--strap-surface-raised)] text-[var(--strap-text-secondary)]",
 };
@@ -531,7 +531,7 @@ export function OverallQualityPopover({
           <QualityCompactCard
             score={report.overall.score}
             label="Overall"
-            labelColor="#2563EB"
+            labelColor="var(--strap-context)"
             tags={report.overall.tags}
             strength={
               report.overall.strength ??

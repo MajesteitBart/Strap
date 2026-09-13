@@ -35,20 +35,20 @@ export const PERMISSION_OPTIONS: Array<{
     value: "hidden",
     label: "Hidden from agent",
     icon: EyeOffIcon,
-    color: "#DC2626",
+    color: "var(--strap-danger-fill)",
   },
-  { value: "read-only", label: "Read-only", icon: EyeIcon, color: "#F59E0B" },
+  { value: "read-only", label: "Read-only", icon: EyeIcon, color: "var(--strap-caution-fill)" },
   {
     value: "propose",
     label: "Propose (needs approval)",
     icon: ShieldCheckIcon,
-    color: "#16A34A",
+    color: "var(--strap-success-fill)",
   },
   {
     value: "direct",
     label: "Direct edit",
     icon: PenToolIcon,
-    color: "#2563EB",
+    color: "var(--strap-accent)",
   },
 ];
 
@@ -85,12 +85,12 @@ function PermissionSegment({
         // the icons read as inactive.
         onMouseEnter={muted ? undefined : start}
         onMouseLeave={muted ? undefined : settle}
-        className="group relative inline-flex h-7 w-7 items-center justify-center rounded-[7px] transition-colors duration-150"
+        className="group relative inline-flex h-7 w-7 items-center justify-center rounded-[var(--radius-md)] transition-colors duration-150"
       >
         {selected ? (
           <motion.span
             layoutId={`perm-highlight-${layoutGroup}`}
-            className="absolute inset-0 rounded-[7px]"
+            className="absolute inset-0 rounded-[var(--radius-md)]"
             style={{ backgroundColor: option.color }}
             transition={{ type: "spring", stiffness: 520, damping: 40 }}
           />

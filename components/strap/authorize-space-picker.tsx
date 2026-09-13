@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { Check, ChevronDown } from "lucide-react";
 import {
   DropdownMenu,
@@ -33,15 +33,19 @@ export function AuthorizeSpacePicker({ spaces }: { spaces: SpaceOption[] }) {
     return (personal ?? spaces[0])?.id ?? "";
   });
   const selected = spaces.find((space) => space.id === selectedId);
+  const labelId = useId();
 
   return (
-    <div className="mt-6 text-left">
+    <div className="strap-field">
+      <span className="strap-field-label" id={labelId}>
+        Strap to connect
+      </span>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
             type="button"
-            aria-label="Choose the Strap this agent connects to"
-            className="inline-flex h-9 w-full items-center justify-between gap-2 rounded-md border border-[var(--strap-border)] bg-[var(--strap-surface)] py-0 pl-2 pr-3 text-[13px] text-[var(--strap-text-primary)] transition-colors duration-150 hover:bg-[var(--strap-surface-raised)] aria-expanded:bg-[var(--strap-surface-raised)]"
+            aria-labelledby={labelId}
+            className="strap-input flex items-center justify-between gap-2 text-left"
           >
             <span className="flex min-w-0 items-center gap-2">
               {selected ? (
@@ -57,12 +61,12 @@ export function AuthorizeSpacePicker({ spaces }: { spaces: SpaceOption[] }) {
                 {selected?.label ?? "Select a Strap"}
               </span>
             </span>
-            <ChevronDown className="h-3.5 w-3.5 shrink-0 text-[var(--strap-text-tertiary)]" strokeWidth={2} />
+            <ChevronDown className="h-3.5 w-3.5 shrink-0" strokeWidth={2} aria-hidden="true" />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="start"
-          className="w-[var(--radix-dropdown-menu-trigger-width)] max-w-[min(24rem,90vw)] border-[var(--strap-border)] bg-[var(--strap-surface)]"
+          className="strap-public-theme w-[var(--radix-dropdown-menu-trigger-width)] max-w-[min(24rem,90vw)]"
         >
           {spaces.map((space) => {
             const isSelected = space.id === selectedId;
@@ -86,6 +90,7 @@ export function AuthorizeSpacePicker({ spaces }: { spaces: SpaceOption[] }) {
                   <Check
                     className="h-3.5 w-3.5 shrink-0 text-[var(--strap-text-secondary)]"
                     strokeWidth={1.8}
+                    aria-hidden="true"
                   />
                 ) : null}
               </DropdownMenuItem>

@@ -4,11 +4,11 @@ import { pricingFaqItems } from "@/lib/marketing/faq";
 // Pricing FAQ that ships in the initial HTML and backs the page's FAQ schema.
 export function PricingReference() {
   return (
-    <section className="border-t border-[var(--strap-border)] py-14 md:py-16">
-      <FaqSection
-        heading="Pricing questions"
-        items={pricingFaqItems}
-      />
-    </section>
+    <FaqSection
+      heading="Pricing questions"
+      lede="Straight answers on what free means, what runs on the included key, and what stays yours."
+      items={pricingFaqItems}
+      tone="environments"
+    />
   );
 }

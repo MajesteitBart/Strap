@@ -33,7 +33,7 @@ import { cn } from "@/lib/utils";
 // my Strap with your assistant" compose flow (copy prompt, paste back,
 // preview), framed for a shared company file, plus an invite step at the end.
 
-const AMBER = "#F59E0B";
+const AMBER = "var(--strap-caution)";
 const RED = accentColorMap.boundaries;
 
 // Step indices. Each question is followed by an explainer, mirroring the
@@ -493,12 +493,12 @@ export function CompanyOnboardingScreen({
                         className={cn(
                           "min-h-[220px] max-h-[44vh] resize-none overflow-y-auto rounded-xl px-4 py-4 font-mono text-[14px] leading-7",
                           pasteError
-                            ? "border-[#DC2626] focus-visible:border-[#DC2626] focus-visible:ring-[#DC2626]/15"
+                            ? "border-[var(--strap-danger)] focus-visible:border-[var(--strap-danger)] focus-visible:ring-[var(--strap-danger)]/15"
                             : "border-[var(--strap-border)]"
                         )}
                         placeholder={"## Company\n\nPaste the full markdown your assistant produced here."}
                       />
-                      {pasteError ? <p className="mt-3 text-[13px] text-[#DC2626]">{pasteError}</p> : null}
+                      {pasteError ? <p className="mt-3 text-[13px] text-[var(--strap-danger)]">{pasteError}</p> : null}
                     </QuestionStep>
                   ) : null}
 
@@ -524,7 +524,7 @@ export function CompanyOnboardingScreen({
                               {previewSections.map((section) => (
                                 <section key={section.id}>
                                   <div className="mb-4 flex items-center gap-3">
-                                    <span className="inline-block h-9 w-[3px] rounded-full" style={{ backgroundColor: accentColorMap[section.accent] }} />
+                                    <span className="inline-block h-9 w-[3px] rounded-none" style={{ backgroundColor: accentColorMap[section.accent] }} />
                                     <span className="text-[15px] font-medium leading-none md:text-[16px]" style={{ color: accentColorMap[section.accent] }}>
                                       {section.name}
                                     </span>
@@ -603,7 +603,7 @@ export function CompanyOnboardingScreen({
                                           <span className="truncate text-[14px] font-medium text-[var(--strap-text-primary)]">
                                             {invite.email}
                                           </span>
-                                          <span className="inline-flex items-center rounded-[6px] bg-[#F5F3FF] px-1.5 py-0.5 text-[12px] font-medium text-[#6D28D9] dark:bg-[#2E1065]/50 dark:text-[#A78BFA]">
+                                          <span className="inline-flex items-center rounded-[6px] bg-[var(--strap-secrets-tint)] px-1.5 py-0.5 text-[12px] font-medium text-[var(--strap-secrets-text)]">
                                             Pending
                                           </span>
                                         </div>
@@ -613,7 +613,7 @@ export function CompanyOnboardingScreen({
                                       </div>
                                     </div>
                                     <Button
-                                      className="rounded-md bg-[#DC2626] px-3 text-white hover:bg-[#B91C1C] hover:text-white"
+                                      className="rounded-md bg-[var(--strap-danger-fill)] px-3 text-white hover:bg-[var(--strap-danger-fill-hover)] hover:text-white"
                                       onClick={() => void revokeInvite(invite)}
                                     >
                                       Revoke
@@ -662,7 +662,7 @@ export function CompanyOnboardingScreen({
               <span className="hidden text-[12px] text-[var(--strap-text-tertiary)] md:inline">↵ to continue</span>
             ) : null}
             <Button
-              style={{ borderRadius: "0.875rem" }}
+              style={{ borderRadius: "var(--radius-lg)" }}
               className="bg-[var(--strap-text-primary)] px-5 text-[var(--strap-button-primary-fg)] hover:bg-[var(--strap-button-primary-hover)] disabled:bg-[var(--strap-border-strong)] disabled:text-[var(--strap-text-tertiary)]"
               onClick={handleContinue}
               disabled={!canContinue}
@@ -740,7 +740,7 @@ function SectionStripsCard() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.15 + index * 0.1, ease: [0.22, 1, 0.36, 1] }}
         >
-          <span className="mt-0.5 h-9 w-[3px] shrink-0 rounded-full" style={{ backgroundColor: accentColorMap[row.accent] }} />
+          <span className="mt-0.5 h-9 w-[3px] shrink-0 rounded-none" style={{ backgroundColor: accentColorMap[row.accent] }} />
           <div className="min-w-0 flex-1">
             <div className="text-[13px] font-medium" style={{ color: accentColorMap[row.accent] }}>
               {row.name}
@@ -778,9 +778,9 @@ const ATTRIBUTION_ENTRIES: AttributionEntry[] = [
 // The exact activity-pill tokens from the app (getProposalStatusStyles): blue
 // for a pending proposal, amber for a direct edit, green for an accepted one.
 const ATTRIBUTION_STATUS_STYLES: Record<AttributionEntry["status"], string> = {
-  Proposed: "bg-[#EFF6FF] text-[var(--strap-accent-hover)] dark:bg-[#1e3a8a]/25 dark:text-[#93c5fd]",
-  Direct: "bg-[#FFF6E8] text-[#C26A00] dark:bg-[#451a03]/40 dark:text-[#fbbf24]",
-  Accepted: "bg-[#F0FDF4] text-[#15803D] dark:bg-[#052e1a]/50 dark:text-[#4ade80]",
+  Proposed: "bg-[var(--strap-context-tint)] text-[var(--strap-context)]",
+  Direct: "bg-[var(--strap-agents-tint)] text-[var(--strap-caution)]",
+  Accepted: "bg-[var(--strap-environments-tint)] text-[var(--strap-success)]",
 };
 
 function AttributionCard() {
@@ -963,7 +963,7 @@ const CONTROL_ACTIVITY_ITEMS = [
     before: "Agents should ask before changing finance or legal.",
     after: "Agents should ask before changing finance, legal, fundraising, or public positioning.",
     avatar: "C",
-    avatarClassName: "bg-[#E0F2FE] text-[#0369A1] dark:bg-[#0C4A6E]/45 dark:text-[#7DD3FC]",
+    avatarClassName: "bg-[var(--strap-context-tint)] text-[var(--strap-context)]",
     agent: null,
   },
   {
@@ -974,7 +974,7 @@ const CONTROL_ACTIVITY_ITEMS = [
     before: "The client portal is the current priority.",
     after: "The client portal is the current priority, with onboarding polish and section permissions next.",
     avatar: "F",
-    avatarClassName: "bg-[#F3E8FF] text-[#7E22CE] dark:bg-[#581C87]/45 dark:text-[#D8B4FE]",
+    avatarClassName: "bg-[#F3E8FF] text-[var(--strap-secrets-text)]",
     agent: { name: "Claude Code", icon: "claudecode" },
   },
   {
@@ -985,22 +985,22 @@ const CONTROL_ACTIVITY_ITEMS = [
     before: "Sascha helps with customer workflow.",
     after: "Sascha owns customer workflow and onboarding clarity.",
     avatar: "S",
-    avatarClassName: "bg-[#FFE4E6] text-[#BE123C] dark:bg-[#881337]/45 dark:text-[#FDA4AF]",
+    avatarClassName: "bg-[#FFE4E6] text-[var(--strap-danger)]",
     agent: null,
   },
 ] as const;
 
 const CONTROL_STATUS_STYLES: Record<(typeof CONTROL_ACTIVITY_ITEMS)[number]["status"], string> = {
-  Direct: "bg-[#FFF6E8] text-[#C26A00] dark:bg-[#451a03]/40 dark:text-[#fbbf24]",
-  Proposed: "bg-[#EFF6FF] text-[var(--strap-accent-hover)] dark:bg-[#1e3a8a]/25 dark:text-[#93c5fd]",
-  Accepted: "bg-[#F0FDF4] text-[#15803D] dark:bg-[#052e1a]/50 dark:text-[#4ade80]",
+  Direct: "bg-[var(--strap-agents-tint)] text-[var(--strap-caution)]",
+  Proposed: "bg-[var(--strap-context-tint)] text-[var(--strap-context)]",
+  Accepted: "bg-[var(--strap-environments-tint)] text-[var(--strap-success)]",
 };
 
 function ControlFlowCard() {
   const openIndex = 1;
   return (
     <motion.div
-      className="mx-auto mt-8 w-full max-w-[460px] rounded-[18px] border border-[var(--strap-border)] bg-[var(--strap-surface)] p-4 text-left shadow-[0_8px_24px_rgba(28,28,26,0.04)]"
+      className="mx-auto mt-8 w-full max-w-[460px] rounded-[var(--radius-xl)] border border-[var(--strap-border)] bg-[var(--strap-surface)] p-4 text-left shadow-[0_8px_24px_rgba(28,28,26,0.04)]"
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.55, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
@@ -1051,7 +1051,7 @@ function ControlActivityRow({
         ) : (
           <div
             className={cn(
-              "flex h-6 w-6 shrink-0 items-center justify-center rounded-[8px] border border-[var(--strap-border)] text-[10px] font-medium",
+              "flex h-6 w-6 shrink-0 items-center justify-center rounded-[var(--radius-lg)] border border-[var(--strap-border)] text-[10px] font-medium",
               item.avatarClassName
             )}
           >

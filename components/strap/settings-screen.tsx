@@ -29,7 +29,6 @@ import {
   useAnimatedIconControls,
   type AnimatedIconHandle,
 } from "@/components/strap/animated-icon-controls";
-import { useRouter } from "next/navigation";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -135,7 +134,6 @@ export function SettingsScreen() {
 }
 
 function PersonalSettingsScreen() {
-  const router = useRouter();
   const {
     state,
     setDisplayName,
@@ -203,12 +201,6 @@ function PersonalSettingsScreen() {
     const wordCount = exportMarkdown().trim().split(/\s+/).filter(Boolean).length;
     return { sectionCount, wordCount };
   }, [state.sections, exportMarkdown]);
-
-  useEffect(() => {
-    if (state.sections.length === 0) {
-      router.replace("/onboarding");
-    }
-  }, [router, state.sections.length]);
 
   async function saveDisplayName() {
     const next = nameDraft.trim();
@@ -486,8 +478,8 @@ function PersonalSettingsScreen() {
           // A soft pulse so the eye lands on the right section after the jump.
           element.animate(
             [
-              { backgroundColor: "var(--strap-surface-raised)", borderRadius: "12px", offset: 0.15 },
-              { backgroundColor: "transparent", borderRadius: "12px" },
+              { backgroundColor: "var(--strap-surface-raised)", borderRadius: "4px", offset: 0.15 },
+              { backgroundColor: "transparent", borderRadius: "4px" },
             ],
             { duration: 1100, easing: "ease-out" }
           );
@@ -777,7 +769,7 @@ function PersonalSettingsScreen() {
     <>
       <div className="h-full overflow-y-auto bg-[var(--strap-surface)] strap-scrollbar">
         <div className="mx-auto max-w-3xl px-8 py-10 md:px-14">
-          <h1 className="font-heading text-[1.75rem] font-medium tracking-[-0.03em] text-[var(--strap-text-primary)]">
+          <h1 className="font-heading text-[1.75rem] font-semibold tracking-[-0.03em] text-[var(--strap-text-primary)]">
             Settings
           </h1>
 
@@ -972,7 +964,7 @@ function PersonalSettingsScreen() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   align="end"
-                  className="min-w-32 space-y-1 border-[var(--strap-border)] bg-[var(--strap-surface)] p-1.5"
+                  className="min-w-32 space-y-1 border-[var(--strap-frame)] bg-[var(--strap-surface)] p-1.5"
                 >
                   {(["credits", "byok"] as AiMode[]).map((mode) => (
                     <DropdownMenuItem
@@ -1186,7 +1178,7 @@ function PersonalSettingsScreen() {
                           target="_blank"
                           rel="noopener noreferrer"
                           title={versionStatus.remoteMessage}
-                          className="truncate font-medium text-[var(--strap-accent)] transition-colors hover:text-[var(--strap-accent-hover)]"
+                          className="truncate font-medium text-[var(--strap-context)] transition-colors hover:text-[var(--strap-text-primary)]"
                         >
                           {versionStatus.remoteMessage}
                         </a>
@@ -1263,7 +1255,7 @@ function PersonalSettingsScreen() {
                               Restore
                             </Button>
                             <Button
-                              className="rounded-md bg-[#DC2626] text-white hover:bg-[#B91C1C] hover:text-white"
+                              className="rounded-md bg-[var(--strap-danger-fill)] text-white hover:bg-[var(--strap-danger-fill-hover)] hover:text-white"
                               onClick={() =>
                                 setArchivedDeleteTarget({ id: section.id, name: section.name })
                               }
@@ -1378,16 +1370,16 @@ function PersonalSettingsScreen() {
             <h2 className="text-[16px] font-medium text-[var(--strap-text-primary)]">
               Danger zone
             </h2>
-            <div className="mt-4 rounded-[var(--radius-xl)] border border-[#FECACA] bg-[#FEF2F2] p-5 dark:border-[#7F1D1D]/40 dark:bg-[#3F1212]/30">
+            <div className="mt-4 rounded-[var(--radius-xl)] border border-[var(--strap-danger)] bg-[var(--strap-warning-tint)] p-5">
               <div className="flex items-center justify-between gap-5">
                 <div className="min-w-0">
-                  <div className="text-[15px] font-medium text-[#DC2626] dark:text-[#DC2626]">Account Deletion</div>
-                  <div className="mt-2 hidden text-[14px] leading-7 text-[#DC2626] dark:text-[#DC2626] md:block">
+                  <div className="text-[15px] font-medium text-[var(--strap-danger)]">Account Deletion</div>
+                  <div className="mt-2 hidden text-[14px] leading-7 text-[var(--strap-danger)] md:block">
                     This permanently deletes your Strap, tokens, proposals, activity, and account.
                   </div>
                 </div>
                 <Button
-                  className="rounded-md bg-[#DC2626] px-4 text-white hover:bg-[#B91C1C] hover:text-white"
+                  className="rounded-md bg-[var(--strap-danger-fill)] px-4 text-white hover:bg-[var(--strap-danger-fill-hover)] hover:text-white"
                   onClick={() => setDeleteOpen(true)}
                 >
                   Delete
@@ -1399,10 +1391,10 @@ function PersonalSettingsScreen() {
       </div>
 
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-        <DialogContent className="rounded-[var(--radius-xl)] border-[var(--strap-border)] bg-[var(--strap-surface)]">
+        <DialogContent className="rounded-[var(--radius-xl)] border-[var(--strap-frame)] bg-[var(--strap-surface)]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-3">
-              <AlertTriangle className="h-5 w-5 text-[#B91C1C]" />
+              <AlertTriangle className="h-5 w-5 text-[var(--strap-danger)]" />
               Delete account
             </DialogTitle>
           </DialogHeader>
@@ -1414,7 +1406,7 @@ function PersonalSettingsScreen() {
               Cancel
             </Button>
             <Button
-              className="rounded-md bg-[#DC2626] text-white hover:bg-[#B91C1C]"
+              className="rounded-md bg-[var(--strap-danger-fill)] text-white hover:bg-[var(--strap-danger-fill-hover)]"
               onClick={() => void handleDeleteAccount()}
               disabled={deleting}
             >
@@ -1437,7 +1429,7 @@ function PersonalSettingsScreen() {
           if (!open) setArchivedDeleteTarget(null);
         }}
       >
-        <DialogContent className="rounded-[var(--radius-xl)] border-[var(--strap-border)] bg-[var(--strap-surface)]">
+        <DialogContent className="rounded-[var(--radius-xl)] border-[var(--strap-frame)] bg-[var(--strap-surface)]">
           <DialogHeader>
             <DialogTitle>Delete archived section</DialogTitle>
             <DialogDescription>
@@ -1454,7 +1446,7 @@ function PersonalSettingsScreen() {
               Cancel
             </Button>
             <Button
-              className="rounded-md bg-[#DC2626] px-4 text-white hover:bg-[#B91C1C] hover:text-white"
+              className="rounded-md bg-[var(--strap-danger-fill)] px-4 text-white hover:bg-[var(--strap-danger-fill-hover)] hover:text-white"
               onClick={() => {
                 if (archivedDeleteTarget) deleteSection(archivedDeleteTarget.id);
                 setArchivedDeleteTarget(null);
@@ -1481,7 +1473,7 @@ export function ConnectButton({
   return (
     <Button
       aria-label={`Connect ${label}`}
-      className="rounded-md bg-[#16A34A] text-white hover:bg-[#15803d] hover:text-white max-md:size-9 max-md:p-0 md:px-4 md:text-sm"
+      className="rounded-md bg-[var(--strap-success-fill)] text-white hover:bg-[var(--strap-success-fill-hover)] hover:text-white max-md:size-9 max-md:p-0 md:px-4 md:text-sm"
       onClick={onClick}
       disabled={loading}
     >
@@ -1509,7 +1501,7 @@ export function DisconnectButton({
   return (
     <Button
       aria-label={`Disconnect ${label}`}
-      className="rounded-md bg-[#DC2626] text-white hover:bg-[#B91C1C] hover:text-white max-md:size-9 max-md:p-0 md:px-4 md:text-sm"
+      className="rounded-md bg-[var(--strap-danger-fill)] text-white hover:bg-[var(--strap-danger-fill-hover)] hover:text-white max-md:size-9 max-md:p-0 md:px-4 md:text-sm"
       onClick={onClick}
       disabled={loading}
     >
@@ -1576,9 +1568,9 @@ export function IntegrationRow({
                 className={cn(
                   "inline-flex items-center whitespace-nowrap rounded-[6px] px-1.5 py-0.5 text-[12px] font-medium",
                   isConnected
-                    ? "bg-[#ECFDF5] text-[#047857] dark:bg-[#052e1a]/50 dark:text-[#4ade80]"
+                    ? "bg-[var(--strap-environments-tint)] text-[var(--strap-success)]"
                     : isDisconnected
-                      ? "bg-[#FEF2F2] text-[#B91C1C] dark:bg-[#3F1212]/40 dark:text-[#F87171]"
+                      ? "bg-[var(--strap-warning-tint)] text-[var(--strap-danger)]"
                       : "bg-[var(--strap-surface-raised)] text-[var(--strap-text-secondary)]"
                 )}
               >
@@ -1667,7 +1659,7 @@ export function UsageCard({
           </DropdownMenuTrigger>
           <DropdownMenuContent
             align="end"
-            className="min-w-24 space-y-1 border-[var(--strap-border)] bg-[var(--strap-surface)] p-1.5"
+            className="min-w-24 space-y-1 border-[var(--strap-frame)] bg-[var(--strap-surface)] p-1.5"
           >
             {(["7d", "30d", "90d"] as AiUsageRange[]).map((item) => (
               <DropdownMenuItem
@@ -1783,10 +1775,10 @@ const PERMISSION_OPTIONS: Array<{
   icon: AnimatedIconComponent;
   color: string;
 }> = [
-  { value: "hidden", label: "Hidden from agent", icon: EyeOffIcon, color: "#DC2626" },
-  { value: "read-only", label: "Read-only", icon: EyeIcon, color: "#EAB308" },
-  { value: "propose", label: "Propose (needs approval)", icon: ShieldCheckIcon, color: "#16A34A" },
-  { value: "direct", label: "Direct edit", icon: PenToolIcon, color: "#2563EB" },
+  { value: "hidden", label: "Hidden from agent", icon: EyeOffIcon, color: "var(--strap-danger-fill)" },
+  { value: "read-only", label: "Read-only", icon: EyeIcon, color: "var(--strap-caution-fill)" },
+  { value: "propose", label: "Propose (needs approval)", icon: ShieldCheckIcon, color: "var(--strap-success-fill)" },
+  { value: "direct", label: "Direct edit", icon: PenToolIcon, color: "var(--strap-accent)" },
 ];
 
 // The global control reuses the same control without the "hidden" option.
@@ -1820,12 +1812,12 @@ function PermissionSegment({
         // the icons read as inactive.
         onMouseEnter={muted ? undefined : start}
         onMouseLeave={muted ? undefined : settle}
-        className="group relative inline-flex h-7 w-7 items-center justify-center rounded-[7px] transition-colors duration-150"
+        className="group relative inline-flex h-7 w-7 items-center justify-center rounded-[var(--radius-md)] transition-colors duration-150"
       >
         {selected ? (
           <motion.span
             layoutId={`perm-highlight-${layoutGroup}`}
-            className="absolute inset-0 rounded-[7px]"
+            className="absolute inset-0 rounded-[var(--radius-md)]"
             style={{ backgroundColor: option.color }}
             transition={{ type: "spring", stiffness: 520, damping: 40 }}
           />

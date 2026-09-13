@@ -533,7 +533,7 @@ export function StrapPanel({
         label: `${proposal.sectionName} · ${normalizeStrapAttribution(proposal.agentName)}`,
         group: "Proposals",
         keywords: [proposal.reason],
-        dot: "#10B981",
+        dot: "var(--strap-success)",
         run: () => onFileProposal(proposal.id),
       })),
       ...SETTINGS_COMMANDS.map<Command>((entry) => ({
@@ -1175,7 +1175,7 @@ export function StrapPanel({
                 </div>
               ) : searchPhase === "error" && searchError ? (
                 <div className="p-1.5">
-                  <div className="rounded-[var(--radius-md)] bg-[#FEF2F2] px-3 py-2.5 text-[13px] leading-[1.55] text-[#B91C1C] dark:bg-[#3F1212]/35 dark:text-[#F87171]">
+                  <div className="rounded-[var(--radius-md)] bg-[var(--strap-warning-tint)] px-3 py-2.5 text-[13px] leading-[1.55] text-[var(--strap-danger)]">
                     {searchError}
                   </div>
                 </div>
@@ -1277,7 +1277,7 @@ export function StrapPanel({
                       </div>
                     ) : null}
                     {askPhase === "error" && askError ? (
-                      <div className="rounded-[var(--radius-md)] bg-[#FEF2F2] px-3 py-2.5 text-[13px] leading-[1.55] text-[#B91C1C] dark:bg-[#3F1212]/35 dark:text-[#F87171]">
+                      <div className="rounded-[var(--radius-md)] bg-[var(--strap-warning-tint)] px-3 py-2.5 text-[13px] leading-[1.55] text-[var(--strap-danger)]">
                         {askError}
                       </div>
                     ) : null}
@@ -1397,7 +1397,7 @@ export function StrapPanel({
 
                     {agentRun.status === "error" && agentRun.error ? (
                       <>
-                        <div className="rounded-[var(--radius-md)] bg-[#FEF2F2] px-3 py-2.5 text-[13px] leading-[1.55] text-[#B91C1C] dark:bg-[#3F1212]/35 dark:text-[#F87171]">
+                        <div className="rounded-[var(--radius-md)] bg-[var(--strap-warning-tint)] px-3 py-2.5 text-[13px] leading-[1.55] text-[var(--strap-danger)]">
                           {agentRun.error}
                         </div>
                         <button

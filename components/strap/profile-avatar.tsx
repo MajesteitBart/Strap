@@ -10,18 +10,18 @@ import { cn } from "@/lib/utils";
 export type ProfileAvatarKind = "person" | "company";
 
 const SIZE_CLASS = {
-  sm: "h-6 w-6 rounded-[8px] after:rounded-[8px]",
+  sm: "h-6 w-6 rounded-[var(--radius-lg)] after:rounded-[var(--radius-lg)]",
   md: "h-9 w-9 rounded-sm after:rounded-sm",
-  lg: "h-40 w-40 rounded-[26px] after:rounded-[26px]",
+  lg: "h-40 w-40 rounded-[var(--radius-xl)] after:rounded-[var(--radius-xl)]",
   responsive:
-    "h-[calc(1.25rem+0.5rem+2.75rem)] w-[calc(1.25rem+0.5rem+2.75rem)] rounded-[18px] after:rounded-[18px] md:h-[clamp(7rem,28vw,10rem)] md:w-[clamp(7rem,28vw,10rem)] md:rounded-[26px] md:after:rounded-[26px]",
+    "h-[calc(1.25rem+0.5rem+2.75rem)] w-[calc(1.25rem+0.5rem+2.75rem)] rounded-[var(--radius-xl)] after:rounded-[var(--radius-xl)] md:h-[clamp(7rem,28vw,10rem)] md:w-[clamp(7rem,28vw,10rem)] md:rounded-[var(--radius-xl)] md:after:rounded-[var(--radius-xl)]",
 } as const;
 
 const IMAGE_RADIUS = {
-  sm: "rounded-[8px]",
+  sm: "rounded-[var(--radius-lg)]",
   md: "rounded-sm",
-  lg: "rounded-[26px]",
-  responsive: "rounded-[18px] md:rounded-[26px]",
+  lg: "rounded-[var(--radius-xl)]",
+  responsive: "rounded-[var(--radius-xl)] md:rounded-[var(--radius-xl)]",
 } as const;
 
 export function ProfileAvatar({
@@ -122,7 +122,7 @@ export function EditableProfileAvatar({
         onFocus={() => uploadIconRef.current?.startAnimation()}
         onBlur={() => uploadIconRef.current?.stopAnimation()}
         className={cn(
-          "group absolute inset-0 flex items-center justify-center rounded-[18px] transition-colors duration-150 md:rounded-[26px]",
+          "group absolute inset-0 flex items-center justify-center rounded-[var(--radius-xl)] transition-colors duration-150 md:rounded-[var(--radius-xl)]",
           disabled
             ? "cursor-not-allowed"
             : cn(

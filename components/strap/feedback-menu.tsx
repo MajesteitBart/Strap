@@ -157,7 +157,7 @@ export function FeedbackMenuItem() {
           sideOffset={14}
           alignOffset={0}
           className={cn(
-            "relative w-[min(240px,calc(100vw-2.5rem))] border-[var(--strap-border)] bg-[var(--strap-surface)] p-0 md:w-[384px]",
+            "relative w-[min(240px,calc(100vw-2.5rem))] border-[var(--strap-frame)] bg-[var(--strap-surface)] p-0 md:w-[384px]",
             // Bridging pseudo spans the sideOffset gap so the cursor can
             // travel from the row into the panel without dismissing it.
             "before:pointer-events-auto before:absolute before:-left-4 before:top-0 before:bottom-0 before:w-4 before:content-['']"
@@ -178,7 +178,7 @@ export function FeedbackMenuItem() {
               }
               rows={4}
               disabled={submitting || status === "sent"}
-              className="min-h-[96px] resize-none rounded-[9px] border-[var(--strap-border)] bg-transparent px-3 py-2.5 text-sm leading-5 placeholder:text-[var(--strap-text-tertiary)] md:min-h-[132px]"
+              className="min-h-[96px] resize-none rounded-[var(--radius-lg)] border-[var(--strap-border)] bg-transparent px-3 py-2.5 text-sm leading-5 placeholder:text-[var(--strap-text-tertiary)] md:min-h-[132px]"
             />
             <div className="mt-2.5 flex items-center justify-between gap-2">
               <AnimatePresence mode="wait" initial={false}>
@@ -217,7 +217,7 @@ export function FeedbackMenuItem() {
                     Need help?{" "}
                     <a
                       href={CONTACT_MAILTO}
-                      className="font-medium text-[var(--strap-accent)] transition-colors hover:text-[var(--strap-accent-hover)]"
+                      className="font-medium text-[var(--strap-context)] transition-colors hover:text-[var(--strap-text-primary)]"
                     >
                       Contact us
                     </a>
@@ -227,7 +227,7 @@ export function FeedbackMenuItem() {
                         or{" "}
                         <Link
                           href="/docs"
-                          className="font-medium text-[var(--strap-accent)] transition-colors hover:text-[var(--strap-accent-hover)]"
+                          className="font-medium text-[var(--strap-context)] transition-colors hover:text-[var(--strap-text-primary)]"
                         >
                           see docs
                         </Link>

@@ -1,79 +1,78 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { AnimatedPageTitle } from "@/components/marketing/animated-page-title";
+import Link from "next/link";
 import {
-  MarketingFooter,
-  MarketingHeroBanner,
-} from "@/components/marketing/site-chrome";
-import { RoadmapStatusPill } from "@/components/marketing/roadmap-status";
+  StrapPageHero,
+  StrapSiteFooter,
+  StrapSiteHeader,
+} from "@/components/marketing/strap-site-shell";
+import { ROADMAP_STATUS_TONE, RoadmapStatusPill } from "@/components/marketing/roadmap-status";
 import type { RoadmapColumn, RoadmapTask } from "@/lib/marketing/roadmap";
+import { isSupabaseConfigured } from "@/lib/supabase/env";
 
 export function RoadmapPageView({ columns }: { columns: RoadmapColumn[] }) {
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    function onScroll() {
-      setScrolled(window.scrollY > 20);
-    }
-
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
   const total = columns.reduce((sum, column) => sum + column.tasks.length, 0);
 
   return (
-    <div className="min-h-screen bg-[var(--strap-background)] text-[var(--strap-text-primary)]">
-      <MarketingHeroBanner configured scrolled={scrolled} />
+    <div className="strap-site">
+      <StrapSiteHeader configured={isSupabaseConfigured()} current="roadmap" />
 
-      <main className="mx-auto max-w-6xl px-6 pb-24 pt-8 md:px-10 md:pb-28 md:pt-10">
-        <div className="mx-auto max-w-2xl text-center">
-          <AnimatedPageTitle
-            text="Roadmap"
-            className="justify-center"
-          />
-          <p className="t-lede mx-auto mt-5 max-w-xl text-[var(--strap-text-tertiary)]">
-            A live view of what we&apos;re building, straight from our task
-            board.
-          </p>
+      <main>
+        <StrapPageHero
+          kicker={`Roadmap · ${total} ${total === 1 ? "item" : "items"} on the board`}
+          kickerTone="skills"
+          title="Roadmap"
+          lede="A live view of what we're building, straight from our task board."
+          actions={
+            <>
+              <Link className="strap-button strap-button-secondary" href="/changelog">
+                What already shipped
+              </Link>
+              <Link className="strap-button strap-button-secondary" href="/bench">
+                Benchmarks
+              </Link>
+            </>
+          }
+        />
+
+        <div className="strap-wrap strap-page-main">
+          {total === 0 ? (
+            <div className="strap-card strap-card-offset strap-tone-skills strap-page-main-narrow">
+              <div className="strap-card-head">
+                <span>
+                  <b>board</b> · syncing
+                </span>
+                <span className="strap-pill">Empty</span>
+              </div>
+              <div className="strap-card-body">
+                <p>The roadmap is being updated. Check back shortly.</p>
+              </div>
+            </div>
+          ) : (
+            <div className="strap-board">
+              {columns.map((column) => (
+                <RoadmapColumnView key={column.id} column={column} />
+              ))}
+            </div>
+          )}
         </div>
-
-        {total === 0 ? (
-          <p className="mt-20 text-center text-[15px] text-[var(--strap-text-tertiary)]">
-            The roadmap is being updated. Check back shortly.
-          </p>
-        ) : (
-          <div className="mt-14 grid gap-5 md:mt-16 lg:grid-cols-3">
-            {columns.map((column) => (
-              <RoadmapColumnView key={column.id} column={column} />
-            ))}
-          </div>
-        )}
       </main>
 
-      <MarketingFooter />
+      <StrapSiteFooter />
     </div>
   );
 }
 
 function RoadmapColumnView({ column }: { column: RoadmapColumn }) {
   return (
-    <section className="flex flex-col">
-      <div className="mb-4 flex items-center gap-2.5">
+    <section className={`strap-board-column strap-tone-${ROADMAP_STATUS_TONE[column.id]}`} aria-label={column.label}>
+      <div className="strap-board-column-head">
         <RoadmapStatusPill id={column.id} label={column.label} />
-        <span className="text-[13px] tabular-nums text-[var(--strap-text-tertiary)]">
-          {column.tasks.length}
-        </span>
+        <span className="strap-pill strap-pill-count">{column.tasks.length}</span>
       </div>
 
       {column.tasks.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-[var(--strap-border)] px-5 py-10 text-center text-[13px] text-[var(--strap-text-tertiary)]">
-          Nothing here yet
-        </div>
+        <div className="strap-board-empty">Nothing here yet</div>
       ) : (
-        <div className="flex flex-col gap-4">
+        <div className="strap-board-cards">
           {column.tasks.map((task) => (
             <RoadmapCard key={task.id} task={task} />
           ))}
@@ -85,30 +84,14 @@ function RoadmapColumnView({ column }: { column: RoadmapColumn }) {
 
 function RoadmapCard({ task }: { task: RoadmapTask }) {
   return (
-    <article className="rounded-xl bg-[var(--strap-surface)] p-5">
-      {task.code ? (
-        <div className="font-mono text-[11px] tracking-tight text-[var(--strap-text-tertiary)]">
-          {task.code}
-        </div>
-      ) : null}
-
-      <h3 className="mt-2 text-[16px] font-medium leading-snug tracking-[-0.01em] text-[var(--strap-text-primary)]">
-        {task.title}
-      </h3>
-
-      {task.description ? (
-        <p className="t-body mt-2 line-clamp-2 text-[var(--strap-text-secondary)]">
-          {task.description}
-        </p>
-      ) : null}
-
+    <article className="strap-board-card">
+      {task.code ? <span className="strap-board-code">{task.code}</span> : null}
+      <h3>{task.title}</h3>
+      {task.description ? <p>{task.description}</p> : null}
       {task.labels.length > 0 ? (
-        <div className="mt-3.5 flex flex-wrap gap-1.5">
+        <div className="strap-board-labels">
           {task.labels.map((label) => (
-            <span
-              key={label}
-              className="rounded-[6px] bg-[var(--strap-surface-raised)] px-2 py-0.5 font-mono text-[12px] text-[var(--strap-text-tertiary)]"
-            >
+            <span key={label} className="strap-pill strap-pill-count">
               {label}
             </span>
           ))}
