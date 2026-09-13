@@ -5,16 +5,16 @@ status: done
 workstream: WS-B
 created: 2026-07-24T21:18:46Z
 updated: 2026-09-13T10:29:12Z
-linear_issue_id:
-github_issue:
-github_pr:
+linear_issue_id: 
+github_issue: 
+github_pr: 
 depends_on: []
 conflicts_with: [components/auth, app/authorize, app/device, app/invite, app/onboarding, supabase/email-templates]
 parallel: true
 priority: high
 estimate: L
 operating_mode: multi-stream
-story_id:
+story_id: 
 acceptance_criteria_ids: []
 ---
 
