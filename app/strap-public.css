@@ -740,13 +740,17 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .strap-nav-toggle,
   .strap-nav-toggle-lines,
   .strap-nav-toggle-lines::before,
   .strap-nav-toggle-lines::after,
+  .strap-index-row,
+  .strap-faq-trigger,
   .strap-faq-trigger svg,
   .strap-faq-panel,
   .strap-button,
   .strap-input,
+  .strap-input-trailing button,
   .strap-checkbox,
   .strap-cell-link { transition: none; }
 }
