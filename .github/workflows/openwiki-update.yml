@@ -57,8 +57,8 @@ jobs:
           OPENWIKI_PROVIDER: openrouter
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           # The project account has no paid balance; never fall back to a paid route.
-          OPENWIKI_MODEL_ID: nex-agi/nex-n2.5-pro:free
-          OPENWIKI_OPENROUTER_MAX_TOKENS: "8192"
+          OPENWIKI_MODEL_ID: cohere/north-mini-code:free
+          OPENWIKI_OPENROUTER_MAX_TOKENS: "16384"
           OPENWIKI_TELEMETRY_DISABLED: "1"
 
       - name: Preserve repository instructions and executable configuration
