@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(23);
+select plan(24);
 
 insert into auth.users(id, email) values
   ('51000000-0000-4000-8000-000000000001', 'skill-owner@example.invalid'),
@@ -39,6 +39,7 @@ select is((public.strap_skill_publish('51000000-0000-4000-8000-000000000001', '5
 select throws_ok($$select public.strap_skill_publish('51000000-0000-4000-8000-000000000001', '52000000-0000-4000-8000-000000000001', 'test', 1, 'Stale', '[{"path":"SKILL.md","content":"stale"}]', repeat('c',64), 5)$$, 'PT409', null, 'stale publication cannot overwrite current version');
 select is(public.strap_skills_read('51000000-0000-4000-8000-000000000001', '52000000-0000-4000-8000-000000000001', 'test', 1)->'skill'->>'description', 'Test workflow', 'original version remains available');
 select is((public.strap_skill_publish('51000000-0000-4000-8000-000000000001', '52000000-0000-4000-8000-000000000001', 'test', 2, p_archived => true)->>'archived')::boolean, true, 'archive leaves a versioned tombstone');
+select is((public.strap_skill_publish('51000000-0000-4000-8000-000000000001', '52000000-0000-4000-8000-000000000001', 'test', 2, p_archived => true)->>'revision')::int, 3, 'lost archive response retries succeed without creating another revision');
 reset role;
 
 update public.creed_members set role = 'admin' where user_id = '51000000-0000-4000-8000-000000000002';

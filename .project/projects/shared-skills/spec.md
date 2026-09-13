@@ -38,12 +38,12 @@ Publish a standard skill with supporting files from device A, retrieve it on dev
 
 ## Scope
 ### In Scope
-Profile libraries, 100 skills per profile, 128 files and 2 MiB per skill, latest 20 complete versions, browser editor/import/export, MCP discovery/read/export/publication, CLI push/pull/sync and dry-run, Codex and Claude directory targets.
+Profile libraries, 100 skills per profile, 128 files and 2 MiB per skill, up to 20 complete versions within a 64 MiB profile storage budget, browser editor/import/export, MCP discovery/read/export/publication, CLI push/pull/sync and dry-run, Codex and Claude directory targets.
 ### Out of Scope
 Public marketplace, remote URL ingestion, background daemons, skill execution, dependency installation, per-agent manifests, named environments, section policy changes, and importing local credentials or the maintainer's entire skill collection automatically.
 
 ## Functional Requirements
-Use standard SKILL.md YAML frontmatter. Preserve all uploaded bytes and executable metadata. New names must be portable across Windows and Unix. Archive moves unchanged managed device installations to recoverable backups on next sync. Each local directory binds one server and profile. Existing skills outside that binding require explicit publication or conflict resolution.
+Use standard SKILL.md YAML frontmatter. Preserve all uploaded bytes and executable metadata. Browser folder imports cannot read Unix executable flags and require explicit review before publishing; CLI and JSON imports preserve them. Oldest history is pruned to meet the encoded storage budget, preserving current revisions. If current data cannot fit, the publication and pruning roll back together. New names must be portable across Windows and Unix. Archive moves unchanged managed device installations to recoverable backups on next sync. Each local directory binds one server and profile. Existing skills outside that binding require explicit publication or conflict resolution.
 
 ## Non-Functional Requirements
 No service credentials in clients, bundles, logs, or commits. SQL authorization checks live membership within the transaction. Publication is serialized and revision-checked. No scripts execute during sync. Server requests and bundle parsing are bounded.

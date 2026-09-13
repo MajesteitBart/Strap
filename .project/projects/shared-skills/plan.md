@@ -19,7 +19,7 @@ No separate prototype needed. Existing source provides profile identity, MCP aut
 Next.js application and independent TypeScript CLI share a portable bundle validator under packages/strap/src/skills. Skill state is independent of Personal full-state saves and Company section mutations.
 
 ## Architecture Decisions
-- Store bounded bundles and the latest 20 complete revisions in Postgres JSONB. This keeps publication and history atomic without orphaned storage objects.
+- Store bounded bundles and up to 20 complete revisions in Postgres JSONB, with a serialized 64 MiB encoded-data budget per profile. Prune oldest historical copies first; preserve current revisions. This keeps publication and history atomic without orphaned storage objects. Cache metadata separately so listing skills and history does not load full bundles.
 - Service-only SECURITY INVOKER RPCs explicitly validate membership. RLS is enabled, and client table/RPC privileges are revoked. This follows existing Company server authorization while avoiding new definer functions.
 - The profile owner and Company admins publish. All live members may read. MCP additionally requires a direct credential for publishing; no automatic proposal or hidden write escalation.
 - YAML parsing uses a pinned direct dependency in the app and CLI. Alias expansion is disabled. Files are canonicalized, hashed, path-checked, and bounded.

@@ -3695,7 +3695,7 @@
       "file": "packages/strap/README.md",
       "kind": "content",
       "occurrences": 4,
-      "fingerprint": "a6ee96660997d62a0a78f17eac18a5c064853879849d95dc326a536176473260",
+      "fingerprint": "bce4bf33436b502114f38e6e29e95efc8cff5c343407ed64d0392ce80446ee62",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -4385,10 +4385,28 @@
       "rationale": "Preserved historical delivery evidence or forward-only schema history; rewriting would falsify repository history."
     },
     {
+      "file": "supabase/migrations/20260913153559_bound_skill_storage.sql",
+      "kind": "content",
+      "occurrences": 6,
+      "fingerprint": "1ef84d4ad96fc4f12dda943b69b0ea0ded0a90d1e439efb9e5f2cc8a29a9c9ae",
+      "decision": "history",
+      "category": "historical-delivery-or-schema",
+      "rationale": "Preserved historical delivery evidence or forward-only schema history; rewriting would falsify repository history."
+    },
+    {
       "file": "supabase/tests/shared_skills.test.sql",
       "kind": "content",
       "occurrences": 5,
-      "fingerprint": "8677258ddfe5ef6addf251325b2b648b27159c30a3665d2da9f0d6a6fbf2f824",
+      "fingerprint": "4504842dfc2c0f59ec8138624cdd4042c776fbb29a430c0bf4129ed4707ea1de",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "supabase/tests/skill_storage.test.sql",
+      "kind": "content",
+      "occurrences": 3,
+      "fingerprint": "57b65c5eac40fa6a12f35b8ab0936066587a332584a258a115b8b7fed267bdda",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."

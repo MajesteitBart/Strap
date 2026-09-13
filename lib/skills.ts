@@ -76,7 +76,7 @@ export async function listSkills(userId: string, strapId: string) {
   return (await rpc("strap_skills_read", {
     p_user_id: userId,
     p_strap_id: validateStrapId(strapId),
-  })) as { strapId: string; canManage: boolean; skills: SkillSummary[] };
+  })) as { strapId: string; canManage: boolean; storageBytes: number; skills: SkillSummary[] };
 }
 
 export async function getSkill(

@@ -185,6 +185,7 @@ function SkillLibrary({
   company: boolean;
 }) {
   const [items, setItems] = useState<SkillSummary[]>([]);
+  const [storageBytes, setStorageBytes] = useState<number | null>(null);
   const [canManage, setCanManage] = useState(false);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -194,6 +195,7 @@ function SkillLibrary({
   const [showArchived, setShowArchived] = useState(false);
   const [draft, setDraft] = useState<Draft | null>(null);
   const [dirty, setDirty] = useState(false);
+  const [folderPermissionsPending, setFolderPermissionsPending] = useState(false);
   const [filePath, setFilePath] = useState("SKILL.md");
   const [versions, setVersions] = useState<SkillSummary[]>([]);
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -210,10 +212,12 @@ function SkillLibrary({
       const library = await request<{
         skills: SkillSummary[];
         canManage: boolean;
+        storageBytes: number;
       }>(`/api/app/skills?strapId=${encodeURIComponent(strapId)}`, { signal });
       if (!mounted.current) return;
       setItems(library.skills);
       setCanManage(library.canManage);
+      setStorageBytes(library.storageBytes ?? null);
     },
     [strapId],
   );
@@ -315,6 +319,7 @@ function SkillLibrary({
       setVersions(value.versions);
       setFilePath("SKILL.md");
       setDirty(false);
+      setFolderPermissionsPending(false);
       setHistoryOpen(false);
     } catch (reason) {
       fail(reason);
@@ -341,6 +346,7 @@ function SkillLibrary({
     setFilePath("SKILL.md");
     setVersions([]);
     setDirty(true);
+    setFolderPermissionsPending(false);
     setError("");
     setNotice("");
     setHistoryOpen(false);
@@ -387,6 +393,7 @@ function SkillLibrary({
       setVersions([]);
       setFilePath("SKILL.md");
       setDirty(true);
+      setFolderPermissionsPending(!json && bundle.files.some((file) => file.path !== "SKILL.md"));
       setHistoryOpen(false);
       setNotice(
         existing
@@ -402,7 +409,7 @@ function SkillLibrary({
   }
 
   async function publish(archive = false) {
-    if (!draft || busy) return;
+    if (!draft || busy || folderPermissionsPending) return;
     if (
       archive &&
       !window.confirm(
@@ -448,7 +455,10 @@ function SkillLibrary({
           ? "Skill archived. Devices will pick up this change on their next sync."
           : `Version ${value.skill.revision} published. Agents can read it now; devices get it on their next sync.`,
       );
-      setVersions((current) => [value.skill, ...current].slice(0, 20));
+      const history = await request<{ versions: SkillSummary[] }>(
+        `/api/app/skills/${encodeURIComponent(name)}?${query}`,
+      );
+      if (mounted.current) setVersions(history.versions);
       await load();
     } catch (reason) {
       fail(reason);
@@ -470,6 +480,7 @@ function SkillLibrary({
         current ? { ...current, files: skill.files, archived: false } : current,
       );
       setDirty(true);
+      setFolderPermissionsPending(false);
       setFilePath("SKILL.md");
       setHistoryOpen(false);
       setNotice(
@@ -565,7 +576,8 @@ function SkillLibrary({
         <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 font-mono text-[11px] text-[var(--strap-text-secondary)]">
           <span>{company ? "Company library" : "Personal library"}</span>
           <span>{items.length} / 100 skills, including archived</span>
-          <span>20 versions per skill</span>
+          <span>Up to 20 versions per skill</span>
+          <span>{storageBytes === null ? "64 MiB per profile" : `${(storageBytes / 1048576).toFixed(1)} / 64 MiB, including history`}</span>
           {company && (
             <span>Members use skills. Owners and admins publish.</span>
           )}
@@ -769,7 +781,7 @@ function SkillLibrary({
                     {canManage && (
                       <Button
                         size="sm"
-                        disabled={busy || (!dirty && !draft.archived)}
+                        disabled={busy || folderPermissionsPending || (!dirty && !draft.archived)}
                         onClick={() => {
                           void publish();
                         }}
@@ -783,11 +795,21 @@ function SkillLibrary({
                     )}
                   </div>
                 </div>
+                {folderPermissionsPending && (
+                  <div className="border-b border-[var(--strap-border)] bg-[var(--strap-surface-muted)] p-4 text-sm leading-6">
+                    <p>Browsers cannot read executable permissions from folders. Select each script below and check its Executable file setting. Publishing with the CLI preserves these permissions automatically.</p>
+                    <label className="mt-3 flex items-center gap-2">
+                      <input type="checkbox" checked={false} onChange={() => setFolderPermissionsPending(false)} />
+                      I checked the executable file settings.
+                    </label>
+                  </div>
+                )}
                 {historyOpen && (
                   <div className="border-b border-[var(--strap-border)] bg-[var(--strap-surface-muted)] p-4">
                     <p className="mb-3 text-xs text-[var(--strap-text-secondary)]">
                       Restore loads an earlier version as a draft. Publishing
-                      keeps the current version in history.
+                      keeps the current version in history. Older history is removed
+                      first when the profile reaches its 64 MiB storage limit.
                     </p>
                     {versions.map((version) => (
                       <div
