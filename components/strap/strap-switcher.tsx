@@ -198,13 +198,13 @@ export function StrapSwitcher() {
               </span>
               {creed.needsSetup ? (
                 <span
-                  className="shrink-0 rounded-[6px] px-2 py-0.5 text-[11px] font-medium text-white"
-                  style={{ backgroundColor: creed.type === "company" ? "var(--strap-caution)" : "var(--strap-accent)" }}
+                  className="shrink-0 rounded-[6px] px-2 py-0.5 text-[11px] font-medium text-white!"
+                  style={{ backgroundColor: creed.type === "company" ? "var(--strap-caution-fill)" : "var(--strap-accent)" }}
                 >
                   Set up
                 </span>
               ) : isActive ? (
-                <Check className="h-4 w-4 shrink-0 text-white" strokeWidth={1.8} />
+                <Check className="h-4 w-4 shrink-0 text-[var(--strap-text-primary)]" strokeWidth={1.8} />
               ) : null}
             </DropdownMenuItem>
           );
