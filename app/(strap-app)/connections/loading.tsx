@@ -39,7 +39,7 @@ export default function ConnectionsLoading() {
           {/* MCP connection card */}
           <Card className="mt-5 p-4 md:p-5">
             <div className="flex items-center gap-3">
-              <Block className="h-9 w-9 rounded-[8px]" />
+              <Block className="h-9 w-9 rounded-[var(--radius-lg)]" />
               <div>
                 <Block className="h-4 w-24" />
                 <div className="mt-1.5 flex items-center gap-2">

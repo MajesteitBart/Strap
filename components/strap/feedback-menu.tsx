@@ -178,7 +178,7 @@ export function FeedbackMenuItem() {
               }
               rows={4}
               disabled={submitting || status === "sent"}
-              className="min-h-[96px] resize-none rounded-[9px] border-[var(--strap-border)] bg-transparent px-3 py-2.5 text-sm leading-5 placeholder:text-[var(--strap-text-tertiary)] md:min-h-[132px]"
+              className="min-h-[96px] resize-none rounded-[var(--radius-lg)] border-[var(--strap-border)] bg-transparent px-3 py-2.5 text-sm leading-5 placeholder:text-[var(--strap-text-tertiary)] md:min-h-[132px]"
             />
             <div className="mt-2.5 flex items-center justify-between gap-2">
               <AnimatePresence mode="wait" initial={false}>

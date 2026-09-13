@@ -205,7 +205,7 @@ export function ConnectionsScreen() {
     <div className="h-full overflow-y-auto bg-[var(--strap-surface)] strap-scrollbar">
       <div className="mx-auto max-w-[960px] px-4 py-8 md:px-12 md:py-10">
         <div className="max-w-3xl">
-          <h1 className="font-heading text-[1.75rem] font-medium tracking-[-0.03em] text-[var(--strap-text-primary)]">
+          <h1 className="font-heading text-[1.75rem] font-semibold tracking-[-0.03em] text-[var(--strap-text-primary)]">
             Connections
           </h1>
         </div>
@@ -265,7 +265,7 @@ export function ConnectionsScreen() {
                       className={cn(
                         "h-2 w-2 rounded-[3px]",
                         connected
-                          ? "bg-[#16A34A]"
+                          ? "bg-[var(--strap-success)]"
                           : "bg-[var(--strap-border-strong)]",
                       )}
                     />
@@ -392,7 +392,7 @@ export function ConnectionsScreen() {
                       className={cn(
                         "h-2 w-2 rounded-[3px]",
                         cliConnected
-                          ? "bg-[#16A34A]"
+                          ? "bg-[var(--strap-success)]"
                           : "bg-[var(--strap-border-strong)]",
                       )}
                     />

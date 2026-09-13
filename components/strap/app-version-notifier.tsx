@@ -32,7 +32,7 @@ export function showVersionUpdateToast() {
     classNames: {
       toast: "!pr-24",
       actionButton:
-        "!absolute !top-1/2 !right-10 !left-auto !-translate-y-1/2 !transform-none !h-7 !rounded-[8px] !bg-transparent !border-0 !px-2 !text-[12px] !font-medium !text-current !opacity-70 hover:!opacity-100 hover:!bg-current/[0.10] !transition-all",
+        "!absolute !top-1/2 !right-10 !left-auto !-translate-y-1/2 !transform-none !h-7 !rounded-[var(--radius-lg)] !bg-transparent !border-0 !px-2 !text-[12px] !font-medium !text-current !opacity-70 hover:!opacity-100 hover:!bg-current/[0.10] !transition-all",
     },
   });
 }

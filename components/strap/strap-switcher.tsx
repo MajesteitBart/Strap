@@ -21,7 +21,7 @@ const LAST_ACTIVE_CREED_KEY = "creed:last-active-creed";
 // a company) with a dropdown arrow to the right. When the user belongs to only
 // one Strap there is no arrow and no menu - it renders as a plain title.
 const TITLE_CLASS =
-  "font-heading text-[1.22rem] font-medium tracking-[-0.03em] text-[var(--strap-text-primary)] md:text-[1.45rem]";
+  "font-heading text-[1.22rem] font-semibold tracking-[-0.03em] text-[var(--strap-text-primary)] md:text-[1.45rem]";
 
 export function StrapSwitcher() {
   const { state, switchCreed } = useStrap();
@@ -199,7 +199,7 @@ export function StrapSwitcher() {
               {creed.needsSetup ? (
                 <span
                   className="shrink-0 rounded-[6px] px-2 py-0.5 text-[11px] font-medium text-white"
-                  style={{ backgroundColor: creed.type === "company" ? "#F59E0B" : "var(--strap-accent)" }}
+                  style={{ backgroundColor: creed.type === "company" ? "var(--strap-caution)" : "var(--strap-accent)" }}
                 >
                   Set up
                 </span>

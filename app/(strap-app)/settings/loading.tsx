@@ -81,7 +81,7 @@ export default function SettingsLoading() {
                 {[0, 1].map((i) => (
                   <div key={i} className="flex items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
-                      <Block className="h-9 w-9 rounded-[8px]" />
+                      <Block className="h-9 w-9 rounded-[var(--radius-lg)]" />
                       <div>
                         <Block className="h-4 w-24" />
                         <Block className="mt-2 h-3 w-36" />

@@ -113,7 +113,7 @@ function getAgentButtonClasses(connectionId: string) {
     case "openclaw":
       return "bg-[#FF0000] text-white hover:bg-[#E00000]";
     case "hermes":
-      return "bg-[#FFBB00] text-white hover:bg-[#E6A900] dark:bg-[#D9A000] dark:hover:bg-[#B88600]";
+      return "bg-[#FFBB00] text-white hover:bg-[#E6A900]";
     case "chatgpt":
     case "cursor":
     case "devin":
@@ -123,7 +123,7 @@ function getAgentButtonClasses(connectionId: string) {
     case "factory":
     case "manus":
     case "custom":
-      return "bg-[#171717] text-white hover:bg-[#0F0F0F] dark:bg-[#e7e7e2] dark:text-[#0e0e0d] dark:hover:bg-[#cfcfc8]";
+      return "bg-[#171717] text-white hover:bg-[#0F0F0F]";
     default:
       return "bg-[var(--strap-text-primary)] text-[var(--strap-button-primary-fg)] hover:bg-[var(--strap-button-primary-hover)]";
   }
@@ -317,7 +317,7 @@ export function ConnectionCard({
                 className={cn(
                   "h-2 w-2 rounded-[3px]",
                   isConnected
-                    ? "bg-[#16A34A]"
+                    ? "bg-[var(--strap-success)]"
                     : "bg-[var(--strap-border-strong)]",
                 )}
               />
@@ -426,7 +426,7 @@ export function ConnectionCard({
                   ) : null}
                   <AnimatedMenuIconItem
                     icon={KeyIcon}
-                    className="mt-1 bg-[#DC2626] text-sm text-white hover:bg-[#B91C1C] hover:text-white focus:bg-[#B91C1C] focus:text-white data-[highlighted]:bg-[#B91C1C] data-[highlighted]:text-white not-data-[variant=destructive]:focus:**:text-white"
+                    className="mt-1 bg-[var(--strap-danger)] text-sm text-white hover:bg-[var(--strap-danger-hover)] hover:text-white focus:bg-[var(--strap-danger-hover)] focus:text-white data-[highlighted]:bg-[var(--strap-danger-hover)] data-[highlighted]:text-white not-data-[variant=destructive]:focus:**:text-white"
                     onSelect={() => {
                       // Let the menu close first, then open the dialog on the
                       // next tick so its enter animation plays (two Radix
@@ -457,7 +457,7 @@ export function ConnectionCard({
           <DialogContent className="rounded-[var(--radius-xl)] border-[var(--strap-border)] bg-[var(--strap-surface)]">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-3">
-                <AlertTriangle className="h-5 w-5 text-[#B91C1C]" />
+                <AlertTriangle className="h-5 w-5 text-[var(--strap-danger)]" />
                 Revoke {connection.name} access
               </DialogTitle>
               <DialogDescription>
@@ -475,7 +475,7 @@ export function ConnectionCard({
                 Cancel
               </Button>
               <Button
-                className="rounded-md bg-[#DC2626] text-white hover:bg-[#B91C1C]"
+                className="rounded-md bg-[var(--strap-danger)] text-white hover:bg-[var(--strap-danger-hover)]"
                 disabled={revoking}
                 onClick={async () => {
                   setRevoking(true);

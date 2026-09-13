@@ -109,11 +109,11 @@ function ShellNavLink({
         // a square, not a slight rectangle; lg restores the full-width row.
         // When the sidebar is collapsed (S key) the lg styles are dropped so
         // desktop renders the same icon rail as mobile.
-        "flex h-8 w-8 mx-auto items-center justify-center rounded-sm text-[14px] font-medium text-[var(--strap-text-secondary)] transition-colors duration-150 hover:bg-[var(--strap-surface-raised)] hover:text-[var(--strap-text-primary)]",
+        "flex h-8 w-8 mx-auto items-center justify-center rounded-sm border-l-2 border-transparent text-[14px] font-medium text-[var(--strap-text-secondary)] transition-colors duration-150 hover:bg-[var(--strap-surface-raised)] hover:text-[var(--strap-text-primary)]",
         !collapsed &&
           "lg:h-auto lg:w-auto lg:mx-0 lg:min-h-0 lg:justify-start lg:gap-3 lg:px-2 lg:py-2",
         active &&
-          "bg-[var(--strap-surface-raised)] text-[var(--strap-text-primary)] hover:bg-[var(--strap-surface-raised)]"
+          "border-[var(--strap-context)] bg-[var(--strap-context-tint)] text-[var(--strap-text-primary)] hover:bg-[var(--strap-context-tint)]"
       )}
       aria-label={item.label}
       onMouseEnter={() => {
@@ -154,9 +154,9 @@ export function StrapShell({
   const agentTile = agentBusy
     ? { bg: "var(--strap-accent)", label: "Strap is working" }
     : agentRun.status === "result"
-      ? { bg: "#16A34A", label: "Strap finished" }
+      ? { bg: "var(--strap-success)", label: "Strap finished" }
       : agentRun.status === "error"
-        ? { bg: "#DC2626", label: "Strap hit an error" }
+        ? { bg: "var(--strap-danger)", label: "Strap hit an error" }
         : null;
   // Desktop sidebar collapse (S key). Collapsed drops every lg: sidebar style
   // so desktop renders the same 48px icon rail as mobile. Persisted so the
@@ -353,13 +353,13 @@ export function StrapShell({
     <ShellActionsContext.Provider value={shellActions}>
       <div
         className={cn(
-          "grid h-screen grid-cols-[48px_minmax(0,1fr)] overflow-hidden bg-[var(--strap-surface)] transition-[grid-template-columns] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]",
+          "grid h-screen grid-cols-[48px_minmax(0,1fr)] overflow-hidden bg-[var(--strap-background)] transition-[grid-template-columns] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]",
           !collapsed && "lg:grid-cols-[220px_minmax(0,1fr)]"
         )}
       >
         <aside
           className={cn(
-            "h-screen overflow-hidden border-r border-[var(--strap-border)] bg-[var(--strap-surface)] px-1.5 py-3",
+            "h-screen overflow-hidden border-r border-[var(--strap-frame)] bg-[var(--strap-background)] px-1.5 py-3",
             !collapsed && "lg:px-5 lg:py-5"
           )}
         >
@@ -462,7 +462,7 @@ export function StrapShell({
 
             <div
               className={cn(
-                "hidden text-[13px] font-medium text-[var(--strap-text-tertiary)]",
+                "hidden font-mono text-[10px] font-medium uppercase tracking-[0.05em] text-[var(--strap-text-tertiary)]",
                 !collapsed && "lg:block"
               )}
             >
@@ -482,15 +482,15 @@ export function StrapShell({
                   <>
                     <span
                       className={cn(
-                        "h-2.5 w-2.5 shrink-0 rounded-[3px]",
-                        !collapsed && "lg:h-1.5 lg:w-1.5 lg:rounded-[2px]"
+                        "h-2.5 w-2.5 shrink-0 border border-[var(--strap-frame)]",
+                        !collapsed && "lg:h-2 lg:w-2"
                       )}
                       style={{
-                        // Pending-delete dot turns red so the row reads as
+                        // Pending-delete swatch turns red so the row reads as
                         // a coherent "this is being removed" signal rather
                         // than the original accent next to a red wash.
                         backgroundColor: pendingDelete
-                          ? "#DC2626"
+                          ? "var(--strap-danger)"
                           : accentColorMap[section.accent],
                       }}
                     />
@@ -523,22 +523,22 @@ export function StrapShell({
                     type="button"
                     onClick={() => handleSectionClick(section.id)}
                     className={cn(
-                      "flex h-8 w-8 mx-auto items-center justify-center rounded-sm text-left text-[14px] font-medium text-[var(--strap-text-secondary)] transition-colors duration-150 hover:bg-[var(--strap-surface-raised)] hover:text-[var(--strap-text-primary)]",
+                      "flex h-8 w-8 mx-auto items-center justify-center rounded-sm border-l-2 border-transparent text-left text-[14px] font-medium text-[var(--strap-text-secondary)] transition-colors duration-150 hover:bg-[var(--strap-surface-raised)] hover:text-[var(--strap-text-primary)]",
                       !collapsed &&
                         "lg:h-auto lg:w-full lg:mx-0 lg:min-h-0 lg:justify-start lg:gap-3 lg:px-2 lg:py-2",
                       isActive &&
-                        "bg-[var(--strap-surface-raised)] text-[var(--strap-text-primary)] hover:bg-[var(--strap-surface-raised)]",
+                        "border-[var(--strap-context)] bg-[var(--strap-context-tint)] text-[var(--strap-text-primary)] hover:bg-[var(--strap-context-tint)]",
                       // Pending delete: subtle red wash and red text so the
                       // row reads as "this section is on its way out" but
                       // still navigable until the user accepts/rejects.
                       pendingDelete &&
-                        "bg-[#FEF2F2] text-[#B91C1C] hover:bg-[#FDE2E2] hover:text-[#991B1B] dark:bg-[#3F1212]/35 dark:text-[#F87171] dark:hover:bg-[#3F1212]/55 dark:hover:text-[#F87171]",
+                        "bg-[var(--strap-warning-tint)] text-[var(--strap-danger)] hover:bg-[var(--strap-warning-tint)] hover:text-[var(--strap-danger)]",
                       // When the user is currently viewing a pending-delete
                       // section, lock in the hover variant so the active
                       // state reads the same way it does on every other
                       // tab in this sidebar.
                       pendingDelete && isActive &&
-                        "bg-[#FDE2E2] text-[#991B1B] dark:bg-[#3F1212]/55"
+                        "border-[var(--strap-danger)] bg-[var(--strap-warning-tint)] text-[var(--strap-danger)]"
                     )}
                     aria-label={section.name}
                   >
@@ -559,22 +559,22 @@ export function StrapShell({
                   type="button"
                   onClick={() => handleProposalClick(row.id)}
                   className={cn(
-                    "flex h-8 w-8 mx-auto items-center justify-center rounded-sm bg-[#ECFDF5] text-left text-[14px] font-medium text-[#047857] transition-colors duration-150 hover:bg-[#D1FAE5] hover:text-[#065F46] dark:bg-[#052e1a]/40 dark:text-[#4ade80] dark:hover:bg-[#052e1a]/60 dark:hover:text-[#4ade80]",
+                    "flex h-8 w-8 mx-auto items-center justify-center rounded-sm border-l-2 border-transparent bg-[var(--strap-environments-tint)] text-left text-[14px] font-medium text-[var(--strap-success)] transition-colors duration-150 hover:bg-[var(--strap-environments-tint)] hover:text-[var(--strap-success)]",
                     !collapsed &&
                       "lg:h-auto lg:w-full lg:mx-0 lg:min-h-0 lg:justify-start lg:gap-3 lg:px-2 lg:py-2",
                     // Same active-equals-hover rule as the pending-delete
                     // rows above: once the user has scrolled into the
                     // proposal preview, lock the row into its hover tone.
-                    isActive && "bg-[#D1FAE5] text-[#065F46] dark:bg-[#052e1a]/60"
+                    isActive && "border-[var(--strap-environments)] bg-[var(--strap-environments-tint)] text-[var(--strap-success)]"
                   )}
                   aria-label={`Proposed: ${row.name}`}
                 >
                   <span
                     className={cn(
-                      "h-2.5 w-2.5 shrink-0 rounded-[3px]",
-                      !collapsed && "lg:h-1.5 lg:w-1.5 lg:rounded-[2px]"
+                      "h-2.5 w-2.5 shrink-0 border border-[var(--strap-frame)]",
+                      !collapsed && "lg:h-2 lg:w-2"
                     )}
-                    style={{ backgroundColor: "#10B981" }}
+                    style={{ backgroundColor: "var(--strap-environments)" }}
                   />
                   <span className={cn("hidden truncate", !collapsed && "lg:inline")}>{row.name}</span>
                 </button>
@@ -612,14 +612,14 @@ export function StrapShell({
                         !collapsed && "lg:justify-start"
                       )}
                     >
-                      <Avatar className="h-6 w-6 overflow-hidden rounded-[8px] border border-[var(--strap-border)] bg-[var(--strap-surface-raised)] after:rounded-[8px]">
+                      <Avatar className="h-6 w-6 overflow-hidden rounded-[var(--radius-lg)] border border-[var(--strap-border)] bg-[var(--strap-surface-raised)] after:rounded-[var(--radius-lg)]">
                         {showAvatarImage && avatarUrl ? (
                           <Image
                             key={avatarUrl}
                             src={avatarUrl}
                             alt={userName}
                             fill
-                            className="rounded-[8px] object-cover"
+                            className="rounded-[var(--radius-lg)] object-cover"
                             referrerPolicy="no-referrer"
                             unoptimized
                             onError={() => setFailedAvatarUrl(avatarUrl)}

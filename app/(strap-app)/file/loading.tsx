@@ -34,8 +34,8 @@ export default function FileLoading() {
               <div className="flex items-center gap-2 self-start">
                 <Block className="h-7 w-7 rounded-full" />
                 <div className="flex items-center">
-                  <Block className="h-8 w-[66px] rounded-l-[13px]" />
-                  <Block className="-ml-px h-8 w-8 rounded-r-[13px]" />
+                  <Block className="h-8 w-[66px] rounded-l-[var(--radius-md)]" />
+                  <Block className="-ml-px h-8 w-8 rounded-r-[var(--radius-md)]" />
                 </div>
               </div>
             </div>
@@ -47,7 +47,7 @@ export default function FileLoading() {
               <div key={i}>
                 <div className="mb-6 flex items-start justify-between gap-4">
                   <div className="flex items-center gap-3">
-                    <Block className="h-9 w-[3px] rounded-full" />
+                    <Block className="h-9 w-[3px] rounded-none" />
                     <Block className="h-4 w-32" />
                     <Block className="h-5 w-5 rounded-full" />
                   </div>
