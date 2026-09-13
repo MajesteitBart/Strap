@@ -32,7 +32,7 @@
       "file": ".env.example",
       "kind": "content",
       "occurrences": 6,
-      "fingerprint": "89f0f72c4f847ad12d632a47367ee8d5d81376b37e5f84628f37d119d6e16f3a",
+      "fingerprint": "d2d41b113abc6389f621b5f0bc09eada601a234a1218e641fd092cd7a83f00a7",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -3209,7 +3209,7 @@
       "file": "next.config.ts",
       "kind": "content",
       "occurrences": 9,
-      "fingerprint": "2fc978a7cab1f1ad0699eb7991c83bf2e81ac3191757d2b749b0e13231db14f2",
+      "fingerprint": "3d9aba53c3f5d552cb9dcd7eff938c79b87c716f6da2a8038266ed8ddad1efd9",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
