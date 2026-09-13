@@ -148,6 +148,20 @@ Read [`CONTRIBUTING.md`](./CONTRIBUTING.md) before opening a pull request. Codin
 
 Report vulnerabilities privately using the process in [`SECURITY.md`](./SECURITY.md).
 
+## Shared skills
+
+Open `/skills` to create or import a standard SKILL.md folder, edit its files, publish a version, and restore earlier versions. Skills belong to the active Personal or Company profile. Company members can use them; owners and admins publish. Connected agents discover skills through `strap_list_skills` and read relevant instructions with `strap_get_skill`. Each profile has 64 MiB for current bundles and saved versions; oldest history is removed first, with up to 20 versions per skill. Browser folder imports require you to check executable file settings before publishing.
+
+The Strap CLI 0.2.0 syncs bundles across devices:
+
+```bash
+strap skills push ./my-skill
+strap skills sync --target codex --global
+strap skills sync --target claude --global
+```
+
+Sync checks for conflicts and preserves replaced files outside agent skill directories. Use separate directories for each profile, and `--dry-run` to preview a sync. Scripts and assets are copied without execution. See [the CLI guide](packages/strap/README.md#shared-skills) for limits, directory choices, and conflict recovery.
+
 ## License
 
 [MIT](./LICENSE)

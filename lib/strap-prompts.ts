@@ -4,6 +4,11 @@ import { sectionToMarkdown, type StrapSection } from "@/lib/strap-data";
 // onboarding "copy prompt" is built per-user by buildComposePrompt below.
 export const STRAP_PROMPTS = [
   {
+    name: "use-shared-skills",
+    description: "Read my shared skill library and prepare to use relevant workflows.",
+    text: "Read my Strap with read_strap, then call strap_list_skills. Summarize the available workflows briefly and read relevant skills with strap_get_skill before using them. Fetch supporting files only when needed. Do not execute scripts, install dependencies, reveal keys, or publish changed skills without my request. Keep my profile and connection permissions in effect.",
+  },
+  {
     name: "introduce-me",
     description:
       "Read my Strap and introduce me the way a sharp collaborator would.",

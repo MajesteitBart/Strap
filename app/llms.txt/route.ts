@@ -38,7 +38,7 @@ A personal context file is one structured profile that describes who you are and
 
 Agents connect over MCP with browser OAuth, device authorization, or a scoped headless API key. They read the file before answering, then propose narrowly scoped updates that you approve. The Strap CLI exposes the same live MCP tools in a terminal.
 
-Strap also ships a per-profile Vault for external API keys. Secret values remain server-side and are revealed only through an explicit authorized action. Skills, environments, and agent manifests are roadmap resources, not shipped product features.
+Strap also ships a per-profile Vault for external API keys. Secret values remain server-side and are revealed only through an explicit authorized action. Shared Skills libraries support versioned SKILL.md bundles, device sync through the CLI, and discovery through strap_list_skills and strap_get_skill. Named environments and per-agent manifests remain roadmap resources.
 
 Strap works for one person or a whole team. The Company plan adds one shared Company Strap that every member's agents read, with member roles, an activity view across the team, and admin controls.
 

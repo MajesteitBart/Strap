@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { AnimatedCheckmark } from "@/components/ui/animated-checkmark";
 import { Button } from "@/components/ui/button";
@@ -471,6 +472,11 @@ export function ConnectionsScreen() {
           </div>
         </div>
 
+        <div className="rounded-sm border border-[var(--strap-frame)] bg-[var(--strap-skills-tint)] p-5">
+          <h2 className="font-heading text-lg font-semibold">Give your agents shared skills</h2>
+          <p className="mt-2 text-sm leading-6 text-[var(--strap-text-secondary)]">Connected agents can list and read skills from this profile. Use the Skills library to publish workflows and copy setup commands for each device. Publishing through an agent requires direct access and an owner or admin role.</p>
+          <Link href="/skills" className="mt-3 inline-block text-sm font-medium underline underline-offset-4">Open shared skills</Link>
+        </div>
         <HeadlessAccessCard />
 
         <div className="mt-10 flex flex-wrap items-end justify-between gap-3">

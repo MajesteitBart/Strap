@@ -16,6 +16,8 @@
 - TypeScript stays strict with no `any`; server logging uses `lib/observability.ts` rather than `console.log`.
 
 ## Integration Points
+- Shared skills use the additive `20260913133911_shared_skills.sql` migration: service-only SECURITY INVOKER RPCs check live profile membership and publish revision-checked bundles atomically. RLS and explicit privilege revokes keep tables and RPCs unavailable to browser roles.
+- `packages/strap/src/skills/bundle.ts` is the shared app/CLI validator, using pinned yaml 2.9.1 with alias expansion disabled. Libraries retain 100 skills and up to 20 complete versions per skill; each bundle is limited to 128 files and 2 MiB. The follow-up `20260913153559_bound_skill_storage.sql` caches metadata outside full file payloads and serializes a 64 MiB encoded-data quota across current bundles and history, pruning oldest historical copies while preserving every current revision. Importing the validator intentionally brings it into the app type-check despite the broader CLI exclusion.
 - Supabase for auth, persistence, RLS, realtime, and scheduled jobs.
 - OpenRouter for AI synthesis and quality features, including encrypted BYOK and platform-credit paths.
 - Stripe is optional legacy offboarding only. Checkout, new paid plans, top-ups, and webhooks are retired. Owner-authenticated status and period-end cancellation use `STRIPE_SECRET_KEY`; without it the UI directs existing subscribers to support. Responses and audit records never expose provider identifiers or credentials.
@@ -25,3 +27,4 @@
 - OAuth browser and device grants plus scoped `strap_key_` API keys resolve one explicit profile and a maximum access mode before MCP dispatch; `creed_key_` remains an accepted compatibility prefix.
 - Supabase Vault stores secret plaintext behind signed-in, authorized, audited reveal operations; lists and ordinary context expose metadata or references only.
 - Delano uses `.project/` as delivery truth, `.agents/` as its canonical runtime, and `.codex/hooks.json` as an opt-in session hook.
+- Hosted migration history alone does not prove effective database privileges. A 2026-09-13 audit found older service-only RPC grants had drifted; the existing migration-defined grants were restored and verified with `has_function_privilege`. Check effective client and service execution rights after hosted schema changes.

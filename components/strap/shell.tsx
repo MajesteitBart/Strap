@@ -81,6 +81,7 @@ const ShellActionsContext = createContext<ShellActionsContextValue | null>(null)
 
 const navItems = [
   { href: "/file", label: "File", icon: FileTextIcon },
+  { href: "/skills", label: "Skills", icon: BookTextIcon },
   { href: "/connections", label: "Connections", icon: ConnectIcon },
   { href: "/vault", label: "Vault", icon: KeyIcon },
   { href: "/settings", label: "Settings", icon: SettingsIcon },

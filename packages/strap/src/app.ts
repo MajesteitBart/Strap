@@ -9,6 +9,7 @@ import { connectStrap, listAllPrompts, listAllResources, listAllTools } from "./
 import { printToolResult, writeJson } from "./terminal/output.js";
 import { runInteractive } from "./terminal/interactive.js";
 import { revokeTokens } from "./auth/revoke.js";
+import { parseSkillsCommand, runSkillsCommand, SKILLS_USAGE } from "./skills/command.js";
 
 async function readStdin(): Promise<string> {
   const chunks: Buffer[] = [];
@@ -60,9 +61,14 @@ export async function run(argv: string[]): Promise<void> {
   }
 
   if (command === "help" || command === "--help" || command === "-h") {
-    process.stdout.write(usage());
+    process.stdout.write(usage() + "\n" + SKILLS_USAGE);
     return;
   }
+  if (command === "skills" && [undefined, "help", "--help", "-h"].includes(args[1])) {
+    process.stdout.write(SKILLS_USAGE);
+    return;
+  }
+  if (command === "skills") parseSkillsCommand(args.slice(1));
   if (command === "config") {
     if (args.length !== 4 || args[1] !== "set" || args[2] !== "server" || !args[3]) throw new CliError("Usage: strap config set server <URL>", 2);
     const url = validateServerUrl(args[3]);
@@ -105,6 +111,10 @@ export async function run(argv: string[]): Promise<void> {
 
   const connection = await connectStrap(serverUrl, quiet, agent);
   try {
+    if (command === "skills") {
+      await runSkillsCommand(connection.client, serverUrl, args.slice(1), json);
+      return;
+    }
     if (command === "login") {
       if (json) writeJson({ ok: true, server: serverUrl }); else process.stdout.write("Strap CLI is connected.\n");
       return;

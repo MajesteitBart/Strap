@@ -89,6 +89,7 @@ export default async function DevicePage({ searchParams }: { searchParams: Promi
               ))}
             </select>
           </div>
+          <p className="strap-consent-meta">All modes can read shared skills. Direct access also permits skill publication for profile owners and Company admins.</p>
           <div className="strap-consent-actions" style={{ marginTop: ".25rem" }}>
             <button type="submit" name="decision" value="deny" className="strap-button strap-button-secondary">
               Deny

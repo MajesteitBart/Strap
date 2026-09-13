@@ -175,6 +175,7 @@ export default async function AuthorizePage({
         {client.clientName} can read your Strap and propose updates, and edits a
         section directly only where you allow direct edits.
       </p>
+      <p>This connection can also read shared skills. If you own the profile or administer its Company, it can publish skill versions when you request them.</p>
       <p className="strap-consent-meta">Signed in as {user.email}</p>
 
       <form method="post" action="/authorize/decision" className="strap-consent-form">

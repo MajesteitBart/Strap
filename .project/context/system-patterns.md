@@ -15,6 +15,7 @@ Capture architecture and delivery patterns that should be reused.
 - `.agents/` is canonical. `.claude/` may link to its skills, and `CLAUDE.md` imports `AGENTS.md`; never author parallel instruction or runtime copies.
 
 ## Conservative Installation
+- Skill sync binds each directory to one MCP server and profile, preflights conflicts, rejects symlinks and unsafe paths, and preserves replaced folders outside the agent skill root. The local ledger records content digests and executable metadata; it is not a credential store.
 - Initial installation is conflict-safe. Later refreshes exclude repository-owned `.project` state unless replacement is explicit.
 - Do not run a new-project initializer such as next-forge over the established Strap application.
 

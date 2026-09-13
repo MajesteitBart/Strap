@@ -55,6 +55,37 @@ printf '%s' '{"sectionId":"goals"}' | strap --agent codex call strap_get_section
 
 JSON is written to stdout and diagnostics are written to stderr. Interactive formatting and ANSI color are disabled outside a terminal. Commands copied from `strap.bvdm.ai/connections` include `--agent` so the dashboard can attribute CLI use. Omit it for unattributed manual use.
 
+## Shared skills
+
+The CLI uses the profile selected during login. To switch from Personal to Company (or another Company), run `strap logout`, then `strap login` and select that profile. Use a separate sync directory for each profile.
+
+Version 0.2.0 adds device sync for the skill library in your connected Personal or Company profile:
+
+```bash
+# Publish an existing skill folder from your first device
+strap skills push ./review-code
+
+# On each device, install shared skills for Codex or Claude Code
+strap skills sync --target codex --global
+strap skills sync --target claude --global
+
+# Use project-local skills, another directory, or download only
+strap skills pull --target codex
+strap skills sync --dir ./team-skills --dry-run
+strap skills pull review-code --dir ./team-skills
+strap skills list --json
+```
+
+A skill folder contains `SKILL.md` with YAML `name` and `description`, plus optional scripts, references, and assets. Names use lowercase letters, numbers, and single hyphens and must match the folder. The app can import a folder, edit its text files, download a JSON bundle, archive a skill, and restore retained versions. Limits are 100 skills per profile, 128 files per skill, 512 KiB per file, and 2 MiB per bundle. YAML aliases, hidden paths, credentials, dependencies, linked files, and Windows-reserved paths are rejected. Optional scripts are copied, never executed.
+
+Each profile retains up to 20 versions per skill within a 64 MiB budget for current bundles and saved versions, measured as encoded stored data. The oldest historical copies are removed first; current skills remain intact. Publication fails without changing data if the current skills alone cannot fit. Reduce the files in an existing skill to free space. Browser folder imports cannot read executable permissions, so the editor requires you to review script flags before publishing. CLI publication and JSON bundle imports preserve executable metadata.
+
+`pull` installs published versions. `sync` also publishes edits to previously managed skills when the remote copy has not changed. New local folders are published explicitly with `push`. Divergent changes or an unmanaged folder with different content stop the selected batch before changes. Compare both copies; then publish the reviewed local version with `strap skills push ./review-code --base-revision N`, using the current remote revision, or move your local folder aside before pulling. There is no implicit force overwrite or merge.
+
+The `.strap-skills.json` ledger binds a directory to one server and profile. Use separate directories for Personal and Company libraries. A `.strap-skills.lock` prevents concurrent CLI syncs. Replaced or archived installations are preserved under a sibling `.<directory-name>-strap-backups` directory, outside the agent's skills root. Local edits block archive propagation. Restore the published skill in the app and sync again to reinstall it. A failed operation can leave a recoverable backup or staging directory; paths are printed when intervention is needed. Earlier completed operations may remain if a network or disk failure interrupts a batch.
+
+Company members can read and install shared skills. Publishing requires a profile owner or Company admin and a direct MCP credential. Read-only and proposal-only connections cannot publish. Online agents use `strap_list_skills` to discover metadata, `strap_get_skill` for instructions or one supporting file, and `strap_export_skill` for a full bundle. Skills are user-provided guidance and cannot override agent instructions or grant access to Vault secrets.
+
 ## Self-hosted servers
 
 Use a server for one command:
@@ -81,5 +112,6 @@ Strap CLI uses OAuth 2.1 Dynamic Client Registration and PKCE. It never asks you
 - `1`: runtime, network, or authorization failure
 - `2`: invalid command or arguments
 - `3`: the MCP tool returned an error result
+- `4`: skill sync conflicts; the selected batch was not applied
 
 Set `NO_COLOR=1` to disable terminal color.

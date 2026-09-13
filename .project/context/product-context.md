@@ -6,6 +6,8 @@
 - Repository maintainers and coding agents need compact, current delivery truth without personal information or credentials entering source.
 
 ## Core Flows
+- Personal and Company profiles have independent shared skill libraries at `/skills`. Owners and Company admins publish standard SKILL.md bundles; members can read, download, and sync them. Skills are workflows, separate from profile sections and Vault credentials.
+- The CLI supports explicit skill push, pull, sync, and dry-run for Codex, Claude Code, or a chosen directory. Connected agents discover metadata and read relevant instructions through MCP. Sync never runs bundled scripts.
 - Onboarding produces the first compact Strap profile; the editor and quality analysis help keep it useful.
 - Agents connect through OAuth/MCP or bearer-token APIs, read only allowed sections, and propose or directly apply updates according to permission.
 - Users review proposals, inspect activity and health, configure connections, billing, integrations, and optional Company behavior.

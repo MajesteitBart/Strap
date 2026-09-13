@@ -20,8 +20,8 @@ const resources = [
   {
     key: "skills",
     label: "Skills",
-    body: "Roadmap: reusable workflows and capability packages.",
-    status: "Roadmap",
+    body: "Shipped: shared skill libraries with version history, device sync, and agent access.",
+    status: "Available",
   },
   {
     key: "secrets",
@@ -54,9 +54,9 @@ const chapters = [
   {
     key: "skills",
     title: "Store proven procedures once and equip them wherever agents work.",
-    body: "Reusable skill libraries and per-agent equipping are on the roadmap. They are shown here as product direction, not a feature you can use today.",
-    action: "Read the roadmap",
-    status: "Roadmap",
+    body: "Publish SKILL.md folders with scripts and references. Sync them across your devices, or let connected agents read the skills they need from your Personal or Company library.",
+    action: "Explore shared skills",
+    status: "Available",
   },
   {
     key: "secrets",
@@ -72,15 +72,13 @@ function Status({ tone = "ready", children }: { tone?: "ready" | "syncing" | "wa
 }
 
 function ManifestLine({ kind, label, source }: { kind: "context" | "skills" | "secrets"; label: string; source: string }) {
-  const ready = kind !== "skills";
-
   return (
     <div className="strap-manifest-line">
       <span className={`strap-swatch strap-bg-${kind}`} aria-hidden="true" />
       <span>{label}</span>
       <span className="strap-manifest-source">{source}</span>
-      <span className="strap-check" aria-label={ready ? "Available" : "Roadmap"}>
-        {ready ? "✓" : "△"}
+      <span className="strap-check" aria-label="Available">
+        ✓
       </span>
     </div>
   );
@@ -108,20 +106,20 @@ function ContextProof() {
 
 function SkillsProof() {
   const skills = [
-    ["Address PR feedback", "Work through review comments and push fixes", "pr-feedback", "v2.1"],
-    ["Prepare research brief", "Collect sources and draft a structured brief", "research-brief", "v1.4"],
-    ["Validate deployment", "Run checks against a fresh deploy target", "validate-deploy", "v3.0"],
-    ["Draft release note", "Summarise merged changes for a release", "release-note", "v1.0"],
+    ["Address PR feedback", "Work through review comments and push fixes", "pr-feedback", "v2"],
+    ["Prepare research brief", "Collect sources and draft a structured brief", "research-brief", "v1"],
+    ["Validate deployment", "Run checks against a fresh deploy target", "validate-deploy", "v3"],
+    ["Draft release note", "Summarise merged changes for a release", "release-note", "v1"],
   ];
   return (
     <div className="strap-proof-ui">
-      <div className="strap-proof-bar"><span>skills library</span><span>Roadmap preview</span></div>
+      <div className="strap-proof-bar"><span>skills library</span><span>Example workflows</span></div>
       <div className="strap-skill-grid">
-        {skills.map(([name, job, id, version], index) => (
+        {skills.map(([name, job, id, version]) => (
           <div className="strap-skill-tile" key={id}>
             <strong>{name}</strong>
             <span className="strap-dim">{job}</span>
-            <div><span className="strap-mono">skill://{id} · {version}</span><Status tone="warning">{index === 2 ? "△ Proposed" : "△ Roadmap"}</Status></div>
+            <div><span className="strap-mono">{id}/SKILL.md · {version}</span><Status>Shared</Status></div>
           </div>
         ))}
       </div>
@@ -190,7 +188,7 @@ export function StrapHome({ configured }: { configured: boolean }) {
                   <span className="strap-mono"><b>Strap resources</b> · current availability</span>
                 </div>
                 <ManifestLine kind="context" label="context · available" source="Personal + Company" />
-                <ManifestLine kind="skills" label="skills · roadmap" source="not shipped" />
+                <ManifestLine kind="skills" label="skills · available" source="Library + device sync" />
                 <ManifestLine kind="secrets" label="keys · available" source="Vault + headless access" />
                 <div className="strap-pattern" aria-hidden="true" />
               </div>
@@ -203,7 +201,7 @@ export function StrapHome({ configured }: { configured: boolean }) {
           <div className="strap-wrap">
             <div className="strap-section-head">
               <h2>Everything on the table.</h2>
-              <p>Two resource types ship today. Three more are clearly marked as roadmap.</p>
+              <p>Context, skills, and keys are available today. Environments and agent manifests are on the roadmap.</p>
             </div>
             <div className="strap-resource-grid">
               {resources.map((resource) => (
@@ -227,7 +225,7 @@ export function StrapHome({ configured }: { configured: boolean }) {
               </div>
               <div className="strap-proof-wrap">
                 <ChapterProof kind={chapter.key} />
-                <Link className="strap-flush-tab" href={chapter.key === "secrets" ? keysHref : chapter.key === "context" ? cta.appHref : "/roadmap"}>{chapter.action}</Link>
+                <Link className="strap-flush-tab" href={chapter.key === "secrets" ? keysHref : chapter.key === "context" ? cta.appHref : "/skills"}>{chapter.action}</Link>
               </div>
             </div>
           </section>
