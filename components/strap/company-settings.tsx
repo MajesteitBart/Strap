@@ -70,6 +70,7 @@ import {
 } from "@/lib/strap-data";
 import { permissionsUpTo } from "@/lib/strap-permissions";
 import { cn } from "@/lib/utils";
+import { LegacySubscriptionNotice } from "@/components/strap/legacy-subscription-notice";
 import { STRAP_FILE_NAME } from "@/lib/profile-file";
 
 // A section's accent chip colour, tolerating custom/unknown accents the same
@@ -1837,28 +1838,31 @@ export function CompanySettings() {
   // ── Danger zone (owner-only) ─────────────────────────────────────────────────
   if (isOwner) {
     blocks.push(
-      <section key="danger" className="scroll-mt-6">
-        <h2 className={H2}>Danger zone</h2>
-        <div className="mt-4 rounded-[var(--radius-xl)] border border-[var(--strap-danger)] bg-[var(--strap-warning-tint)] p-5">
-          <div className="flex items-center justify-between gap-5">
-            <div className="min-w-0">
-              <div className="text-[15px] font-medium text-[var(--strap-danger)]">
-                Delete Company Strap
+      <div key="danger">
+        <LegacySubscriptionNotice scope="company" creedId={creedId} />
+        <section className="scroll-mt-6">
+          <h2 className={H2}>Danger zone</h2>
+          <div className="mt-4 rounded-[var(--radius-xl)] border border-[var(--strap-danger)] bg-[var(--strap-warning-tint)] p-5">
+            <div className="flex items-center justify-between gap-5">
+              <div className="min-w-0">
+                <div className="text-[15px] font-medium text-[var(--strap-danger)]">
+                  Delete Company Strap
+                </div>
+                <div className="mt-2 hidden text-[14px] leading-7 text-[var(--strap-danger)] md:block">
+                  Permanently deletes the Company Strap and all its content for
+                  every member.
+                </div>
               </div>
-              <div className="mt-2 hidden text-[14px] leading-7 text-[var(--strap-danger)] md:block">
-                Permanently deletes the Company Strap and all its content for
-                every member.
-              </div>
+              <Button
+                className={DANGER_BUTTON}
+                onClick={() => setDeleteOpen(true)}
+              >
+                Delete
+              </Button>
             </div>
-            <Button
-              className={DANGER_BUTTON}
-              onClick={() => setDeleteOpen(true)}
-            >
-              Delete
-            </Button>
           </div>
-        </div>
-      </section>,
+        </section>
+      </div>,
     );
   }
 

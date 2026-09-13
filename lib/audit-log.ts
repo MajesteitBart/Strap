@@ -9,6 +9,7 @@ export type AuditAction =
   | "github.connected"
   | "github.disconnected"
   | "account.deleted"
+  | "billing.legacy_cancelled"
   | "ai.settings_updated"
   | "creed.claimed"
   | "creed.composed"

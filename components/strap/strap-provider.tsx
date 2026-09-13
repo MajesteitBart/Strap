@@ -2626,7 +2626,10 @@ export function StrapProvider({
     });
 
     if (!response.ok) {
-      throw new Error("Could not delete account.");
+      const body: unknown = await response.json().catch(() => null);
+      const message = body && typeof body === "object" && "error" in body &&
+        typeof body.error === "string" ? body.error : "Could not delete account.";
+      throw new Error(message);
     }
 
     window.location.href = "/";

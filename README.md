@@ -72,6 +72,11 @@ New configuration uses `STRAP_ENCRYPTION_SECRET` and `STRAP_AGENT_MODEL`; existi
 
 Every optional variable is documented in [`.env.example`](./.env.example). Never commit `.env.local`.
 
+For existing installations, apply pending migrations before deploying application changes. Company creation now uses the atomic provisioning migration `20260913092518_provision_company_atomic.sql`.
+
+Installations with subscriptions from the retired paid plans can keep `STRIPE_SECRET_KEY` configured for owner-only status and cancellation in Settings. This schedules cancellation at the end of the billing period and preserves profile data. Without the key, affected users receive a support link. Checkout and billing webhooks remain retired.
+Account and Company deletion require live confirmation that any recorded legacy subscription has ended or is scheduled to cancel, so deletion cannot discard a subscription that may still renew.
+
 ## Connect an agent
 
 Open `/connections` and add `https://strap.bvdm.ai/mcp` as a custom MCP server. Strap provides OAuth 2.1 authorization and first-class setup for Claude Code, Codex, Cursor, ChatGPT, Devin, OpenClaw, Hermes, OpenCode, Factory, Manus, and custom agents.

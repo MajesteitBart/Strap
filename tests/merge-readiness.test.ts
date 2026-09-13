@@ -14,6 +14,17 @@ const companyMigration = readFileSync(
   ),
   "utf8",
 );
+const companyProvisionRpc = readFileSync(
+  new URL(
+    "../supabase/migrations/20260913092518_provision_company_atomic.sql",
+    import.meta.url,
+  ),
+  "utf8",
+);
+const legacySubscriptionRoute = readFileSync(
+  new URL("../app/api/app/legacy-subscriptions/route.ts", import.meta.url),
+  "utf8",
+);
 const authorizePage = readFileSync(
   new URL("../app/authorize/page.tsx", import.meta.url),
   "utf8",
@@ -44,8 +55,21 @@ test("company provisioning collapses concurrent owner inserts", () => {
     companyMigration,
     /create unique index if not exists creeds_one_company_per_owner[\s\S]+owner_user_id[\s\S]+where type = 'company'/,
   );
-  assert.match(companySource, /createError\?\.code === "23505"/);
-  assert.match(companySource, /concurrentShell/);
+  assert.match(companySource, /\.rpc\("provision_company_creed"/);
+  assert.match(companyProvisionRpc, /pg_advisory_xact_lock/);
+  assert.match(companyProvisionRpc, /order by created_at asc, id asc/);
+});
+
+test("legacy Stripe subscribers retain a self-service cancellation path", () => {
+  assert.match(legacySubscriptionRoute, /cancelLegacySubscription\(\{ subscriptionId, secret, revalidate: verifyOwnership \}\)/);
+  assert.match(legacySubscriptionRoute, /STRIPE_SECRET_KEY/);
+  assert.match(legacySubscriptionRoute, /owner_user_id.*auth\.user\.id/);
+});
+
+test("persisted profiles can manage subscriptions even with no sections", () => {
+  const settings = readFileSync(new URL("../components/strap/settings-screen.tsx", import.meta.url), "utf8");
+  assert.doesNotMatch(settings, /sections\.length === 0[\s\S]{0,80}router\.replace/);
+  assert.match(settings, /LegacySubscriptionNotice scope="personal"/);
 });
 
 test("OAuth never issues an authorization code without a Creed grant", () => {

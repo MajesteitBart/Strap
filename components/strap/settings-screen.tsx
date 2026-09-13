@@ -63,6 +63,7 @@ import { toast } from "sonner";
 import { SearchableSelect } from "@/components/strap/searchable-select";
 import { useStrap } from "@/components/strap/strap-provider";
 import { CompanySettings } from "@/components/strap/company-settings";
+import { LegacySubscriptionNotice } from "@/components/strap/legacy-subscription-notice";
 import {
   clearSettingsOpenRouterBalanceCache,
   clearSettingsRepoCache,
@@ -580,6 +581,8 @@ function PersonalSettingsScreen() {
     try {
       setDeleting(true);
       await deleteAccount();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not delete account.");
     } finally {
       setDeleting(false);
     }
@@ -1365,6 +1368,8 @@ function PersonalSettingsScreen() {
           </section>
 
           <Separator className="my-10 bg-[var(--strap-border)]" />
+
+          <LegacySubscriptionNotice scope="personal" />
 
           <section id="settings-danger" className="scroll-mt-6">
             <h2 className="text-[16px] font-medium text-[var(--strap-text-primary)]">

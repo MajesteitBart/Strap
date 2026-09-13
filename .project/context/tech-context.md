@@ -18,7 +18,8 @@
 ## Integration Points
 - Supabase for auth, persistence, RLS, realtime, and scheduled jobs.
 - OpenRouter for AI synthesis and quality features, including encrypted BYOK and platform-credit paths.
-- Stripe for subscriptions, seats, top-ups, and billing webhooks.
+- Stripe is optional legacy offboarding only. Checkout, new paid plans, top-ups, and webhooks are retired. Owner-authenticated status and period-end cancellation use `STRIPE_SECRET_KEY`; without it the UI directs existing subscribers to support. Responses and audit records never expose provider identifiers or credentials.
+- Company provisioning creates the profile and owner membership in one transaction through a service-role-only RPC. Apply the additive `20260913092518_provision_company_atomic.sql` migration before deploying its caller; historic migration files remain immutable.
 - GitHub OAuth and repository APIs for `strap.md` synchronization with stored-path authority and a non-divergent `creed.md` fallback.
 - OAuth 2.1, MCP, bearer-token compatibility APIs, and `packages/strap/` for new agent connectivity.
 - OAuth browser and device grants plus scoped `strap_key_` API keys resolve one explicit profile and a maximum access mode before MCP dispatch; `creed_key_` remains an accepted compatibility prefix.

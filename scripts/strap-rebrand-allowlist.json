@@ -32,7 +32,7 @@
       "file": ".env.example",
       "kind": "content",
       "occurrences": 6,
-      "fingerprint": "e220ecdd86b3cb24aae501911d4a53837699a6e39d763fcf87a6604ce3f0d473",
+      "fingerprint": "89f0f72c4f847ad12d632a47367ee8d5d81376b37e5f84628f37d119d6e16f3a",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -122,7 +122,7 @@
       "file": ".project/context/tech-context.md",
       "kind": "content",
       "occurrences": 6,
-      "fingerprint": "a510a29dc49d8a3bfae36adbb2d4db98ca16b70bc8494f57b8660a0f7a651bfa",
+      "fingerprint": "129539cba4cdcb63e350dfdf499d0210ac76f0813d0037334fb2cfd42ce75fe6",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -1598,7 +1598,7 @@
       "file": "README.md",
       "kind": "content",
       "occurrences": 14,
-      "fingerprint": "657c5ab9ae9cd2fa1f7cb7fa5ff0148aebf395748cbdc4fa65627e36bf9764c6",
+      "fingerprint": "d670e58c3c8e65da7e8c4255a4c0d4c488d731b95b79235090d2eadc2c659ea6",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -1905,6 +1905,15 @@
       "kind": "content",
       "occurrences": 14,
       "fingerprint": "c173c88bb6b773b9cd7eacbea995828867164210d2653c465f6e36374e976ca6",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "app/api/app/legacy-subscriptions/route.ts",
+      "kind": "content",
+      "occurrences": 15,
+      "fingerprint": "59fd7aa855f70b5eb268cb3562fa391ad81a48855d501a4f01e0fdc87273bf71",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -2398,8 +2407,8 @@
     {
       "file": "components/strap/company-settings.tsx",
       "kind": "content",
-      "occurrences": 37,
-      "fingerprint": "b80125445045393b5a977cb994467321bbda01c4cf2fcc4372bb417cf98480a2",
+      "occurrences": 39,
+      "fingerprint": "2b14274fa8dbc6f003f80b0868b04b9ef48a4e3fe5847762829ddc563752130d",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -2495,6 +2504,15 @@
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
     },
     {
+      "file": "components/strap/legacy-subscription-notice.tsx",
+      "kind": "content",
+      "occurrences": 7,
+      "fingerprint": "0399d17afe5a24c3594fc2aa1e3c8293cdce53fddaaa1beb1c124327cc337ae0",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
       "file": "components/strap/mcp-health-dashboard.tsx",
       "kind": "content",
       "occurrences": 9,
@@ -2570,7 +2588,7 @@
       "file": "components/strap/settings-screen.tsx",
       "kind": "content",
       "occurrences": 2,
-      "fingerprint": "991ab4e796b82bf472fb29fd9e7ebdc899edd8ff3ab451f7c76669ea07e3b31a",
+      "fingerprint": "039cd0a4c43b37f90a94bd8f22ee511558ca773818fbea2ac311a88f3f43bae5",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -2588,7 +2606,7 @@
       "file": "components/strap/strap-provider.tsx",
       "kind": "content",
       "occurrences": 129,
-      "fingerprint": "da8eb288ad2ebb9d950f9f967491d20a9622e4542e1844d5274a5ee02ff06490",
+      "fingerprint": "92c106d15b761b11e11dedf3db5ff6e82ee2f3101dd74c12f1180e0eacc38dfc",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -2687,7 +2705,7 @@
       "file": "lib/audit-log.ts",
       "kind": "content",
       "occurrences": 5,
-      "fingerprint": "e92f23d16fad787bfedd0261d08d300fe3e20ffce6b6df345e02b2681e0cbb37",
+      "fingerprint": "621bc927c5085b5fbce20e6959d32b60a08a10cdd258056057a7762d37159d03",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -2695,8 +2713,8 @@
     {
       "file": "lib/company-admin.ts",
       "kind": "content",
-      "occurrences": 78,
-      "fingerprint": "3a54bb6cd1f67a021494b79d602485a4a1f4803ad7719c0ea80bb07d5b878e3b",
+      "occurrences": 79,
+      "fingerprint": "ddb92677aa2f399c686c048ce7f6a2c87cbb5a57c1b5faed11a1b942d8a1b85c",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -2722,8 +2740,8 @@
     {
       "file": "lib/company-provision.ts",
       "kind": "content",
-      "occurrences": 14,
-      "fingerprint": "680412c9f1e54c9d083caf973c5761dfe0b644d8e39cb0c52ed03ae4a51fe70a",
+      "occurrences": 2,
+      "fingerprint": "84a22096036519dde0df9b212c13a27cb1286011ae7d8a0148ed0d8870972a75",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -2868,6 +2886,24 @@
       "kind": "content",
       "occurrences": 1,
       "fingerprint": "180a05a75ebec790d9564ed107611c8c9f4d70faac8251936811a7ff153b265d",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "lib/legacy-subscription-deletion.ts",
+      "kind": "content",
+      "occurrences": 4,
+      "fingerprint": "768d33a01b5d151db917d40512a21663d1faa7a5dc38fde21eff698e488094a5",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "lib/legacy-subscriptions.ts",
+      "kind": "content",
+      "occurrences": 1,
+      "fingerprint": "4b2712eb848d2fdfd29b18d83969ebaa2af5bc7f47f42535ec96ed6d0dd9e5e1",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -3710,6 +3746,24 @@
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
     },
     {
+      "file": "scripts/verify-company-provisioning.mjs",
+      "kind": "content",
+      "occurrences": 11,
+      "fingerprint": "004fa287da82fcdbc18a89524f4d08928700796619441a70300282ab28230fa8",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "scripts/verify-legacy-deletion.mjs",
+      "kind": "content",
+      "occurrences": 15,
+      "fingerprint": "30cb22d001f77727cdb5200c32a71ef4311aa870e6fc5ab4798d100a940f486b",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
       "file": "supabase/migrations/20260403190000_init_creed.sql",
       "kind": "content",
       "occurrences": 39,
@@ -4304,6 +4358,15 @@
       "rationale": "Preserved historical delivery evidence or forward-only schema history; rewriting would falsify repository history."
     },
     {
+      "file": "supabase/migrations/20260913092518_provision_company_atomic.sql",
+      "kind": "content",
+      "occurrences": 14,
+      "fingerprint": "5e0411d4ab484b5828b150e2e811e64fdf7458c38f53b7f0fa74833ab6656418",
+      "decision": "history",
+      "category": "historical-delivery-or-schema",
+      "rationale": "Preserved historical delivery evidence or forward-only schema history; rewriting would falsify repository history."
+    },
+    {
       "file": "tests/agent-icon.test.ts",
       "kind": "content",
       "occurrences": 4,
@@ -4358,6 +4421,15 @@
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
     },
     {
+      "file": "tests/legacy-subscriptions.test.ts",
+      "kind": "content",
+      "occurrences": 2,
+      "fingerprint": "ec57dc565f72725f1e23d654bbb0d10cb8bd092d9d7048e65bf3f45c8716497a",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
       "file": "tests/mcp-connection-status.test.ts",
       "kind": "content",
       "occurrences": 3,
@@ -4378,8 +4450,8 @@
     {
       "file": "tests/merge-readiness.test.ts",
       "kind": "content",
-      "occurrences": 9,
-      "fingerprint": "1d088c1708ecb4ae9a4f85dfeb7e7c9626cbaef45a0b0d22fc492319b82bbffa",
+      "occurrences": 10,
+      "fingerprint": "d125fbef207a840149d3e0815674d275c848d0adb4c2de85654eb39fb837c868",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
