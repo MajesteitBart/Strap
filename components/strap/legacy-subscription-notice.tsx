@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { LoaderCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import { CONTACT_MAILTO } from "@/lib/branding";
 import type { LegacySubscription, LegacySubscriptionFailure } from "@/lib/legacy-subscriptions";
 
@@ -12,6 +13,7 @@ type NoticeState = {
   subscription: LegacySubscription | null;
   configured: boolean;
   error: string | null;
+  requiresSupport: boolean;
 };
 
 export function LegacySubscriptionNotice({
@@ -33,17 +35,19 @@ export function LegacySubscriptionNotice({
           configured: boolean; subscriptions: LegacySubscription[]; failures?: LegacySubscriptionFailure[];
         };
         if (controller.signal.aborted) return;
+        const failure = payload.failures?.find((item) =>
+          item.scope === scope && (scope === "personal" || item.strapId === creedId));
         setState({
           target, configured: payload.configured,
-          error: payload.failures?.find((item) =>
-            item.scope === scope && (scope === "personal" || item.strapId === creedId))?.error ?? null,
+          error: failure?.error ?? null,
+          requiresSupport: failure?.requiresSupport ?? false,
           subscription: payload.subscriptions.find((item) =>
             item.scope === scope && (scope === "personal" || item.strapId === creedId)) ?? null,
         });
       })
       .catch(() => {
         if (!controller.signal.aborted) {
-          setState({ target, configured: false, subscription: null,
+          setState({ target, configured: false, subscription: null, requiresSupport: false,
             error: "Could not check legacy subscriptions." });
         }
       });
@@ -80,6 +84,7 @@ export function LegacySubscriptionNotice({
     ? new Intl.DateTimeFormat(undefined, { dateStyle: "long" }).format(end) : null;
 
   return (
+    <>
     <section className="scroll-mt-6" aria-label="Legacy subscription">
       <h2 className="text-[16px] font-medium text-[var(--strap-text-primary)]">Legacy subscription</h2>
       <div className="mt-4 rounded-[var(--radius-xl)] border border-[var(--strap-border)] bg-[var(--strap-surface)] p-5">
@@ -91,7 +96,11 @@ export function LegacySubscriptionNotice({
                 (endLabel ? " through " + endLabel : "") + ".")}
           </p>
           {current.error ? (
+            current.requiresSupport ? (
+              <a href={CONTACT_MAILTO} className="shrink-0 text-sm underline underline-offset-4">Contact support</a>
+            ) : (
             <Button variant="outline" onClick={() => setReload((value) => value + 1)}>Retry</Button>
+            )
           ) : !current.subscription?.cancelAtPeriodEnd ? (
             current.configured ? (
               <div className="flex shrink-0 flex-wrap gap-2">
@@ -119,5 +128,7 @@ export function LegacySubscriptionNotice({
         </p> : null}
       </div>
     </section>
+    <Separator className="my-10 bg-[var(--strap-border)]" />
+    </>
   );
 }

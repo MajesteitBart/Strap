@@ -9,6 +9,7 @@ export type LegacySubscription = {
 
 export type LegacySubscriptionFailure = Pick<LegacySubscription, "scope" | "strapId"> & {
   error: string;
+  requiresSupport?: boolean;
 };
 
 export function isOngoingSubscription(status: string): boolean {

@@ -62,6 +62,15 @@ try {
     assert.ifError((await admin.from("creed_company_billing").update({ stripe_subscription_id: id })
       .eq("creed_id", companyId)).error);
     assert.equal(await removeCompany(), 409, "Incomplete Company subscription must preserve the Company.");
+    const lookup = await fetch(origin + "/api/app/legacy-subscriptions", {
+      headers: { Cookie: cookies.map(({ name, value }) => `${name}=${value}`).join("; ") },
+    });
+    assert.equal(lookup.status, 200);
+    const notices = await lookup.json();
+    assert.equal(notices.failures.filter((failure) => failure.requiresSupport).length, 2,
+      "Both incomplete profiles must retain a support path in Settings.");
+    assert.ok(notices.failures.some((failure) => failure.scope === "personal" && failure.strapId === null));
+    assert.ok(notices.failures.some((failure) => failure.scope === "company" && failure.strapId === companyId));
   }
   assert.ifError((await admin.from("creed_company_billing").update({ stripe_subscription_id: "sub_verification_active" })
     .eq("creed_id", companyId)).error);

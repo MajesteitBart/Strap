@@ -1838,35 +1838,31 @@ export function CompanySettings() {
   // ── Danger zone (owner-only) ─────────────────────────────────────────────────
   if (isOwner) {
     blocks.push(
-      <LegacySubscriptionNotice
-        key="legacy-subscription"
-        scope="company"
-        creedId={creedId}
-      />,
-    );
-    blocks.push(
-      <section key="danger" className="scroll-mt-6">
-        <h2 className={H2}>Danger zone</h2>
-        <div className="mt-4 rounded-[var(--radius-xl)] border border-[#FECACA] bg-[#FEF2F2] p-5 dark:border-[#7F1D1D]/40 dark:bg-[#3F1212]/30">
-          <div className="flex items-center justify-between gap-5">
-            <div className="min-w-0">
-              <div className="text-[15px] font-medium text-[#DC2626]">
-                Delete Company Strap
+      <div key="danger">
+        <LegacySubscriptionNotice scope="company" creedId={creedId} />
+        <section className="scroll-mt-6">
+          <h2 className={H2}>Danger zone</h2>
+          <div className="mt-4 rounded-[var(--radius-xl)] border border-[#FECACA] bg-[#FEF2F2] p-5 dark:border-[#7F1D1D]/40 dark:bg-[#3F1212]/30">
+            <div className="flex items-center justify-between gap-5">
+              <div className="min-w-0">
+                <div className="text-[15px] font-medium text-[#DC2626]">
+                  Delete Company Strap
+                </div>
+                <div className="mt-2 hidden text-[14px] leading-7 text-[#DC2626] md:block">
+                  Permanently deletes the Company Strap and all its content for
+                  every member.
+                </div>
               </div>
-              <div className="mt-2 hidden text-[14px] leading-7 text-[#DC2626] md:block">
-                Permanently deletes the Company Strap and all its content for
-                every member.
-              </div>
+              <Button
+                className={DANGER_BUTTON}
+                onClick={() => setDeleteOpen(true)}
+              >
+                Delete
+              </Button>
             </div>
-            <Button
-              className={DANGER_BUTTON}
-              onClick={() => setDeleteOpen(true)}
-            >
-              Delete
-            </Button>
           </div>
-        </div>
-      </section>,
+        </section>
+      </div>,
     );
   }
 

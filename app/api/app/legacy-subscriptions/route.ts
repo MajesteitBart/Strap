@@ -4,7 +4,7 @@ import { NO_STORE_HEADERS } from "@/lib/http-headers";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import type { SupabaseLikeClient } from "@/lib/supabase/types";
 import { recordAuditEvent } from "@/lib/audit-log";
-import { isOngoingSubscription, parseSubscriptionTarget, readLegacySubscriptions, requestLegacySubscription, type LegacySubscription } from "@/lib/legacy-subscriptions";
+import { isOngoingSubscription, parseSubscriptionTarget, readLegacySubscriptions, requestLegacySubscription, type LegacySubscription, type LegacySubscriptionFailure } from "@/lib/legacy-subscriptions";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -19,10 +19,10 @@ export async function GET() {
   const secret = process.env.STRIPE_SECRET_KEY?.trim();
   const [personalResult, companyResult, ownedResult] = await Promise.all([
     auth.supabase.from("creed_entitlements")
-      .select("status,current_period_end,cancel_at_period_end,stripe_subscription_id")
+      .select("status,current_period_end,cancel_at_period_end,stripe_subscription_id,billing_mode")
       .eq("user_id", auth.user.id).maybeSingle(),
     auth.supabase.from("creed_company_billing")
-      .select("creed_id,status,current_period_end,cancel_at_period_end,stripe_subscription_id")
+      .select("creed_id,status,current_period_end,cancel_at_period_end,stripe_subscription_id,billing_mode")
       .eq("owner_user_id", auth.user.id),
     auth.supabase.from("creeds").select("id")
       .eq("owner_user_id", auth.user.id).eq("type", "company"),
@@ -32,8 +32,10 @@ export async function GET() {
   }
   const ownedIds = new Set((ownedResult.data ?? []).map((item) => item.id as string));
   const candidates: { subscriptionId: string; subscription: LegacySubscription }[] = [];
+  const incomplete: LegacySubscriptionFailure[] = [];
+  const incompleteMessage = "This legacy subscription record is incomplete. Contact support to verify billing and stop renewal.";
   const personal = personalResult.data;
-  if (personal?.stripe_subscription_id) {
+  if (personal?.stripe_subscription_id?.trim()) {
     candidates.push({
       subscriptionId: personal.stripe_subscription_id,
       subscription: {
@@ -42,9 +44,17 @@ export async function GET() {
         cancelAtPeriodEnd: Boolean(personal.cancel_at_period_end),
       },
     });
+  } else if (personal?.billing_mode === "subscription") {
+    incomplete.push({ scope: "personal", strapId: null, error: incompleteMessage, requiresSupport: true });
   }
   for (const company of companyResult.data ?? []) {
-    if (!company.stripe_subscription_id || !ownedIds.has(company.creed_id)) continue;
+    if (!ownedIds.has(company.creed_id)) continue;
+    if (!company.stripe_subscription_id?.trim()) {
+      if (company.billing_mode === "subscription") {
+        incomplete.push({ scope: "company", strapId: company.creed_id, error: incompleteMessage, requiresSupport: true });
+      }
+      continue;
+    }
     candidates.push({
       subscriptionId: company.stripe_subscription_id,
       subscription: {
@@ -56,7 +66,8 @@ export async function GET() {
   }
   // Webhooks were retired with billing. Confirm each profile independently with Stripe.
   const result = await readLegacySubscriptions(candidates, secret);
-  return NextResponse.json({ configured: Boolean(secret), ...result }, { headers: NO_STORE_HEADERS });
+  return NextResponse.json({ configured: Boolean(secret), ...result,
+    failures: [...result.failures, ...incomplete] }, { headers: NO_STORE_HEADERS });
 }
 
 export async function DELETE(request: Request) {
@@ -74,13 +85,16 @@ export async function DELETE(request: Request) {
     if (!owner.data) return errorResponse("No legacy subscription found.", 404);
   }
   const result = target.scope === "personal"
-    ? await auth.supabase.from("creed_entitlements").select("stripe_subscription_id")
+    ? await auth.supabase.from("creed_entitlements").select("stripe_subscription_id,billing_mode")
         .eq("user_id", auth.user.id).maybeSingle()
-    : await auth.supabase.from("creed_company_billing").select("stripe_subscription_id")
+    : await auth.supabase.from("creed_company_billing").select("stripe_subscription_id,billing_mode")
         .eq("creed_id", target.strapId).eq("owner_user_id", auth.user.id).maybeSingle();
   if (result.error) return errorResponse("Could not check legacy subscriptions.", 500);
   const subscriptionId: unknown = result.data?.stripe_subscription_id;
-  if (typeof subscriptionId !== "string" || !subscriptionId) {
+  if (typeof subscriptionId !== "string" || !subscriptionId.trim()) {
+    if (result.data?.billing_mode === "subscription") {
+      return errorResponse("This legacy subscription record is incomplete. Contact support to verify billing and stop renewal.", 409);
+    }
     return errorResponse("No legacy subscription found.", 404);
   }
   try {

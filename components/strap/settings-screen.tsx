@@ -1371,8 +1371,6 @@ function PersonalSettingsScreen() {
 
           <LegacySubscriptionNotice scope="personal" />
 
-          <Separator className="my-10 bg-[var(--strap-border)]" />
-
           <section id="settings-danger" className="scroll-mt-6">
             <h2 className="text-[16px] font-medium text-[var(--strap-text-primary)]">
               Danger zone

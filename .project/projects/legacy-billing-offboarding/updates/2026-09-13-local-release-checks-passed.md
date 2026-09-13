@@ -23,6 +23,8 @@ stream: WS-A
 
 - The fourth Codex review identified incomplete recurring billing records. Null, empty and whitespace-only subscription identifiers now block both deletion paths with a support message; the disposable API regression covers all three cases for Personal and Company records.
 
+- Follow-up review repairs preserve a visible, profile-scoped support path for incomplete recurring records in Settings, and remove duplicate separators when no subscription notice is visible. Local HTTP regression verifies both incomplete scopes remain represented without leaking provider identifiers.
+
 ## In Progress
 - Final-head pull-request checks and Codex review for PR 5.
 - Production migration readiness for the configured Supabase instance.
