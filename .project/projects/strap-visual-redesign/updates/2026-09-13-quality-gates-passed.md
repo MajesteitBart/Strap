@@ -18,10 +18,12 @@ stream: WS-D
 - The second PR review found white labels on bright resource kickers. Skills and Environments badges, matching homepage chips, and the orange assembly marker now use dark ink. Public error and secondary card/map text use readable text tones. A second contrast regression checks all public resource kicker/chip pairs; all 186 tests, types, lint, build and brand gates pass.
 
 ## In Progress
--
+- Final-head review, CI and deployment for PR 9. PR 10 merged the independent app and CLI verification workflow; all three jobs passed on main commit 2b1de05 in run 34754241737.
 
 ## Blockers
 - None
 
 ## Next Actions
 -
+
+- Public reduced-motion handling now includes every transitioning selector, including navigation, index rows, FAQ triggers and password visibility controls. All 186 tests, TypeScript, lint, build and brand audit pass after the change.

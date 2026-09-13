@@ -68,7 +68,7 @@
       "file": ".project/context/progress.md",
       "kind": "content",
       "occurrences": 14,
-      "fingerprint": "650ddf0a5c6ed3ebc7b7ae3ec5478bbe77be793afb2afeae71317e6caa0bb822",
+      "fingerprint": "71aef2e306850bf86a739ec518987b21f7f3e746437c7c7bbbd658964d2cc4c1",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."

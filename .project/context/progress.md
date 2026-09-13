@@ -17,10 +17,12 @@
 
 ## Evidence So Far
 
+- Release verification PR 10 merged as `2b1de05` after a clean Codex review on `5063384` and green PR checks. All three jobs passed on the first main run: https://github.com/MajesteitBart/Strap/actions/runs/34754241737. Both CLIs finish independently even when one fails.
+
 - Delano research, Spec, plan, workstreams, decisions, and atomic tasks validate for `strap-rebrand`.
 - Fable approved the plan after compatibility blockers were resolved and later passed the grounded agent-contract review.
 - The latest redesign suite passes 186/186 tests, strict TypeScript and ESLint pass, and the production build succeeds with 102 generated routes.
-- The exact rebrand audit covers 1,094 current repository files and classifies all 4,765 remaining case-insensitive Creed occurrences across 436 files and 65 Creed-named paths through 501 reviewed history or compatibility entries.
+- After integration with the release checks, the exact rebrand audit covers 1,102 tracked repository files and classifies 4,766 remaining case-insensitive Creed occurrences across 437 files and 65 Creed-named paths through 502 reviewed history or compatibility entries.
 - `@bvdm/strap@0.1.1` passes typecheck and 30 tests. The legacy CLI passes typecheck and 20 compatibility tests. The 51-file Strap tarball installs cleanly, returns Strap help and version `0.1.1`, and is published to npm as the public `latest` release.
 - A bounded, grounded Fable release review passed with no blockers. Its three actionable non-blocking findings were resolved in the same pass.
 - Cloudflare API and public DNS checks confirm `strap.bvdm.ai` resolves to `creed-bvdm.netlify.app`; HTTPS returns 200 with a valid Netlify certificate.

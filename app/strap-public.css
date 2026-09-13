@@ -42,7 +42,6 @@
   border-top: 1px solid var(--strap-ink-strong);
   background: var(--strap-paper);
 }
-.strap-nav-menu[data-open="true"] { display: block; }
 .strap-nav-menu-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -705,6 +704,7 @@
 }
 
 @media (max-width: 767px) {
+  .strap-nav-menu[data-open="true"] { display: block; }
   .strap-nav-toggle { display: inline-flex; order: 3; }
   .strap-nav-cta { margin-left: auto; }
   .strap-nav-menu-grid { grid-template-columns: 1fr 1fr; }
