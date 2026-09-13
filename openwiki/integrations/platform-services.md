@@ -2,58 +2,67 @@
 
 ## Supabase
 
-Supabase provides authentication, Postgres, RLS, realtime, scheduled retention, and the `supabase_vault` extension used by Creed’s signed-in API-key Vault. Server components and ordinary app routes generally use a session client constrained by RLS. OAuth, company writes, and secret-bearing integrations often use the admin client, which bypasses RLS and therefore depends on preceding application checks. Vault plaintext is reachable only through service-role-only definer RPCs after application-level Creed and role authorization.
+Supabase provides authentication, Postgres, RLS, realtime, retention scheduling, and the `supabase_vault` extension used by `/vault`. Session clients operate under RLS. OAuth, Company writes, and secret-bearing integrations often use the admin client, which bypasses RLS and therefore requires explicit application authorization first.
 
-`proxy.ts` refreshes Supabase cookies for non-marketing requests. Client creation and environment validation live in `lib/supabase/`. The ordered SQL files under `supabase/migrations/` are the canonical schema, not generated TypeScript types.
+The ordered SQL files in `supabase/migrations/` are canonical schema history. Their Creed- and Stripe-named objects are not renamed during the Strap rebrand.
 
-See [Schema and security](../data/schema-and-security.md) for table and authorization details.
+See [Schema and security](../data/schema-and-security.md) for authorization and plaintext boundaries.
 
-## OpenRouter and AI credits
+## OpenRouter: Included AI and BYOK
 
-AI features select between:
+AI routes under `app/api/app/ai/**` resolve the active Strap and permission, choose a server-controlled model, build bounded context, call `lib/ai/openrouter.ts`, validate the response, and record usage.
 
-- the platform OpenRouter key plus prepaid Creed credits; or
-- an encrypted user/company BYOK key.
+Two credential modes exist:
 
-Feature routes under `app/api/app/ai/**` resolve the active Creed and permissions, select a server-controlled model from `lib/ai/model-catalog.ts`, build bounded context, call `lib/ai/openrouter.ts`, parse/validate the response, and persist usage through `lib/ai/credits.ts` and `lib/ai/persistence.ts`.
+- **Included:** uses `OPENROUTER_PLATFORM_KEY`. The historical database value is `ai_mode = 'credits'`, but no credits are sold or debited.
+- **BYOK:** decrypts a valid Personal or Company OpenRouter key. If the deployment has no platform key, users must configure BYOK.
 
-Creed section content crosses an external privacy boundary when sent to OpenRouter. BYOK values are validated, encrypted, and only represented to the client by safe status/last-four metadata.
+`lib/ai/credits.ts` retains its historical filename but now enforces operational limits rather than billing:
 
-Credit accounting is postpaid: inference happens before the debit RPC. A debit or usage-persistence failure is logged without invalidating a successful model response. Positive-balance checks do not reserve the worst-case request cost, so concurrent calls can overspend. Changes to AI billing need reconciliation and concurrency thinking, not only route behavior.
+- process-local burst limit: 20 included-AI requests per user per 60 seconds;
+- trailing-24-hour estimated-cost limit: `$0.50` per user by default;
+- deployment override: `INCLUDED_AI_DAILY_LIMIT_USD`.
 
-High-value tests cover quality scopes, panel behavior, agent actions, and tab completion, but direct OpenRouter/SSE, timeout, cost fallback, malformed structured output, and debit-failure integration coverage is limited.
+Usage remains in `creed_ai_usage` for visibility and quota calculation. There is no debit RPC, prepaid balance, checkout, or runtime payment flow. Profile content sent to OpenRouter crosses an external privacy boundary; BYOK values are exposed client-side only as safe status/last-four metadata.
 
 ## GitHub version control
 
-GitHub synchronization stores a visible `creed.md` in a configured repository, branch, and path.
+New Personal and Company configurations default to visible `strap.md`; migration `20260724120000_strap_profile_defaults.sql` updates database defaults. `lib/profile-file.ts` controls compatibility:
 
-### Authorization
+- blank or configured `strap.md` tries `strap.md`, then legacy `creed.md`;
+- any other stored path is exact;
+- push refuses to create a competing `strap.md` when a read resolved legacy `creed.md`.
 
-`/api/app/github/authorize` creates a nonce cookie and mode context. The callback verifies the cookie/session, exchanges the code, fetches the GitHub user, and stores an encrypted token. Company configuration is manager-only and stored separately from personal integration data; company operations always use the shared team token.
+### Authorization and storage
 
-The classic OAuth scope is `repo read:user`, which is broad. Token refresh retries a failed/expired request once.
+`/api/app/github/authorize` creates a nonce cookie and mode context. The callback verifies cookie/session, exchanges the code, fetches the GitHub user, and stores an encrypted token. Company configuration is manager-only and uses the Company token. The classic `repo read:user` scope is broad; token refresh retries once when appropriate.
 
-### Push
+### Push/pull
 
-The route accepts Markdown and a local content hash, fetches the current remote file to obtain its SHA, and uses the GitHub Contents API with that SHA for optimistic concurrency. It then stores sync metadata. Because content/hash arrive from the authenticated client, the route does not independently prove they match current server state.
+Push fetches the remote SHA and uses GitHub Contents optimistic concurrency. The default message is `Update Strap`. Personal pull has preview and apply phases; apply replaces active sections, clears proposals, retains archived sections not reintroduced, and gives imported sections proposal-level access. Company pull is not implemented.
 
-### Pull
+Preview/apply is not bound to a freshly fetched remote SHA, so stale preview data can be applied. Maintain `tests/github-roundtrip.test.ts` and profile-path tests when changing the flow.
 
-Personal pull has preview and apply phases. Preview fetches/parses remote Markdown and computes local/remote/diverged status. Apply accepts the authenticated browser’s preview payload, replaces active sections, clears proposals, retains local archived sections, and gives imported sections proposal-level agent access. Company pull is not implemented.
+### Format
 
-Preview/apply is not bound to a re-fetched remote SHA, so stale preview data can be applied. This is chiefly a same-user integrity risk but matters when changing the flow.
+`lib/strap-markdown.ts` and `lib/rich-text.ts` preserve supported formatting, adjust headings, and retain the compatibility comment `<!-- creed:accent=... -->`. `lib/creed-markdown.ts` is only a deprecated compatibility re-export shim; format identifiers stay unchanged even though customer-facing defaults are Strap.
 
-### Markdown format
+## Pricing and removed Stripe runtime
 
-`lib/creed-markdown.ts` and `lib/rich-text.ts` preserve supported editor formatting, adjust nested heading levels, and retain accents in comments. Import recognizes top-level level-1/2 section headings and normalizes unsupported markup/whitespace. Maintain `tests/github-roundtrip.test.ts` when changing editor schema or serialization.
+`lib/marketing/pricing.ts` is the public pricing source:
+
+- Open: `$0 forever`, self-hosted, BYOK;
+- Personal: `$0 forever`, hosted, included AI or BYOK;
+- Company: `$0 forever`, hosted, included AI or Company BYOK, unlimited members.
+
+Stripe has been removed from active dependencies, `.env.example`, and runtime routes. Company creation is direct and idempotent through `POST /api/app/company`; invites are not purchased seats.
+
+Historical migrations and rows such as `creed_entitlements`, `creed_company_billing`, Stripe columns, and seat-purchase records remain for forward-only history and limited compatibility state. They do not describe current paid plans. `lib/welcome.ts` still uses historical records for one-time welcome dismissal, not billing.
 
 ## Configuration and deployment
 
-Use `.env.example` only as the documented placeholder inventory; never read or expose `.env.local`. Core configuration categories are:
+Use `.env.example` only as a placeholder inventory; never read or expose `.env.local`. New deployments should use `STRAP_ENCRYPTION_SECRET` for token and payload encryption and `STRAP_AGENT_MODEL` to override the Included AI agent model. Runtime checks the corresponding `CREED_ENCRYPTION_SECRET` and `CREED_AGENT_MODEL` names only as lower-priority compatibility fallbacks; when both forms are set, the Strap value wins. Other configuration covers site/Supabase values and optional OpenRouter, GitHub, email, and branding values. `CREED_CSP_ENFORCE=1` remains an internal compatibility-named switch that enables CSP enforcement after report-only validation.
 
-- site and Supabase connection;
-- server-side encryption secret;
-- optional OpenRouter, GitHub, email/feedback, and branding settings;
-- `CREED_CSP_ENFORCE=1` after validating CSP report-only behavior.
+`next.config.ts` constrains known network origins. User pages are no-store and static assets use long caching. Root `tsconfig.json` excludes both independent CLI packages; verify `packages/strap` with its own scripts.
 
-`next.config.ts` permits only the known Supabase, OpenRouter, and GitHub network origins in CSP. CSP is report-only by default and still permits inline scripts/styles for framework requirements. User pages are no-store; static brand assets use long immutable caching.
+The Git remote and current repository/package metadata use [MajesteitBart/Strap](https://github.com/MajesteitBart/Strap). Retain `MajesteitBart/Creed` only when documenting explicit historical evidence.

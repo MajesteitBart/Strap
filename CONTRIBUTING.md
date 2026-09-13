@@ -26,7 +26,9 @@ If you change `packages/strap/`, also run:
 ```bash
 npm --prefix packages/strap run typecheck
 npm --prefix packages/strap test
-npm --prefix packages/strap pack --dry-run
+cd packages/strap
+npm pack --dry-run
+cd ../..
 ```
 
 Exercise changed API routes locally and confirm relevant audit evidence. Supabase migrations require `npx supabase db reset` before pushing.
@@ -36,19 +38,19 @@ Exercise changed API routes locally and confirm relevant audit evidence. Supabas
 - Use strict TypeScript. Prefer `unknown` plus narrowing over `any`.
 - Default to server components. Add `"use client"` only for hooks, browser APIs, or interaction.
 - Do not use em dashes in product copy.
-- Prefer existing CSS tokens such as `var(--creed-text-primary)` over one-off colors. Creed CSS tokens remain internal compatibility identifiers.
+- Prefer existing CSS tokens such as `var(--strap-text-primary)` over one-off colors. Retain old selectors only where persisted rich-text compatibility requires them.
 - Do not use `console.log` in committed code. Use `lib/observability.ts` for server logs.
 - Every `/api/app/**` route uses `requireApiAuth()` unless explicitly and safely public.
 - Agent routes preserve hashed-token or OAuth verification.
 
 ## Architecture map
 
-- `app/(creed-app)/`: authenticated product routes.
+- `app/(strap-app)/`: authenticated product routes.
 - `app/api/app/**`: session-authenticated browser APIs.
-- `app/api/creed/**` and `app/mcp/route.ts`: agent APIs with stable compatibility identifiers.
-- `components/creed/**`: product UI.
+- `app/api/strap/**` and `app/mcp/route.ts`: canonical agent APIs; `app/api/creed/**` remains a compatibility alias.
+- `components/strap/**`: product UI.
 - `components/marketing/**`: public Strap site.
-- `lib/creed-data.ts`: shared types, sections, and connected-agent contract.
+- `lib/strap-data.ts`: shared types, sections, and connected-agent contract.
 - `packages/strap/**`: new Strap CLI.
 - `packages/creed-cli/**`: legacy CLI compatibility package.
 - `supabase/migrations/**`: forward-only schema changes.

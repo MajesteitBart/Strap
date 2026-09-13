@@ -4,7 +4,7 @@ import { useState } from "react";
 import { LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ArrowRightIcon } from "@/components/ui/arrow-right";
-import { useAnimatedIconControls } from "@/components/creed/animated-icon-controls";
+import { useAnimatedIconControls } from "@/components/strap/animated-icon-controls";
 import { cn } from "@/lib/utils";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
@@ -50,7 +50,7 @@ export function GoogleAuthCta({
     <Button
       className={cn(
         variant === "primary"
-          ? "rounded-md bg-[var(--creed-text-primary)] px-5 text-white hover:bg-[#2B2B28]"
+          ? "rounded-md bg-[var(--strap-text-primary)] px-5 text-white hover:bg-[#2B2B28]"
           : "rounded-md border border-white/18 bg-white/10 px-5 text-white hover:bg-white/16",
         className
       )}

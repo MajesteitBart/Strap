@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { NO_STORE_HEADERS } from "@/lib/http-headers";
 import { markEntitlementWelcomed, markCompanyWelcomed } from "@/lib/welcome";
-import { resolveOwnedCompanyCreedId } from "@/lib/creed-context";
+import { resolveOwnedCompanyStrapId } from "@/lib/strap-context";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 
@@ -37,11 +37,11 @@ export async function POST() {
   }
 
   try {
-    // Inside a company Creed the caller owns, the tour is the company variant,
+    // Inside a Company Strap the caller owns, the tour is the company variant,
     // gated on the company billing row - mark that. Otherwise mark the personal
     // entitlement. resolveOwnedCompanyCreedId is null for members and personal
-    // Creeds, so their path is unchanged.
-    const ownedCompanyId = await resolveOwnedCompanyCreedId(supabase, user);
+    // Straps, so their path is unchanged.
+    const ownedCompanyId = await resolveOwnedCompanyStrapId(supabase, user);
     if (ownedCompanyId) {
       await markCompanyWelcomed(ownedCompanyId);
     } else {

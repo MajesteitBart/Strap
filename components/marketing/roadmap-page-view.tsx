@@ -25,7 +25,7 @@ export function RoadmapPageView({ columns }: { columns: RoadmapColumn[] }) {
   const total = columns.reduce((sum, column) => sum + column.tasks.length, 0);
 
   return (
-    <div className="min-h-screen bg-[var(--creed-background)] text-[var(--creed-text-primary)]">
+    <div className="min-h-screen bg-[var(--strap-background)] text-[var(--strap-text-primary)]">
       <MarketingHeroBanner configured scrolled={scrolled} />
 
       <main className="mx-auto max-w-6xl px-6 pb-24 pt-8 md:px-10 md:pb-28 md:pt-10">
@@ -34,14 +34,14 @@ export function RoadmapPageView({ columns }: { columns: RoadmapColumn[] }) {
             text="Roadmap"
             className="justify-center"
           />
-          <p className="t-lede mx-auto mt-5 max-w-xl text-[var(--creed-text-tertiary)]">
+          <p className="t-lede mx-auto mt-5 max-w-xl text-[var(--strap-text-tertiary)]">
             A live view of what we&apos;re building, straight from our task
             board.
           </p>
         </div>
 
         {total === 0 ? (
-          <p className="mt-20 text-center text-[15px] text-[var(--creed-text-tertiary)]">
+          <p className="mt-20 text-center text-[15px] text-[var(--strap-text-tertiary)]">
             The roadmap is being updated. Check back shortly.
           </p>
         ) : (
@@ -63,13 +63,13 @@ function RoadmapColumnView({ column }: { column: RoadmapColumn }) {
     <section className="flex flex-col">
       <div className="mb-4 flex items-center gap-2.5">
         <RoadmapStatusPill id={column.id} label={column.label} />
-        <span className="text-[13px] tabular-nums text-[var(--creed-text-tertiary)]">
+        <span className="text-[13px] tabular-nums text-[var(--strap-text-tertiary)]">
           {column.tasks.length}
         </span>
       </div>
 
       {column.tasks.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-[var(--creed-border)] px-5 py-10 text-center text-[13px] text-[var(--creed-text-tertiary)]">
+        <div className="rounded-xl border border-dashed border-[var(--strap-border)] px-5 py-10 text-center text-[13px] text-[var(--strap-text-tertiary)]">
           Nothing here yet
         </div>
       ) : (
@@ -85,19 +85,19 @@ function RoadmapColumnView({ column }: { column: RoadmapColumn }) {
 
 function RoadmapCard({ task }: { task: RoadmapTask }) {
   return (
-    <article className="rounded-xl bg-[var(--creed-surface)] p-5">
+    <article className="rounded-xl bg-[var(--strap-surface)] p-5">
       {task.code ? (
-        <div className="font-mono text-[11px] tracking-tight text-[var(--creed-text-tertiary)]">
+        <div className="font-mono text-[11px] tracking-tight text-[var(--strap-text-tertiary)]">
           {task.code}
         </div>
       ) : null}
 
-      <h3 className="mt-2 text-[16px] font-medium leading-snug tracking-[-0.01em] text-[var(--creed-text-primary)]">
+      <h3 className="mt-2 text-[16px] font-medium leading-snug tracking-[-0.01em] text-[var(--strap-text-primary)]">
         {task.title}
       </h3>
 
       {task.description ? (
-        <p className="t-body mt-2 line-clamp-2 text-[var(--creed-text-secondary)]">
+        <p className="t-body mt-2 line-clamp-2 text-[var(--strap-text-secondary)]">
           {task.description}
         </p>
       ) : null}
@@ -107,7 +107,7 @@ function RoadmapCard({ task }: { task: RoadmapTask }) {
           {task.labels.map((label) => (
             <span
               key={label}
-              className="rounded-[6px] bg-[var(--creed-surface-raised)] px-2 py-0.5 font-mono text-[12px] text-[var(--creed-text-tertiary)]"
+              className="rounded-[6px] bg-[var(--strap-surface-raised)] px-2 py-0.5 font-mono text-[12px] text-[var(--strap-text-tertiary)]"
             >
               {label}
             </span>

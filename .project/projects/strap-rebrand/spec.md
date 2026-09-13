@@ -2,9 +2,9 @@
 name: Strap Rebrand
 slug: strap-rebrand
 owner: MajesteitBart
-status: active
+status: complete
 created: 2026-07-23T02:02:31Z
-updated: 2026-07-23T02:10:45Z
+updated: 2026-07-24T12:36:02Z
 outcome: Replace every customer-facing Creed.md identity with Strap at strap.bvdm.ai, ship strap.md and Strap-compatible agent/CLI surfaces, and preserve existing data and integration compatibility.
 uncertainty: medium
 probe_required: false

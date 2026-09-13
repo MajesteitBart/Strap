@@ -10,18 +10,18 @@ import {
   type Dispatch,
   type SetStateAction,
 } from "react";
-import { SceneryImage } from "@/components/marketing/scenery-image";
+import { BackdropImage } from "@/components/marketing/backdrop-image";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, ChevronLeft, Star } from "lucide-react";
 import { MenuIcon } from "@/components/ui/menu";
-import { CreedWordmark } from "@/components/creed/brand";
+import { StrapWordmark } from "@/components/strap/brand";
 import { SystemStatusPill } from "@/components/marketing/system-status";
-import { useAnimatedIconControls } from "@/components/creed/animated-icon-controls";
+import { useAnimatedIconControls } from "@/components/strap/animated-icon-controls";
 import { ArrowRightIcon } from "@/components/ui/arrow-right";
 import { useLandingAuthState } from "@/components/marketing/use-landing-auth-state";
 import { useGitHubStars } from "@/components/marketing/use-github-stars";
-import { CREED_TAGLINE } from "@/lib/marketing/brand";
+import { BRAND_TAGLINE } from "@/lib/marketing/brand";
 import { cn } from "@/lib/utils";
 
 import {
@@ -113,8 +113,8 @@ const navGroups: { label: string; items: NavItem[] }[] = [
   },
 ];
 
-const lightHeroImage = "/assets/landing/scenery/light-hero.png";
-const darkHeroImage = "/assets/landing/scenery/dark-hero.png";
+const lightHeroImage = "/assets/landing/backdrops/light-hero.png";
+const darkHeroImage = "/assets/landing/backdrops/dark-hero.png";
 
 // Shared hero banner for the inner marketing pages (pricing, docs, privacy,
 // terms, stack). Full-bleed art (no framed card) with the page background
@@ -127,20 +127,20 @@ export function MarketingHeroBanner({
   scrolled: boolean;
 }) {
   return (
-    <section className="relative bg-[var(--creed-background)]">
+    <section className="relative bg-[var(--strap-background)]">
       <div className="relative h-[15rem] overflow-hidden md:h-[18rem]">
         {/* The image covers a reference box matching the landing hero (same
             full-bleed height) so the artwork scales identically; the banner
             just windows the top slice of it. */}
         <div className="absolute inset-x-0 top-0 h-[94svh]">
-          <SceneryImage
+          <BackdropImage
             src={lightHeroImage}
             fileName="light-hero.png"
             label="Light hero"
             priority
             className="dark:hidden"
           />
-          <SceneryImage
+          <BackdropImage
             src={darkHeroImage}
             fileName="dark-hero.png"
             label="Dark hero"
@@ -153,7 +153,7 @@ export function MarketingHeroBanner({
             gradient so the transition reads smooth, not banded. */}
         <div
           className="pointer-events-none absolute inset-x-0 bottom-0 h-3/5"
-          style={{ backgroundImage: "var(--scenery-fade-down)" }}
+          style={{ backgroundImage: "var(--strap-backdrop-fade-down)" }}
         />
         <div className="relative z-10 flex flex-col px-6 py-5 md:px-10 md:py-7">
           <MarketingHeader configured={configured} scrolled={scrolled} />
@@ -271,7 +271,7 @@ export function MarketingHeader({
               : "opacity-0",
           )}
         >
-          <div className="absolute inset-0 rounded-xl bg-[var(--creed-surface)]" />
+          <div className="absolute inset-0 rounded-xl bg-[var(--strap-surface)]" />
         </motion.div>
         {stickyDropdownSurface ? (
           <div
@@ -280,7 +280,7 @@ export function MarketingHeader({
             style={{ height: stickyDropdownSurface.bottom }}
           >
             <motion.div
-              className="absolute inset-0 bg-[var(--creed-surface)]"
+              className="absolute inset-0 bg-[var(--strap-surface)]"
               initial={{
                 clipPath: `path("${stickySurfacePath(
                   stickyDropdownSurface,
@@ -340,7 +340,7 @@ export function MarketingHeader({
           className="shrink-0 transition-opacity duration-200 hover:opacity-60"
           onClick={() => setMobileMenuOpen(false)}
         >
-          <CreedWordmark
+          <StrapWordmark
             className="ml-1.5"
             imageClassName={stickyChromeActive ? undefined : "invert brightness-0"}
           />
@@ -352,7 +352,7 @@ export function MarketingHeader({
         aria-label="Strap home"
         className="hidden shrink-0 transition-opacity duration-200 hover:opacity-60 md:block"
       >
-        <CreedWordmark className="ml-0" imageClassName={stickyChromeActive ? undefined : "invert brightness-0"} />
+        <StrapWordmark className="ml-0" imageClassName={stickyChromeActive ? undefined : "invert brightness-0"} />
       </Link>
 
       <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-1 md:flex">
@@ -400,7 +400,7 @@ export function MarketingHeader({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-              className="absolute right-2 top-[4rem] z-10 flex flex-col items-end gap-2 text-[var(--creed-text-primary)]"
+              className="absolute right-2 top-[4rem] z-10 flex flex-col items-end gap-2 text-[var(--strap-text-primary)]"
             >
               {navGroups.map((group, gIndex) => (
                 <motion.div
@@ -549,7 +549,7 @@ function GitHubStarButton({
       className={cn(
         "inline-flex h-9 items-center gap-2.5 rounded-md px-3 text-[14px] font-medium shadow-none transition-colors duration-300",
         scrolled
-          ? "bg-[var(--creed-accent)] text-white hover:bg-[var(--creed-accent-hover)]"
+          ? "bg-[var(--strap-accent)] text-white hover:bg-[var(--strap-accent-hover)]"
           : "bg-white text-[#19345f] hover:bg-[#f6f7fb]",
         className,
       )}
@@ -658,7 +658,7 @@ function HeaderDropdown({
   const linkClass = cn(
     "flex h-9 items-center justify-start rounded-md px-3.5 text-[14px] font-medium leading-none transition-colors duration-200",
     scrolled
-      ? "text-[var(--creed-text-primary)] hover:text-[var(--creed-text-secondary)]"
+      ? "text-[var(--strap-text-primary)] hover:text-[var(--strap-text-secondary)]"
       : "text-white hover:text-white/55",
   );
 
@@ -693,7 +693,7 @@ function HeaderDropdown({
         className={cn(
           "inline-flex h-9 items-center gap-1 rounded-md px-3.5 text-[14px] font-medium transition-colors duration-200",
           scrolled
-            ? "text-[var(--creed-text-primary)] hover:text-[var(--creed-text-secondary)]"
+            ? "text-[var(--strap-text-primary)] hover:text-[var(--strap-text-secondary)]"
             : "text-white hover:text-white/55",
         )}
       >
@@ -837,7 +837,7 @@ function HeaderAuthActions({
       className={cn(
         "inline-flex size-9 items-center justify-center rounded-md outline-none focus-visible:ring-2 md:hidden",
         scrolled
-          ? "text-[var(--creed-text-primary)] focus-visible:ring-black/10"
+          ? "text-[var(--strap-text-primary)] focus-visible:ring-black/10"
           : "text-white focus-visible:ring-white/20",
       )}
       aria-label={
@@ -863,7 +863,7 @@ function HeaderAuthActions({
           className={cn(
             "hidden h-9 items-center gap-1.5 rounded-md px-3.5 text-[14px] font-medium transition-colors duration-200 md:inline-flex",
             scrolled
-              ? "text-[var(--creed-text-primary)] hover:text-[var(--creed-text-secondary)]"
+              ? "text-[var(--strap-text-primary)] hover:text-[var(--strap-text-secondary)]"
               : "text-white hover:text-white/55",
           )}
           onMouseEnter={enterArrow.start}
@@ -991,7 +991,7 @@ function MobileNavRow({
 
 export function MarketingFooter() {
   return (
-    <footer className="border-t border-[var(--creed-border)] px-6 pt-12 md:px-10 md:pt-16 lg:px-12">
+    <footer className="border-t border-[var(--strap-border)] px-6 pt-12 md:px-10 md:pt-16 lg:px-12">
       <div className="mx-auto grid max-w-7xl gap-10 md:grid-cols-[1.1fr_0.9fr]">
         <div className="flex h-full flex-col justify-between gap-10">
           <div>
@@ -1000,10 +1000,10 @@ export function MarketingFooter() {
               aria-label="Strap home"
               className="inline-block transition-opacity hover:opacity-80"
             >
-              <CreedWordmark />
+              <StrapWordmark />
             </Link>
-            <p className="t-body-lg mt-4 max-w-sm text-[var(--creed-text-secondary)]">
-              {CREED_TAGLINE}
+            <p className="t-body-lg mt-4 max-w-sm text-[var(--strap-text-secondary)]">
+              {BRAND_TAGLINE}
             </p>
           </div>
           <div>
@@ -1018,15 +1018,15 @@ export function MarketingFooter() {
         </div>
       </div>
 
-      <div className="mx-auto mt-8 flex max-w-7xl flex-col gap-4 border-t border-[var(--creed-border)] py-6 md:flex-row md:items-center md:justify-between">
-        <div className="t-meta flex flex-wrap items-center gap-x-2 gap-y-1 text-[var(--creed-text-tertiary)]">
+      <div className="mx-auto mt-8 flex max-w-7xl flex-col gap-4 border-t border-[var(--strap-border)] py-6 md:flex-row md:items-center md:justify-between">
+        <div className="t-meta flex flex-wrap items-center gap-x-2 gap-y-1 text-[var(--strap-text-tertiary)]">
           <span>© 2026 Strap</span>
           <span aria-hidden="true">·</span>
           <span>strap.bvdm.ai</span>
         </div>
         {/* Social icons: left-to-right order is hpbrn, Discord, GitHub,
             Instagram, X. Icons are local SVG masks so colour stays inherited. */}
-        <div className="flex items-center gap-4 text-[var(--creed-text-tertiary)]">
+        <div className="flex items-center gap-4 text-[var(--strap-text-tertiary)]">
           <SocialIconLink
             href={DISCORD_URL ?? "https://discord.com"}
             label="Discord"
@@ -1078,7 +1078,7 @@ function SocialIconLink({
       target="_blank"
       rel="noreferrer"
       aria-label={label}
-      className="inline-flex items-center justify-center transition-colors hover:text-[var(--creed-accent)]"
+      className="inline-flex items-center justify-center transition-colors hover:text-[var(--strap-accent)]"
     >
       <span
         aria-hidden="true"
@@ -1098,7 +1098,7 @@ function SocialIconLink({
 function FooterColumn({ title, items }: { title: string; items: NavItem[] }) {
   return (
     <div>
-      <div className="t-body-lg font-medium text-[var(--creed-text-primary)]">
+      <div className="t-body-lg font-medium text-[var(--strap-text-primary)]">
         {title}
       </div>
       <div className="mt-4 space-y-3">
@@ -1106,7 +1106,7 @@ function FooterColumn({ title, items }: { title: string; items: NavItem[] }) {
           <Link
             key={item.label}
             href={item.href}
-            className="t-body-lg block text-[var(--creed-text-secondary)] hover:text-[var(--creed-accent)]"
+            className="t-body-lg block text-[var(--strap-text-secondary)] hover:text-[var(--strap-accent)]"
           >
             {item.label}
           </Link>

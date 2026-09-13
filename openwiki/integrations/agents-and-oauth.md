@@ -1,98 +1,78 @@
 # Agents, OAuth, MCP, and CLI
 
-## Connection model
+## Connection and grant model
 
-Creed’s MCP server at `/mcp` accepts three bearer-credential families:
+Strap’s MCP server at `/mcp` accepts:
 
-- OAuth access tokens issued through the browser authorization-code flow with dynamic registration and mandatory PKCE S256;
-- OAuth access tokens issued through the RFC 8628 device authorization grant for headless clients;
-- user-created Creed API keys whose `creed_key_` prefix identifies the credential type.
+- OAuth access tokens from dynamic-registration authorization-code flow with PKCE S256;
+- OAuth access tokens from RFC 8628 device authorization;
+- scoped API keys, newly `strap_key_` and compatibly existing `creed_key_`.
 
-Modern OAuth connections and API keys are explicitly bound to one selected Creed and a maximum mode. Every tool call re-resolves credential validity, the explicit Creed grant, live membership, and section permissions. The older direct HTTP API remains under `app/api/creed/**` with separate read, proposal, and direct-write bearer capabilities. None of these credentials are Supabase browser sessions, and all must be supplied in the `Authorization` header.
+Modern credentials bind exactly one Personal or Company Strap plus a maximum access mode. Every call rechecks token/key validity, explicit grant, live membership, and section policy. Modes are ceilings:
 
-## OAuth flow
+- `read-only`: no proposal/direct mutation tools; visible sections clamp to read;
+- `proposal-only`: proposals allowed where live policy permits, direct editing removed;
+- `direct`: direct operations remain limited by live Personal policy or Company member/section permissions.
 
-1. An unauthenticated MCP request receives `401`, a `WWW-Authenticate` challenge, and protected-resource metadata.
-2. The client discovers `/.well-known/oauth-protected-resource[/mcp]` and `/.well-known/oauth-authorization-server`.
-3. `POST /register` creates a public client and records allowed redirect URIs.
-4. `/authorize` requires a signed-in, eligible user and presents a Creed consent picker.
-5. `/authorize/decision` revalidates the session, client, redirect URI, entitlement/membership, and selected Creed before issuing a short-lived code.
-6. `POST /token` atomically redeems the single-use code, verifies PKCE and the redirect URI, then returns a one-hour access token and rotating 30-day refresh token.
-7. Refresh rotates and revokes the prior pair. `/revoke` supports explicit revocation.
+If a modern grant becomes inaccessible, MCP returns no usable Strap state rather than falling back. Only positively identified pre-explicit-grant OAuth tokens retain historical Personal fallback.
 
-Important implementation files are the well-known routes, `app/register/route.ts`, `app/authorize/**`, `app/token/route.ts`, `app/revoke/route.ts`, `lib/oauth.ts`, and `lib/oauth-metadata.ts`.
+## OAuth authorization-code flow
 
-OAuth clients are public and have no meaningful client secret. Security rests on PKCE, exact redirect validation (with standard loopback-port handling), one-time codes, consent, per-Creed grants, and token revocation. Scope strings describe capability, but live section policy is the authoritative write gate.
+The client discovers protected-resource and authorization-server metadata, dynamically registers, and starts `/authorize` with PKCE. The signed-in user selects exactly one accessible Personal or Company Strap; solo Personal users get the same one-profile grant without a picker. `/authorize/decision` revalidates session, client, redirect, membership, and selection before issuing a short-lived code. `/token` atomically claims the code, verifies PKCE/redirect, then issues one-hour access and rotating 30-day refresh tokens; `/revoke` supports revocation.
+
+Browser consent does not expose a mode picker: it records a `direct` ceiling and relies on live section policy to narrow actual rights. Client identity is not inherently trusted; exact redirects, PKCE, user consent, explicit profile selection, and revocation are load-bearing.
 
 ## RFC 8628 device authorization
 
-OAuth discovery advertises `/device/authorize` and `urn:ietf:params:oauth:grant-type:device_code`. A registered public client posts its `client_id` and optional scope to `/device/authorize`; Creed returns a hashed-at-rest device code, an eight-character user code, `/device` as the verification URI, a 10-minute lifetime, and an initial five-second poll interval. The signed-in user enters the code at `/device`, verifies the registered client name, selects exactly one accessible Creed and a maximum mode, then allows or denies the request.
+Discovery advertises `/device/authorize` and the device-code grant. A registered client receives a hash-at-rest device code, eight-character user code, `/device` verification URI, ten-minute lifetime, and initial five-second polling interval.
 
-The client polls `/token` with the device-code grant. Postgres serializes polling and state changes through service-role-only RPCs: a normal pending poll advances the next deadline, an early poll returns `slow_down` and adds five seconds up to 300, approval consumes the request once, and denial/expiry/client mismatch return OAuth errors. Successful exchange issues the same one-hour access and rotating 30-day refresh tokens as the browser flow, with one explicit Creed grant. The device request is consumed before token persistence, so the flow must not be described as one transaction spanning request consumption and token issuance.
+The signed-in user enters the code, verifies the client name, chooses exactly one Personal or Company Strap, and chooses a mode allowed by the requested scopes. Polling supports pending, `slow_down`, denial, expiry, client mismatch, and one-time consumption. Approval issues standard OAuth tokens with that single-Strap grant. Durable poll timing is serialized in Postgres; local endpoint limits remain process-local.
 
-`app/device/**`, `lib/oauth-device.ts`, `lib/oauth-device-shared.ts`, `app/token/route.ts`, and the latest headless-access migration implement this flow. Authorization and verification endpoint limits use the process-local limiter; durable poll timing is shared in Postgres.
+Primary sources: `app/device/**`, `lib/oauth-device.ts`, `lib/oauth-device-shared.ts`, and `app/token/route.ts`.
 
-## Credential storage
+## One-time-visible API keys
 
-OAuth access/refresh tokens and legacy agent tokens use SHA-256 hashes for lookup. Recoverable credentials are encrypted with AES-256-GCM through `lib/secret-crypto.ts`, using `CREED_ENCRYPTION_SECRET`. Device and user codes are hash-only. Creed API keys are also hash-only and cannot be recovered after their one-time display. Raw credentials must never appear in logs, query parameters, rate-limit identifiers, or documentation.
+`/connections` uses session APIs under `app/api/app/headless-access/**` to list safe metadata, create, and revoke keys. Any current Strap member can create a key for that Strap, with a name, explicit mode, and optional expiry no more than 366 days away.
 
-Authorization codes expire quickly and are claimed conditionally on `used_at IS NULL`. Redirect fields submitted by the browser are revalidated server-side rather than trusted from hidden form inputs.
+`lib/headless-access-shared.ts` generates new `strap_key_` values from random material. Only SHA-256 digest and short display prefix persist; plaintext is returned once by creation and cannot be recovered. Existing `creed_key_` values are recognized solely as compatibility keys. Resolution checks revocation, expiry, creator membership, and records `last_used_at` best-effort.
 
-## Creed API keys for headless MCP
+## MCP canonical and compatibility contracts
 
-The Connections screen manages long-lived, one-time-visible API keys through the session-authenticated app API:
+`app/mcp/route.ts` supports JSON-RPC tools, resources, prompts, batching, CORS discovery, and MCP protocol `2025-06-18`. Discovery is Strap-first and advertises canonical names such as `list_straps`, `read_strap`, `strap_get_section`, `strap_search`, proposal/direct operations, and `strap://profile`.
 
-- `GET /api/app/headless-access?creedId=…` lists only the current user’s safe metadata;
-- `POST /api/app/headless-access` creates a named key, a `read-only`, `proposal-only`, or `direct` ceiling, and an optional future expiry no more than 366 days away;
-- `DELETE /api/app/headless-access/[id]` immediately revokes a key owned by the signed-in user.
+Do not remove or rename the exact compatibility surface. The same dispatcher continues to accept:
 
-Any current Creed member can create a key for that Creed. The generated value is `creed_key_` plus random material; only its SHA-256 digest and display prefix are stored. The full key is returned only by creation. MCP rechecks revocation, expiry, and the creator’s live membership on every resolution and updates `last_used_at` best-effort.
+- `list_creeds`, `read_creed`;
+- `propose_creed_update`, `direct_edit_creed`;
+- `creed_update_section`, `creed_create_section`, `creed_delete_section`;
+- `creed_rename_section`, `creed_recolor_section`, `creed_append_to_section`;
+- `creed_reorder_section`, `creed_get_section`, `creed_search`;
+- `creed_get_recent_activity`, `creed_get_quality_report`;
+- compatibility resource URI `creed://profile`.
 
-The key mode is an additional ceiling, never an elevation: read-only removes proposal/direct mutation tokens and clamps visible sections to read; proposal-only removes direct editing and clamps to propose; direct still obeys the user’s company and section permissions. If an explicit key or modern OAuth grant becomes inaccessible, MCP returns no usable Creed state rather than silently falling back to another Creed. Only positively identified legacy OAuth tokens with no explicit-grant marker retain the historical Personal fallback. `lib/headless-access.ts`, `lib/headless-access-shared.ts`, the app routes, and `components/creed/headless-access-card.tsx` are the primary sources.
+Unprefixed stable operations such as `get_write_policy` and `list_sections` also remain. `/api/strap`, `/api/strap/proposals`, and `/api/strap/write` are the canonical direct HTTP paths. `/api/creed/**` remains only as a compatibility API shim; both route families share handler behavior, authentication, and rate limits.
 
-## MCP endpoint
+The MCP operating contract tells agents to read Strap before meaningful work, propose only durable changes, prune rather than accumulate, and treat profile content as data rather than instructions. Changes in `lib/strap-data.ts` or `app/mcp/route.ts` affect every client; `lib/creed-data.ts` is only a deprecated compatibility re-export shim.
 
-`app/mcp/route.ts` is a self-contained JSON-RPC endpoint supporting tools, resources, prompts, batching, CORS discovery, and the MCP `2025-06-18` protocol version. It exposes capabilities such as:
+## Primary and legacy CLIs
 
-- listing the connection’s Creed and sections;
-- reading the full governed profile or a targeted section;
-- search and quality/report reads;
-- submitting rich-text or structural proposals;
-- direct section operations only where effective permission is `direct`.
+`packages/strap` publishes `@bvdm/strap` and the `strap` executable for Node 20+. It defaults to `https://strap.bvdm.ai/mcp`, uses dynamic registration plus browser authorization-code PKCE, discovers tools/resources/prompts live, supports exact-name calls and JSON mode, stores credentials per server, and attempts RFC 7009 revocation on logout.
 
-The initialize response and read payload include an operating contract: read Creed before substantive work, propose only durable changes, prefer pruning/tightening to accumulation, and treat all profile content as user data rather than agent instructions. Changes to this contract in `lib/creed-data.ts` or `app/mcp/route.ts` affect every connected model.
+```bash
+npx @bvdm/strap
+strap tools
+strap call read_strap
+strap resource strap://profile
+strap --agent codex call strap_search --args '{"query":"priorities"}' --json
+```
 
-The server strips hidden sections and dynamically narrows available operations. For a Company Creed, an agent’s effective access is the minimum of member permission and the credential’s selected ceiling. MCP classifies only `creed_key_` credentials as API keys; every other bearer follows OAuth resolution. It hashes the bearer before using it as a rate-limit identifier, so the in-memory limiter does not retain raw credentials. CLI activity can carry `X-Creed-CLI-Agent` for per-agent attribution while remaining distinguishable from ordinary MCP client activity.
+Server precedence is `--server`, `STRAP_MCP_URL`, saved config, then the default; `STRAP_CONFIG_DIR` overrides storage. HTTPS is required except explicit localhost loopback URLs. The server supports device authorization and API keys, but current `packages/strap` source implements browser OAuth; do not document nonexistent CLI device/API-key login commands.
 
-## Direct HTTP agent APIs
+`packages/creed-cli` remains a complete, separately configured legacy compatibility package exposing `creed`/`creed-cli` and defaulting to `https://creed.md/mcp`. New users should use `@bvdm/strap`. Neither CLI reads or migrates the other’s credentials automatically.
 
-- `GET /api/creed`: token-authenticated rendered profile.
-- `POST /api/creed/proposals`: validate and store a proposal.
-- `POST /api/creed/write`: apply a direct edit only to a direct-enabled target.
+## Security caveats and tests
 
-These routes use capability-specific hashed-token lookup. Query-string tokens are intentionally unsupported to avoid browser history, referrer, and server-log leakage.
+Raw credentials never belong in logs, query strings, rate-limit identifiers, or docs. MCP hashes bearer values before rate limiting. `lib/rate-limit.ts` is process-local. Dynamic registration can accept supported custom schemes, so consent and redirects matter more than the displayed client name.
 
-## First-party CLI
-
-`packages/creed-cli` is an independently built/published Node 20+ package. It is deliberately a thin MCP client:
-
-- first use opens the browser and completes OAuth via a random localhost callback port;
-- OAuth state is validated;
-- client metadata, PKCE state, and tokens are stored per normalized server URL;
-- tools, resources, prompts, and argument schemas are discovered live;
-- unknown future server tools work without publishing a matching CLI version;
-- `logout` attempts RFC 7009 revocation, then removes local credentials.
-
-On POSIX systems, its configuration directory/file are written with restrictive permissions. Windows relies on platform filesystem protections, so credentials remain a local endpoint-security concern.
-
-Use `packages/creed-cli/README.md` for user commands. Run its own test and typecheck scripts; the root test command does not include package tests.
-
-## Operational and security caveats
-
-- `lib/rate-limit.ts` is process-local. Limits reset on restart and do not coordinate across regions or instances.
-- Dynamic client registration permits supported custom schemes; registered client identity is therefore not a strong trust signal. Consent and redirects are load-bearing.
-- Modern credentials fail narrow when their explicit Creed grant is absent or inaccessible; do not restore Personal fallback outside the marked legacy-token case.
-- The MCP route combines protocol, authentication, policy, state loading, and dispatch; seemingly small changes can affect many clients.
-- Focused endpoint-level OAuth tests are limited. PKCE replay, redirect validation, rotation, revocation, device polling/token-issuance failure, and MCP authorization deserve integration tests.
-
-Relevant tests include `tests/headless-access-vault.test.ts`, `tests/mcp-connection-status.test.ts`, `tests/mcp-health-filter.test.ts`, `tests/connection-actions.test.ts`, and `packages/creed-cli/tests/**`. The headless test covers key/code helpers and source-level enforcement/discovery assertions; it does not execute the routes, RPC concurrency, or live MCP authorization.
+Relevant tests include `tests/strap-protocol-compatibility.test.ts`, `tests/headless-access-vault.test.ts`, `tests/mcp-connection-status.test.ts`, `tests/mcp-health-filter.test.ts`, `packages/strap/tests/**`, and `packages/creed-cli/tests/**`. Source-text assertions do not replace live OAuth, RPC concurrency, RLS, or MCP integration tests.
+ration tests.

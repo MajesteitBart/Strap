@@ -17,8 +17,8 @@ import {
   canRunAnalysis,
   effectiveAgentPermission,
   minPermission,
-} from "../lib/creed-permissions.ts";
-import { possessive, actorLabel } from "../lib/creed-attribution.ts";
+} from "../lib/strap-permissions.ts";
+import { possessive, actorLabel } from "../lib/strap-attribution.ts";
 
 test("resolveSectionPermission: owner/admin are always direct", () => {
   assert.equal(resolveSectionPermission("owner", "hidden"), "direct");
@@ -103,8 +103,8 @@ test("attribution: manual, MCP agent, panel agent", () => {
     "Fergus's Claude Code"
   );
   assert.equal(
-    actorLabel({ actorType: "agent", userName: "Fergus", agentName: "Creed" }),
-    "Fergus's Creed"
+    actorLabel({ actorType: "agent", userName: "Fergus", agentName: "Strap" }),
+    "Fergus's Strap"
   );
   // Never a vague standalone when the member is unknown: fall back to the agent.
   assert.equal(

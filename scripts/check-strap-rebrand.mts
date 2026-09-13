@@ -1,183 +1,257 @@
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
-import { extname, resolve } from "node:path";
-import * as ts from "typescript";
+import { createHash } from "node:crypto";
+import { existsSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { resolve } from "node:path";
 
-type Term = {
-  id: "brand-name" | "legacy-origin" | "legacy-email" | "legacy-cli" | "legacy-filename";
-  pattern: RegExp;
-};
+type Decision = "compatibility" | "history";
 
 type Finding = {
   file: string;
-  line: number;
-  term: Term["id"];
-  context: string;
+  kind: "content" | "path";
+  occurrences: number;
+  fingerprint: string;
 };
 
-type AllowEntry = {
-  file: string;
-  term: Term["id"];
-  context: string;
-  occurrences: number;
+type AllowEntry = Finding & {
+  decision: Decision;
   category: string;
   rationale: string;
 };
 
-const TERMS: readonly Term[] = [
-  { id: "brand-name", pattern: /\bCreed\b/g },
-  { id: "legacy-origin", pattern: /https:\/\/creed\.md/g },
-  { id: "legacy-email", pattern: /hello@creed\.md/g },
-  { id: "legacy-cli", pattern: /\b(?:npx\s+)?creed-cli\b/g },
-  { id: "legacy-filename", pattern: /(?<!https:\/\/)\bcreed\.md\b/g },
-] as const;
+type Assertion =
+  | {
+      file: string;
+      pattern: string;
+      rationale: string;
+    }
+  | {
+      path: string;
+      rationale: string;
+    };
 
-const SOURCE_EXTENSIONS = new Set([".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs"]);
-const DOCUMENT_EXTENSIONS = new Set([".md", ".json", ".yaml", ".yml", ".html", ".txt"]);
-const EXCLUDED_PREFIXES = [
-  ".agents/",
-  ".claude/",
-  ".project/",
-  "openwiki/",
-  "packages/creed-cli/",
+type Allowlist = {
+  version: 2;
+  entries: AllowEntry[];
+  assertions: Assertion[];
+};
+
+const ALLOWLIST_PATH = "scripts/strap-rebrand-allowlist.json";
+const TERM = /creed/gi;
+const HISTORY_PREFIXES = [
+  ".project/projects/delano-bootstrap/",
+  ".project/projects/strap-rebrand/",
+  ".project/projects/strap-rename-completion/",
   "supabase/migrations/",
-  "tests/",
 ] as const;
 
 function normalizePath(value: string): string {
   return value.replaceAll("\\", "/");
 }
 
-function isIncludedFile(file: string): boolean {
-  if (file === "tsconfig.json" || file === "scripts/strap-rebrand-allowlist.json") return false;
-  if (EXCLUDED_PREFIXES.some((prefix) => file.startsWith(prefix))) return false;
-  if (file.includes("/node_modules/") || file.includes("/dist/") || file.includes("/.next")) return false;
-  const extension = extname(file);
-  return SOURCE_EXTENSIONS.has(extension) || DOCUMENT_EXTENSIONS.has(extension) || file === ".env.example";
+function fingerprint(parts: readonly string[]): string {
+  return createHash("sha256").update(parts.join("\n")).digest("hex");
 }
 
-function compactContext(value: string): string {
-  return value.replace(/\s+/g, " ").trim();
+function gitFiles(root: string, args: readonly string[]): string[] {
+  return execFileSync("git", ["ls-files", ...args, "-z"], {
+    cwd: root,
+    encoding: "utf8",
+    maxBuffer: 32 * 1024 * 1024,
+  })
+    .split("\0")
+    .map(normalizePath)
+    .filter(Boolean)
+    .sort();
 }
 
-function addContextFindings(
-  findings: Finding[],
-  file: string,
-  line: number,
-  rawContext: string,
-): void {
-  const context = compactContext(rawContext);
-  if (!context) return;
+function contentFinding(file: string, buffer: Buffer): Finding | null {
+  if (buffer.includes(0)) return null;
 
-  for (const term of TERMS) {
-    const matches = context.match(term.pattern) ?? [];
-    for (let index = 0; index < matches.length; index += 1) {
-      findings.push({ file, line, term: term.id, context });
-    }
-  }
-}
-
-function scanSourceFile(file: string, text: string): Finding[] {
-  const findings: Finding[] = [];
-  const kind = file.endsWith("x") ? ts.ScriptKind.TSX : ts.ScriptKind.TS;
-  const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, kind);
-
-  function visit(node: ts.Node): void {
-    if (ts.isTemplateExpression(node)) {
-      const context = node.getText(source);
-      const line = source.getLineAndCharacterOfPosition(node.getStart(source)).line + 1;
-      addContextFindings(findings, file, line, context);
-    } else if (ts.isStringLiteralLike(node) || ts.isJsxText(node)) {
-      const context = ts.isJsxText(node) ? node.getText(source) : node.text;
-      const line = source.getLineAndCharacterOfPosition(node.getStart(source)).line + 1;
-      addContextFindings(findings, file, line, context);
-    }
-    ts.forEachChild(node, visit);
+  const text = buffer.toString("utf8");
+  const contexts: string[] = [];
+  for (const match of text.matchAll(TERM)) {
+    const offset = match.index;
+    const before = text.slice(0, offset);
+    const line = before.split(/\r?\n/).length;
+    const lineText = text.slice(before.lastIndexOf("\n") + 1, text.indexOf("\n", offset) === -1 ? text.length : text.indexOf("\n", offset));
+    contexts.push(`${line}:${lineText.trim()}`);
   }
 
-  visit(source);
-  return findings;
+  return contexts.length === 0
+    ? null
+    : {
+        file,
+        kind: "content",
+        occurrences: contexts.length,
+        fingerprint: fingerprint(contexts),
+      };
 }
 
-function scanDocument(file: string, text: string): Finding[] {
-  const findings: Finding[] = [];
-  text.split(/\r?\n/).forEach((line, index) => {
-    addContextFindings(findings, file, index + 1, line);
-  });
-  return findings;
+function pathFinding(file: string): Finding | null {
+  const matches = file.match(TERM) ?? [];
+  return matches.length === 0
+    ? null
+    : {
+        file,
+        kind: "path",
+        occurrences: matches.length,
+        fingerprint: fingerprint([file]),
+      };
 }
 
-function findingKey(value: Pick<Finding, "file" | "term" | "context">): string {
-  return JSON.stringify([value.file, value.term, value.context]);
+function findingKey(value: Pick<Finding, "file" | "kind">): string {
+  return `${value.kind}:${value.file}`;
+}
+
+function defaultClassification(finding: Finding): Pick<AllowEntry, "decision" | "category" | "rationale"> {
+  if (HISTORY_PREFIXES.some((prefix) => finding.file.startsWith(prefix))) {
+    return {
+      decision: "history",
+      category: "historical-delivery-or-schema",
+      rationale: "Preserved historical delivery evidence or forward-only schema history; rewriting would falsify repository history.",
+    };
+  }
+
+  if (finding.file.startsWith("packages/creed-cli/")) {
+    return {
+      decision: "compatibility",
+      category: "legacy-cli-package",
+      rationale: "Preserved legacy CLI package and installed client compatibility surface.",
+    };
+  }
+
+  return {
+    decision: "compatibility",
+    category: finding.kind === "path" ? "stable-compatibility-path" : "stable-compatibility-content",
+    rationale: finding.kind === "path"
+      ? "Exact tracked path retained until its separately staged compatibility migration."
+      : "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology.",
+  };
+}
+
+function validateAllowlist(value: unknown): asserts value is Allowlist {
+  if (!value || typeof value !== "object") throw new Error("Allowlist must be an object.");
+  const candidate = value as Partial<Allowlist>;
+  if (candidate.version !== 2 || !Array.isArray(candidate.entries) || !Array.isArray(candidate.assertions)) {
+    throw new Error("Allowlist must use schema version 2 with entries and assertions arrays.");
+  }
+
+  for (const entry of candidate.entries) {
+    if (
+      !entry.file ||
+      !["content", "path"].includes(entry.kind) ||
+      !Number.isInteger(entry.occurrences) ||
+      entry.occurrences < 1 ||
+      !/^[a-f0-9]{64}$/.test(entry.fingerprint) ||
+      !["compatibility", "history"].includes(entry.decision) ||
+      !entry.category ||
+      !entry.rationale
+    ) {
+      throw new Error(`Invalid allowlist entry: ${JSON.stringify(entry)}`);
+    }
+  }
+
+  for (const assertion of candidate.assertions) {
+    const hasFileAssertion =
+      "file" in assertion &&
+      typeof assertion.file === "string" &&
+      typeof assertion.pattern === "string";
+    const hasPathAssertion =
+      "path" in assertion &&
+      typeof assertion.path === "string";
+    if ((!hasFileAssertion && !hasPathAssertion) || !assertion.rationale) {
+      throw new Error(`Invalid positive assertion: ${JSON.stringify(assertion)}`);
+    }
+  }
 }
 
 const root = process.cwd();
-const files = execFileSync("rg", ["--files", "--hidden"], {
-  cwd: root,
-  encoding: "utf8",
-})
-  .split(/\r?\n/)
-  .map(normalizePath)
-  .filter(Boolean)
-  .filter(isIncludedFile)
+const trackedFiles = gitFiles(root, ["--cached"]);
+const repositoryFiles = [...new Set([...trackedFiles, ...gitFiles(root, ["--others", "--exclude-standard"])])]
+  .filter((file) => {
+    const path = resolve(root, file);
+    return existsSync(path) && statSync(path).isFile();
+  })
   .sort();
+const missingTrackedFiles = trackedFiles.length - repositoryFiles.filter((file) => trackedFiles.includes(file)).length;
+const findings: Finding[] = [];
+let binaryFiles = 0;
 
-const findings = files.flatMap((file) => {
-  const text = readFileSync(resolve(root, file), "utf8");
-  return SOURCE_EXTENSIONS.has(extname(file))
-    ? scanSourceFile(file, text)
-    : scanDocument(file, text);
+for (const file of repositoryFiles) {
+  const buffer = readFileSync(resolve(root, file));
+  if (buffer.includes(0)) binaryFiles += 1;
+  // Generated classifications contain the exact paths and rationales being
+  // audited. Scanning those records would make the allowlist recursively
+  // classify and fingerprint itself.
+  const content = file === ALLOWLIST_PATH ? null : contentFinding(file, buffer);
+  const path = pathFinding(file);
+  if (content) findings.push(content);
+  if (path) findings.push(path);
+}
+
+const allowlistPath = resolve(root, ALLOWLIST_PATH);
+const parsed = JSON.parse(readFileSync(allowlistPath, "utf8")) as unknown;
+validateAllowlist(parsed);
+
+if (process.argv.includes("--update-allowlist")) {
+  const previous = new Map(parsed.entries.map((entry) => [findingKey(entry), entry]));
+  const entries = findings.map((finding): AllowEntry => {
+    const old = previous.get(findingKey(finding));
+    const classification = old
+      ? { decision: old.decision, category: old.category, rationale: old.rationale }
+      : defaultClassification(finding);
+    return { ...finding, ...classification };
+  });
+  const next: Allowlist = { version: 2, entries, assertions: parsed.assertions };
+  writeFileSync(allowlistPath, `${JSON.stringify(next, null, 2)}\n`);
+  process.stdout.write(`Updated ${ALLOWLIST_PATH} with ${entries.length} exact tracked-file classifications.\n`);
+  process.exit(0);
+}
+
+const actual = new Map(findings.map((finding) => [findingKey(finding), finding]));
+const allowed = new Map(parsed.entries.map((entry) => [findingKey(entry), entry]));
+const unclassified = findings.filter((finding) => !allowed.has(findingKey(finding)));
+const stale = parsed.entries.filter((entry) => {
+  const finding = actual.get(findingKey(entry));
+  return !finding || finding.occurrences !== entry.occurrences || finding.fingerprint !== entry.fingerprint;
 });
 
-const allowlistPath = resolve(root, "scripts/strap-rebrand-allowlist.json");
-const allowlist = JSON.parse(readFileSync(allowlistPath, "utf8")) as AllowEntry[];
-const invalidEntries = allowlist.filter(
-  (entry) =>
-    !entry.file ||
-    !entry.context ||
-    !entry.rationale ||
-    !entry.category.startsWith("D-004/") ||
-    !Number.isInteger(entry.occurrences) ||
-    entry.occurrences < 1,
-);
+const failedAssertions: Assertion[] = [];
+for (const assertion of parsed.assertions) {
+  if ("path" in assertion) {
+    if (!existsSync(resolve(root, assertion.path))) failedAssertions.push(assertion);
+  } else {
+    const file = readFileSync(resolve(root, assertion.file), "utf8");
+    if (!new RegExp(assertion.pattern, "m").test(file)) failedAssertions.push(assertion);
+  }
+}
 
-if (invalidEntries.length > 0) {
-  process.stderr.write(`Invalid Strap rebrand allowlist entries: ${JSON.stringify(invalidEntries, null, 2)}\n`);
+if (unclassified.length || stale.length || failedAssertions.length) {
+  if (unclassified.length) {
+    process.stderr.write(`Unclassified tracked Creed findings:\n${JSON.stringify(unclassified, null, 2)}\n`);
+  }
+  if (stale.length) {
+    process.stderr.write(`Stale or changed exact classifications:\n${JSON.stringify(stale, null, 2)}\n`);
+  }
+  if (failedAssertions.length) {
+    process.stderr.write(`Failed positive Strap assertions:\n${JSON.stringify(failedAssertions, null, 2)}\n`);
+  }
+  process.stderr.write("Review the change, then run `npm run audit:brand -- --update-allowlist` to record an intentional classification.\n");
   process.exit(1);
 }
 
-const actualCounts = new Map<string, { finding: Finding; count: number }>();
-for (const finding of findings) {
-  const key = findingKey(finding);
-  const current = actualCounts.get(key);
-  actualCounts.set(key, { finding, count: (current?.count ?? 0) + 1 });
-}
-
-const allowedCounts = new Map(allowlist.map((entry) => [findingKey(entry), entry]));
-const unclassified = [...actualCounts.entries()].filter(([key, value]) => {
-  const allowed = allowedCounts.get(key);
-  return !allowed || allowed.occurrences !== value.count;
-});
-const stale = allowlist.filter((entry) => {
-  const actual = actualCounts.get(findingKey(entry));
-  return !actual || actual.count !== entry.occurrences;
-});
-
-if (unclassified.length > 0 || stale.length > 0) {
-  if (unclassified.length > 0) {
-    process.stderr.write("Unclassified or count-mismatched Creed-era customer-visible references:\n");
-    for (const [, { finding, count }] of unclassified) {
-      process.stderr.write(
-        `- ${finding.file}:${finding.line} [${finding.term}] occurrences=${count}\n  ${finding.context}\n`,
-      );
-    }
-  }
-  if (stale.length > 0) {
-    process.stderr.write(`Stale Strap rebrand allowlist entries:\n${JSON.stringify(stale, null, 2)}\n`);
-  }
-  process.exit(1);
-}
+const contentOccurrences = findings
+  .filter((finding) => finding.kind === "content")
+  .reduce((total, finding) => total + finding.occurrences, 0);
+const contentFiles = new Set(findings.filter((finding) => finding.kind === "content").map((finding) => finding.file)).size;
+const pathFiles = findings.filter((finding) => finding.kind === "path").length;
+const historyEntries = parsed.entries.filter((entry) => entry.decision === "history").length;
 
 process.stdout.write(
-  `Strap rebrand audit passed: ${files.length} files scanned, ${findings.length} classified occurrence(s), ${allowlist.length} exact allowlist entries.\n`,
+  `Strap rebrand audit passed: ${repositoryFiles.length} current repository files ` +
+  `(${trackedFiles.length} tracked, ${missingTrackedFiles} tracked path(s) absent during this worktree rename, ${binaryFiles} binary), ` +
+  `${contentOccurrences} case-insensitive Creed occurrence(s) across ${contentFiles} file(s), ` +
+  `${pathFiles} Creed-named path(s), ${parsed.entries.length} exact classifications ` +
+  `(${historyEntries} history, ${parsed.entries.length - historyEntries} compatibility; scanner config self-record excluded), ` +
+  `${parsed.assertions.length} positive Strap assertion(s).\n`,
 );

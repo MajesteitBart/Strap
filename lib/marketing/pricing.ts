@@ -4,7 +4,7 @@
 //   - the SoftwareApplication Offer schema (lib/seo/structured-data.ts)
 //   - /llms.txt and /llms-full.txt
 //
-// Creed has no paid plans: the open source build is free to self-host, and the
+// Strap has no paid plans: the open source build is free to self-host, and the
 // hosted app is free to use. Keeping the facts in one module means a crawler,
 // an AI answer engine, and a human reading the cards always get the same story.
 

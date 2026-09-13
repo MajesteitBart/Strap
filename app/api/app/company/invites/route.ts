@@ -8,6 +8,7 @@ import { companyInviteSubject, renderCompanyInviteEmail } from "@/lib/email-temp
 import { getSiteUrl } from "@/lib/supabase/env";
 import { recordAuditEvent } from "@/lib/audit-log";
 import { getDisplayName } from "@/lib/user-name";
+import { readStrapId } from "@/lib/strap-api";
 
 // POST /api/app/company/invites { creedId, email, role } - owner/admin.
 // Creates a pending invite (seat + freeze checked in the lib) and emails the
@@ -23,8 +24,13 @@ export async function POST(request: Request) {
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
-  const b = (body ?? {}) as { creedId?: unknown; email?: unknown; role?: unknown };
-  const creedId = typeof b.creedId === "string" ? b.creedId : "";
+  const b = (body ?? {}) as {
+    strapId?: unknown;
+    creedId?: unknown;
+    email?: unknown;
+    role?: unknown;
+  };
+  const creedId = readStrapId(b) ?? "";
   const email = typeof b.email === "string" ? b.email : "";
   const role = b.role === "admin" ? "admin" : "member";
   if (!creedId || !email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) {

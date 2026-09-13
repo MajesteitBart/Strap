@@ -12,7 +12,9 @@ export async function GET(request: Request) {
   const auth = await requireApiAuth();
   if (auth instanceof NextResponse) return auth;
 
-  const creedId = new URL(request.url).searchParams.get("creedId")?.trim();
+  const params = new URL(request.url).searchParams;
+  const creedId =
+    params.get("strapId")?.trim() || params.get("creedId")?.trim();
   if (!creedId) {
     return NextResponse.json({ error: "Missing Strap id." }, { status: 400 });
   }

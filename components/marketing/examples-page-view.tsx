@@ -595,13 +595,13 @@ export function ExamplesPageView() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--creed-background)] text-[var(--creed-text-primary)]">
+    <div className="min-h-screen bg-[var(--strap-background)] text-[var(--strap-text-primary)]">
       <MarketingHeroBanner configured scrolled={scrolled} />
 
       <main className="mx-auto max-w-6xl px-6 pb-20 pt-8 md:px-10 md:pb-24 md:pt-10">
-        <div className="border-b border-[var(--creed-border)] pb-8">
+        <div className="border-b border-[var(--strap-border)] pb-8">
           <AnimatedPageTitle text="Examples" />
-          <p className="mt-5 max-w-3xl t-lede text-[var(--creed-text-secondary)]">
+          <p className="mt-5 max-w-3xl t-lede text-[var(--strap-text-secondary)]">
             What changes when every AI you use reads the same file before it
             answers. You write your Strap once, each agent reads it before it
             replies, and it stays plain Markdown you own.
@@ -613,7 +613,7 @@ export function ExamplesPageView() {
             the scrollspy highlight since this nav isn't on screen while you
             scroll, so the links stay plain. */}
         <div className="mt-8 block lg:hidden">
-          <div className="text-[18px] font-semibold tracking-[-0.01em] text-[var(--creed-text-primary)]">
+          <div className="text-[18px] font-semibold tracking-[-0.01em] text-[var(--strap-text-primary)]">
             On this page
           </div>
           <nav className="mt-5 space-y-1">
@@ -625,7 +625,7 @@ export function ExamplesPageView() {
                     type="button"
                     onClick={() => toggle(entry.slug)}
                     aria-expanded={open}
-                    className="flex w-full items-center justify-between gap-2 py-1.5 text-left text-[15px] font-medium text-[var(--creed-text-primary)] transition-opacity hover:opacity-70"
+                    className="flex w-full items-center justify-between gap-2 py-1.5 text-left text-[15px] font-medium text-[var(--strap-text-primary)] transition-opacity hover:opacity-70"
                   >
                     <span>{entry.name}</span>
                     <ChevronDown
@@ -654,7 +654,7 @@ export function ExamplesPageView() {
                                 event.preventDefault();
                                 scrollToExample(item.id);
                               }}
-                              className="block text-[14px] leading-6 text-[var(--creed-text-secondary)] transition-colors hover:text-[var(--creed-text-primary)]"
+                              className="block text-[14px] leading-6 text-[var(--strap-text-secondary)] transition-colors hover:text-[var(--strap-text-primary)]"
                             >
                               {item.label}
                             </a>
@@ -672,7 +672,7 @@ export function ExamplesPageView() {
         <div className="mt-10 grid gap-14 lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-20">
           <aside className="hidden lg:block">
             <div className="sticky top-8 pb-10">
-              <div className="text-[18px] font-semibold tracking-[-0.01em] text-[var(--creed-text-primary)]">
+              <div className="text-[18px] font-semibold tracking-[-0.01em] text-[var(--strap-text-primary)]">
                 On this page
               </div>
               <nav className="mt-5 space-y-1">
@@ -688,8 +688,8 @@ export function ExamplesPageView() {
                         className={cn(
                           "flex w-full items-center justify-between gap-2 py-1.5 text-left text-[15px] font-medium transition-opacity hover:opacity-70",
                           isActiveGroup
-                            ? "text-[var(--creed-accent)]"
-                            : "text-[var(--creed-text-primary)]",
+                            ? "text-[var(--strap-accent)]"
+                            : "text-[var(--strap-text-primary)]",
                         )}
                       >
                         <span>{entry.name}</span>
@@ -725,8 +725,8 @@ export function ExamplesPageView() {
                                   className={cn(
                                     "block text-[14px] leading-6 transition-colors",
                                     activeId === item.id
-                                      ? "font-medium text-[var(--creed-accent)]"
-                                      : "text-[var(--creed-text-secondary)] hover:text-[var(--creed-text-primary)]",
+                                      ? "font-medium text-[var(--strap-accent)]"
+                                      : "text-[var(--strap-text-secondary)] hover:text-[var(--strap-text-primary)]",
                                   )}
                                 >
                                   {item.label}
@@ -752,11 +752,11 @@ export function ExamplesPageView() {
                   "scroll-mt-28 py-8 md:py-10",
                   index === groups.length - 1
                     ? ""
-                    : "border-b border-[var(--creed-border)]",
+                    : "border-b border-[var(--strap-border)]",
                 )}
               >
                 <AnimatedSectionHeading text={group.name} className="t-step" />
-                <p className="mt-4 max-w-2xl text-[15px] leading-8 text-[var(--creed-text-secondary)] md:text-[16px]">
+                <p className="mt-4 max-w-2xl text-[15px] leading-8 text-[var(--strap-text-secondary)] md:text-[16px]">
                   {group.intro}
                 </p>
                 <div className="mt-7 grid gap-4 md:grid-cols-2">
@@ -764,12 +764,12 @@ export function ExamplesPageView() {
                     <div
                       key={example.id}
                       id={example.id}
-                      className="scroll-mt-28 rounded-xl bg-[var(--creed-surface)] p-5 md:p-6"
+                      className="scroll-mt-28 rounded-xl bg-[var(--strap-surface)] p-5 md:p-6"
                     >
-                      <h3 className="text-[17px] font-medium leading-7 text-[var(--creed-text-primary)] md:text-[18px]">
+                      <h3 className="text-[17px] font-medium leading-7 text-[var(--strap-text-primary)] md:text-[18px]">
                         {example.title}
                       </h3>
-                      <p className="mt-2.5 text-[15px] leading-7 text-[var(--creed-text-secondary)]">
+                      <p className="mt-2.5 text-[15px] leading-7 text-[var(--strap-text-secondary)]">
                         {example.scenario}
                       </p>
                     </div>
@@ -798,7 +798,7 @@ function ExamplesCta() {
       href="/pricing"
       onMouseEnter={() => arrowRef.current?.startAnimation()}
       onMouseLeave={() => arrowRef.current?.stopAnimation()}
-      className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[var(--creed-accent)] pl-4 pr-3 text-[14px] font-medium text-white transition-colors hover:bg-[var(--creed-accent-hover)]"
+      className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[var(--strap-accent)] pl-4 pr-3 text-[14px] font-medium text-white transition-colors hover:bg-[var(--strap-accent-hover)]"
     >
       <span className="leading-none">Create your Strap</span>
       <ArrowRightIcon

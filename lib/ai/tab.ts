@@ -1,12 +1,12 @@
 // Prompt assembly for Tab autocomplete: the explicit-invoke completion inside
 // the section editor. Press Tab once, one suggestion, drawn from the current
-// section plus the whole Creed. Pure functions (no server imports) so the
+// section plus the whole Strap profile. Pure functions (no server imports) so the
 // truncation behaviour is testable under node --test.
 //
 // The whole file is sent as the static prompt prefix (it changes on save, not
 // per keystroke) so provider-side prefix caching absorbs most of the input
 // cost across an editing session. Keep the ordering stable: system prompt,
-// then the Creed context, then the small dynamic tail.
+// then the Strap profile context, then the small dynamic tail.
 
 export type TabMode = "complete" | "draft";
 
@@ -29,7 +29,7 @@ const NON_CORE_TRUNCATED_CHARS = 1200;
 const CORE_TRUNCATED_CHARS = 2400;
 
 // The five always-on core section ids (mirrors the *_SECTION_ID constants in
-// lib/creed-data; kept as literals so this file stays import-free and runs
+// lib/strap-data; kept as literals so this file stays import-free and runs
 // under node --test without the @/ alias).
 const CORE_SECTION_IDS = new Set<string>([
   "identity",
@@ -113,9 +113,9 @@ export function buildTabUserPrompt({
   return [
     "The owner's Strap, for voice and facts:",
     "",
-    "<creed>",
+    "<strap_profile>",
     context || "(the rest of the file is empty)",
-    "</creed>",
+    "</strap_profile>",
     "",
     `You are completing inside the section "${sectionName}".`,
     "",

@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { analyzeCreedQuality, readQualityBaseline } from "@/lib/ai/quality";
-import type { CreedSection } from "@/lib/creed-data";
+import type { StrapSection } from "@/lib/strap-data";
 import { requireApiAuth } from "@/lib/api-auth";
-import { resolveActiveCreed } from "@/lib/creed-context";
-import { getPersonalCreedId } from "@/lib/creed-membership";
-import { canRunAnalysis } from "@/lib/creed-permissions";
+import { resolveActiveStrap } from "@/lib/strap-context";
+import { getPersonalStrapId } from "@/lib/strap-membership";
+import { canRunAnalysis } from "@/lib/strap-permissions";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 
 // Quality analysis can take 30–90s depending on the model. Give the route
@@ -18,7 +18,7 @@ export async function POST(request: Request) {
 
   try {
     const body = (await request.json()) as {
-      sections?: CreedSection[];
+      sections?: StrapSection[];
       force?: boolean;
       readOnly?: boolean;
       targetSectionIds?: string[];
@@ -28,18 +28,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing or oversized sections." }, { status: 400 });
     }
 
-    // Every report is keyed by creed_id: a company report by the shared company
-    // creed (owner/admin-run), a personal report by the user's personal creed.
+    // Every report is keyed by creed_id: a Company report by the shared Company
+    // Strap (owner/admin-run), a Personal report by the user's Personal Strap.
     // Every member can read the shared company baseline for the sections they
     // can see (their client only sends visible sections, so hidden-section
     // scores never reach them).
     const admin = getSupabaseAdminClient();
-    const active = await resolveActiveCreed(auth.supabase, auth.user);
+    const active = await resolveActiveStrap(auth.supabase, auth.user);
     const companyEntry = active?.creeds.find(
       (c) => c.id === active.creedId && c.type === "company"
     );
     const companyId = companyEntry ? active!.creedId : undefined;
-    const reportCreedId = companyId ?? (await getPersonalCreedId(admin, auth.user.id));
+    const reportCreedId = companyId ?? (await getPersonalStrapId(admin, auth.user.id));
     if (!reportCreedId) {
       return NextResponse.json({ error: "No Strap found for this account." }, { status: 400 });
     }

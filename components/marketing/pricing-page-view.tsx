@@ -22,7 +22,7 @@ type Feature = { label: string; included: boolean; star?: boolean };
 
 const SHARED_FEATURES: Feature[] = [
   { label: "Full Strap editor with rich components", included: true },
-  { label: "All MCP connections and integrations", included: true },
+  { label: "MCP with OAuth, device flow, or scoped keys", included: true },
   { label: "Quality scoring and inline diff review", included: true },
 ];
 
@@ -37,6 +37,8 @@ const PERSONAL_FEATURES: Feature[] = [
   { label: "Included AI or BYOK", included: true },
   { label: "Cross-device sync and backups", included: true },
   { label: "Managed backend, auth and storage", included: true },
+  { label: "Profile-scoped API-key Vault", included: true },
+  { label: "Strap CLI and GitHub sync", included: true },
 ];
 
 // The Company card collapses all of Personal into a single ticked line, then
@@ -65,14 +67,14 @@ export function PricingPageView({ reference }: { reference?: ReactNode }) {
   const githubHref = GITHUB_URL ?? "https://github.com";
 
   return (
-    <div className="min-h-screen bg-[var(--creed-background)] text-[var(--creed-text-primary)]">
+    <div className="min-h-screen bg-[var(--strap-background)] text-[var(--strap-text-primary)]">
       <MarketingHeroBanner configured scrolled={scrolled} />
 
       <main className="mx-auto max-w-6xl px-6 pb-20 pt-8 md:px-10 md:pb-24 md:pt-10">
-        <div className="flex flex-col gap-6 border-b border-[var(--creed-border)] pb-8">
+        <div className="flex flex-col gap-6 border-b border-[var(--strap-border)] pb-8">
           <div>
             <AnimatedPageTitle text="Pricing" />
-            <p className="t-lede mt-5 max-w-2xl text-[var(--creed-text-secondary)]">
+            <p className="t-lede mt-5 max-w-2xl text-[var(--strap-text-secondary)]">
               Strap is free. Run it yourself, or skip the setup and use the
               hosted app.
             </p>
@@ -83,7 +85,7 @@ export function PricingPageView({ reference }: { reference?: ReactNode }) {
           <div className="grid gap-4 md:grid-cols-3 md:gap-5">
             <PricingCard
               name="Open"
-              nameClassName="text-[var(--creed-border-strong)]"
+              nameClassName="text-[var(--strap-border-strong)]"
               price="$0"
               cadence="forever"
               tagline="Self-host the open source build."
@@ -100,7 +102,7 @@ export function PricingPageView({ reference }: { reference?: ReactNode }) {
             />
             <PricingCard
               name="Personal"
-              nameClassName="text-[var(--creed-accent)]"
+              nameClassName="text-[var(--strap-accent)]"
               price="$0"
               cadence="forever"
               tagline="Your hosted Strap, synced everywhere."
@@ -118,7 +120,7 @@ export function PricingPageView({ reference }: { reference?: ReactNode }) {
             />
           </div>
 
-          <p className="mt-7 text-center text-[13px] leading-6 text-[var(--creed-text-tertiary)]">
+          <p className="mt-7 text-center text-[13px] leading-6 text-[var(--strap-text-tertiary)]">
             AI features run on the deployment&apos;s included key, with BYOK
             available when you want model spend on your own key.
           </p>
@@ -150,7 +152,7 @@ function PricingCard({
   cta: ReactNode;
 }) {
   return (
-    <div className="relative flex flex-col overflow-hidden rounded-xl bg-[var(--creed-surface)] p-6 md:p-7">
+    <div className="relative flex flex-col overflow-hidden rounded-xl bg-[var(--strap-surface)] p-6 md:p-7">
       <div>
         <div
           className={cn(
@@ -161,19 +163,19 @@ function PricingCard({
           {name}
         </div>
         <div className="mt-5 flex items-baseline gap-2">
-          <span className="text-[36px] font-semibold leading-none tracking-[-0.02em] text-[var(--creed-text-primary)]">
+          <span className="text-[36px] font-semibold leading-none tracking-[-0.02em] text-[var(--strap-text-primary)]">
             {price}
           </span>
-          <span className="text-[13px] font-medium text-[var(--creed-text-tertiary)]">
+          <span className="text-[13px] font-medium text-[var(--strap-text-tertiary)]">
             {cadence}
           </span>
         </div>
-        <p className="mt-3 text-[14px] leading-6 text-[var(--creed-text-secondary)]">
+        <p className="mt-3 text-[14px] leading-6 text-[var(--strap-text-secondary)]">
           {tagline}
         </p>
       </div>
 
-      <div className="my-6 h-px bg-[var(--creed-border)]" />
+      <div className="my-6 h-px bg-[var(--strap-border)]" />
 
       <ul className="flex-1 space-y-2.5">
         {features.map((feature) => (
@@ -200,8 +202,8 @@ function PricingCard({
               className={cn(
                 "text-[14px] leading-6",
                 feature.included
-                  ? "text-[var(--creed-text-primary)]"
-                  : "text-[var(--creed-text-tertiary)]",
+                  ? "text-[var(--strap-text-primary)]"
+                  : "text-[var(--strap-text-tertiary)]",
               )}
             >
               {feature.label}
@@ -264,7 +266,7 @@ function PersonalCta() {
   );
 }
 
-// Company: a signed-in user creates (or resumes) their company Creed directly;
+// Company: a signed-in user creates (or resumes) their Company Strap directly;
 // signed-out visitors sign in first and land back here to create it.
 function CompanyCta() {
   const authState = useLandingAuthState();
@@ -321,8 +323,8 @@ function ctaClass(
     const color =
       tone === "amber"
         ? "bg-[#F59E0B] hover:bg-[#D97706] dark:bg-[#F5A623] dark:hover:bg-[#E0951E]"
-        : "bg-[var(--creed-accent)] hover:bg-[var(--creed-accent-hover)]";
+        : "bg-[var(--strap-accent)] hover:bg-[var(--strap-accent-hover)]";
     return `inline-flex h-10 w-full items-center justify-center gap-1.5 rounded-md ${color} px-4 text-[14px] font-medium text-white transition-colors disabled:opacity-70`;
   }
-  return "inline-flex h-10 w-full items-center justify-center gap-1.5 rounded-md border border-[var(--creed-border)] bg-transparent px-4 text-[14px] font-medium text-[var(--creed-text-primary)] transition-colors hover:bg-[var(--creed-surface-raised)]";
+  return "inline-flex h-10 w-full items-center justify-center gap-1.5 rounded-md border border-[var(--strap-border)] bg-transparent px-4 text-[14px] font-medium text-[var(--strap-text-primary)] transition-colors hover:bg-[var(--strap-surface-raised)]";
 }

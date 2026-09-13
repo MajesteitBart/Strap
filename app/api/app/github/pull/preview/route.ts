@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import { parseCreedMarkdown } from "@/lib/creed-markdown";
+import { parseCreedMarkdown } from "@/lib/strap-markdown";
 import {
   getConfiguredRepo,
   resolveGitHubProfileSnapshot,
   resolveSyncStatus,
   withAuthenticatedGitHubAccess,
 } from "@/lib/github-version-control";
-import { resolveManagedCompanyCreedId } from "@/lib/creed-context";
+import { resolveManagedCompanyCreedId } from "@/lib/strap-context";
 
 export async function POST(request: Request) {
   try {

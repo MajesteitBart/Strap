@@ -11,9 +11,9 @@ import {
   TAB_MAX_BEFORE_CHARS,
   type TabMode,
 } from "@/lib/ai/tab";
-import { loadActiveCreedState } from "@/lib/creed-backend";
-import { resolveActiveCreed } from "@/lib/creed-context";
-import { sectionBodyMarkdown } from "@/lib/creed-data";
+import { loadActiveStrapState } from "@/lib/strap-backend";
+import { resolveActiveStrap } from "@/lib/strap-context";
+import { sectionBodyMarkdown } from "@/lib/strap-data";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { log } from "@/lib/observability";
 
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const activeCreed = await resolveActiveCreed(auth.supabase, auth.user);
+  const activeCreed = await resolveActiveStrap(auth.supabase, auth.user);
   const companyEntry = activeCreed?.creeds.find(
     (c) => c.id === activeCreed.creedId && c.type === "company",
   );
@@ -79,7 +79,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing or oversized request." }, { status: 400 });
     }
 
-    const { state } = await loadActiveCreedState(auth.supabase, auth.user, activeCreed);
+    const { state } = await loadActiveStrapState(auth.supabase, auth.user, activeCreed);
     const target = state.sections.find(
       (section) => section.id === sectionId && !section.archived,
     );

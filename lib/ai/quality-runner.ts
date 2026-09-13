@@ -20,8 +20,8 @@
 // - This module never aborts a fetch; the server is the source of truth and
 //   persists the report on completion regardless of the client's state.
 
-import type { CreedQualityReport } from "@/components/creed/file-quality-ui";
-import type { CreedSection } from "@/lib/creed-data";
+import type { StrapQualityReport } from "@/components/strap/file-quality-ui";
+import type { StrapSection } from "@/lib/strap-data";
 
 type Listener = () => void;
 
@@ -34,7 +34,7 @@ export type QualityOutcome = {
 };
 
 type RunnerSnapshot = {
-  report: CreedQualityReport | null;
+  report: StrapQualityReport | null;
   fullRunning: boolean;
   sectionRunning: ReadonlySet<string>;
   error: string | null;
@@ -42,7 +42,7 @@ type RunnerSnapshot = {
 };
 
 type FullRunResult = {
-  report: CreedQualityReport | null;
+  report: StrapQualityReport | null;
   sectionHashes?: Record<string, string>;
   storedContentHash?: string | null;
   storedSectionHashes?: Record<string, string>;
@@ -53,7 +53,7 @@ const listeners = new Set<Listener>();
 
 // Mutable internals - never expose directly. We hand out frozen snapshots so
 // `useSyncExternalStore` can compare references safely.
-let report: CreedQualityReport | null = null;
+let report: StrapQualityReport | null = null;
 let error: string | null = null;
 const sectionRunning = new Set<string>();
 
@@ -65,7 +65,7 @@ function recordOutcome(next: Omit<QualityOutcome, "id">) {
 }
 
 const inFlightFull = new Map<string, Promise<FullRunResult>>();
-const inFlightSection = new Map<string, Promise<CreedQualityReport["sections"][number] | null>>();
+const inFlightSection = new Map<string, Promise<StrapQualityReport["sections"][number] | null>>();
 
 let snapshot: RunnerSnapshot = freezeSnapshot();
 
@@ -109,7 +109,7 @@ export function getQualityRunnerServerSnapshot(): RunnerSnapshot {
   return SERVER_SNAPSHOT;
 }
 
-export function setBaselineReport(next: CreedQualityReport | null) {
+export function setBaselineReport(next: StrapQualityReport | null) {
   if (report === next) return;
   report = next;
   error = null;
@@ -121,7 +121,7 @@ export function getInFlightFull(fingerprint: string) {
 }
 
 type FullRunArgs = {
-  sections: CreedSection[];
+  sections: StrapSection[];
   fingerprint: string;
   force?: boolean;
   readOnly?: boolean;
@@ -178,14 +178,14 @@ export function runFullQuality(args: FullRunArgs): Promise<FullRunResult> {
 type SectionRunArgs = {
   // The whole file goes up so the model can judge this section in context
   // (contradictions, overall fit); only `section` is re-scored server-side.
-  sections: CreedSection[];
-  section: CreedSection;
+  sections: StrapSection[];
+  section: StrapSection;
   fingerprint: string;
 };
 
 export function runSectionQuality(
   args: SectionRunArgs
-): Promise<CreedQualityReport["sections"][number] | null> {
+): Promise<StrapQualityReport["sections"][number] | null> {
   const key = `${args.section.id}::${args.fingerprint}`;
   const existing = inFlightSection.get(key);
   if (existing) return existing;
@@ -205,7 +205,7 @@ export function runSectionQuality(
         }),
       });
       const payload = (await response.json()) as {
-        report?: CreedQualityReport;
+        report?: StrapQualityReport;
         error?: string;
       };
 

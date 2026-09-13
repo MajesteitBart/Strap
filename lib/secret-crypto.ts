@@ -5,10 +5,14 @@ const ALGORITHM = "aes-256-gcm";
 const IV_LENGTH = 12;
 
 function getEncryptionKey() {
-  const secret = process.env.CREED_ENCRYPTION_SECRET;
+  const secret =
+    process.env.STRAP_ENCRYPTION_SECRET ||
+    process.env.CREED_ENCRYPTION_SECRET;
 
   if (!secret) {
-    throw new Error("CREED_ENCRYPTION_SECRET is not configured.");
+    throw new Error(
+      "STRAP_ENCRYPTION_SECRET or CREED_ENCRYPTION_SECRET is not configured.",
+    );
   }
 
   return createHash("sha256").update(secret).digest();

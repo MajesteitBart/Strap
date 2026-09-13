@@ -2,10 +2,12 @@
 id: WS-D
 name: WS-D Strap CLI Package
 owner: MajesteitBart
-status: planned
+status: done
 created: 2026-07-23T01:44:12Z
-updated: 2026-07-23T01:44:12Z
+updated: 2026-07-24T13:57:09Z
 operating_mode: feature
+blocked_owner: MajesteitBart
+blocked_check_back: 2026-07-24
 ---
 
 # Workstream: WS-D Strap CLI Package
@@ -43,3 +45,7 @@ Deliver a separately installable Node.js CLI package named `@bvdm/strap` with a 
 - `npm pack --dry-run` and installation from the generated tarball confirm that `strap --help` and `strap --version` run outside the repository checkout.
 - Existing `creed-cli` behavior and package metadata remain unchanged unless a separately approved compatibility change is required.
 - Publishing to npm remains an explicit operator-approved action; the workstream records the published version and registry evidence after approval.
+
+## Updates
+
+- 2026-07-23T13:52:06Z: WS-D quality gate failed on unsafe root pack documentation and incomplete authentication/output/exit-code contract tests

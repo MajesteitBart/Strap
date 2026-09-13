@@ -16,9 +16,3 @@ export const BRAND_FILE_NAME = STRAP_FILE_NAME;
 export const BRAND_LEGACY_FILE_NAME = LEGACY_CREED_FILE_NAME;
 export const BRAND_CLI_PACKAGE = "@bvdm/strap";
 export const BRAND_CLI_COMMAND = "strap";
-
-// Transitional aliases keep existing imports stable while callers move to the
-// neutral BRAND_* names. They intentionally resolve to Strap customer copy.
-export const CREED_TAGLINE = BRAND_TAGLINE;
-export const CREED_DESCRIPTION = BRAND_DESCRIPTION;
-export const CREED_META_TITLE = BRAND_META_TITLE;

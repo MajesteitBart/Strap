@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { buildAgentPayloadForToken } from "@/lib/creed-backend";
+import { buildAgentPayloadForToken } from "@/lib/strap-backend";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import { isSupabaseAdminConfigured } from "@/lib/supabase/env";

@@ -4,7 +4,7 @@ import {
   createStarterContent,
   getSectionSuggestions,
   hasSectionName,
-} from "../lib/creed-data.ts";
+} from "../lib/strap-data.ts";
 
 test("section suggestions exclude existing names regardless of case or spacing", () => {
   const suggestions = getSectionSuggestions([

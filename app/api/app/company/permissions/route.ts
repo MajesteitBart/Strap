@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { requireApiAuth } from "@/lib/api-auth";
 import { setSectionPermission } from "@/lib/company-admin";
-import { getCreedRole } from "@/lib/creed-membership";
+import { getCreedRole } from "@/lib/strap-membership";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import type { SupabaseLikeClient } from "@/lib/supabase/types";
-import { normalizeAgentPermission } from "@/lib/creed-data";
+import { normalizeAgentPermission } from "@/lib/strap-data";
+import { readStrapId } from "@/lib/strap-api";
 
 // GET /api/app/company/permissions?creedId=&userId= - a member's per-section
 // permission overrides (owner/admin only), for the Permissions editor.
@@ -12,10 +13,11 @@ export async function GET(request: Request) {
   const auth = await requireApiAuth();
   if (auth instanceof NextResponse) return auth;
   const url = new URL(request.url);
-  const creedId = url.searchParams.get("creedId");
+  const creedId =
+    url.searchParams.get("strapId") ?? url.searchParams.get("creedId");
   const userId = url.searchParams.get("userId");
   if (!creedId || !userId) {
-    return NextResponse.json({ error: "creedId and userId are required." }, { status: 400 });
+    return NextResponse.json({ error: "strapId and userId are required." }, { status: 400 });
   }
   const role = await getCreedRole(auth.supabase, auth.user.id, creedId);
   if (role !== "owner" && role !== "admin") {
@@ -38,21 +40,23 @@ export async function POST(request: Request) {
   const auth = await requireApiAuth();
   if (auth instanceof NextResponse) return auth;
   const b = (await request.json().catch(() => ({}))) as {
+    strapId?: unknown;
     creedId?: unknown;
     userId?: unknown;
     sectionId?: unknown;
     permission?: unknown;
   };
+  const strapId = readStrapId(b);
   if (
-    typeof b.creedId !== "string" ||
+    !strapId ||
     typeof b.userId !== "string" ||
     typeof b.sectionId !== "string" ||
     typeof b.permission !== "string"
   ) {
-    return NextResponse.json({ error: "creedId, userId, sectionId, permission are required." }, { status: 400 });
+    return NextResponse.json({ error: "strapId, userId, sectionId, permission are required." }, { status: 400 });
   }
   const result = await setSectionPermission({
-    creedId: b.creedId,
+    creedId: strapId,
     actor: auth.user,
     targetUserId: b.userId,
     sectionId: b.sectionId,

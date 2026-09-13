@@ -16,7 +16,7 @@ const companyMigration = readFileSync(
 );
 const companyProvisionRpc = readFileSync(
   new URL(
-    "../supabase/migrations/20260722113000_provision_company_rpc.sql",
+    "../supabase/migrations/20260913092518_provision_company_atomic.sql",
     import.meta.url,
   ),
   "utf8",
@@ -34,7 +34,7 @@ const authorizeDecision = readFileSync(
   "utf8",
 );
 const membershipSource = readFileSync(
-  new URL("../lib/creed-membership.ts", import.meta.url),
+  new URL("../lib/strap-membership.ts", import.meta.url),
   "utf8",
 );
 const inviteSource = readFileSync(
@@ -53,7 +53,7 @@ test("included AI is protected by burst and daily per-user limits", () => {
 test("company provisioning collapses concurrent owner inserts", () => {
   assert.match(
     companyMigration,
-    /having count\(\*\) > 1[\s\S]+Skipping creeds_one_company_per_owner[\s\S]+create unique index if not exists creeds_one_company_per_owner/,
+    /create unique index if not exists creeds_one_company_per_owner[\s\S]+owner_user_id[\s\S]+where type = 'company'/,
   );
   assert.match(companySource, /\.rpc\("provision_company_creed"/);
   assert.match(companyProvisionRpc, /pg_advisory_xact_lock/);
@@ -61,9 +61,15 @@ test("company provisioning collapses concurrent owner inserts", () => {
 });
 
 test("legacy Stripe subscribers retain a self-service cancellation path", () => {
-  assert.match(legacySubscriptionRoute, /cancel_at_period_end: "true"/);
+  assert.match(legacySubscriptionRoute, /requestLegacySubscription\(\{ subscriptionId, secret, cancel: true \}\)/);
   assert.match(legacySubscriptionRoute, /STRIPE_SECRET_KEY/);
   assert.match(legacySubscriptionRoute, /owner_user_id.*auth\.user\.id/);
+});
+
+test("persisted profiles can manage subscriptions even with no sections", () => {
+  const settings = readFileSync(new URL("../components/strap/settings-screen.tsx", import.meta.url), "utf8");
+  assert.doesNotMatch(settings, /sections\.length === 0[\s\S]{0,80}router\.replace/);
+  assert.match(settings, /LegacySubscriptionNotice scope="personal"/);
 });
 
 test("OAuth never issues an authorization code without a Creed grant", () => {

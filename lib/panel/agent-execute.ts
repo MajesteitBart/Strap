@@ -1,5 +1,5 @@
 import "server-only";
-// Server-side execution of Agent actions - the in-app "Creed" agent behaves
+// Server-side execution of Agent actions - the in-app Strap agent behaves
 // exactly like an external MCP agent:
 //   • a section set to DIRECT is edited immediately and persisted (survives a
 //     refresh), just like /api/creed/write;
@@ -22,23 +22,26 @@ import {
   permissionToWritable,
   type AccentKey,
   type ActivityEntry,
-  type CreedSection,
-  type CreedState,
+  type StrapSection,
+  type StrapState,
   type ProposalDraft,
-} from "@/lib/creed-data";
+} from "@/lib/strap-data";
 import { markdownToRichHtml, normalizeRichTextInput } from "@/lib/rich-text";
-import { loadCreedState, persistCreedState } from "@/lib/creed-backend";
+import { loadStrapState, persistStrapState } from "@/lib/strap-backend";
 import {
   companyMcpWrite,
   setCompanySectionArchived,
   type CompanyMcpOp,
 } from "@/lib/company-sections";
-import { getPersonalCreedId } from "@/lib/creed-membership";
+import { getPersonalStrapId } from "@/lib/strap-membership";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import { log } from "@/lib/observability";
 import type { AgentAction, AgentExecResult } from "@/lib/panel/agent";
 
-export const CREED_AGENT_NAME = "Strap";
+export const STRAP_AGENT_NAME = "Strap";
+
+/** @deprecated Use STRAP_AGENT_NAME for new internal callers. */
+export const CREED_AGENT_NAME = STRAP_AGENT_NAME;
 
 type UpsertTable = {
   upsert: (
@@ -76,8 +79,8 @@ function richContent(content: string): { contentHtml?: string; contentMarkdown?:
   return HTML_BLOCK.test(content) ? { contentHtml: content } : { contentMarkdown: content };
 }
 
-function stamp(section: CreedSection): CreedSection {
-  return { ...section, lastEditedBy: CREED_AGENT_NAME, lastEditedType: "agent", lastEditedLabel: "just now" };
+function stamp(section: StrapSection): StrapSection {
+  return { ...section, lastEditedBy: STRAP_AGENT_NAME, lastEditedType: "agent", lastEditedLabel: "just now" };
 }
 
 function activity(entry: Omit<ActivityEntry, "dayLabel" | "timeLabel" | "actorType">): ActivityEntry {
@@ -91,12 +94,12 @@ export async function executeAgentActions({
 }: {
   user: User;
   actions: AgentAction[];
-  state?: CreedState;
+  state?: StrapState;
 }): Promise<AgentExecution> {
   const admin = getSupabaseAdminClient();
   const baseState =
-    preloaded ?? (await loadCreedState(admin as never, user, { proposalLimit: 1, activityLimit: 1 })).state;
-  const creedId = baseState.creedId ?? (await getPersonalCreedId(admin as never, user.id));
+    preloaded ?? (await loadStrapState(admin as never, user, { proposalLimit: 1, activityLimit: 1 })).state;
+  const creedId = baseState.creedId ?? (await getPersonalStrapId(admin as never, user.id));
   if (!creedId) {
     return { ok: false, reason: "Could not resolve Strap for proposal.", results: [] };
   }
@@ -114,7 +117,7 @@ export async function executeAgentActions({
   let directChanged = false;
 
   // Strictly-increasing timestamps so multiple rows filed in one run keep a
-  // stable created_at order (loadCreedState orders by created_at DESC).
+  // stable created_at order (loadStrapState orders by created_at DESC).
   const baseMs = Date.now();
   let seq = 0;
   const nextNow = () => new Date(baseMs + seq++).toISOString();
@@ -131,7 +134,7 @@ export async function executeAgentActions({
     draft: ProposalDraft;
     reason: string;
     beforeText: string | null;
-    baseSection: CreedSection | null;
+    baseSection: StrapSection | null;
   }): Promise<AgentExecResult | null> {
     const proposalId = `panel-${baseMs.toString(36)}-${randomBytes(4).toString("hex")}`;
     const rowNow = nextNow();
@@ -147,7 +150,7 @@ export async function executeAgentActions({
         section_id: isNew ? "new-section" : params.sectionId,
         section_name: params.sectionName,
         accent: params.accent,
-        agent_name: CREED_AGENT_NAME,
+        agent_name: STRAP_AGENT_NAME,
         change_type: meta.changeType,
         reason: params.reason,
         impact: meta.impact,
@@ -177,7 +180,7 @@ export async function executeAgentActions({
           section_id: isNew ? "new-section" : params.sectionId,
           section_name: params.sectionName,
           accent: params.accent,
-          actor: CREED_AGENT_NAME,
+          actor: STRAP_AGENT_NAME,
           actor_type: "agent",
           summary: META_SUMMARY[params.draft.kind]?.(params.sectionName) ?? `Suggested ${params.sectionName.toLowerCase()} update`,
           status: "pending",
@@ -209,7 +212,7 @@ export async function executeAgentActions({
         newActivity.unshift(
           activity({
             id: `activity-direct-${Date.now()}-${randomBytes(3).toString("hex")}`,
-            sectionId: section.id, sectionName: section.name, accent: section.accent, actor: CREED_AGENT_NAME,
+            sectionId: section.id, sectionName: section.name, accent: section.accent, actor: STRAP_AGENT_NAME,
             summary: `Archived ${section.name.toLowerCase()}`, status: "direct", changeType: "refines-existing",
             reason: action.reason || "Archived from Panel", impact: "future-responses", confidence: "durable",
             beforeText: `Keep ${section.name}`, afterText: `Archive ${section.name}`,
@@ -321,7 +324,7 @@ export async function executeAgentActions({
   // Persist all direct changes in one authoritative write (like the write API).
   if (directChanged) {
     try {
-      await persistCreedState(admin as never, user.id, {
+      await persistStrapState(admin as never, user.id, {
         ...baseState,
         sections,
         activity: [...newActivity, ...baseState.activity],
@@ -361,15 +364,15 @@ function editDraft(action: AgentAction): ProposalDraft {
 
 // Apply a content-shaped action directly to the sections array + log activity.
 function applyDirectEdit(
-  sections: CreedSection[],
-  section: CreedSection,
+  sections: StrapSection[],
+  section: StrapSection,
   action: AgentAction,
   activityLog: ActivityEntry[]
-): CreedSection[] {
+): StrapSection[] {
   const push = (entry: Omit<ActivityEntry, "dayLabel" | "timeLabel" | "actorType">) => activityLog.unshift(activity(entry));
   const id = `activity-direct-${Date.now()}-${randomBytes(3).toString("hex")}`;
   const common = {
-    id, sectionId: section.id, accent: section.accent, actor: CREED_AGENT_NAME, status: "direct" as const,
+    id, sectionId: section.id, accent: section.accent, actor: STRAP_AGENT_NAME, status: "direct" as const,
     changeType: "refines-existing" as const, reason: action.reason || "Applied directly", impact: "future-responses" as const, confidence: "durable" as const,
   };
 
@@ -395,7 +398,7 @@ function applyDirectEdit(
 }
 
 // A short human label for the panel result card, per action.
-function labelFor(action: AgentAction, sections: CreedSection[]): string {
+function labelFor(action: AgentAction, sections: StrapSection[]): string {
   const name = (id: string) => sections.find((s) => s.id === id)?.name ?? "section";
   switch (action.kind) {
     case "edit":
@@ -421,13 +424,13 @@ function labelFor(action: AgentAction, sections: CreedSection[]): string {
   }
 }
 
-// Company execution of the in-app "Creed" agent. Same behaviour as personal -
+// Company execution of the in-app Strap agent. Same behaviour as personal -
 // the model plans the same actions - but each one runs through companyMcpWrite,
 // which is the SINGLE company write path: it re-derives the acting member's
 // effective per-section permission (min of the owner/admin ceiling and the
 // member's own agent ceiling), applies a Direct edit or files a proposal
 // accordingly, versions + logs activity, and attributes it to the member as
-// "[member]'s Creed". Nothing about the write logic differs from personal; only
+// "[member]'s Strap". Nothing about the write logic differs from personal; only
 // the persistence target (company tables) and the attribution do.
 function toHtml(content: string): string {
   if (!content.trim()) return "";
@@ -436,7 +439,7 @@ function toHtml(content: string): string {
 
 function companyOpForAction(
   action: AgentAction,
-  byId: (id: string) => CreedSection | undefined
+  byId: (id: string) => StrapSection | undefined
 ): CompanyMcpOp | null {
   switch (action.kind) {
     case "edit":
@@ -486,7 +489,7 @@ export async function executeCompanyAgentActions({
   user: User;
   creedId: string;
   actions: AgentAction[];
-  sections: CreedSection[];
+  sections: StrapSection[];
 }): Promise<AgentExecution> {
   const results: AgentExecResult[] = [];
   const byId = (id: string) => sections.find((s) => s.id === id && !s.archived);
@@ -513,7 +516,7 @@ export async function executeCompanyAgentActions({
     const op = companyOpForAction(action, byId);
     if (!op) continue;
 
-    const res = await companyMcpWrite({ creedId, user, agentName: CREED_AGENT_NAME, op });
+    const res = await companyMcpWrite({ creedId, user, agentName: STRAP_AGENT_NAME, op });
     if (!res.ok) return { ok: false, reason: res.error, results };
 
     const sectionId = "sectionId" in op ? op.sectionId : "";

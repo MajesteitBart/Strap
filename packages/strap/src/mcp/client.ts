@@ -13,6 +13,15 @@ export type ConnectedStrapClient = {
   close(): Promise<void>;
 };
 
+export function assertValidOAuthState(
+  receivedState: string | undefined,
+  expectedState: string | undefined,
+): void {
+  if (expectedState && receivedState !== expectedState) {
+    throw new CliError("OAuth state validation failed. Login was cancelled for your safety.");
+  }
+}
+
 export async function connectStrap(
   serverUrl: string,
   quiet = false,
@@ -42,10 +51,7 @@ export async function connectStrap(
     } catch (error) {
       if (!(error instanceof UnauthorizedError)) throw error;
       const result = await callback.waitForCallback();
-      const expectedState = provider.expectedState();
-      if (expectedState && result.state !== expectedState) {
-        throw new CliError("OAuth state validation failed. Login was cancelled for your safety.");
-      }
+      assertValidOAuthState(result.state, provider.expectedState());
       const transport = new StreamableHTTPClientTransport(new URL(serverUrl), {
         authProvider: provider,
         requestInit: agent

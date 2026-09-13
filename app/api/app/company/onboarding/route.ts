@@ -3,23 +3,24 @@ import { randomBytes } from "node:crypto";
 import { requireApiAuth } from "@/lib/api-auth";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import type { SupabaseLikeClient } from "@/lib/supabase/types";
-import { getCreedRole } from "@/lib/creed-membership";
-import { setActiveCreed } from "@/lib/creed-context";
-import { parseCreedMarkdown } from "@/lib/creed-markdown";
+import { getCreedRole } from "@/lib/strap-membership";
+import { setActiveCreed } from "@/lib/strap-context";
+import { parseCreedMarkdown } from "@/lib/strap-markdown";
 import {
   buildCompanyOnboardingSections,
   companyNameFromOnboarding,
   EMPTY_COMPANY_ONBOARDING,
   type CompanyOnboardingState,
 } from "@/lib/onboarding/compile-company";
+import { readStrapId } from "@/lib/strap-api";
 
 // Company onboarding, mirroring the personal compose flow with three actions:
 //   seed     - persist the deterministic starter sections from the answers,
 //              set the company name, keep onboarding in progress.
 //   compose  - map the markdown the owner's assistant produced onto the seeded
-//              sections (the copy-paste "build my Creed" step).
+//              sections (the copy-paste "build my Strap" step).
 //   complete - finish onboarding (clear the resume pointer).
-// Owner-only. The seed is a valid company Creed on its own, so compose is
+// Owner-only. The seed is a valid Company Strap on its own, so compose is
 // optional (the owner can skip pasting and go straight to the file).
 
 const EMPTY_PLACEHOLDER = "Start shaping this section.";
@@ -39,15 +40,16 @@ export async function POST(request: Request) {
   if (auth instanceof NextResponse) return auth;
 
   const body = (await request.json().catch(() => ({}))) as {
+    strapId?: unknown;
     creedId?: unknown;
     action?: unknown;
     answers?: Partial<CompanyOnboardingState>;
     markdown?: unknown;
   };
-  if (typeof body.creedId !== "string") {
-    return NextResponse.json({ error: "creedId is required." }, { status: 400 });
+  const creedId = readStrapId(body);
+  if (!creedId) {
+    return NextResponse.json({ error: "strapId is required." }, { status: 400 });
   }
-  const creedId = body.creedId;
   const action = body.action === "compose" || body.action === "complete" ? body.action : "seed";
 
   const role = await getCreedRole(auth.supabase, auth.user.id, creedId);
@@ -72,10 +74,10 @@ export async function POST(request: Request) {
       event_kind: "edit",
     });
     await db.from("creeds").update({ onboarding_stage: null, updated_at: now }).eq("id", creedId);
-    // Activate the company Creed the owner just finished building. Without this
-    // the active-Creed cookie stays unset, and resolveActiveCreed prefers a
-    // personal Creed, so a dual-Creed owner would land back in their personal
-    // Creed instead of the company they just set up.
+    // Activate the Company Strap the owner just finished building. Without this
+    // the active-Strap cookie stays unset, and resolveActiveCreed prefers a
+    // Personal Strap, so a dual-Strap owner would land back in their Personal
+    // Strap instead of the company they just set up.
     await setActiveCreed(auth.supabase, auth.user, creedId);
     return NextResponse.json({ ok: true });
   }
@@ -146,11 +148,11 @@ export async function POST(request: Request) {
   const name = companyNameFromOnboarding(answers);
 
   // creed_sections' primary key is (user_id, section_id), so one user cannot
-  // hold the same section_id twice - and the owner's PERSONAL Creed already owns
+  // hold the same section_id twice - and the owner's Personal Strap already owns
   // ids like "people" and "agent-rules". Seeding the company's semantic ids
   // as-is collides with those personal rows (the PK conflict is separate from
   // the ON CONFLICT (creed_id, section_id) target, so the upsert aborts).
-  // Namespacing every company section id to its Creed guarantees uniqueness per
+  // Namespacing every company section id to its Strap guarantees uniqueness per
   // user without touching the personal write path. The id is internal (React
   // keys / DOM anchors); the display name is unchanged.
   const scopedId = (id: string) => `${creedId}__${id}`;

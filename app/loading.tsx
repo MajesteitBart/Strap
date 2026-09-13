@@ -9,7 +9,7 @@
 export default function RootLoading() {
   return (
     <div
-      className="min-h-screen w-full bg-[var(--creed-background)]"
+      className="min-h-screen w-full bg-[var(--strap-background)]"
       aria-hidden="true"
     />
   );

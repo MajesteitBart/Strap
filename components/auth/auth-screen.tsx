@@ -102,7 +102,6 @@ export function AuthScreen({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(true);
-  const [agreeTerms, setAgreeTerms] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
   const [submitting, setSubmitting] = useState(false);
   const [confirmation, setConfirmation] = useState<Confirmation | null>(null);
@@ -264,7 +263,7 @@ export function AuthScreen({
       topRight={
         <Link
           href={withNext(t.topHref)}
-          className="text-[14px] font-medium text-[var(--creed-text-primary)] transition-colors hover:text-[var(--creed-accent)]"
+          className="text-[14px] font-medium text-[var(--strap-text-primary)] transition-colors hover:text-[var(--strap-accent)]"
         >
           {t.topAction}
         </Link>
@@ -321,9 +320,9 @@ export function AuthScreen({
           </div>
 
           <div className="my-5 flex items-center gap-3" aria-hidden="true">
-            <span className="h-px flex-1 bg-[var(--creed-border)]" />
-            <span className="text-[13px] text-[var(--creed-text-tertiary)]">or</span>
-            <span className="h-px flex-1 bg-[var(--creed-border)]" />
+            <span className="h-px flex-1 bg-[var(--strap-border)]" />
+            <span className="text-[13px] text-[var(--strap-text-tertiary)]">or</span>
+            <span className="h-px flex-1 bg-[var(--strap-border)]" />
           </div>
 
           <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-3">
@@ -354,24 +353,9 @@ export function AuthScreen({
               }}
             />
 
-            {isSignup ? (
-              <label className="mt-1 flex cursor-pointer select-none items-start gap-2.5 text-[13px] leading-snug text-[var(--creed-text-secondary)]">
-                <AuthCheckbox checked={agreeTerms} onChange={() => setAgreeTerms((v) => !v)} />
-                <span>
-                  I agree to the{" "}
-                  <Link href="/terms" className="text-[var(--creed-text-primary)] transition-colors hover:text-[var(--creed-accent)]">
-                    Terms
-                  </Link>{" "}
-                  and{" "}
-                  <Link href="/privacy" className="text-[var(--creed-text-primary)] transition-colors hover:text-[var(--creed-accent)]">
-                    Privacy Policy
-                  </Link>
-                  .
-                </span>
-              </label>
-            ) : (
+            {!isSignup ? (
               <div className="flex items-center justify-between">
-                <label className="flex cursor-pointer select-none items-center gap-2.5 text-[14px] text-[var(--creed-text-secondary)]">
+                <label className="flex cursor-pointer select-none items-center gap-2.5 text-[14px] text-[var(--strap-text-secondary)]">
                   <AuthCheckbox checked={remember} onChange={() => setRemember((v) => !v)} />
                   Remember me
                 </label>
@@ -379,25 +363,25 @@ export function AuthScreen({
                   type="button"
                   onClick={() => void handleForgotPassword()}
                   disabled={busy}
-                  className="text-[14px] text-[var(--creed-text-secondary)] transition-colors hover:text-[var(--creed-accent)] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="text-[14px] text-[var(--strap-text-secondary)] transition-colors hover:text-[var(--strap-accent)] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   Forgot password?
                 </button>
               </div>
-            )}
+            ) : null}
 
             <AuthSubmitButton
               label={t.submit}
               loading={submitting}
-              disabled={busy || !configured || (isSignup && !agreeTerms)}
+              disabled={busy || !configured}
             />
           </form>
 
-          <p className="mt-7 text-center text-[14px] text-[var(--creed-text-tertiary)]">
+          <p className="mt-7 text-center text-[14px] text-[var(--strap-text-tertiary)]">
             {t.switchPrompt}{" "}
             <Link
               href={withNext(t.switchHref)}
-              className="font-medium text-[var(--creed-text-primary)] transition-colors hover:text-[var(--creed-accent)]"
+              className="font-medium text-[var(--strap-text-primary)] transition-colors hover:text-[var(--strap-accent)]"
             >
               {t.switchAction}
             </Link>
@@ -429,13 +413,13 @@ function ConfirmationNotice({
         <MailCheck className="h-6 w-6" />
       </div>
       <h1 className="mt-5 text-[26px] font-medium leading-tight tracking-[-0.02em]">Check your inbox</h1>
-      <p className="mt-3 text-[15px] leading-relaxed text-[var(--creed-text-secondary)]">
-        {lead} <span className="font-medium text-[var(--creed-text-primary)]">{email}</span>. {body}
+      <p className="mt-3 text-[15px] leading-relaxed text-[var(--strap-text-secondary)]">
+        {lead} <span className="font-medium text-[var(--strap-text-primary)]">{email}</span>. {body}
       </p>
       <button
         type="button"
         onClick={onBack}
-        className="mt-6 text-[14px] font-medium text-[var(--creed-text-primary)] transition-colors hover:text-[var(--creed-accent)]"
+        className="mt-6 text-[14px] font-medium text-[var(--strap-text-primary)] transition-colors hover:text-[var(--strap-accent)]"
       >
         Use a different email
       </button>
@@ -461,10 +445,10 @@ function ProviderButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="relative inline-flex h-12 w-full items-center justify-center gap-2.5 rounded-[var(--radius-md)] border border-[var(--creed-border)] bg-[var(--creed-surface)] text-[15px] font-medium text-[var(--creed-text-primary)] transition-colors hover:bg-[var(--creed-surface-raised)] disabled:cursor-not-allowed disabled:opacity-50"
+      className="relative inline-flex h-12 w-full items-center justify-center gap-2.5 rounded-[var(--radius-md)] border border-[var(--strap-border)] bg-[var(--strap-surface)] text-[15px] font-medium text-[var(--strap-text-primary)] transition-colors hover:bg-[var(--strap-surface-raised)] disabled:cursor-not-allowed disabled:opacity-50"
     >
       {lastUsed ? (
-        <span className="pointer-events-none absolute -top-2.5 right-3 z-10 rounded-[6px] border border-[var(--creed-accent)]/30 bg-[#EFF6FF] px-2 py-1 text-[12px] font-medium leading-none text-[var(--creed-accent)] dark:border-[var(--creed-accent)]/45 dark:bg-[#0e1b30] dark:text-[#60A5FA]">
+        <span className="pointer-events-none absolute -top-2.5 right-3 z-10 rounded-[6px] border border-[var(--strap-accent)]/30 bg-[#EFF6FF] px-2 py-1 text-[12px] font-medium leading-none text-[var(--strap-accent)] dark:border-[var(--strap-accent)]/45 dark:bg-[#0e1b30] dark:text-[#60A5FA]">
           Last used
         </span>
       ) : null}

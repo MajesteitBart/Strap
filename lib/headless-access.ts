@@ -1,7 +1,7 @@
 import "server-only";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import type { SupabaseLikeClient } from "@/lib/supabase/types";
-import { getCreedRole } from "@/lib/creed-membership";
+import { getStrapRole } from "@/lib/strap-membership";
 import {
   createHeadlessKey,
   digestCredential,
@@ -125,7 +125,7 @@ export async function resolveHeadlessAccessKey(token: string): Promise<ResolvedH
   if (row.revoked_at || (row.expires_at && new Date(row.expires_at).getTime() <= Date.now())) {
     return null;
   }
-  const role = await getCreedRole(admin, row.user_id, row.creed_id);
+  const role = await getStrapRole(admin, row.user_id, row.creed_id);
   if (!role) return null;
 
   void admin

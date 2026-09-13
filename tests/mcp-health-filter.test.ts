@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import type { McpHealthSummary } from "../components/creed/mcp-health-preload.ts";
+import type { McpHealthSummary } from "../components/strap/mcp-health-preload.ts";
 import { filterMcpHealthSummary } from "../lib/mcp-health-filter.ts";
 
 const summary: McpHealthSummary = {
@@ -31,7 +31,7 @@ const summary: McpHealthSummary = {
     },
     {
       clientId: "cli",
-      name: "Creed CLI",
+      name: "Strap CLI",
       icon: "cli",
       firstSeen: "2026-07-14T11:00:00.000Z",
       reads: 3,
@@ -96,4 +96,20 @@ test("MCP health category filters cannot restore CLI data", () => {
   assert.equal(filtered.agents.length, 0);
   assert.equal(filtered.totals.reads, 0);
   assert.equal(filtered.sections.length, 0);
+});
+
+test("MCP health also excludes the legacy Creed CLI identity", () => {
+  const legacySummary: McpHealthSummary = {
+    ...summary,
+    agents: summary.agents.map((agent) =>
+      agent.clientId === "cli" ? { ...agent, name: "Creed CLI" } : agent
+    ),
+  };
+
+  assert.deepEqual(
+    filterMcpHealthSummary(legacySummary, "all").agents.map(
+      (agent) => agent.clientId,
+    ),
+    ["codex"],
+  );
 });

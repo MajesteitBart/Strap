@@ -4,7 +4,7 @@ import { log } from "@/lib/observability";
 import {
   GETTING_STARTED_STEPS,
   type GettingStartedStepKey,
-} from "@/lib/creed-data";
+} from "@/lib/strap-data";
 
 const STEP_KEYS = new Set<string>(GETTING_STARTED_STEPS.map((s) => s.key));
 

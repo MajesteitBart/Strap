@@ -5,16 +5,16 @@ status: done
 workstream: WS-A
 created: 2026-07-22T09:40:55Z
 updated: 2026-07-22T09:42:48Z
-linear_issue_id: 
-github_issue: 
-github_pr: 
+linear_issue_id:
+github_issue:
+github_pr:
 depends_on: []
 conflicts_with: []
 parallel: true
 priority: high
 estimate: S
 operating_mode: feature
-story_id: 
+story_id:
 acceptance_criteria_ids: []
 ---
 

@@ -1,7 +1,7 @@
 // Curated changelog for the public site. Hand-written, user-facing entries for
 // meaningful ships, newest first. This is not a raw commit log; keep each entry
 // readable and honest, and add one when something real ships. Freshness here is
-// a signal to both search and AI answer engines that Creed is actively built.
+// a signal to both search and AI answer engines that Strap is actively built.
 
 export type ChangelogEntry = {
   // ISO date (YYYY-MM-DD), used for ordering and the visible date.

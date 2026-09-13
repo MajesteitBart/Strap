@@ -3,7 +3,7 @@ import { NO_STORE_HEADERS } from "@/lib/http-headers";
 import type { User } from "@supabase/supabase-js";
 import { fetchOpenRouterBalance, readAiSettings } from "@/lib/ai/persistence";
 import { requireApiAuth } from "@/lib/api-auth";
-import { resolveMemberCompanyCreed } from "@/lib/creed-context";
+import { resolveMemberCompanyStrap } from "@/lib/strap-context";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import { decryptSecret } from "@/lib/secret-crypto";
 
@@ -16,7 +16,7 @@ import { decryptSecret } from "@/lib/secret-crypto";
 
 
 async function resolveByokKey(client: unknown, user: User): Promise<string | null> {
-  const company = await resolveMemberCompanyCreed(client, user);
+  const company = await resolveMemberCompanyStrap(client, user);
   if (company) {
     if (company.role !== "owner") return null;
     const companyId = company.creedId;

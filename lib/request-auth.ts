@@ -3,7 +3,7 @@ import { cache } from "react";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 // Per-request cached auth accessor. React cache() dedupes within a single
-// server render, so the (creed-app) / onboarding layout and the
+// server render, so the (strap-app) / onboarding layout and the
 // AuthedProviders it renders share ONE Supabase server client and ONE
 // getUser() round-trip instead of each creating their own. In route handlers
 // (no render tree) it's a harmless passthrough - each request still resolves

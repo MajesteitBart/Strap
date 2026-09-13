@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { requireApiAuth } from "@/lib/api-auth";
-import { getCreedRole } from "@/lib/creed-membership";
+import { getStrapRole } from "@/lib/strap-membership";
 import {
   exchangeGitHubOAuthCode,
   getGitHubOAuthAppCredentials,
   getGitHubViewer,
   GITHUB_OAUTH_STATE_COOKIE,
 } from "@/lib/github";
-import { upsertGitHubIntegration } from "@/lib/creed-backend";
+import { upsertGitHubIntegration } from "@/lib/strap-backend";
 import { upsertCompanyGitHubIntegration } from "@/lib/company-github";
 import { recordAuditEvent } from "@/lib/audit-log";
 
@@ -68,7 +68,7 @@ export async function GET(request: Request) {
 
   if (mode === "company") {
     if (!creedId) return backToSettings(origin, param, "error");
-    const role = await getCreedRole(auth.supabase, auth.user.id, creedId);
+    const role = await getStrapRole(auth.supabase, auth.user.id, creedId);
     if (role !== "owner" && role !== "admin") {
       return backToSettings(origin, param, "forbidden");
     }

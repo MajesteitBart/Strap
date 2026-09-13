@@ -1,4 +1,4 @@
-import type { ConnectionAction, McpClient } from "@/lib/creed-data";
+import type { ConnectionAction, McpClient } from "@/lib/strap-data";
 
 // Per-agent connect buttons + hint, computed on the client from the MCP URL.
 //

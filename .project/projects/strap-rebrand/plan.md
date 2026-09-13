@@ -1,9 +1,9 @@
 ---
 name: Strap Rebrand
-status: active
+status: done
 lead: MajesteitBart
 created: 2026-07-23T02:02:31Z
-updated: 2026-07-23T02:10:45Z
+updated: 2026-07-24T12:36:02Z
 linear_project_id: 
 risk_level: high
 spec_status_at_plan_time: approved

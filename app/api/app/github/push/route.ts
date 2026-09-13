@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { loadCreedState, persistCreedState } from "@/lib/creed-backend";
+import { loadCreedState, persistCreedState } from "@/lib/strap-backend";
 import { pushGitHubFile } from "@/lib/github";
 import {
   getConfiguredRepo,
@@ -7,7 +7,7 @@ import {
   resolveGitHubProfileSnapshot,
   withAuthenticatedGitHubAccess,
 } from "@/lib/github-version-control";
-import { resolveManagedCompanyCreedId } from "@/lib/creed-context";
+import { resolveManagedCompanyCreedId } from "@/lib/strap-context";
 import { withCompanyGitHubAccess } from "@/lib/company-github";
 import { readCompanyVersionControl, updateCompanyVersionControlSync } from "@/lib/company-version-control";
 import { hasProfilePathConflict, LEGACY_CREED_FILE_NAME } from "@/lib/profile-file";
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
 
     // Company managers push the company file to the COMPANY target on the TEAM's
     // GitHub connection (never a personal token); the sync bookkeeping lands on
-    // the company row. Personal Creeds push on the user's own connection.
+    // the company row. Personal Straps push on the user's own connection.
     const companyId = await resolveManagedCompanyCreedId(supabase, user);
     if (companyId) {
       const companyVc = await readCompanyVersionControl(companyId);

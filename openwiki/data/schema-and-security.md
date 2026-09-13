@@ -1,98 +1,69 @@
 # Schema and security
 
-## Schema evolution
+## Schema evolution and naming
 
-`supabase/migrations/` is a forward-only history. The architecture evolved in identifiable phases:
+`supabase/migrations/` is forward-only history. The schema evolved from Personal profiles and static agent tokens through GitHub/AI/audit, hashed credentials, OAuth/MCP, Company workspaces, permissions/versioning, and finally scoped headless access plus Supabase Vault.
 
-1. Personal sections, proposals, activity, connections, and static agent tokens keyed by user.
-2. GitHub configuration, AI settings/usage, audit logging, archives, entitlements, and credits.
-3. Hashed/encrypted credentials followed by plaintext purging.
-4. OAuth clients, authorization codes, access/refresh tokens, and MCP read events.
-5. Introduction of `creeds` and `creed_members`, then re-keying content and credits by `creed_id` for Company support.
-6. Company permissions, invites, pooled credits, billing/seats, shared GitHub, versions, proposals, and hardening RPCs.
-7. Retention, getting-started state, indexes, and hosted Data API grant corrections.
-8. Explicit-grant normalization, headless MCP keys, RFC 8628 device requests, and Creed-scoped secrets backed by Supabase Vault.
+Stable database identifiers remain Creed-named: `creeds`, `creed_members`, `creed_sections`, `creed_proposals`, `creed_headless_access_keys`, `creed_vault_items`, `creed_id`, and `creed_vault_*` RPCs. Historical migrations also retain Stripe-era tables/columns. Strap branding does not authorize renaming these contracts.
 
-Recent commits corrected pgcrypto schema resolution in the credential migration and restored table grants expected by the hosted Supabase Data API. Those grants rely on RLS; enabling a new table without appropriate RLS is therefore especially dangerous.
+`20260724120000_strap_profile_defaults.sql` changes customer-facing defaults only: new Personal/Company GitHub paths become `strap.md`, untouched generated `Your Creed` names become `Your Strap`, and future Vault descriptions say `Managed by Strap`. The RPC/table names and internal Vault secret prefix remain Creed-named.
 
-## Core records
+## Representative records
 
-| Concept | Representative storage |
+| Concept | Storage |
 |---|---|
-| Creed/workspace | `creeds` with `personal` or `company` type and owner |
+| Strap/workspace | `creeds` (`personal` or `company`) |
 | Membership | `creed_members` with owner/admin/member role |
-| Content | `creed_sections`, ordered and revisioned per Creed |
-| Review | `creed_proposals`, including structural drafts and base revision |
-| History | `creed_activity`, company section version records, audit events |
-| Agent access | legacy token tables, OAuth clients/codes/tokens/grants, headless access keys, device authorizations, MCP usage/read events |
-| Access history | entitlements and retained historical company billing/seat records |
-| Integrations | personal/company GitHub config and encrypted credentials, AI settings/BYOK, Vault item metadata |
+| Content/review/history | `creed_sections`, `creed_proposals`, `creed_activity`, section versions, audit events |
+| Agent access | legacy tokens, OAuth clients/codes/tokens/grants, headless keys, device authorizations, MCP events |
+| Secret metadata | `creed_vault_items`; payload referenced by `vault_secret_id` |
+| Integration/history | Personal/Company GitHub and BYOK records; retained entitlement/billing/seat/credit history |
 
-Read the latest migration touching a table rather than relying only on its creation migration. Company migrations intentionally shipped additive foundations first, then re-keyed live content in coordinated steps.
+Read the latest migration touching a table, not only its creation migration.
 
 ## Authorization layers
 
-### Session and RLS
+### Session and service role
 
-Browser requests authenticate with Supabase `auth.getUser()`. Session clients are subject to RLS. Membership-aware helper functions such as `creed_role()` use carefully constrained `SECURITY DEFINER` logic to avoid recursive policies. Function search paths, execution grants, and role exposure are security properties, not boilerplate.
+Browser APIs authenticate with Supabase `auth.getUser()`. Session clients operate under RLS. Company mutation routes often authorize membership/role/section policy before a service-role write.
 
-Personal content can generally be written through owner-scoped session policies. Company content is more restrictive: application routes authorize the caller, then the service role performs the write.
+The admin client bypasses RLS. User identity plus entitlement/membership/role/item ownership checks must precede every admin operation. Never treat a client-supplied `creed_id`/`strapId` as authorization.
 
-### Service role
+### Agent credentials and explicit grants
 
-The admin client bypasses RLS. Before every admin operation, code must establish the user identity and then check the relevant entitlement, membership, role, section permission, or external signature. Never move an admin call earlier than its checks or treat a client-provided Creed ID as authorization.
+OAuth access/refresh tokens and legacy agent tokens use SHA-256 hashes for lookup; recoverable OAuth values use AES-256-GCM through `lib/secret-crypto.ts`. Device/user codes and headless API keys are hash-only.
 
-Company P0 hardening migrations add deny-by-default policies, service-only integration tables, restricted RPC grants, and transactional operations for selected billing/ownership paths. `tests/company-p0-migrations.test.ts` asserts important SQL properties textually; a local database reset is still required for executable validation.
+New headless keys use `strap_key_`; existing `creed_key_` values remain recognized compatibility credentials. Each key is shown in plaintext only in the creation response, while storage retains its digest and display prefix. It binds one creator, one Personal or Company Strap, one mode (`read-only`, `proposal-only`, or `direct`), and optional expiry. MCP rechecks revocation, expiry, creator membership, grant, and live section permission.
 
-### Agent credentials
+Modern OAuth grants likewise identify exactly one Strap. Browser consent selects Personal/Company and currently records a direct ceiling; device consent explicitly selects the maximum mode. Mode is always a ceiling. Missing/inaccessible modern grants fail narrow; only positively identified legacy OAuth tokens without explicit grants may use the historical Personal fallback.
 
-Agent bearer tokens are separate from browser sessions. Lookup uses SHA-256 token hashes; recoverable OAuth values use AES-256-GCM encryption derived from `CREED_ENCRYPTION_SECRET`. Headless API keys and device/user codes are hash-only. OAuth supports PKCE authorization codes and device authorization, rotating refresh tokens, and explicit per-Creed grants. `creed_headless_access_keys` and `oauth_device_authorizations` have RLS enabled but expose no table privileges to `anon` or `authenticated`; device verification and polling RPCs are `SECURITY DEFINER`, empty-search-path, and service-role-only. See [Agents and OAuth](../integrations/agents-and-oauth.md).
+## Supabase Vault plaintext boundary
 
-### Supabase Vault secrets
+`/vault` manages Strap-scoped external secrets:
 
-The signed-in `/vault` surface stores Creed-scoped external API keys. `public.creed_vault_items` contains only metadata and a `vault_secret_id`; plaintext lives in the `supabase_vault` extension. Names are 1–120 characters and unique case-insensitively per Creed, descriptions are at most 500 characters, and the app bounds secret input to 16,384 characters.
+- `public.creed_vault_items` stores metadata and `vault_secret_id`, not payload plaintext.
+- Lists select metadata only.
+- Service-role-only, security-definer `creed_vault_*` RPCs create, decrypt, update, and delete Vault payloads; execution is revoked from `public`, `anon`, and `authenticated`.
+- Personal access requires live membership. Company access requires owner/admin; members receive `403`.
+- Item mutation/reveal authorizes using the item’s database-loaded `creed_id`, not a caller-selected profile.
 
-Browser operations are session-authenticated but execute through explicit server authorization and the admin client:
+Supabase Vault is an at-rest boundary, not a claim that plaintext never reaches application code. Plaintext exists transiently in:
 
-- `GET`/`POST /api/app/vault` list metadata or create an item for a supplied Creed;
-- `GET`/`PATCH`/`DELETE /api/app/vault/[id]` reveal, update/rotate, or permanently delete the item selected by server-loaded metadata.
+1. create/rotate browser form and request body;
+2. Node route/RPC arguments;
+3. service-role RPC execution and Vault decrypted view;
+4. an explicit reveal RPC result, app-server memory, no-store JSON response, and temporary browser state.
 
-Personal access follows membership. Company Vault access requires owner or admin; ordinary members receive `403`. The server loads an item’s own `creed_id` before reveal/update/delete, so a caller cannot authorize an item operation by supplying another Creed ID.
+Reveal is fail-closed: `recordRequiredAuditEvent` must persist `vault.secret_revealed` before plaintext is returned, or the route returns `503`. Decryption and `last_accessed_at` update have already occurred inside the RPC at that point, but plaintext is withheld from the HTTP response. The UI clears revealed state after 30 seconds. Ordinary lists, logs, and agent context expose metadata or references only.
 
-Four service-role-only definer RPCs create, decrypt, update, and delete Vault payloads. Table and function access is revoked from `public`, `anon`, and `authenticated`; this makes the preceding application checks load-bearing because the admin client bypasses RLS and the RPCs do not independently establish end-user identity. Create/update/delete audit events are best-effort. Reveal is fail-closed: `recordRequiredAuditEvent` must persist `vault.secret_revealed` before plaintext is returned, otherwise the route returns `503`. The RPC has already decrypted the value and updated access time at that point.
+`lib/secret-crypto.ts` is separate from Supabase Vault. It encrypts recoverable OAuth, GitHub, OpenRouter, and legacy application credentials.
 
-The UI lists metadata without values, reveals one value only on demand, clears it from component state after 30 seconds, permits metadata edits with optional secret rotation, and deletes both metadata and the underlying Vault row. There is no migration backfill of older application credentials into Vault. Primary sources are `lib/api-key-vault.ts`, `app/api/app/vault/**`, `components/creed/api-key-vault-screen.tsx`, and `20260722120000_headless_access_and_secret_vault.sql`.
+## Free product and historical billing schema
 
-## Privacy and external boundaries
+There is no active Stripe dependency, checkout/webhook runtime, paid-plan gate, or paid Company-seat flow. Open, Personal, and Company are `$0 forever`. Historical `stripe_*`, entitlement, billing, seat-purchase, and credit-ledger records remain because migrations are forward-only and some non-payment state still uses older tables. Preserve them as history; do not infer live billing from schema names.
 
-Creed content is sensitive user/company context. It leaves the application only through explicit product features such as:
+## Privacy, audit, and migration checklist
 
-- OpenRouter inference;
-- GitHub `creed.md` synchronization;
-- MCP or direct HTTP responses to an authorized agent;
-- an explicit, audited Vault reveal to an authorized signed-in user.
+Hidden sections must be removed before payload construction. Profile content sent to agents is labeled as data, not instructions. Sensitive actions should use audit events; reveal uniquely requires durable audit success.
 
-Hidden sections must be removed before payload construction, not merely hidden in UI. Profile content sent to an agent is explicitly labeled as data, never instructions, to reduce prompt-injection ambiguity.
-
-Do not read, log, document, or commit `.env.local`, raw tokens, API keys, refresh tokens, or encryption secrets. `.env.example` is safe only as a placeholder map.
-
-## Audit, retention, and observability
-
-Sensitive server actions should emit `creed_audit_events` where appropriate. `recordAuditEvent` is best-effort; `recordRequiredAuditEvent` is for operations such as Vault reveal that must fail closed when audit persistence is unavailable. Server logs use `lib/observability.ts`, not `console.log`, and include request IDs propagated by `proxy.ts`. Activity records describe content changes; administrative events belong in the audit trail rather than the content activity sidebar.
-
-Retention migrations schedule cleanup for selected activity/usage records. When adding a new event stream, decide whether it is product history, security audit, billing evidence, or transient telemetry; each has different retention and access needs.
-
-## Migration checklist
-
-1. Add a new timestamped migration; never rewrite applied production history casually.
-2. Make reruns safe where practical with guarded create/drop statements.
-3. Enable RLS and define policies before exposing tables through Data API grants.
-4. Set `search_path` on security-definer functions and minimize execute grants.
-5. Keep TypeScript permission logic and SQL helpers/policies equivalent.
-6. Consider existing personal rows, company rows, backfills, nullability, and uniqueness.
-7. Test transactional/idempotent behavior for security-sensitive RPCs, including device consumption and Vault mutation.
-8. Run `npx supabase db reset` locally and `npm test`.
-9. Confirm the configured project reference before any remote push.
-10. Review generated advisor/security warnings rather than silencing them without explanation.
-
-Security issues should follow `SECURITY.md`, not a public issue. The deployed CSP is report-only unless `CREED_CSP_ENFORCE=1`; it also permits inline framework styles/scripts, so it is defense-in-depth rather than a complete injection boundary.
+For migrations: add a timestamped file; preserve applied history; enable RLS before grants; constrain security-definer `search_path` and execute grants; keep TypeScript and SQL permission twins aligned; consider existing Personal/Company/history rows; run `npx supabase db reset` and `npm test`; and confirm the project reference before remote pushes.

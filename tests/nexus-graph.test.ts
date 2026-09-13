@@ -5,14 +5,14 @@
 import { strict as assert } from "node:assert";
 import { test } from "node:test";
 import { buildNexusGraph } from "../lib/nexus-graph.ts";
-import type { CreedSection } from "../lib/creed-data.ts";
+import type { StrapSection } from "../lib/strap-data.ts";
 
 function section(
   id: string,
   name: string,
   content: string,
   archived = false,
-): CreedSection {
+): StrapSection {
   return {
     id,
     kind: "rich-text",

@@ -3,8 +3,8 @@ import { requireApiAuth } from "@/lib/api-auth";
 import { resolveAiCredential, resolveCompanyAiCredential } from "@/lib/ai/credits";
 import { callOpenRouter, parseJsonObject } from "@/lib/ai/openrouter";
 import { recordAiUsage } from "@/lib/ai/persistence";
-import { resolveActiveCreed } from "@/lib/creed-context";
-import { loadActiveCreedState } from "@/lib/creed-backend";
+import { resolveActiveStrap } from "@/lib/strap-context";
+import { loadActiveStrapState } from "@/lib/strap-backend";
 import {
   buildAskMessages,
   buildPanelResponseFormat,
@@ -17,7 +17,7 @@ import {
   type PanelSectionSummary,
   type PanelTurn,
 } from "@/lib/panel/actions";
-import { permissionIsReadable, sectionBodyMarkdown } from "@/lib/creed-data";
+import { permissionIsReadable, sectionBodyMarkdown } from "@/lib/strap-data";
 
 // Panel's Search + Ask resolve in a single fast call; a minute is generous
 // headroom, not a target - the client aborts long before this.
@@ -58,15 +58,15 @@ export async function POST(request: Request) {
     // what to look at (query, mentions, history). Hidden and archived sections
     // are excluded here, so the confidentiality boundary holds regardless of
     // what the caller sends.
-    // Load the active Creed (personal or company). Company state is
+    // Load the active Strap (Personal or Company). Company state is
     // permission-filtered (Hidden sections already stripped) so the panel
     // respects the member's access, and AI meters on the company's credits.
-    const active = await resolveActiveCreed(auth.supabase, auth.user);
+    const active = await resolveActiveStrap(auth.supabase, auth.user);
     const companyId =
       active && active.creeds.find((c) => c.id === active.creedId)?.type === "company"
         ? active.creedId
         : null;
-    const { state } = await loadActiveCreedState(auth.supabase, auth.user, active);
+    const { state } = await loadActiveStrapState(auth.supabase, auth.user, active);
     const sections: PanelSectionSummary[] = state.sections
       .filter((section) => !section.archived && permissionIsReadable(section.agentPermission))
       .map((section) => ({

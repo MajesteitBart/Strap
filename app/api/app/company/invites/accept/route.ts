@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { requireApiAuth } from "@/lib/api-auth";
 import { acceptInvite } from "@/lib/company-invites";
-import { setActiveCreed } from "@/lib/creed-context";
+import { setActiveCreed } from "@/lib/strap-context";
 import { recordAuditEvent } from "@/lib/audit-log";
 
 // POST /api/app/company/invites/accept { token } - the signed-in user accepts
 // an invite. Validates expiry and email match in the lib, then creates
-// membership and switches the active Creed to the company.
+// membership and switches the active Strap to the company.
 export async function POST(request: Request) {
   const auth = await requireApiAuth();
   if (auth instanceof NextResponse) return auth;
@@ -36,5 +36,9 @@ export async function POST(request: Request) {
     request,
   });
 
-  return NextResponse.json({ ok: true, creedId: result.creedId });
+  return NextResponse.json({
+    ok: true,
+    strapId: result.creedId,
+    creedId: result.creedId,
+  });
 }

@@ -2,7 +2,7 @@ import type { User } from "@supabase/supabase-js";
 
 // Lightweight structural type used by server-side helpers that work with both
 // the Supabase RLS client and the admin client. Wide enough to cover every
-// operation Creed performs without forcing every caller to import the full
+// operation Strap performs without forcing every caller to import the full
 // generated DB types.
 
 export type SupabaseLikeQueryResult = {

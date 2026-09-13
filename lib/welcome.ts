@@ -28,7 +28,7 @@ export function shouldShowWelcome(
 export type WelcomeState = { showWelcome: boolean; paidAt: string | null };
 
 /**
- * Welcome-pop-up state for the (creed-app) layout gate. Reads via the caller's
+ * Welcome-pop-up state for the (strap-app) layout gate. Reads via the caller's
  * already-authed client (the "Read own entitlement" RLS policy).
  */
 export async function getEntitlementWelcomeState(
@@ -72,7 +72,7 @@ export async function markEntitlementWelcomed(userId: string): Promise<void> {
 }
 
 /**
- * Welcome-pop-up state for a company Creed's owner, keyed on the company row.
+ * Welcome-pop-up state for a Company Strap's owner, keyed on the company row.
  * Read via the admin client (the row is owner-only under RLS).
  */
 export async function getCompanyWelcomeState(

@@ -1,6 +1,11 @@
 import { createHash, randomBytes } from "node:crypto";
 
-export const HEADLESS_KEY_PREFIX = "creed_key_";
+export const HEADLESS_KEY_PREFIX = "strap_key_";
+export const LEGACY_HEADLESS_KEY_PREFIX = "creed_key_";
+export const HEADLESS_KEY_PREFIXES = [
+  HEADLESS_KEY_PREFIX,
+  LEGACY_HEADLESS_KEY_PREFIX,
+] as const;
 export const HEADLESS_KEY_MODES = ["read-only", "proposal-only", "direct"] as const;
 export type HeadlessKeyMode = (typeof HEADLESS_KEY_MODES)[number];
 
@@ -18,7 +23,9 @@ export function createHeadlessKey(): { key: string; prefix: string; hash: string
 }
 
 export function isHeadlessKey(value: string): boolean {
-  return value.startsWith(HEADLESS_KEY_PREFIX) && value.length > HEADLESS_KEY_PREFIX.length + 30;
+  return HEADLESS_KEY_PREFIXES.some(
+    (prefix) => value.startsWith(prefix) && value.length > prefix.length + 30,
+  );
 }
 
 export function digestCredential(value: string): string {

@@ -2,13 +2,13 @@ import "server-only";
 import type { User } from "@supabase/supabase-js";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import type { SupabaseLikeClient } from "@/lib/supabase/types";
-import { getCreedRole } from "@/lib/creed-membership";
+import { getStrapRole } from "@/lib/strap-membership";
 import { encryptSecret, hashSecret } from "@/lib/secret-crypto";
-import type { AgentPermission } from "@/lib/creed-data";
+import type { AgentPermission } from "@/lib/strap-data";
 import { recordAuditEvent } from "@/lib/audit-log";
 import { getDisplayName } from "@/lib/user-name";
 
-// Owner/admin management operations for a company Creed: roles, member removal,
+// Owner/admin management operations for a Company Strap: roles, member removal,
 // per-section permissions, rename, ownership transfer, delete, and BYOK. All run
 // on the service-role admin client after an app-level role check, and record an
 // audit row + (where member-visible) an activity row.
@@ -57,7 +57,7 @@ export async function setMemberRole(params: {
   role: "admin" | "member";
 }): Promise<AdminResult> {
   const db = admin();
-  const actorRole = await getCreedRole(db, params.actor.id, params.creedId);
+  const actorRole = await getStrapRole(db, params.actor.id, params.creedId);
   if (actorRole !== "owner") {
     return {
       ok: false,
@@ -65,7 +65,7 @@ export async function setMemberRole(params: {
       status: 403,
     };
   }
-  const targetRole = await getCreedRole(
+  const targetRole = await getStrapRole(
     db,
     params.targetUserId,
     params.creedId,
@@ -114,7 +114,7 @@ export async function removeMember(params: {
   targetUserId: string;
 }): Promise<AdminResult> {
   const db = admin();
-  const actorRole = await getCreedRole(db, params.actor.id, params.creedId);
+  const actorRole = await getStrapRole(db, params.actor.id, params.creedId);
   if (actorRole !== "owner" && actorRole !== "admin") {
     return {
       ok: false,
@@ -122,7 +122,7 @@ export async function removeMember(params: {
       status: 403,
     };
   }
-  const targetRole = await getCreedRole(
+  const targetRole = await getStrapRole(
     db,
     params.targetUserId,
     params.creedId,
@@ -157,8 +157,8 @@ export async function removeMember(params: {
     .delete()
     .eq("creed_id", params.creedId)
     .eq("user_id", params.targetUserId);
-  // Revoke the removed member's MCP grants for this Creed (their token rows stay;
-  // only the per-Creed grant is dropped).
+  // Revoke the removed member's MCP grants for this Strap (their token rows stay;
+  // only the per-Strap grant is dropped).
   const { data: tokens } = (await db
     .from("oauth_tokens")
     .select("id")
@@ -198,7 +198,7 @@ export async function setSectionPermission(params: {
   permission: AgentPermission;
 }): Promise<AdminResult> {
   const db = admin();
-  const actorRole = await getCreedRole(db, params.actor.id, params.creedId);
+  const actorRole = await getStrapRole(db, params.actor.id, params.creedId);
   if (actorRole !== "owner" && actorRole !== "admin") {
     return {
       ok: false,
@@ -207,7 +207,7 @@ export async function setSectionPermission(params: {
     };
   }
   // Do not let a permission be set on an owner/admin (they are always direct).
-  const targetRole = await getCreedRole(
+  const targetRole = await getStrapRole(
     db,
     params.targetUserId,
     params.creedId,
@@ -251,7 +251,7 @@ export async function setSectionPermission(params: {
   return { ok: true };
 }
 
-/** Rename the company Creed (owner/admin). */
+/** Rename the Company Strap (owner/admin). */
 // Update the company's General settings: its name and/or its shared contact
 // email (owner/admin). Each field is optional so the settings screen can save
 // them independently on blur. Passing email as "" clears it.
@@ -263,7 +263,7 @@ export async function updateCompanyGeneral(params: {
   avatarUrl?: string;
 }): Promise<AdminResult> {
   const db = admin();
-  const actorRole = await getCreedRole(db, params.actor.id, params.creedId);
+  const actorRole = await getStrapRole(db, params.actor.id, params.creedId);
   if (actorRole !== "owner" && actorRole !== "admin") {
     return {
       ok: false,
@@ -315,14 +315,14 @@ export async function transferOwnership(params: {
   targetUserId: string;
 }): Promise<AdminResult> {
   const db = admin();
-  const actorRole = await getCreedRole(db, params.actor.id, params.creedId);
+  const actorRole = await getStrapRole(db, params.actor.id, params.creedId);
   if (actorRole !== "owner") {
     return { ok: false, error: "Only the owner can transfer ownership.", status: 403 };
   }
   if (params.targetUserId === params.actor.id) {
     return { ok: false, error: "You already own this company.", status: 400 };
   }
-  const targetRole = await getCreedRole(db, params.targetUserId, params.creedId);
+  const targetRole = await getStrapRole(db, params.targetUserId, params.creedId);
   if (!targetRole) {
     return { ok: false, error: "That person is not a member.", status: 404 };
   }
@@ -357,13 +357,13 @@ export async function transferOwnership(params: {
   return { ok: true };
 }
 
-/** Delete the company Creed (owner-only). Cascades all content via FKs. */
+/** Delete the Company Strap (owner-only). Cascades all content via FKs. */
 export async function deleteCompany(params: {
   creedId: string;
   actor: User;
 }): Promise<AdminResult> {
   const db = admin();
-  const actorRole = await getCreedRole(db, params.actor.id, params.creedId);
+  const actorRole = await getStrapRole(db, params.actor.id, params.creedId);
   if (actorRole !== "owner") {
     return {
       ok: false,
@@ -394,7 +394,7 @@ export async function setCompanyByok(params: {
   mode?: "credits" | "byok";
 }): Promise<AdminResult> {
   const db = admin();
-  const actorRole = await getCreedRole(db, params.actor.id, params.creedId);
+  const actorRole = await getStrapRole(db, params.actor.id, params.creedId);
   if (actorRole !== "owner") {
     return { ok: false, error: "Only the owner can manage BYOK.", status: 403 };
   }
@@ -448,7 +448,7 @@ export async function setCompanyAiMode(params: {
   mode: "credits" | "byok";
 }): Promise<AdminResult> {
   const db = admin();
-  const actorRole = await getCreedRole(db, params.actor.id, params.creedId);
+  const actorRole = await getStrapRole(db, params.actor.id, params.creedId);
   if (actorRole !== "owner") {
     return {
       ok: false,

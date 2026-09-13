@@ -5,7 +5,7 @@ import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import type { SupabaseLikeClient } from "@/lib/supabase/types";
 import { digestCredential } from "@/lib/headless-access-shared";
 import { getOAuthClient, type CreedGrantMode, type OAuthClient } from "@/lib/oauth";
-import { listUserCreeds, type CreedSummary } from "@/lib/creed-membership";
+import { listUserStraps, type StrapSummary } from "@/lib/strap-membership";
 import { recordAuditEvent } from "@/lib/audit-log";
 import {
   capDeviceGrantMode,
@@ -51,7 +51,7 @@ export async function createDeviceAuthorization(input: {
   expiresIn: number;
   interval: number;
 }> {
-  const deviceCode = `creed_dc_${randomBytes(32).toString("base64url")}`;
+  const deviceCode = `strap_dc_${randomBytes(32).toString("base64url")}`;
   const userCode = createDeviceUserCode();
   const normalizedUserCode = normalizeDeviceUserCode(userCode);
   if (!normalizedUserCode) throw new Error("Could not generate device code.");
@@ -87,7 +87,7 @@ export async function verifyDeviceUserCode(value: string): Promise<string | null
 export async function getDeviceApproval(input: {
   requestId: string;
   userId: string;
-}): Promise<{ request: DeviceRow; client: OAuthClient; creeds: CreedSummary[] } | null> {
+}): Promise<{ request: DeviceRow; client: OAuthClient; creeds: StrapSummary[] } | null> {
   const { data, error } = await adminDb()
     .from("oauth_device_authorizations")
     .select("id, client_id, scope, status, expires_at")
@@ -99,7 +99,7 @@ export async function getDeviceApproval(input: {
   const row = data as DeviceRow;
   const [client, creeds] = await Promise.all([
     getOAuthClient(row.client_id),
-    listUserCreeds(adminDb(), input.userId),
+    listUserStraps(adminDb(), input.userId),
   ]);
   if (!client || creeds.length === 0) return null;
   return { request: row, client, creeds };

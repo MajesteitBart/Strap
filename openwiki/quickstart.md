@@ -1,35 +1,43 @@
-# Creed repository quickstart
+# Strap repository quickstart
 
-Creed is a product for maintaining one curated context profile that multiple AI agents can read and improve. The profile is deliberately not a journal, chat history, or general notes store: it should remain compact, durable, specific, and useful enough for an agent to read before substantive work. Agents can read the profile, submit reviewable proposals, or edit directly where the user has granted that permission. The same model supports a single-user **Personal Creed** and a governed, shared **Company Creed**.
+Strap maintains one compact, curated context profile that connected AI agents can read before meaningful work and improve through permission-aware updates. It is not a journal, chat transcript, or generic notes store: durable context should stay current, specific, and worth reading. The same model supports a one-user **Personal Strap** and a governed **Company Strap**.
 
-The repository contains the public site, authenticated web application, APIs, OAuth 2.1 and MCP server, Supabase schema and Vault-backed secret storage, OpenRouter/GitHub integrations, and a separately published `creed-cli` package.
+This repository contains the public site, authenticated application, browser APIs, OAuth 2.1 and MCP server, Supabase schema and Vault-backed secret storage, OpenRouter/GitHub integrations, and the primary `@bvdm/strap` CLI. The current product name is **Strap**. Stable internal and protocol identifiers still use Creed where compatibility or migration history requires it; do not rename those source paths or contracts casually.
 
 ## Start here
 
 - [Architecture overview](architecture/overview.md): runtime boundaries, request/state flow, and where code belongs.
-- [Creed domain model](domain/creed-model.md): sections, proposals, permissions, onboarding, review, and Personal versus Company behavior.
-- [Agents, OAuth, MCP, and CLI](integrations/agents-and-oauth.md): browser and device OAuth, headless API keys, MCP enforcement, and the CLI.
-- [Platform integrations](integrations/platform-services.md): Supabase, OpenRouter, AI credits, and GitHub sync.
-- [Schema and security](data/schema-and-security.md): important tables, RLS, service-role boundaries, credential storage, Supabase Vault, and migrations.
-- [Testing and change guide](development/testing-and-change-guide.md): verification commands, high-risk paths, and test coverage.
+- [Strap domain model](domain/strap-model.md): sections, proposals, permissions, onboarding, review, and Personal versus Company behavior.
+- [Agents, OAuth, MCP, and CLI](integrations/agents-and-oauth.md): browser/device OAuth, scoped API keys, explicit grants, protocol compatibility, and `packages/strap`.
+- [Platform integrations](integrations/platform-services.md): Supabase, OpenRouter, GitHub sync, deployment, and the removed Stripe runtime.
+- [Schema and security](data/schema-and-security.md): historical table names, RLS, credentials, Vault plaintext boundaries, and migrations.
+- [Testing and change guide](development/testing-and-change-guide.md): verification commands, high-risk paths, and compatibility tests.
 
-## Technology and main surfaces
+## Main surfaces
 
-| Area | Implementation |
+| Area | Current implementation |
 |---|---|
 | Web | Next.js 16 App Router, React 19, strict TypeScript |
-| UI | Tailwind CSS v4, shadcn-style primitives, Tiptap, Motion/Framer Motion |
-| Backend | Supabase Auth, Postgres, RLS, Vault, realtime, scheduled retention |
-| Agents | MCP with browser/device OAuth 2.1 and Creed API-key authentication |
-| AI | OpenRouter with platform credits or encrypted BYOK credentials |
-| Version control | GitHub OAuth and `creed.md` push/pull |
-| Terminal | Publishable Node 20+ package under `packages/creed-cli` |
+| Backend | Supabase Auth, Postgres, RLS, realtime, retention jobs, and Supabase Vault |
+| Product | `/file`, `/connections`, `/vault`, `/settings` under `app/(strap-app)/` |
+| Agents | `/mcp` with browser/device OAuth 2.1 or scoped `strap_key_` keys; legacy `creed_key_` keys remain accepted |
+| AI | OpenRouter using deployment-included AI or encrypted Personal/Company BYOK |
+| Version control | GitHub push/pull with `strap.md` default and controlled `creed.md` fallback |
+| Terminal | Primary Node 20+ package `@bvdm/strap` under `packages/strap` |
 
-The signed-in app is under `app/(creed-app)/` and exposes `/file`, `/connections`, `/vault`, and `/settings`. Session-authenticated browser APIs live in `app/api/app/`; `/api/app/headless-access/**` manages one-time-visible MCP keys, while `/api/app/vault/**` manages Creed-scoped external secrets. Agent-facing APIs are `app/mcp/route.ts`, protected by OAuth access tokens or `creed_key_` bearers, and the older bearer-token `app/api/creed/**` routes. Public marketing, docs, pricing, legal, onboarding, auth, and OAuth/device endpoints live elsewhere under `app/`.
+Browser APIs live under `app/api/app/**`. `/api/app/headless-access/**` manages one-time-visible MCP keys and `/api/app/vault/**` manages Strap-scoped external secrets. Agent-facing protocol lives in `app/mcp/route.ts`. Canonical direct HTTP routes are under `app/api/strap/**`; `app/api/creed/**` remains only as a compatibility API shim.
+
+## Current product rules
+
+- **No paid plans:** Open, Personal, and Company are all `$0 forever`. Company supports unlimited invited members. Stripe is absent from active dependencies, environment setup, and runtime routes.
+- **Included AI or BYOK:** hosted Personal and Company can use a configured deployment OpenRouter key or their own encrypted key. The historical storage value `ai_mode = 'credits'` is surfaced as **Included**; it is not prepaid billing. Included usage is quota-controlled rather than unlimited (currently a process-local 20-request/60-second burst and a default `$0.50` trailing-24-hour at-cost ceiling per user).
+- **Scoped agent access:** every modern OAuth token or headless key resolves one explicit Personal or Company grant. A credential mode (`read-only`, `proposal-only`, or `direct`) can narrow live membership and section permissions but never elevate them.
+- **One-time-visible keys:** newly created keys use `strap_key_`; only the hash and display prefix are stored. Existing `creed_key_` keys remain accepted compatibility credentials.
+- **Vault boundary:** `/vault` lists metadata only. Secret payloads are stored at rest in Supabase Vault and cross application/server memory only during explicit create, rotation, or audited reveal flows.
 
 ## Run locally
 
-Prerequisites are Node.js 20+ and a Supabase project. OpenRouter and GitHub credentials are only needed for their respective flows. The latest migration creates the `supabase_vault` extension used by the signed-in API-key Vault.
+Use a current Node.js 22 release for root development and tests, plus a Supabase project. The compiled CLI packages declare Node.js 20+. OpenRouter and GitHub credentials are optional unless those flows are enabled.
 
 ```bash
 npm install
@@ -39,55 +47,75 @@ npx supabase db push
 npm run dev
 ```
 
-Populate the required placeholders described in `.env.example`; never commit or print `.env.local`. The minimum categories are the site URL, Supabase public URL/key, Supabase server secret, and Creed encryption secret. Use `npx supabase`, not an assumed global binary. The development server is available at `http://localhost:3000` by default.
+Populate placeholders described in `.env.example`; never read, print, or commit `.env.local`. Core categories are site URL, Supabase public URL/key, Supabase server secret, and the server-side encryption secret. Runtime prefers `STRAP_ENCRYPTION_SECRET` and falls back to the documented legacy `CREED_ENCRYPTION_SECRET`; treat the latter as a compatibility contract, not current product branding.
 
-Useful checks:
+Root checks:
 
 ```bash
 npm test
 npx tsc --noEmit -p .
 npm run lint
 npm run build
+npm run audit:brand
 ```
 
-The CLI is an independent package with its own lifecycle:
+Both CLI packages are intentionally excluded from the root TypeScript project and require independent checks. For the primary Strap CLI:
 
 ```bash
-npm --prefix packages/creed-cli test
-npm --prefix packages/creed-cli run typecheck
+npm --prefix packages/strap run typecheck
+npm --prefix packages/strap test
+npm pack ./packages/strap --dry-run
 ```
 
-For migration changes, also run `npx supabase db reset` against a local instance. Confirm the target project reference before any remote database operation.
+For migration changes, also run `npx supabase db reset` locally. Confirm the project reference before any remote database operation.
+
+## Use the Strap CLI
+
+```bash
+npm install --global @bvdm/strap
+strap
+
+# Or without installation
+npx @bvdm/strap
+```
+
+The default MCP server is `https://strap.bvdm.ai/mcp`. The CLI discovers live tools, resources, prompts, and schemas rather than hard-coding the server surface. See `packages/strap/README.md`.
+
+`packages/creed-cli/` is a separate legacy compatibility package. It has different executable names, default server, environment variables, and credential storage. The two CLIs do not share or migrate credentials.
+
+## Profile files and GitHub compatibility
+
+- New Personal and Company integrations default to `strap.md` (`lib/profile-file.ts` and migration `20260724120000_strap_profile_defaults.sql`).
+- An absent path or configured `strap.md` reads candidates in order: `strap.md`, then legacy `creed.md`.
+- Any other explicit stored path—including `creed.md`—is read exactly, without fallback.
+- A pull may adopt a resolved candidate. A push refuses to create a competing `strap.md` beside a fallback-resolved `creed.md`; migration must be explicit.
+- Company supports GitHub push, not pull. Personal pull retains archived sections and imports active sections with proposal-level agent permission.
 
 ## Repository orientation
 
-- `app/`: pages, route handlers, OAuth endpoints, and MCP server.
-- `components/creed/`: authenticated product UI. Several files are large orchestration components; read their full local flow before editing.
-- `components/marketing/`: public-site UI.
-- `lib/creed-data.ts`: shared domain types, section constants, proposal shapes, serialization, and the contract sent to agents.
-- `lib/creed-backend.ts`: Personal Creed persistence and shared Supabase mapping.
-- `lib/company-*.ts`: company administration, sections, invites, and GitHub behavior.
-- `lib/ai/`: OpenRouter calls, models, prompts, quality analysis, credits, and persistence.
-- `lib/oauth.ts`, `lib/oauth-device.ts`, `lib/headless-access.ts`: OAuth, device grant, and headless-key persistence/resolution.
+- `app/`: pages, browser APIs, OAuth/device endpoints, direct HTTP routes, and MCP server.
+- `components/strap/`: authenticated Strap UI, including `strap-provider.tsx` and `strap-switcher.tsx`.
+- `lib/strap-*.ts`, `lib/company-*.ts`, and `lib/validation/strap-state.ts`: canonical domain, persistence, permission, and validation implementations; old `lib/creed-*` modules are deprecated compatibility re-export shims.
+- `app/api/app/straps/`: browser APIs for listing and activating Straps.
+- `.agents/skills/strap-repo/`: repository-specific agent guidance and reference documentation.
+- `lib/oauth.ts`, `lib/oauth-device.ts`, `lib/headless-access.ts`: browser/device OAuth and scoped key resolution.
 - `lib/api-key-vault.ts`: authorized Supabase Vault operations and reveal auditing.
-- `supabase/migrations/`: canonical, forward-only schema history.
-- `packages/creed-cli/`: first-party MCP terminal client, built and tested independently.
-- `tests/`: Node test suites, primarily pure logic and migration assertions.
+- `lib/profile-file.ts`: canonical `strap.md` default and legacy fallback policy.
+- `packages/strap/`: primary `@bvdm/strap` MCP terminal client.
+- `packages/creed-cli/`: legacy CLI compatibility package only.
+- `supabase/migrations/`: canonical forward-only schema history; historical Creed and Stripe names remain unchanged.
+- `tests/`: root contract, policy, migration, branding, and logic tests.
 
-Existing `README.md`, `CONTRIBUTING.md`, and `SECURITY.md` remain primary references for setup, contribution policy, and vulnerability reporting. Current source takes precedence where those documents lag recent Company, CLI, or test work.
+The canonical GitHub repository is [MajesteitBart/Strap](https://github.com/MajesteitBart/Strap). Treat `MajesteitBart/Creed` as historical only when it appears in explicit historical evidence.
 
 ## Core invariants
 
-1. A Creed is curated context, not an append-only memory store.
-2. Marketing routes must not trigger user-state loading. `proxy.ts` forwards `x-pathname` so layouts can preserve this boundary.
-3. Browser APIs authenticate the Supabase user; agent APIs authenticate hashed bearer credentials.
-4. Headless keys and modern OAuth tokens are explicitly Creed-scoped; their selected mode can only narrow live member/section permission.
-5. Hidden sections never leave the server in member or agent payloads.
-6. Personal and Company persistence are intentionally different: do not route shared company edits through Personal full-state autosave.
-7. Supabase service-role clients bypass RLS. Every such call depends on explicit application authorization immediately beforehand; Vault RPC execution must remain service-role-only.
-8. Schema changes belong in migrations, with RLS and grants considered together.
-9. `lib/creed-data.ts` agent instructions affect every connected agent and require unusually careful review.
-
-## Current repository notes
-
-Since the previous wiki baseline, the repository removed Stripe billing and added Delano project tooling. The current working tree adds headless MCP API keys, RFC 8628 device authorization, explicit-grant MCP enforcement, and a signed-in Supabase Vault UI/API. These feature files are not yet committed at the documented HEAD, so run full application and local-database verification before treating deployment as complete.
+1. Strap is curated context, not append-only memory.
+2. Marketing routes must not trigger signed-in account-state loading.
+3. Browser APIs authenticate a Supabase user; agent APIs authenticate hashed bearer credentials.
+4. Modern credentials are explicitly bound to one Personal or Company Strap and fail narrow when that grant becomes inaccessible.
+5. Hidden sections are omitted server-side; credential mode can only reduce effective access.
+6. Personal and Company persistence are intentionally different; do not route shared edits through Personal full-state autosave.
+7. Service-role clients bypass RLS, so application authorization must precede every sensitive call. Vault RPC execution remains service-role-only.
+8. Schema changes are forward-only migrations; do not rename historical tables, columns, functions, or migrations to match public branding.
+9. MCP discovery is Strap-first, but exact `creed_*` tools, `creed://` resources, `/api/creed` routes, `creed_key_` credentials, and Creed-named database/internal identifiers remain supported compatibility contracts.

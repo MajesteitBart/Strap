@@ -1,7 +1,7 @@
 {
   "name": "@bvdm/strap",
-  "version": "0.1.0",
-  "description": "Bootstrap agents with context, skills, and secrets from the terminal.",
+  "version": "0.1.1",
+  "description": "Bootstrap your agents with context, skills, and keys from the terminal.",
   "license": "MIT",
   "type": "module",
   "bin": {
@@ -41,5 +41,13 @@
     "context",
     "ai"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MajesteitBart/Strap.git",
+    "directory": "packages/strap"
+  },
+  "bugs": {
+    "url": "https://github.com/MajesteitBart/Strap/issues"
+  },
   "homepage": "https://strap.bvdm.ai"
 }

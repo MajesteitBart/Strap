@@ -18,7 +18,7 @@ const ROLES = [
     name: "Owner",
     body: "Manages members, company settings, and content. Every team has one.",
     fill: "bg-[#EFF6FF] dark:bg-[#102341]/60",
-    text: "text-[var(--creed-accent-hover)] dark:text-[#60A5FA]",
+    text: "text-[var(--strap-accent-hover)] dark:text-[#60A5FA]",
   },
   {
     name: "Admin",
@@ -55,16 +55,16 @@ const HOW = [
 
 export function CompanyPageView() {
   return (
-    <div className="min-h-screen bg-[var(--creed-background)] text-[var(--creed-text-primary)]">
+    <div className="min-h-screen bg-[var(--strap-background)] text-[var(--strap-text-primary)]">
       <MarketingHeroBanner configured={isSupabaseConfigured()} scrolled={false} />
 
       <main className="mx-auto max-w-4xl px-6 pb-20 pt-8 md:px-10 md:pb-24 md:pt-10">
-        <header className="border-b border-[var(--creed-border)] pb-10">
+        <header className="border-b border-[var(--strap-border)] pb-10">
           <AnimatedPageTitle
             text="One shared context file your whole team's agents read"
             className="max-w-3xl"
           />
-          <p className="t-lede mt-5 max-w-2xl text-[var(--creed-text-secondary)]">
+          <p className="t-lede mt-5 max-w-2xl text-[var(--strap-text-secondary)]">
             The Company plan adds one shared Company Strap on top of your
             personal one. Every member&apos;s agents read the same company
             context before they answer, so you stop re-explaining how the team
@@ -74,13 +74,13 @@ export function CompanyPageView() {
           <div className="mt-7 flex flex-wrap items-center gap-3">
             <Link
               href="/pricing"
-              className="inline-flex h-10 items-center justify-center rounded-md bg-[var(--creed-accent)] px-5 text-[14px] font-medium text-white transition-colors hover:bg-[var(--creed-accent-hover)]"
+              className="inline-flex h-10 items-center justify-center rounded-md bg-[var(--strap-accent)] px-5 text-[14px] font-medium text-white transition-colors hover:bg-[var(--strap-accent-hover)]"
             >
               See Company pricing
             </Link>
             <Link
               href="/learn/team-context-file"
-              className="inline-flex h-10 items-center justify-center rounded-md border border-[var(--creed-border)] px-5 text-[14px] font-medium text-[var(--creed-text-primary)] transition-colors hover:bg-[var(--creed-surface)]"
+              className="inline-flex h-10 items-center justify-center rounded-md border border-[var(--strap-border)] px-5 text-[14px] font-medium text-[var(--strap-text-primary)] transition-colors hover:bg-[var(--strap-surface)]"
             >
               What is a team context file?
             </Link>
@@ -88,19 +88,19 @@ export function CompanyPageView() {
         </header>
 
         <section className="py-12">
-          <h2 className="text-[24px] font-medium tracking-[-0.01em] text-[var(--creed-text-primary)] md:text-[28px]">
+          <h2 className="text-[24px] font-medium tracking-[-0.01em] text-[var(--strap-text-primary)] md:text-[28px]">
             How a Company Strap works
           </h2>
           <div className="mt-8 grid gap-4 sm:grid-cols-2">
             {HOW.map((item) => (
               <div
                 key={item.title}
-                className="rounded-xl bg-[var(--creed-surface)] p-5"
+                className="rounded-xl bg-[var(--strap-surface)] p-5"
               >
-                <div className="line-clamp-1 text-[16px] font-medium text-[var(--creed-text-primary)]">
+                <div className="line-clamp-1 text-[16px] font-medium text-[var(--strap-text-primary)]">
                   {item.title}
                 </div>
-                <p className="mt-2 text-[15px] leading-7 text-[var(--creed-text-secondary)]">
+                <p className="mt-2 text-[15px] leading-7 text-[var(--strap-text-secondary)]">
                   {item.body}
                 </p>
               </div>
@@ -108,11 +108,11 @@ export function CompanyPageView() {
           </div>
         </section>
 
-        <section className="border-t border-[var(--creed-border)] py-12">
-          <h2 className="text-[24px] font-medium tracking-[-0.01em] text-[var(--creed-text-primary)] md:text-[28px]">
+        <section className="border-t border-[var(--strap-border)] py-12">
+          <h2 className="text-[24px] font-medium tracking-[-0.01em] text-[var(--strap-text-primary)] md:text-[28px]">
             Roles that keep the file trusted
           </h2>
-          <p className="mt-3 max-w-2xl text-[16px] leading-7 text-[var(--creed-text-secondary)]">
+          <p className="mt-3 max-w-2xl text-[16px] leading-7 text-[var(--strap-text-secondary)]">
             A shared file only stays useful if edits are governed. Roles and
             section permissions decide who can change what, and every edit is
             attributed.
@@ -121,7 +121,7 @@ export function CompanyPageView() {
             {ROLES.map((role) => (
               <article
                 key={role.name}
-                className="flex flex-col overflow-hidden rounded-xl bg-[var(--creed-surface)]"
+                className="flex flex-col overflow-hidden rounded-xl bg-[var(--strap-surface)]"
               >
                 <div className={cn("px-5 py-2.5", role.fill)}>
                   <span className={cn("text-[14px] font-medium", role.text)}>
@@ -129,7 +129,7 @@ export function CompanyPageView() {
                   </span>
                 </div>
                 <div className="flex flex-1 flex-col p-5">
-                  <p className="text-[14px] leading-6 text-[var(--creed-text-secondary)]">
+                  <p className="text-[14px] leading-6 text-[var(--strap-text-secondary)]">
                     {role.body}
                   </p>
                 </div>
@@ -138,18 +138,18 @@ export function CompanyPageView() {
           </div>
         </section>
 
-        <section className="border-t border-[var(--creed-border)] py-12">
-          <h2 className="text-[24px] font-medium tracking-[-0.01em] text-[var(--creed-text-primary)] md:text-[28px]">
+        <section className="border-t border-[var(--strap-border)] py-12">
+          <h2 className="text-[24px] font-medium tracking-[-0.01em] text-[var(--strap-text-primary)] md:text-[28px]">
             Free for your whole team
           </h2>
-          <p className="mt-3 max-w-2xl text-[16px] leading-7 text-[var(--creed-text-secondary)]">
+          <p className="mt-3 max-w-2xl text-[16px] leading-7 text-[var(--strap-text-secondary)]">
             A Company Strap is free: invite as many members as you need, and
             run AI on the included key or your company&apos;s own key (BYOK).
           </p>
           <div className="mt-7">
             <Link
               href="/pricing"
-              className="text-[15px] font-medium text-[var(--creed-accent)] transition-colors hover:text-[var(--creed-accent-hover)]"
+              className="text-[15px] font-medium text-[var(--strap-accent)] transition-colors hover:text-[var(--strap-accent-hover)]"
             >
               Get started
             </Link>
@@ -159,7 +159,7 @@ export function CompanyPageView() {
         <FaqSection
           heading="Company plan questions"
           items={companyFaqItems}
-          className="border-t border-[var(--creed-border)] py-12"
+          className="border-t border-[var(--strap-border)] py-12"
         />
       </main>
 

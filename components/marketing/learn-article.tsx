@@ -21,19 +21,19 @@ function Block({ block }: { block: ArticleBlock }) {
   switch (block.type) {
     case "p":
       return (
-        <p className="mt-5 text-[16px] leading-8 text-[var(--creed-text-secondary)]">
+        <p className="mt-5 text-[16px] leading-8 text-[var(--strap-text-secondary)]">
           {block.text}
         </p>
       );
     case "h2":
       return (
-        <h2 className="mt-12 text-[24px] font-medium tracking-[-0.01em] text-[var(--creed-text-primary)] md:text-[28px]">
+        <h2 className="mt-12 text-[24px] font-medium tracking-[-0.01em] text-[var(--strap-text-primary)] md:text-[28px]">
           {block.text}
         </h2>
       );
     case "h3":
       return (
-        <h3 className="mt-8 text-[19px] font-medium text-[var(--creed-text-primary)]">
+        <h3 className="mt-8 text-[19px] font-medium text-[var(--strap-text-primary)]">
           {block.text}
         </h3>
       );
@@ -43,7 +43,7 @@ function Block({ block }: { block: ArticleBlock }) {
           {block.items.map((item, i) => (
             <li
               key={i}
-              className="relative pl-5 text-[16px] leading-7 text-[var(--creed-text-secondary)] before:absolute before:left-0 before:top-[10px] before:h-2 before:w-2 before:rounded-[3px] before:bg-[var(--creed-accent)]"
+              className="relative pl-5 text-[16px] leading-7 text-[var(--strap-text-secondary)] before:absolute before:left-0 before:top-[10px] before:h-2 before:w-2 before:rounded-[3px] before:bg-[var(--strap-accent)]"
             >
               {item}
             </li>
@@ -56,9 +56,9 @@ function Block({ block }: { block: ArticleBlock }) {
           {block.items.map((item, i) => (
             <li
               key={i}
-              className="flex gap-3 text-[16px] leading-7 text-[var(--creed-text-secondary)]"
+              className="flex gap-3 text-[16px] leading-7 text-[var(--strap-text-secondary)]"
             >
-              <span className="mt-[2px] shrink-0 text-[14px] font-medium tabular-nums text-[var(--creed-accent)]">
+              <span className="mt-[2px] shrink-0 text-[14px] font-medium tabular-nums text-[var(--strap-accent)]">
                 {i + 1}.
               </span>
               <span>{item}</span>
@@ -70,18 +70,18 @@ function Block({ block }: { block: ArticleBlock }) {
       return (
         <figure className="mt-7">
           {block.caption ? (
-            <p className="mb-5 text-[16px] leading-8 text-[var(--creed-text-secondary)]">
+            <p className="mb-5 text-[16px] leading-8 text-[var(--strap-text-secondary)]">
               {block.caption}
             </p>
           ) : null}
-          <div className="overflow-x-auto rounded-lg border border-[var(--creed-border)]">
+          <div className="overflow-x-auto rounded-lg border border-[var(--strap-border)]">
             <table className="w-full border-collapse text-left text-[14px]">
               <thead>
-                <tr className="border-b border-[var(--creed-border)] bg-[var(--creed-surface)]">
+                <tr className="border-b border-[var(--strap-border)] bg-[var(--strap-surface)]">
                   {block.headers.map((h, i) => (
                     <th
                       key={i}
-                      className="px-4 py-3 font-medium text-[var(--creed-text-primary)]"
+                      className="px-4 py-3 font-medium text-[var(--strap-text-primary)]"
                     >
                       {h}
                     </th>
@@ -92,15 +92,15 @@ function Block({ block }: { block: ArticleBlock }) {
                 {block.rows.map((row, r) => (
                   <tr
                     key={r}
-                    className="border-b border-[var(--creed-border)] last:border-0"
+                    className="border-b border-[var(--strap-border)] last:border-0"
                   >
                     {row.map((cell, c) => (
                       <td
                         key={c}
                         className={
                           c === 0
-                            ? "px-4 py-3 font-medium text-[var(--creed-text-primary)]"
-                            : "px-4 py-3 text-[var(--creed-text-secondary)]"
+                            ? "px-4 py-3 font-medium text-[var(--strap-text-primary)]"
+                            : "px-4 py-3 text-[var(--strap-text-secondary)]"
                         }
                       >
                         {cell}
@@ -115,13 +115,13 @@ function Block({ block }: { block: ArticleBlock }) {
       );
     case "code":
       return (
-        <pre className="mt-6 overflow-x-auto rounded-xl bg-[var(--creed-surface)] p-5 font-mono text-[13px] leading-6 text-[var(--creed-text-primary)]">
+        <pre className="mt-6 overflow-x-auto rounded-xl bg-[var(--strap-surface)] p-5 font-mono text-[13px] leading-6 text-[var(--strap-text-primary)]">
           <code>{block.code}</code>
         </pre>
       );
     case "quote":
       return (
-        <blockquote className="mt-6 border-l-2 border-[var(--creed-border-strong)] pl-4 text-[16px] leading-8 text-[var(--creed-text-secondary)] italic">
+        <blockquote className="mt-6 border-l-2 border-[var(--strap-border-strong)] pl-4 text-[16px] leading-8 text-[var(--strap-text-secondary)] italic">
           {block.text}
         </blockquote>
       );
@@ -132,7 +132,7 @@ export function LearnArticle({ article }: { article: Article }) {
   const leadParagraphs = article.lead.split("\n\n");
 
   return (
-    <div className="min-h-screen bg-[var(--creed-background)] text-[var(--creed-text-primary)]">
+    <div className="min-h-screen bg-[var(--strap-background)] text-[var(--strap-text-primary)]">
       <MarketingHeroBanner configured={isSupabaseConfigured()} scrolled={false} />
 
       <main className="mx-auto max-w-3xl px-6 pb-20 pt-8 md:px-10 md:pb-24 md:pt-10">
@@ -144,7 +144,7 @@ export function LearnArticle({ article }: { article: Article }) {
               <p
                 key={i}
                 className={
-                  "text-[17px] leading-8 text-[var(--creed-text-primary)]" +
+                  "text-[17px] leading-8 text-[var(--strap-text-primary)]" +
                   (i > 0 ? " mt-4" : "")
                 }
               >
@@ -168,7 +168,7 @@ export function LearnArticle({ article }: { article: Article }) {
           ) : null}
 
           <section className="mt-14">
-            <h2 className="text-[15px] font-medium text-[var(--creed-text-primary)]">
+            <h2 className="text-[15px] font-medium text-[var(--strap-text-primary)]">
               Related
             </h2>
             <ul className="mt-4 space-y-2.5">
@@ -176,7 +176,7 @@ export function LearnArticle({ article }: { article: Article }) {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-[15px] text-[var(--creed-accent)] transition-colors hover:text-[var(--creed-accent-hover)]"
+                    className="text-[15px] text-[var(--strap-accent)] transition-colors hover:text-[var(--strap-accent-hover)]"
                   >
                     {link.label}
                   </Link>

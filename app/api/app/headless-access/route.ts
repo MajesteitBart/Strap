@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireApiAuth } from "@/lib/api-auth";
-import { getCreedRole } from "@/lib/creed-membership";
+import { getCreedRole } from "@/lib/strap-membership";
 import {
   createHeadlessAccessKey,
   listHeadlessKeys,
@@ -16,9 +16,11 @@ const NO_STORE = { "Cache-Control": "no-store" } as const;
 export async function GET(request: Request) {
   const auth = await requireApiAuth();
   if (auth instanceof NextResponse) return auth;
-  const creedId = new URL(request.url).searchParams.get("creedId")?.trim();
+  const params = new URL(request.url).searchParams;
+  const creedId =
+    params.get("strapId")?.trim() || params.get("creedId")?.trim();
   if (!creedId) {
-    return NextResponse.json({ error: "creedId is required." }, { status: 400 });
+    return NextResponse.json({ error: "strapId is required." }, { status: 400 });
   }
   if (!(await getCreedRole(auth.supabase, auth.user.id, creedId))) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -31,12 +33,14 @@ export async function POST(request: Request) {
   const auth = await requireApiAuth();
   if (auth instanceof NextResponse) return auth;
   const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
-  const creedId = typeof body.creedId === "string" ? body.creedId.trim() : "";
+  const rawStrapId =
+    typeof body.strapId === "string" ? body.strapId : body.creedId;
+  const creedId = typeof rawStrapId === "string" ? rawStrapId.trim() : "";
   const name = typeof body.name === "string" ? body.name.trim() : "";
   const expiresAt = parseOptionalExpiry(body.expiresAt ?? null);
   if (!creedId || !name || name.length > 120 || !isHeadlessKeyMode(body.mode) || expiresAt === undefined) {
     return NextResponse.json(
-      { error: "Valid creedId, name, mode, and optional future expiresAt are required." },
+      { error: "Valid strapId, name, mode, and optional future expiresAt are required." },
       { status: 400 },
     );
   }

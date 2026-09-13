@@ -12,7 +12,7 @@
 - `CONTRIBUTING.md`: code style, contribution checks, and architecture conventions.
 - `SECURITY.md`: private vulnerability reporting and high-risk boundaries.
 - `AGENTS.md`: repository invariants, working defaults, verification, and maintainer workflow.
-- `openwiki/quickstart.md` and the repo-local `creed-repo` skill references: generated architecture, domain, integration, security, and test orientation.
+- `openwiki/quickstart.md` and the repo-local `strap-repo` skill references: generated architecture, domain, integration, security, and test orientation.
 - `package.json` and current source tree: canonical executable commands and repository shape.
 
 ## Strap Brand Handoff

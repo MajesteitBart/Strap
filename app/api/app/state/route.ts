@@ -1,17 +1,17 @@
 import { NextResponse } from "next/server";
-import { loadActiveCreedState, persistCreedState } from "@/lib/creed-backend";
-import { resolveActiveCreed } from "@/lib/creed-context";
+import { loadActiveStrapState, persistStrapState } from "@/lib/strap-backend";
+import { resolveActiveStrap } from "@/lib/strap-context";
 import { requireApiAuth } from "@/lib/api-auth";
 import { log } from "@/lib/observability";
-import { validateCreedState } from "@/lib/validation/creed-state";
+import { validateStrapState } from "@/lib/validation/strap-state";
 
 export async function GET() {
   const auth = await requireApiAuth();
   if (auth instanceof NextResponse) return auth;
 
-  const active = await resolveActiveCreed(auth.supabase, auth.user);
+  const active = await resolveActiveStrap(auth.supabase, auth.user);
   const [result, gettingStartedResult] = await Promise.all([
-    loadActiveCreedState(auth.supabase, auth.user, active),
+    loadActiveStrapState(auth.supabase, auth.user, active),
     // The "Get started" checklist rides along on every state GET (PK read,
     // sub-ms) so the client never needs a separate fetch or poll for it.
     auth.supabase
@@ -39,8 +39,8 @@ export async function PUT(request: Request) {
   // The full-state PUT is the personal autosave path (writes by user_id). In
   // company mode the client must use the per-section API instead; reject here so
   // a stray company-mode PUT can never write company sections onto the personal
-  // Creed.
-  const active = await resolveActiveCreed(auth.supabase, auth.user);
+  // Strap.
+  const active = await resolveActiveStrap(auth.supabase, auth.user);
   if (active) {
     const activeEntry = active.creeds.find((c) => c.id === active.creedId);
     if (activeEntry?.type === "company") {
@@ -63,13 +63,13 @@ export async function PUT(request: Request) {
       ? (body as { state: unknown }).state
       : null;
 
-  const parsed = validateCreedState(candidate);
+  const parsed = validateStrapState(candidate);
   if (!parsed.ok) {
     return NextResponse.json({ error: parsed.error }, { status: 400 });
   }
 
   try {
-    await persistCreedState(auth.supabase, auth.user.id, parsed.data);
+    await persistStrapState(auth.supabase, auth.user.id, parsed.data);
     return NextResponse.json({ ok: true });
   } catch (error) {
     log.error(

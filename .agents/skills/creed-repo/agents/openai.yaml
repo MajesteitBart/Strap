@@ -1,4 +1,0 @@
-interface:
-  display_name: "Creed Repository"
-  short_description: "Build and maintain the Creed codebase safely"
-  default_prompt: "Use $creed-repo to make a well-verified change in the Creed repository."

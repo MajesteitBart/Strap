@@ -34,7 +34,7 @@ export function GET() {
           {BRAND_TAGLINE}
         </div>
         <div style={{ display: "flex", marginTop: 38, gap: 12 }}>
-          {["Context", "Skills", "Secrets"].map((label, index) => (
+          {["Context", "Skills", "Keys"].map((label, index) => (
             <div
               key={label}
               style={{

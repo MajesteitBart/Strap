@@ -1,10 +1,17 @@
 import "server-only";
 
-import type { CreedSection } from "@/lib/creed-data";
-import { buildVisibleCreedMarkdown } from "@/lib/creed-data";
+import type { StrapSection } from "@/lib/strap-data";
+import { buildVisibleStrapMarkdown } from "@/lib/strap-data";
 import { STRAP_FILE_NAME } from "@/lib/profile-file";
 
-export const CREED_QUALITY_RUBRIC_VERSION = "2026-06-10-personal-profile-v5";
+export const STRAP_QUALITY_RUBRIC_VERSION = "2026-06-10-personal-profile-v5";
+
+/**
+ * @deprecated Compatibility alias for callers that have not moved to Strap
+ * naming yet. The stored rubric value is unchanged so cached reports remain
+ * comparable.
+ */
+export const CREED_QUALITY_RUBRIC_VERSION = STRAP_QUALITY_RUBRIC_VERSION;
 
 // Score bands, coarsest-to-finest. The model picks a band first, then a number
 // inside it (band-then-number) so a one-point wobble stays inside the band. The
@@ -110,7 +117,7 @@ export function qualitySubject(scope: QualityScope) {
 }
 
 export function buildQualityPrompt(
-  sections: CreedSection[],
+  sections: StrapSection[],
   targetSectionIds: string[],
   scope: QualityScope = "personal",
 ) {
@@ -120,7 +127,7 @@ export function buildQualityPrompt(
   const subject = qualitySubject(scope);
 
   return [
-    `Rubric version: ${CREED_QUALITY_RUBRIC_VERSION}`,
+    `Rubric version: ${STRAP_QUALITY_RUBRIC_VERSION}`,
     `You are a strict evaluator of ${STRAP_FILE_NAME} files.`,
     `${STRAP_FILE_NAME} is a ${subject.noun} that every AI reads before talking to its ${subject.owner}.`,
     `Your job is to judge how well this file ${subject.purpose}. Be demanding and consistent: the same content must always earn the same score.`,
@@ -199,7 +206,7 @@ export function buildQualityPrompt(
     ),
     "",
     "Visible markdown (the full profile, for context):",
-    buildVisibleCreedMarkdown(sections),
+    buildVisibleStrapMarkdown(sections),
     "",
     "Section ids and names:",
     JSON.stringify(
@@ -227,7 +234,7 @@ export function buildQualityResponseFormat(): Record<string, unknown> {
   return {
     type: "json_schema",
     json_schema: {
-      name: "creed_quality_report",
+      name: "strap_quality_report",
       strict: true,
       schema: {
         type: "object",

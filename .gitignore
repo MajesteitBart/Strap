@@ -12,6 +12,8 @@
 
 # testing
 /coverage
+/.playwright-cli/
+/output/playwright/
 
 # next.js
 /.next/
@@ -53,11 +55,16 @@ yarn-error.log*
 .cursor/
 .aider*
 
+# local Delano runtime evidence and viewer state
+/.agents/logs/*.jsonl
+/.project/viewer/
+
 # launch video workspace (Remotion) - local only, never pushed
 /video/
 
 # private project notes — not shipped publicly
 /project-context/
+/strap.md
 /creed.md
 /design.md
 /docs.md

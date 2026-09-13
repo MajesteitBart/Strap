@@ -20,16 +20,16 @@ import { shareContextBetweenChatgptAndClaude } from "./share-context-between-cha
 import { syncAiMemoryAcrossTools } from "./sync-ai-memory-across-tools";
 import { exportChatgptMemory } from "./export-chatgpt-memory";
 // Comparison
-import { creedVsChatgptMemory } from "./creed-vs-chatgpt-memory";
-import { creedVsClaudeMemory } from "./creed-vs-claude-memory";
+import { strapVsChatgptMemory } from "./strap-vs-chatgpt-memory";
+import { strapVsClaudeMemory } from "./strap-vs-claude-memory";
 import { memoryMcpServersCompared } from "./memory-mcp-servers-compared";
-import { creedVsMem0 } from "./creed-vs-mem0";
+import { strapVsMem0 } from "./strap-vs-mem0";
 import { browserExtensionVsMcpContext } from "./browser-extension-vs-mcp-context";
 import { rewindLimitlessAlternatives } from "./rewind-limitless-alternatives";
 // Integration
-import { connectCreedToClaudeCode } from "./connect-creed-to-claude-code";
-import { connectCreedToChatgpt } from "./connect-creed-to-chatgpt";
-import { connectCreedToCursor } from "./connect-creed-to-cursor";
+import { connectStrapToClaudeCode } from "./connect-strap-to-claude-code";
+import { connectStrapToChatgpt } from "./connect-strap-to-chatgpt";
+import { connectStrapToCursor } from "./connect-strap-to-cursor";
 // Company
 import { teamContextFile } from "./team-context-file";
 import { teamClaudeMd } from "./team-claude-md";
@@ -49,15 +49,15 @@ export const learnArticles: Article[] = [
   shareContextBetweenChatgptAndClaude,
   syncAiMemoryAcrossTools,
   exportChatgptMemory,
-  creedVsChatgptMemory,
-  creedVsClaudeMemory,
+  strapVsChatgptMemory,
+  strapVsClaudeMemory,
   memoryMcpServersCompared,
-  creedVsMem0,
+  strapVsMem0,
   browserExtensionVsMcpContext,
   rewindLimitlessAlternatives,
-  connectCreedToClaudeCode,
-  connectCreedToChatgpt,
-  connectCreedToCursor,
+  connectStrapToClaudeCode,
+  connectStrapToChatgpt,
+  connectStrapToCursor,
   teamContextFile,
   teamClaudeMd,
 ];

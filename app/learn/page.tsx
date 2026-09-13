@@ -35,13 +35,13 @@ export default function LearnIndexPage() {
           ])
         )}
       />
-      <div className="min-h-screen bg-[var(--creed-background)] text-[var(--creed-text-primary)]">
+      <div className="min-h-screen bg-[var(--strap-background)] text-[var(--strap-text-primary)]">
         <MarketingHeroBanner configured={isSupabaseConfigured()} scrolled={false} />
 
         <main className="mx-auto max-w-4xl px-6 pb-20 pt-8 md:px-10 md:pb-24 md:pt-10">
-          <header className="border-b border-[var(--creed-border)] pb-8">
+          <header className="border-b border-[var(--strap-border)] pb-8">
             <AnimatedPageTitle text="Learn" />
-            <p className="mt-4 max-w-2xl text-[18px] leading-8 text-[var(--creed-text-secondary)]">
+            <p className="mt-4 max-w-2xl text-[18px] leading-8 text-[var(--strap-text-secondary)]">
               How to keep one context file every AI reads before it answers. The
               category, the common problems, honest comparisons, and how to
               connect your tools.
@@ -51,10 +51,10 @@ export default function LearnIndexPage() {
           <div className="mt-12 flex flex-col gap-14">
             {groups.map((group) => (
               <section key={group.cluster}>
-                <h2 className="text-[22px] font-medium tracking-[-0.01em] text-[var(--creed-text-primary)] md:text-[24px]">
+                <h2 className="text-[22px] font-medium tracking-[-0.01em] text-[var(--strap-text-primary)] md:text-[24px]">
                   {group.title}
                 </h2>
-                <p className="mt-2 text-[15px] text-[var(--creed-text-tertiary)]">
+                <p className="mt-2 text-[15px] text-[var(--strap-text-tertiary)]">
                   {group.blurb}
                 </p>
                 <ul className="mt-6 grid gap-3 sm:grid-cols-2">
@@ -62,12 +62,12 @@ export default function LearnIndexPage() {
                     <li key={article.slug}>
                       <Link
                         href={`/learn/${article.slug}`}
-                        className="flex h-full flex-col rounded-xl bg-[var(--creed-surface)] p-5 transition-colors hover:bg-[var(--creed-surface-raised)]"
+                        className="flex h-full flex-col rounded-xl bg-[var(--strap-surface)] p-5 transition-colors hover:bg-[var(--strap-surface-raised)]"
                       >
-                        <span className="line-clamp-2 text-[16px] font-medium leading-6 text-[var(--creed-text-primary)]">
+                        <span className="line-clamp-2 text-[16px] font-medium leading-6 text-[var(--strap-text-primary)]">
                           {article.title}
                         </span>
-                        <span className="mt-2 line-clamp-3 text-[14px] leading-6 text-[var(--creed-text-secondary)]">
+                        <span className="mt-2 line-clamp-3 text-[14px] leading-6 text-[var(--strap-text-secondary)]">
                           {article.description}
                         </span>
                       </Link>

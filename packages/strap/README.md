@@ -1,6 +1,6 @@
 # Strap CLI
 
-The first-party terminal client for [Strap](https://strap.bvdm.ai). Strap bootstraps agents with context, skills, and secrets through the same OAuth-protected MCP server used by Claude, Codex, ChatGPT, Cursor, and other integrations.
+The first-party terminal client for [Strap](https://strap.bvdm.ai). Strap bootstraps your agents with context, skills, and keys through the same OAuth-protected MCP server used by Claude, Codex, ChatGPT, Cursor, and other integrations.
 
 The CLI discovers tools, resources, and prompts from the live server, so new capabilities appear without a matching CLI release.
 
@@ -27,10 +27,10 @@ strap logout
 strap status
 strap doctor
 strap tools
-strap call read_creed
-strap call creed_search --query "current priorities" --limit 5
+strap call read_strap
+strap call strap_search --query "current priorities" --limit 5
 strap resources
-strap resource creed://profile
+strap resource strap://profile
 strap prompts
 strap prompt introduce-me
 ```
@@ -42,15 +42,15 @@ Run `strap` with no arguments for an interactive terminal that discovers the liv
 Every MCP tool is also available directly by its exact name:
 
 ```bash
-strap creed_get_section --section-id goals
+strap strap_get_section --section-id goals
 ```
 
 For scripts and coding agents, use JSON mode:
 
 ```bash
 strap --agent codex tools --json
-strap --agent codex call creed_search --args '{"query":"pricing","limit":5}' --json
-printf '%s' '{"sectionId":"goals"}' | strap --agent codex call creed_get_section --json
+strap --agent codex call strap_search --args '{"query":"pricing","limit":5}' --json
+printf '%s' '{"sectionId":"goals"}' | strap --agent codex call strap_get_section --json
 ```
 
 JSON is written to stdout and diagnostics are written to stderr. Interactive formatting and ANSI color are disabled outside a terminal. Commands copied from `strap.bvdm.ai/connections` include `--agent` so the dashboard can attribute CLI use. Omit it for unattributed manual use.

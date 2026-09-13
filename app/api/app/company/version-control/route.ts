@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 import { requireApiAuth } from "@/lib/api-auth";
-import { getCreedRole } from "@/lib/creed-membership";
+import { getCreedRole } from "@/lib/strap-membership";
 import { recordAuditEvent } from "@/lib/audit-log";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import type { SupabaseLikeClient } from "@/lib/supabase/types";
 import { readCompanyVersionControl } from "@/lib/company-version-control";
 import { STRAP_FILE_NAME } from "@/lib/profile-file";
+import { readStrapId } from "@/lib/strap-api";
 
-// The company Creed's GitHub sync target (repo/branch). Owner/admin only.
+// The Company Strap's GitHub sync target (repo/branch). Owner/admin only.
 // Pushes run on the team's GitHub connection via /api/app/github/push; this
 // route only persists where the company file syncs to. Changing the repo or
 // branch resets the sync bookkeeping so status is re-derived against the new
@@ -28,13 +29,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
   const b = (body ?? {}) as {
+    strapId?: unknown;
     creedId?: unknown;
     repoOwner?: unknown;
     repoName?: unknown;
     branch?: unknown;
   };
-  if (typeof b.creedId !== "string") {
-    return NextResponse.json({ error: "creedId is required." }, { status: 400 });
+  const strapId = readStrapId(b);
+  if (!strapId) {
+    return NextResponse.json({ error: "strapId is required." }, { status: 400 });
   }
   for (const key of ["repoOwner", "repoName", "branch"] as const) {
     const value = b[key];
@@ -43,17 +46,17 @@ export async function POST(request: Request) {
     }
   }
 
-  const role = await getCreedRole(auth.supabase, auth.user.id, b.creedId);
+  const role = await getCreedRole(auth.supabase, auth.user.id, strapId);
   if (role !== "owner" && role !== "admin") {
     return NextResponse.json({ error: "Only the owner or an admin can configure version control." }, { status: 403 });
   }
 
   const db = admin();
-  const existing = await readCompanyVersionControl(b.creedId);
+  const existing = await readCompanyVersionControl(strapId);
   const now = new Date().toISOString();
   const targetChanged = b.repoOwner !== undefined || b.repoName !== undefined || b.branch !== undefined;
   const row: Record<string, unknown> = {
-    creed_id: b.creedId,
+    creed_id: strapId,
     provider: "github",
     configured_by: auth.user.id,
     path: existing?.path?.trim() || STRAP_FILE_NAME,
@@ -81,7 +84,7 @@ export async function POST(request: Request) {
     userId: auth.user.id,
     action: "company.version_control_updated",
     request,
-    metadata: { creedId: b.creedId, repoOwner: b.repoOwner, repoName: b.repoName, branch: b.branch },
+    metadata: { creedId: strapId, repoOwner: b.repoOwner, repoName: b.repoName, branch: b.branch },
   });
 
   return NextResponse.json({ ok: true });

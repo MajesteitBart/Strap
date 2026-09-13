@@ -4,9 +4,9 @@ import {
   PREFERENCES_SECTION_ID,
   ROUTINES_SECTION_ID,
   WORK_SECTION_ID,
-  type CreedSection,
+  type StrapSection,
   type OnboardingState,
-} from "../creed-data.ts";
+} from "../strap-data.ts";
 import { escapeHtml } from "../rich-text.ts";
 
 // Onboarding compiles three open answers into a deterministic seed: the five
@@ -104,10 +104,10 @@ export function compileOnboardingDraft(
 // ──────────────────────────────────────────────────────────────────
 
 function makeSection(
-  partial: Pick<CreedSection, "id" | "name" | "accent" | "content"> & {
-    template?: CreedSection["template"];
+  partial: Pick<StrapSection, "id" | "name" | "accent" | "content"> & {
+    template?: StrapSection["template"];
   },
-): CreedSection {
+): StrapSection {
   return {
     id: partial.id,
     kind: "rich-text",
@@ -157,7 +157,7 @@ function graphTags(names: string[]) {
 
 export function buildOnboardingPreviewSections(
   draft: OnboardingPreviewDraft,
-): CreedSection[] {
+): StrapSection[] {
   return [
     makeSection({
       id: IDENTITY_SECTION_ID,

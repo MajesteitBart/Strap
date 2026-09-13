@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 import type { RoadmapColumnId } from "@/lib/marketing/roadmap";
 
 // Per-status colour pairs, modelled on the "Connected" badge in settings
-// (components/creed/settings-screen.tsx): a soft tinted fill with a saturated
+// (components/strap/settings-screen.tsx): a soft tinted fill with a saturated
 // label, tuned separately for light and dark so contrast holds in both. Shipped
 // reuses the exact Connected green. Must live under components/ (not lib/) so
 // Tailwind picks up the arbitrary colour classes (globals.css scopes scanning
@@ -13,7 +13,7 @@ export const ROADMAP_STATUS_STYLE: Record<
 > = {
   next: {
     fill: "bg-[#EFF6FF] dark:bg-[#102341]/60",
-    text: "text-[var(--creed-accent-hover)] dark:text-[#60A5FA]",
+    text: "text-[var(--strap-accent-hover)] dark:text-[#60A5FA]",
   },
   in_progress: {
     fill: "bg-[#FFFBEB] dark:bg-[#3a2a12]/50",

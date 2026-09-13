@@ -88,7 +88,7 @@ export function ResetPasswordScreen({ configured = true }: { configured?: boolea
       topRight={
         <Link
           href="/login"
-          className="text-[14px] font-medium text-[var(--creed-text-primary)] transition-colors hover:text-[var(--creed-accent)]"
+          className="text-[14px] font-medium text-[var(--strap-text-primary)] transition-colors hover:text-[var(--strap-accent)]"
         >
           Sign in
         </Link>
@@ -96,7 +96,7 @@ export function ResetPasswordScreen({ configured = true }: { configured?: boolea
     >
       {status === "checking" ? (
         <div className="flex justify-center py-12">
-          <LoaderCircle className="h-5 w-5 animate-spin text-[var(--creed-text-tertiary)]" />
+          <LoaderCircle className="h-5 w-5 animate-spin text-[var(--strap-text-tertiary)]" />
         </div>
       ) : status === "invalid" ? (
         <div className="flex flex-col items-center text-center">
@@ -104,12 +104,12 @@ export function ResetPasswordScreen({ configured = true }: { configured?: boolea
             text="Link expired"
             className="text-[30px] font-medium leading-tight tracking-[-0.02em] md:text-[34px]"
           />
-          <p className="mt-3 text-[15px] leading-relaxed text-[var(--creed-text-secondary)]">
+          <p className="mt-3 text-[15px] leading-relaxed text-[var(--strap-text-secondary)]">
             This password reset link is invalid or has already been used. Request a new one from the sign-in screen.
           </p>
           <Link
             href="/login"
-            className="mt-6 text-[14px] font-medium text-[var(--creed-text-primary)] transition-colors hover:text-[var(--creed-accent)]"
+            className="mt-6 text-[14px] font-medium text-[var(--strap-text-primary)] transition-colors hover:text-[var(--strap-accent)]"
           >
             Back to sign in
           </Link>

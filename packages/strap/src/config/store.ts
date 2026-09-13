@@ -20,7 +20,9 @@ type SettingsFile = {
   server?: string;
 };
 
-const EMPTY_CREDENTIALS: CredentialFile = { version: 1, servers: {} };
+function emptyCredentialFile(): CredentialFile {
+  return { version: 1, servers: {} };
+}
 
 async function readJson<T>(path: string, fallback: T): Promise<T> {
   try {
@@ -59,19 +61,19 @@ export function normalizeServerKey(serverUrl: string): string {
 
 export async function loadCredential(serverUrl: string): Promise<StoredCredential> {
   await assertCredentialPermissions();
-  const file = await readJson(credentialsPath(), EMPTY_CREDENTIALS);
+  const file = await readJson(credentialsPath(), emptyCredentialFile());
   return file.servers[normalizeServerKey(serverUrl)] ?? {};
 }
 
 export async function saveCredential(serverUrl: string, credential: StoredCredential): Promise<void> {
-  const file = await readJson(credentialsPath(), EMPTY_CREDENTIALS);
+  const file = await readJson(credentialsPath(), emptyCredentialFile());
   file.servers[normalizeServerKey(serverUrl)] = credential;
   await writeSecureJson(credentialsPath(), file);
 }
 
 export async function removeCredential(serverUrl: string): Promise<void> {
   const path = credentialsPath();
-  const file = await readJson(path, EMPTY_CREDENTIALS);
+  const file = await readJson(path, emptyCredentialFile());
   delete file.servers[normalizeServerKey(serverUrl)];
   if (Object.keys(file.servers).length === 0) {
     await rm(path, { force: true });

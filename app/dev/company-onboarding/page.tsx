@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { CompanyOnboardingScreen } from "@/components/creed/company-onboarding-screen";
+import { CompanyOnboardingScreen } from "@/components/strap/company-onboarding-screen";
 
 export const dynamic = "force-dynamic";
 
