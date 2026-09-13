@@ -381,38 +381,36 @@
   letter-spacing: 0;
 }
 
-/* Onboarding "Copy prompt" button: smoothly cycles through the brand palette
-   (mono, blue, green, yellow, orange, red, purple). Fixed dark mono + white
-   text so the label stays legible across every colour and both themes. */
+/* Copy-prompt buttons: smoothly cycle through the resource palette (Context
+   blue, Environments green, Skills orange, warning red, Keys purple). Agents
+   yellow is skipped because the label stays white. Reduced motion pins the
+   button to Context blue. */
 .strap-copy-cycle {
   animation: strap-copy-cycle 9s ease-in-out infinite alternate;
 }
 
 @keyframes strap-copy-cycle {
   0% {
-    background-color: #2563eb;
+    background-color: #2547d0;
   }
-  20% {
-    background-color: #059669;
+  25% {
+    background-color: #4f7a0e;
   }
-  40% {
-    background-color: #eab308;
+  50% {
+    background-color: #e86a1c;
   }
-  60% {
-    background-color: #ea580c;
-  }
-  80% {
-    background-color: #dc2626;
+  75% {
+    background-color: #b8321c;
   }
   100% {
-    background-color: #7c3aed;
+    background-color: #7b5ce5;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .strap-copy-cycle {
     animation: none;
-    background-color: #2563eb;
+    background-color: #2547d0;
   }
 }
 
@@ -730,7 +728,7 @@
 }
 
 .ProseMirror a {
-  color: var(--section-accent, #2563eb);
+  color: var(--section-accent, #2547d0);
   cursor: text;
   font-weight: 500;
   text-decoration: none;
@@ -766,7 +764,7 @@
   font-size: 0.92em;
   font-weight: 500;
   background: var(--section-accent-tint, rgba(37, 99, 235, 0.08));
-  color: var(--section-accent-bar, #2563eb);
+  color: var(--section-accent-bar, #2547d0);
   white-space: nowrap;
   text-decoration: none;
   vertical-align: baseline;

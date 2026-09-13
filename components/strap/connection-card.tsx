@@ -357,7 +357,7 @@ export function ConnectionCard({
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align="end"
-              className="border-[var(--strap-border)] bg-[var(--strap-surface)]"
+              className="border-[var(--strap-frame)] bg-[var(--strap-surface)]"
             >
               {AGENT_OPEN_URLS[connection.id] ? (
                 <AnimatedMenuIconItem
@@ -454,7 +454,7 @@ export function ConnectionCard({
 
       {onRevoke ? (
         <Dialog open={revokeOpen} onOpenChange={setRevokeOpen}>
-          <DialogContent className="rounded-[var(--radius-xl)] border-[var(--strap-border)] bg-[var(--strap-surface)]">
+          <DialogContent className="rounded-[var(--radius-xl)] border-[var(--strap-frame)] bg-[var(--strap-surface)]">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-3">
                 <AlertTriangle className="h-5 w-5 text-[var(--strap-danger)]" />

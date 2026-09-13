@@ -2474,7 +2474,7 @@ export function FileScreen() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent
                           align="end"
-                          className="border-[var(--strap-border)] bg-[var(--strap-surface)]"
+                          className="border-[var(--strap-frame)] bg-[var(--strap-surface)]"
                         >
                           <AnimatedMenuIconItem
                             icon={CloudUploadIcon}
@@ -2657,7 +2657,7 @@ export function FileScreen() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent
                         align="end"
-                        className="border-[var(--strap-border)] bg-[var(--strap-surface)]"
+                        className="border-[var(--strap-frame)] bg-[var(--strap-surface)]"
                       >
                         <AnimatedMenuIconItem
                           icon={FolderUpIcon}
@@ -3102,7 +3102,7 @@ export function FileScreen() {
       <StrapFindReplace scrollRef={editorScrollRef} />
 
       <Dialog open={pushDialogOpen} onOpenChange={setPushDialogOpen}>
-        <DialogContent className="rounded-[var(--radius-xl)] border-[var(--strap-border)] bg-[var(--strap-surface)]">
+        <DialogContent className="rounded-[var(--radius-xl)] border-[var(--strap-frame)] bg-[var(--strap-surface)]">
           <DialogHeader>
             <DialogTitle>Push Strap</DialogTitle>
             <DialogDescription>
@@ -3171,7 +3171,7 @@ export function FileScreen() {
       </Dialog>
 
       <Dialog open={pullDialogOpen} onOpenChange={setPullDialogOpen}>
-        <DialogContent className="rounded-[var(--radius-xl)] border-[var(--strap-border)] bg-[var(--strap-surface)]">
+        <DialogContent className="rounded-[var(--radius-xl)] border-[var(--strap-frame)] bg-[var(--strap-surface)]">
           <DialogHeader>
             <DialogTitle>Pull from GitHub</DialogTitle>
             <DialogDescription>
@@ -3244,7 +3244,7 @@ export function FileScreen() {
         open={Boolean(renameSectionState)}
         onOpenChange={(open) => !open && setRenameSectionState(null)}
       >
-        <DialogContent className="rounded-[var(--radius-xl)] border-[var(--strap-border)] bg-[var(--strap-surface)]">
+        <DialogContent className="rounded-[var(--radius-xl)] border-[var(--strap-frame)] bg-[var(--strap-surface)]">
           <DialogHeader>
             <DialogTitle>Rename section</DialogTitle>
             <DialogDescription>
@@ -3294,7 +3294,7 @@ export function FileScreen() {
         open={Boolean(deleteSectionState)}
         onOpenChange={(open) => !open && setDeleteSectionState(null)}
       >
-        <DialogContent className="rounded-[var(--radius-xl)] border-[var(--strap-border)] bg-[var(--strap-surface)]">
+        <DialogContent className="rounded-[var(--radius-xl)] border-[var(--strap-frame)] bg-[var(--strap-surface)]">
           <DialogHeader>
             <DialogTitle>Delete section</DialogTitle>
             <DialogDescription>
@@ -3326,7 +3326,7 @@ export function FileScreen() {
       </Dialog>
 
       <Dialog open={deleteFileOpen} onOpenChange={setDeleteFileOpen}>
-        <DialogContent className="rounded-[var(--radius-xl)] border-[var(--strap-border)] bg-[var(--strap-surface)]">
+        <DialogContent className="rounded-[var(--radius-xl)] border-[var(--strap-frame)] bg-[var(--strap-surface)]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-3">
               <AlertTriangle className="h-5 w-5 text-[var(--strap-danger)]" />
@@ -3359,7 +3359,7 @@ export function FileScreen() {
       </Dialog>
 
       <Dialog open={archiveAllOpen} onOpenChange={setArchiveAllOpen}>
-        <DialogContent className="rounded-[var(--radius-xl)] border-[var(--strap-border)] bg-[var(--strap-surface)]">
+        <DialogContent className="rounded-[var(--radius-xl)] border-[var(--strap-frame)] bg-[var(--strap-surface)]">
           <DialogHeader>
             <DialogTitle>Archive all sections</DialogTitle>
             <DialogDescription>
@@ -3794,7 +3794,7 @@ function SectionCard({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   align="end"
-                  className="border-[var(--strap-border)] bg-[var(--strap-surface)]"
+                  className="border-[var(--strap-frame)] bg-[var(--strap-surface)]"
                 >
                   <AnimatedMenuIconItem
                     icon={SquarePenIcon}
@@ -3838,7 +3838,7 @@ function SectionCard({
                         // between trigger row and picker doesn't dismiss it.
                         sideOffset={14}
                         alignOffset={0}
-                        className="relative w-auto border-[var(--strap-border)] bg-[var(--strap-surface)] p-2 before:pointer-events-auto before:absolute before:-left-4 before:top-0 before:bottom-0 before:w-4 before:content-['']"
+                        className="relative w-auto border-[var(--strap-frame)] bg-[var(--strap-surface)] p-2 before:pointer-events-auto before:absolute before:-left-4 before:top-0 before:bottom-0 before:w-4 before:content-['']"
                       >
                         <div className="grid grid-cols-4 gap-1.5">
                           {VISIBLE_ACCENT_KEYS.map((accentKey) => {

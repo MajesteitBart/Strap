@@ -644,7 +644,7 @@ export function StrapShell({
                 <DropdownMenuContent
                   align="start"
                   className={cn(
-                    "border-[var(--strap-border)] bg-[var(--strap-surface)]",
+                    "border-[var(--strap-frame)] bg-[var(--strap-surface)]",
                     // Collapsed rail: the trigger is a 40px square, so the
                     // trigger-width menu would be unusably narrow.
                     collapsed ? "w-48" : "w-(--radix-dropdown-menu-trigger-width)"

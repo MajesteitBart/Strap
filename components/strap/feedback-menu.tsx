@@ -157,7 +157,7 @@ export function FeedbackMenuItem() {
           sideOffset={14}
           alignOffset={0}
           className={cn(
-            "relative w-[min(240px,calc(100vw-2.5rem))] border-[var(--strap-border)] bg-[var(--strap-surface)] p-0 md:w-[384px]",
+            "relative w-[min(240px,calc(100vw-2.5rem))] border-[var(--strap-frame)] bg-[var(--strap-surface)] p-0 md:w-[384px]",
             // Bridging pseudo spans the sideOffset gap so the cursor can
             // travel from the row into the panel without dismissing it.
             "before:pointer-events-auto before:absolute before:-left-4 before:top-0 before:bottom-0 before:w-4 before:content-['']"

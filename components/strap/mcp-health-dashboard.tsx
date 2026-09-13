@@ -878,7 +878,7 @@ export function Dropdown({
       <DropdownMenuContent
         align={align ?? (iconSide === "right" ? "end" : "start")}
         className={cn(
-          "space-y-1 border-[var(--strap-border)] bg-[var(--strap-surface)] p-1.5",
+          "space-y-1 border-[var(--strap-frame)] bg-[var(--strap-surface)] p-1.5",
           menuWidthClass,
         )}
       >

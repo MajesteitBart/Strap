@@ -173,7 +173,7 @@ export function StrapSwitcher() {
         </DropdownMenuTrigger>
         <ShortcutKey className="hidden md:inline-flex">C</ShortcutKey>
       </div>
-      <DropdownMenuContent align="start" className="min-w-[264px] border-[var(--strap-border)] bg-[var(--strap-surface)] p-1.5">
+      <DropdownMenuContent align="start" className="min-w-[264px] border-[var(--strap-frame)] bg-[var(--strap-surface)] p-1.5">
         {creeds.map((creed) => {
           const label = creed.type === "personal" ? state.user.name : creed.name;
           const isActive = creed.id === shownActiveId;

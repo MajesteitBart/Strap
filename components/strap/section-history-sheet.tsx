@@ -123,7 +123,7 @@ export function SectionHistorySheet({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[80vh] overflow-hidden rounded-[var(--radius-xl)] border-[var(--strap-border)] bg-[var(--strap-surface)]">
+      <DialogContent className="max-h-[80vh] overflow-hidden rounded-[var(--radius-xl)] border-[var(--strap-frame)] bg-[var(--strap-surface)]">
         <DialogHeader>
           <DialogTitle>History</DialogTitle>
           <DialogDescription>{`Versions of ${sectionName}, newest first.`}</DialogDescription>

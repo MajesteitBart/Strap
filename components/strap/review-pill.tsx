@@ -226,7 +226,7 @@ export function ReviewPill({
           // upward, bridging the visible gap to the trigger pill. Same idea
           // on the right side so the cursor can pass through to the
           // side-popping per-section submenu without triggering close.
-          className="relative w-[min(100vw-48px,300px)] border-[var(--strap-border)] bg-[var(--strap-surface)] p-1 before:pointer-events-auto before:absolute before:-top-5 before:left-0 before:right-0 before:h-5 before:content-[''] md:w-[280px]"
+          className="relative w-[min(100vw-48px,300px)] border-[var(--strap-frame)] bg-[var(--strap-surface)] p-1 before:pointer-events-auto before:absolute before:-top-5 before:left-0 before:right-0 before:h-5 before:content-[''] md:w-[280px]"
           onMouseEnter={isMobile ? undefined : cancelClose}
           onMouseLeave={isMobile ? undefined : scheduleClose}
           onCloseAutoFocus={(event) => {
@@ -296,7 +296,7 @@ export function ReviewPill({
                     // Pseudo-element bridges the 12px sideOffset gap so the
                     // cursor can travel from the row in the parent dropdown
                     // into this side panel without triggering close.
-                    className="relative w-[320px] border-[var(--strap-border)] bg-[var(--strap-surface)] p-0 before:pointer-events-auto before:absolute before:-left-4 before:top-0 before:bottom-0 before:w-4 before:content-['']"
+                    className="relative w-[320px] border-[var(--strap-frame)] bg-[var(--strap-surface)] p-0 before:pointer-events-auto before:absolute before:-left-4 before:top-0 before:bottom-0 before:w-4 before:content-['']"
                     onMouseEnter={isMobile ? undefined : cancelClose}
                     onMouseLeave={isMobile ? undefined : scheduleClose}
                   >

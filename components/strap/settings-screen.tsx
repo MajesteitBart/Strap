@@ -972,7 +972,7 @@ function PersonalSettingsScreen() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   align="end"
-                  className="min-w-32 space-y-1 border-[var(--strap-border)] bg-[var(--strap-surface)] p-1.5"
+                  className="min-w-32 space-y-1 border-[var(--strap-frame)] bg-[var(--strap-surface)] p-1.5"
                 >
                   {(["credits", "byok"] as AiMode[]).map((mode) => (
                     <DropdownMenuItem
@@ -1399,7 +1399,7 @@ function PersonalSettingsScreen() {
       </div>
 
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-        <DialogContent className="rounded-[var(--radius-xl)] border-[var(--strap-border)] bg-[var(--strap-surface)]">
+        <DialogContent className="rounded-[var(--radius-xl)] border-[var(--strap-frame)] bg-[var(--strap-surface)]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-3">
               <AlertTriangle className="h-5 w-5 text-[var(--strap-danger)]" />
@@ -1437,7 +1437,7 @@ function PersonalSettingsScreen() {
           if (!open) setArchivedDeleteTarget(null);
         }}
       >
-        <DialogContent className="rounded-[var(--radius-xl)] border-[var(--strap-border)] bg-[var(--strap-surface)]">
+        <DialogContent className="rounded-[var(--radius-xl)] border-[var(--strap-frame)] bg-[var(--strap-surface)]">
           <DialogHeader>
             <DialogTitle>Delete archived section</DialogTitle>
             <DialogDescription>
@@ -1667,7 +1667,7 @@ export function UsageCard({
           </DropdownMenuTrigger>
           <DropdownMenuContent
             align="end"
-            className="min-w-24 space-y-1 border-[var(--strap-border)] bg-[var(--strap-surface)] p-1.5"
+            className="min-w-24 space-y-1 border-[var(--strap-frame)] bg-[var(--strap-surface)] p-1.5"
           >
             {(["7d", "30d", "90d"] as AiUsageRange[]).map((item) => (
               <DropdownMenuItem

@@ -66,7 +66,7 @@ export function SelectMenu<T extends string>({
         align={align}
         // Size to content (so short labels like "Member" never truncate), but
         // never narrower than the trigger and never wider than a sensible cap.
-        className="w-auto min-w-[max(var(--radix-dropdown-menu-trigger-width),9rem)] max-w-[min(24rem,90vw)] border-[var(--strap-border)] bg-[var(--strap-surface)]"
+        className="w-auto min-w-[max(var(--radix-dropdown-menu-trigger-width),9rem)] max-w-[min(24rem,90vw)] border-[var(--strap-frame)] bg-[var(--strap-surface)]"
       >
         {options.map((option) => (
           <DropdownMenuItem
