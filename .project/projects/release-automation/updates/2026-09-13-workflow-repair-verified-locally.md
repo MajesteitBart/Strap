@@ -16,6 +16,7 @@ stream: WS-A
 
 ## In Progress
 - Live verification: the first run authenticated but failed output reservation. The capped retry (34750549341) confirmed the account could not fund the prompt. Safe credit metadata showed no paid balance. NVIDIA's free route returned an upstream overload; a minimal tool-call smoke passed for `nex-agi/nex-n2.5-pro:free`, which is now configured. No credit limits or paid balances were changed.
+- The first full free-model run (34750892403) reached the initial 20-minute job limit without a provider error or final output. A subsequent minimal tool-call request still passed. Generation now has a 40-minute step budget inside a 45-minute job and emits changed-path progress every 30 seconds, while preserving the generator's exit status.
 - Pull-request CI and final-head Codex review.
 
 ## Blockers

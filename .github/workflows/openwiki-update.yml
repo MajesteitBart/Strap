@@ -17,7 +17,7 @@ concurrency:
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 45
     steps:
       - name: Check out repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -42,7 +42,17 @@ jobs:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
 
       - name: Run OpenWiki
-        run: openwiki code --update --print
+        timeout-minutes: 40
+        run: |
+          openwiki code --update --print &
+          wiki_pid=$!
+          trap 'kill "$wiki_pid" 2>/dev/null || true' EXIT
+          while kill -0 "$wiki_pid" 2>/dev/null; do
+            sleep 30
+            echo "OpenWiki generation is running; current changed wiki paths:"
+            git status --short -- openwiki
+          done
+          wait "$wiki_pid"
         env:
           OPENWIKI_PROVIDER: openrouter
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
