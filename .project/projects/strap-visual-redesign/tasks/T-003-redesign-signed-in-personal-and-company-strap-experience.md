@@ -1,20 +1,20 @@
 ---
 id: T-003
 name: Redesign signed-in Personal and Company Strap experience
-status: planned
+status: done
 workstream: WS-C
 created: 2026-07-24T21:18:47Z
-updated: 2026-07-24T21:18:47Z
-linear_issue_id:
-github_issue:
-github_pr:
+updated: 2026-09-13T10:29:13Z
+linear_issue_id: 
+github_issue: 
+github_pr: 
 depends_on: []
 conflicts_with: [components/strap, app/(strap-app), app/globals.css]
 parallel: true
 priority: high
 estimate: XL
 operating_mode: multi-stream
-story_id:
+story_id: 
 acceptance_criteria_ids: []
 ---
 
@@ -41,4 +41,8 @@ Apply the approved Strap visual language to the shell, editor, connections, keys
 - [ ] Docs updated
 
 ## Evidence Log
+
+- 2026-09-13T10:29:13Z: Commits 31ead13, a98206c, and the review fix commit: paper sidebar with frame line and focus rings, tinted active rows, square swatches, 194 status hexes mapped to tokens with dark twins, semibold display headings, snapped radii, framed overlays, resource-palette copy cycle, adaptive brand in dark mode. Captured file, connections, vault, settings, onboarding, device, command panel, mobile file, settings, and vault, dark mode, and Company mode via the cookie-only switcher; no pending boundaries, overflow, or console errors.
+
+- 2026-09-13T09:56:18Z: Approved worktable direction; signed-in shell and product surfaces.
 - 2026-07-24T21:18:47Z: Created from .project/templates/task.md by `delano task add`.

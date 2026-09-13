@@ -11,7 +11,7 @@
 - A 2026-07-24 follow-up inventory found substantial rebrand drift that the original narrow brand gate did not cover. The review spans visible copy, design language, active documentation, generated docs, CLI attribution, agent protocols, schema defaults, tests, internal paths, compatibility contracts, and historical delivery truth.
 - The rename-first follow-up now makes Strap canonical across active product, public website, CLI, MCP and HTTP discovery, package metadata, source modules, route/component paths, repository guidance, OpenWiki, tests, assets, configuration, and new persisted defaults. Retained Creed identifiers are explicit compatibility or immutable historical contracts.
 - The GitHub repository is now `MajesteitBart/Strap`; the rename-first tree is published in `main` history as `c92006069bea3beaece280e6c69e51918ca7e40d`, the canonical and redirected remotes resolve to the same current descendant, and local `origin` uses the Strap URL.
-- Visual redesign beyond the rename is intentionally deferred to the planned `.project/projects/strap-visual-redesign/` contract.
+- The `strap-visual-redesign` contract applied the approved worktable system to every remaining surface on 2026-09-13: shared tokens with a warm dark twin, typography, radii, and primitives; the inner public pages; authentication, consent, device, invite, backend setup, and transactional email; and the signed-in shell plus status colours across the product UI. Behaviour, permissions, persistence, agent contracts, and compatibility identifiers are unchanged.
 - `strap.bvdm.ai` is live as an unproxied Cloudflare CNAME to the existing Netlify production site. Netlify serves it as a verified domain alias with Strap's production build and canonical metadata.
 - The earlier `headless-access-secret-vault` project delivered scoped API keys, OAuth device authorization, Supabase Vault-backed secret storage, and the reviewed Strap CLI package workstream. Its remediation record covers the safe pack command, OAuth credential lifecycle, output and exit-code contracts, external install smoke, and publication guard.
 
@@ -35,7 +35,7 @@
 
 ## What Is Next
 
-- Start `.project/projects/strap-visual-redesign/` only after the user approves a visual direction and rollout priority.
+- Review the visual redesign branch `feature/strap-visual-redesign` in a painted browser for screenshot-level sign-off; the delegate preview could only verify structure, computed styles, and responsive layout through DOM evaluation.
 - Continue serving the `creed.md` compatibility origin during the migration window.
 
 ## Remaining Risks

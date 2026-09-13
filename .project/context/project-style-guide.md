@@ -11,12 +11,13 @@
 - No em dashes in product copy. Documentation may quote established source wording but should prefer plain punctuation.
 - Update context only for durable facts; use task evidence and updates for transient execution detail.
 
-## Public Visual Language
-- Treat `/home` as the approved reference for the current Strap public-site redesign.
-- Use a warm paper background, flat white surfaces, crisp one-pixel dark borders, square geometry, display typography for hierarchy, and monospace labels for operational detail.
-- Keep the resource colour mapping stable: Context blue, Skills orange, Keys purple, Environments green, and Agents yellow.
-- Reuse `components/marketing/strap-site-shell.tsx` for the worktable navigation and footer. The docs route uses this system; remaining inner marketing routes are still separate redesign work.
-- Keep interaction feedback fast and restrained. Prefer colour, opacity, and small press transforms, respect reduced motion, and avoid decorative motion in frequently used documentation navigation.
+## Strap Visual Language
+- The worktable system approved on `/home` and `/docs` now applies to every surface: public pages, authentication, OAuth consent, device authorization, invitations, transactional email, and the signed-in Personal and Company product.
+- Use a warm paper background, flat white surfaces, crisp one-pixel dark frames, near-square geometry (2 to 6px radii), Bricolage Grotesque display headings, Inter body text, and JetBrains Mono operational labels.
+- Keep the resource colour mapping stable: Context blue, Skills orange, Keys purple, Environments green, and Agents yellow. Status colours derive from the same palette: success from Environments, caution from Agents, danger from the warning red, information from Context.
+- Tokens live at the root of `app/globals.css` with a warm dark twin under `.dark`; the public site stays light-only by re-asserting its palette under `.strap-site`. Use `--strap-frame` for primary container lines and the `--strap-*` status tokens instead of hardcoded hex values.
+- Public pages compose `components/marketing/strap-site-shell.tsx` (navigation with mobile menu, column footer, server-safe header, page hero) and the primitives in `app/strap-public.css` (cells, cards, tables, prose, FAQ, timeline, plans, forms, auth, consent, empty states). Consent-style pages use `components/strap/consent-shell.tsx`.
+- Keep interaction feedback fast and restrained. Prefer colour, opacity, and small press transforms, keep every transition inside a `prefers-reduced-motion` guard, and avoid decorative motion in frequently used navigation.
 
 ## Review Expectations
 - Read the complete local flow around changed code, including callers, persistence, authorization, and tests.

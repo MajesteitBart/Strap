@@ -1,20 +1,20 @@
 ---
 id: T-001
 name: Redesign public website and documentation surfaces
-status: planned
+status: done
 workstream: WS-A
 created: 2026-07-24T21:18:46Z
-updated: 2026-07-24T21:18:46Z
-linear_issue_id:
-github_issue:
-github_pr:
+updated: 2026-09-13T10:29:12Z
+linear_issue_id: 
+github_issue: 
+github_pr: 
 depends_on: []
 conflicts_with: [components/marketing, app/public-routes, app/globals.css]
 parallel: true
 priority: high
 estimate: XL
 operating_mode: multi-stream
-story_id:
+story_id: 
 acceptance_criteria_ids: []
 ---
 
@@ -41,4 +41,8 @@ Apply the approved Strap visual language to the inner site shell, docs, pricing,
 - [ ] Docs updated
 
 ## Evidence Log
+
+- 2026-09-13T10:29:12Z: Commit 2c1712b plus fixes: every inner public page, 404, and error state composes the shared shell, hero, and primitives; legacy chrome and backdrops removed. Headless Chrome evidence at 1440 and 390 for all public routes, open mobile menu, keyboard focus with a 2px ink outline, Escape returning focus to the toggle, reduced-motion emulation; no overflow, no console errors. Screenshots in the main checkout .agents/logs/redesign-shots/ directory.
+
+- 2026-09-13T09:56:17Z: Approved worktable direction; rebuilding inner public pages on the shared shell.
 - 2026-07-24T21:18:46Z: Created from .project/templates/task.md by `delano task add`.
