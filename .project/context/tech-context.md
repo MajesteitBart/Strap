@@ -1,7 +1,7 @@
 # Tech Context
 
 ## Stack
-- Next.js 16.2.11 App Router, React 19, and strict TypeScript. Development uses Turbopack; production builds use Webpack so Netlify can package the generated middleware runtime reliably.
+- Next.js 16.3.5 App Router, React 19, and strict TypeScript. Development uses Turbopack; production builds use Webpack so Netlify can package the generated middleware runtime reliably. Matching Next tooling and compatible editor/transport dependency fixes remove the advisories reported on 2026-09-13.
 - Tailwind CSS v4, shadcn-style primitives, Tiptap, Framer Motion and `motion/react`.
 - Supabase Auth and Postgres with RLS, Vault, realtime, migrations, and scheduled retention.
 - Node 20+ application and `node:test` test suite; the new `@bvdm/strap` CLI lives in `packages/strap/`, while `packages/creed-cli/` remains the legacy package.
