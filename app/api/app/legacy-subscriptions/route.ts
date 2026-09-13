@@ -4,7 +4,7 @@ import { NO_STORE_HEADERS } from "@/lib/http-headers";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import type { SupabaseLikeClient } from "@/lib/supabase/types";
 import { recordAuditEvent } from "@/lib/audit-log";
-import { isOngoingSubscription, parseSubscriptionTarget, readLegacySubscriptions, requestLegacySubscription, type LegacySubscription, type LegacySubscriptionFailure } from "@/lib/legacy-subscriptions";
+import { cancelLegacySubscription, isOngoingSubscription, parseSubscriptionTarget, readLegacySubscriptions, type LegacySubscription, type LegacySubscriptionFailure } from "@/lib/legacy-subscriptions";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -79,12 +79,15 @@ export async function DELETE(request: Request) {
   const secret = process.env.STRIPE_SECRET_KEY?.trim();
   if (!secret) return errorResponse("Legacy subscription cancellation is not configured. Contact support.", 503);
 
-  if (target.scope === "company") {
+  const verifyOwnership = async () => {
+    if (target.scope === "personal") return null;
     const owner = await auth.supabase.from("creeds").select("id")
       .eq("id", target.strapId).eq("type", "company").eq("owner_user_id", auth.user.id).maybeSingle();
-    if (owner.error) return errorResponse("Could not verify subscription ownership.", 500);
-    if (!owner.data) return errorResponse("No legacy subscription found.", 404);
-  }
+    if (owner.error) return { error: "Could not verify subscription ownership.", status: 500 };
+    return owner.data ? null : { error: "No legacy subscription found.", status: 404 };
+  };
+  const denied = await verifyOwnership();
+  if (denied) return errorResponse(denied.error, denied.status);
   const result = target.scope === "personal"
     ? await auth.supabase.from("creed_entitlements").select("stripe_subscription_id,billing_mode")
         .eq("user_id", auth.user.id).maybeSingle()
@@ -99,11 +102,11 @@ export async function DELETE(request: Request) {
     return errorResponse("No legacy subscription found.", 404);
   }
   try {
-    const current = await requestLegacySubscription({ subscriptionId, secret });
-    // Repeated requests and already-ended subscriptions do not restart billing.
-    const subscription = isOngoingSubscription(current.status) && !current.cancelAtPeriodEnd
-      ? await requestLegacySubscription({ subscriptionId, secret, cancel: true })
-      : current;
+    // Ownership may change while Stripe is responding. Recheck the canonical
+    // Company owner immediately before provider cancellation and local writes.
+    const cancellation = await cancelLegacySubscription({ subscriptionId, secret, revalidate: verifyOwnership });
+    if ("error" in cancellation) return errorResponse(cancellation.error, cancellation.status);
+    const { subscription } = cancellation;
     const admin = getSupabaseAdminClient() as unknown as SupabaseLikeClient;
     const patch = {
       ...(!isOngoingSubscription(subscription.status) ? { status: "canceled" } : {}),

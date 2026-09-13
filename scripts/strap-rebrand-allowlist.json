@@ -1913,7 +1913,7 @@
       "file": "app/api/app/legacy-subscriptions/route.ts",
       "kind": "content",
       "occurrences": 15,
-      "fingerprint": "76c0c8969b2a95c4a8709ae3542c767d0fcf29d415436f831bf8edbe3228f023",
+      "fingerprint": "59fd7aa855f70b5eb268cb3562fa391ad81a48855d501a4f01e0fdc87273bf71",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -2903,7 +2903,7 @@
       "file": "lib/legacy-subscriptions.ts",
       "kind": "content",
       "occurrences": 1,
-      "fingerprint": "262149a65ff1d1160221c1819aca0bc64e09ffe53362427eb2c0555fdea1c64e",
+      "fingerprint": "4b2712eb848d2fdfd29b18d83969ebaa2af5bc7f47f42535ec96ed6d0dd9e5e1",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."

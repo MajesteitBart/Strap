@@ -1,6 +1,6 @@
 import { strict as assert } from "node:assert";
 import { test } from "node:test";
-import { isOngoingSubscription, legacyDeletionBlocker, parseSubscriptionTarget, readLegacySubscriptions, requestLegacySubscription } from "../lib/legacy-subscriptions.ts";
+import { cancelLegacySubscription, isOngoingSubscription, legacyDeletionBlocker, parseSubscriptionTarget, readLegacySubscriptions, requestLegacySubscription } from "../lib/legacy-subscriptions.ts";
 
 const subscription = {
   id: "sub_fixture", status: "active", cancel_at_period_end: false,
@@ -53,6 +53,42 @@ test("invalid or unconfirmed Stripe responses cannot report cancellation success
   for (const payload of [null, {}, subscription, { ...subscription, id: "sub_someone_else", cancel_at_period_end: true }]) {
     await assert.rejects(requestLegacySubscription({ subscriptionId: "sub_fixture", secret: "test-secret", cancel: true,
       fetcher: async () => Response.json(payload) }));
+  }
+});
+
+test("cancellation rejects revoked ownership or failed revalidation after the Stripe read", async () => {
+  for (const denied of [{ error: "Owner changed", status: 404 }, { error: "Ownership lookup failed", status: 500 }]) {
+    const events: string[] = [];
+    let owner = "original-owner";
+    const result = await cancelLegacySubscription({ subscriptionId: "sub_fixture", secret: "test-secret",
+      fetcher: async (_url, init) => {
+        events.push(init?.method ?? "GET");
+        owner = "new-owner";
+        return Response.json(subscription);
+      },
+      revalidate: async () => {
+        events.push("revalidate");
+        assert.equal(owner, "new-owner");
+        return denied;
+      } });
+    assert.deepEqual(result, denied);
+    assert.deepEqual(events, ["GET", "revalidate"]);
+  }
+});
+
+test("authorized cancellation rechecks before mutation and preserves repeated-request behavior", async () => {
+  for (const current of [subscription, { ...subscription, cancel_at_period_end: true }, { ...subscription, status: "canceled" }]) {
+    const events: string[] = [];
+    const result = await cancelLegacySubscription({ subscriptionId: "sub_fixture", secret: "test-secret",
+      fetcher: async (_url, init) => {
+        events.push(init?.method ?? "GET");
+        return Response.json(init?.method === "POST" ? { ...current, cancel_at_period_end: true } : current);
+      },
+      revalidate: async () => { events.push("revalidate"); return null; } });
+    assert.ok("subscription" in result);
+    const needsCancellation = current.status === "active" && !current.cancel_at_period_end;
+    assert.deepEqual(events, needsCancellation ? ["GET", "revalidate", "POST"] : ["GET", "revalidate"]);
+    assert.ok(result.subscription.cancelAtPeriodEnd || result.subscription.status === "canceled");
   }
 });
 

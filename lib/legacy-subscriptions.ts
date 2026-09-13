@@ -12,6 +12,8 @@ export type LegacySubscriptionFailure = Pick<LegacySubscription, "scope" | "stra
   requiresSupport?: boolean;
 };
 
+type LegacySubscriptionState = Pick<LegacySubscription, "status" | "currentPeriodEnd" | "cancelAtPeriodEnd">;
+
 export function isOngoingSubscription(status: string): boolean {
   return !["canceled", "incomplete_expired"].includes(status);
 }
@@ -43,7 +45,7 @@ export async function requestLegacySubscription({
   secret: string;
   cancel?: boolean;
   fetcher?: typeof fetch;
-}): Promise<Pick<LegacySubscription, "status" | "currentPeriodEnd" | "cancelAtPeriodEnd">> {
+}): Promise<LegacySubscriptionState> {
   const response = await fetcher(
     `https://api.stripe.com/v1/subscriptions/${encodeURIComponent(subscriptionId)}`,
     {
@@ -81,6 +83,22 @@ export async function requestLegacySubscription({
     cancelAtPeriodEnd: payload.cancel_at_period_end,
     currentPeriodEnd: end && Number.isFinite(end.getTime()) ? end.toISOString() : null,
   };
+}
+
+/** Refresh authorization after the provider read, before any cancellation or local write. */
+export async function cancelLegacySubscription({ subscriptionId, secret, revalidate, fetcher }: {
+  subscriptionId: string;
+  secret: string;
+  revalidate: () => Promise<{ error: string; status: number } | null>;
+  fetcher?: typeof fetch;
+}): Promise<{ subscription: LegacySubscriptionState } | { error: string; status: number }> {
+  const current = await requestLegacySubscription({ subscriptionId, secret, fetcher });
+  const denied = await revalidate();
+  if (denied) return denied;
+  const subscription = isOngoingSubscription(current.status) && !current.cancelAtPeriodEnd
+    ? await requestLegacySubscription({ subscriptionId, secret, cancel: true, fetcher })
+    : current;
+  return { subscription };
 }
 
 /** A provider failure for one profile must not hide another profile's subscription. */

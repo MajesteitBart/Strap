@@ -61,7 +61,7 @@ test("company provisioning collapses concurrent owner inserts", () => {
 });
 
 test("legacy Stripe subscribers retain a self-service cancellation path", () => {
-  assert.match(legacySubscriptionRoute, /requestLegacySubscription\(\{ subscriptionId, secret, cancel: true \}\)/);
+  assert.match(legacySubscriptionRoute, /cancelLegacySubscription\(\{ subscriptionId, secret, revalidate: verifyOwnership \}\)/);
   assert.match(legacySubscriptionRoute, /STRIPE_SECRET_KEY/);
   assert.match(legacySubscriptionRoute, /owner_user_id.*auth\.user\.id/);
 });
