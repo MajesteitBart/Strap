@@ -34,6 +34,8 @@ The resource model extends beyond context:
 
 Personal Strap is the core one-user product. Company Strap applies the same model to a governed workspace with roles, per-section permissions, attribution, and invites.
 
+Strap is built on [Creed](https://creed.md), the foundation for its curated personal context model and collaboration with connected agents.
+
 ## Current capabilities
 
 - `/file` keeps Personal and Company profiles compact, reviewable, permission-aware, and exportable as Markdown.

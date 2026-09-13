@@ -1597,11 +1597,11 @@
     {
       "file": "README.md",
       "kind": "content",
-      "occurrences": 14,
-      "fingerprint": "d670e58c3c8e65da7e8c4255a4c0d4c488d731b95b79235090d2eadc2c659ea6",
+      "occurrences": 16,
+      "fingerprint": "7b651e767548fd6d01b428a86e61423aa97fbad21661251e69e9f8c1a418fd51",
       "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+      "category": "project-origins-and-compatibility",
+      "rationale": "User-requested acknowledgment of Creed as Strap's foundation, alongside documented legacy protocol, configuration, package, and file compatibility."
     },
     {
       "file": "SECURITY.md",
