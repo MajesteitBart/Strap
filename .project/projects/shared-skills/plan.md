@@ -1,9 +1,9 @@
 ---
 name: Shared skills
-status: active
+status: done
 lead: MajesteitBart
 created: 2026-09-13T13:38:18Z
-updated: 2026-09-13T13:38:19Z
+updated: 2026-09-13T16:27:12Z
 linear_project_id:
 risk_level: high
 spec_status_at_plan_time: planned

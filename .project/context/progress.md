@@ -24,7 +24,7 @@
 - Fable approved the plan after compatibility blockers were resolved and later passed the grounded agent-contract review.
 - The latest redesign suite passes 187/187 tests, strict TypeScript and ESLint pass, and the production build succeeds with 102 generated routes.
 - After integration with the release checks, the exact rebrand audit covers 1,102 tracked repository files and classifies 4,766 remaining case-insensitive Creed occurrences across 437 files and 65 Creed-named paths through 502 reviewed history or compatibility entries.
-- `@bvdm/strap@0.1.1` passes typecheck and 30 tests. The legacy CLI passes typecheck and 20 compatibility tests. The 51-file Strap tarball installs cleanly, returns Strap help and version `0.1.1`, and is published to npm as the public `latest` release.
+- The earlier `@bvdm/strap@0.1.1` release passed typecheck and 30 tests; the legacy CLI passed 20 compatibility tests. Its 51-file tarball was published and verified before the shared-skills release below.
 - A bounded, grounded Fable release review passed with no blockers. Its three actionable non-blocking findings were resolved in the same pass.
 - Cloudflare API and public DNS checks confirm `strap.bvdm.ai` resolves to `creed-bvdm.netlify.app`; HTTPS returns 200 with a valid Netlify certificate.
 - Earlier production deploy `6a61edde4d776c00087bd686` from commit `1499389` verified the revised keys title and copy, `https://strap.bvdm.ai/home` canonical URL, healthy API/database/auth checks, and Strap OAuth/MCP discovery. Its Git build failure came from the root TypeScript project scanning the independent `packages/strap` CLI without its separately installed dependencies; both CLI packages are now excluded from the web app project and retain their own type-checks and tests. The release uses Next.js `16.2.11` and a Webpack production bundle because Netlify's local Windows edge packager does not trace the generated middleware runtime; the equivalent clean Linux Netlify build and edge packaging pass.
@@ -36,9 +36,11 @@
 - `npx supabase db reset` applies the forward Strap profile-default migration successfully while preserving legacy database compatibility.
 - GitHub's contents API confirms published `main` serves the Strap clone URL and `read_strap` CLI example from the root README.
 
+- Shared skills shipped in PR 13, reviewed head `0a48998`, merged as `ae692af`. Netlify deployment `6aa6cd1e2feef300089b0d9b` serves that merge; production HTTP and database-boundary checks pass. `@bvdm/strap@0.2.0` is published as `latest`, and a fresh registry installation passed actual two-device sync. Verification covers 212 app tests, 39 primary CLI tests, 20 legacy CLI tests, 34 pgTAP assertions, strict types, lint, build, browser acceptance, and two-model MCP onboarding. See `.project/projects/shared-skills/updates/2026-09-13-release-complete.md`.
+- Billing offboarding PR 5 and runtime security PR 12 are merged and deployed. Atomic Company provisioning and both Skills migrations are applied to the intended hosted project. Effective grants on older service-only RPCs were restored to the committed migration definitions and verified without modifying user data.
+
 ## What Is Next
 
-- Complete final review and deployment for PR 5. The maintainer supplied the database password, and the pending Strap defaults and atomic Company migrations applied successfully to the confirmed production project on 2026-09-13. The service key reaches the RPC and the anonymous role is denied. The billing branch passes 202 application tests and standard local checks.
 - Restore OpenWiki generation in draft PR 8. The maintainer funded OpenRouter on 2026-09-13; the API reports $10 in purchased credits and the production function key matches this checkout's funded key. A new workflow run can now verify the outstanding native-worker completion issue. No output from failed runs has been published. BYOK also remains available.
 - Complete reopened redesign tasks T-002 and T-005: apply the committed confirmation and recovery email templates through Supabase management access and verify delivered emails in mail clients. The application UI is deployed, but the redesign contract remains open until this email gate passes.
 - Continue serving the `creed.md` compatibility origin during the migration window.

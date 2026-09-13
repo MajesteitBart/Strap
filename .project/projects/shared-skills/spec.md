@@ -2,9 +2,9 @@
 name: Shared skills
 slug: shared-skills
 owner: MajesteitBart
-status: active
+status: complete
 created: 2026-09-13T13:38:18Z
-updated: 2026-09-13T13:38:19Z
+updated: 2026-09-13T16:27:12Z
 outcome: Publish a skill once, sync it safely to two devices, and discover it from a profile-scoped agent connection.
 uncertainty: medium
 probe_required: false
