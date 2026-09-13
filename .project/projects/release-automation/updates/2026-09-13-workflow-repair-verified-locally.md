@@ -15,7 +15,7 @@ stream: WS-A
 - Configured the repository provider secret through stdin from this project's existing platform key without printing it, and re-enabled the inactive workflow.
 
 ## In Progress
-- Live verification: the first run authenticated but failed output reservation. The capped retry (34750549341) confirmed the account could not fund the prompt. Safe credit metadata showed no paid balance, so the workflow now uses the verified available `nvidia/nemotron-3-ultra-550b-a55b:free` route. No credit limits or paid balances were changed.
+- Live verification: the first run authenticated but failed output reservation. The capped retry (34750549341) confirmed the account could not fund the prompt. Safe credit metadata showed no paid balance. NVIDIA's free route returned an upstream overload; a minimal tool-call smoke passed for `nex-agi/nex-n2.5-pro:free`, which is now configured. No credit limits or paid balances were changed.
 - Pull-request CI and final-head Codex review.
 
 ## Blockers
