@@ -1,10 +1,10 @@
 ---
 id: T-001
 name: Repair and verify legacy cancellation and provisioning
-status: in-progress
+status: blocked
 workstream: WS-A
 created: 2026-09-13T09:25:19Z
-updated: 2026-09-13T09:25:19Z
+updated: 2026-09-13T11:29:32Z
 linear_issue_id:
 github_issue:
 github_pr:
@@ -16,6 +16,8 @@ estimate: M
 operating_mode: feature
 story_id:
 acceptance_criteria_ids: []
+blocked_owner: MajesteitBart
+blocked_check_back: 2026-09-14
 ---
 
 # Task: Repair and verify legacy cancellation and provisioning
@@ -26,10 +28,11 @@ Integrate PR 5 with current Strap paths, owner checks, reliable cancellation UX,
 
 ## Acceptance Criteria
 
-- [ ] Only the current subscription owner can schedule cancellation; existing cancellation is idempotent and failures recover.
-- [ ] Company provisioning is atomic under concurrency and its RPC is unavailable to browser roles.
-- [ ] Applied migration history is preserved and a clean local Supabase reset plus focused runtime checks pass.
-- [ ] Root tests, TypeScript, lint, production build, brand audit and browser checks pass.
+- [x] Only the current subscription owner can schedule cancellation; existing cancellation is idempotent and failures recover.
+- [x] Company provisioning is atomic under concurrency and its RPC is unavailable to browser roles in the disposable verification database.
+- [x] Applied migration history is preserved and a clean local Supabase reset plus focused runtime checks pass.
+- [x] Root tests, TypeScript, lint, production build and brand audit pass after redesign integration (199 tests). Earlier browser and local API evidence covers the billing behavior.
+- [ ] Apply the additive migration to the configured production database, then merge after final integration checks and review.
 
 ## Traceability
 - Story: none
@@ -38,12 +41,14 @@ Integrate PR 5 with current Strap paths, owner checks, reliable cancellation UX,
 ## Technical Notes
 
 ## Definition of Done
-- [ ] Implementation complete
-- [ ] Tests pass
+- [x] Implementation complete
+- [x] Tests pass
 - [ ] Review complete
-- [ ] Docs updated
+- [x] Docs updated
 
 ## Evidence Log
+
+- 2026-09-13T11:29:32Z: Production migration requires management credentials for the configured Supabase project. Local reset and runtime checks pass; the available CLI account cannot access this project. Do not deploy the RPC caller before applying the additive migration.
 
 - 2026-09-13T09:25:19Z: Current branch integrates PR 5 with the current main branch.
 
