@@ -121,6 +121,8 @@
   --strap-success-fill-hover: #3f6209;
   --strap-danger-fill: #b8321c;
   --strap-danger-fill-hover: #962613;
+  --strap-caution-fill: #9a5b00;
+  --strap-caution-fill-hover: #805000;
   /* Caution reads as ink-brown on the Agents tint; the deeper secrets tone
      keeps purple labels legible on their tint. */
   --strap-caution: #9a5b00;
@@ -402,7 +404,7 @@
     background-color: #4a720d;
   }
   50% {
-    background-color: #e86a1c;
+    background-color: #b44f14;
   }
   75% {
     background-color: #b8321c;
