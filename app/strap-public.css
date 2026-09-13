@@ -107,9 +107,9 @@
   text-transform: uppercase;
 }
 .strap-kicker-context { background: var(--strap-context); color: #fff; }
-.strap-kicker-skills { background: var(--strap-skills); color: #fff; }
+.strap-kicker-skills { background: var(--strap-skills); color: var(--strap-ink-strong); }
 .strap-kicker-secrets { background: var(--strap-secrets); color: #fff; }
-.strap-kicker-environments { background: var(--strap-environments); color: #fff; }
+.strap-kicker-environments { background: var(--strap-environments); color: var(--strap-ink-strong); }
 .strap-kicker-paper { background: var(--strap-surface-2); }
 
 .strap-page-main { padding-block: clamp(3rem, 6vw, 5rem) clamp(5rem, 10vw, 8rem); }
@@ -130,11 +130,11 @@
 /* Tone scopes: set once on a container, read by cells, pills, cards, and
    prose markers so a page can colour a whole block by resource. */
 .strap-tone-context { --strap-tone: var(--strap-context); --strap-tone-tint: var(--strap-context-tint); --strap-tone-fg: #fff; }
-.strap-tone-skills { --strap-tone: var(--strap-skills); --strap-tone-tint: var(--strap-skills-tint); --strap-tone-fg: #fff; }
+.strap-tone-skills { --strap-tone: var(--strap-skills); --strap-tone-tint: var(--strap-skills-tint); --strap-tone-fg: var(--strap-ink-strong); }
 .strap-tone-secrets { --strap-tone: var(--strap-secrets); --strap-tone-tint: var(--strap-secrets-tint); --strap-tone-fg: #fff; }
 .strap-tone-environments { --strap-tone: var(--strap-environments); --strap-tone-text: var(--strap-success); --strap-tone-tint: var(--strap-environments-tint); --strap-tone-fg: var(--strap-ink-strong); }
 .strap-tone-agents { --strap-tone: var(--strap-agents); --strap-tone-text: #9a5b00; --strap-tone-tint: var(--strap-agents-tint); --strap-tone-fg: var(--strap-ink-strong); }
-.strap-tone-warning { --strap-tone: var(--strap-warning); --strap-tone-tint: var(--strap-warning-tint); --strap-tone-fg: #fff; }
+.strap-tone-warning { --strap-tone: var(--strap-danger); --strap-tone-tint: var(--strap-warning-tint); --strap-tone-fg: #fff; }
 
 /* ---------------------------------------------------------------------------
    Cells: a framed grid with true one-pixel internal lines.
@@ -203,7 +203,7 @@
   font-size: .7rem;
   font-weight: 500;
 }
-.strap-card-head b { color: var(--strap-tone, var(--strap-environments)); font-weight: 500; }
+.strap-card-head b { color: var(--strap-tone-text, var(--strap-ink-strong)); font-weight: 500; }
 .strap-card-body { padding: 1.35rem 1.4rem; }
 .strap-card-body > * + * { margin-top: .85rem; }
 .strap-site .strap-card-body h3,
@@ -484,7 +484,7 @@
 }
 .strap-input-trailing button:hover { color: var(--strap-context); }
 .strap-input-trailing button:focus-visible { outline: 2px solid var(--strap-ink-strong); outline-offset: 1px; }
-.strap-field-error { color: var(--strap-warning); font-size: .8rem; line-height: 1.4; }
+.strap-field-error { color: var(--strap-danger); font-size: .8rem; line-height: 1.4; }
 .strap-select {
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23211e19' stroke-width='1.6'/%3E%3C/svg%3E");

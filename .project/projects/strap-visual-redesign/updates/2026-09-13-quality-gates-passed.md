@@ -15,6 +15,8 @@ stream: WS-D
 
 - PR 9 review found low-contrast white labels on the bright dark-mode status palette. Solid success/danger actions now use dedicated deep fill and hover tokens, while text-only statuses retain their dark-mode colours. A contrast regression measures white-label contrast in both themes; 185 tests, TypeScript, lint and production build pass.
 
+- The second PR review found white labels on bright resource kickers. Skills and Environments badges, matching homepage chips, and the orange assembly marker now use dark ink. Public error and secondary card/map text use readable text tones. A second contrast regression checks all public resource kicker/chip pairs; all 186 tests, types, lint, build and brand gates pass.
+
 ## In Progress
 -
 

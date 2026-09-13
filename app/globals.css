@@ -1026,7 +1026,7 @@
   --strap-accent: var(--strap-context);
   --strap-accent-hover: #1a35a8;
   --strap-success: #4a720d;
-  --strap-danger: var(--strap-warning);
+  --strap-danger: #b8321c;
   --strap-pad: clamp(1rem, 5vw, 4rem);
   --strap-section-gap: clamp(5rem, 10vw, 8.5rem);
   min-height: 100%;
@@ -1095,7 +1095,7 @@
 .strap-resource:last-child { border-right: 0; }
 .strap-resource > p { margin-top: .3rem; color: var(--strap-ink-soft); font-size: .82rem; }
 .strap-resource-context .strap-chip { background: var(--strap-context); color: #fff; }
-.strap-resource-skills .strap-chip { background: var(--strap-skills); color: #fff; }
+.strap-resource-skills .strap-chip { background: var(--strap-skills); color: var(--strap-ink-strong); }
 .strap-resource-secrets .strap-chip { background: var(--strap-secrets); color: #fff; }
 .strap-resource-environments .strap-chip { background: var(--strap-environments); color: var(--strap-ink-strong); }
 .strap-resource-agents .strap-chip { background: var(--strap-agents); }
@@ -1140,7 +1140,7 @@
 .strap-assembly-row:last-child { border-bottom: 0; }
 .strap-assembly-number { display: grid; width: 1.8rem; height: 1.8rem; place-items: center; border: 1px solid var(--strap-ink-strong); color: #fff; font-family: var(--font-strap-display), sans-serif; font-size: .8rem; font-weight: 700; }
 .strap-assembly-number-1 { background: var(--strap-context); }
-.strap-assembly-number-2 { background: var(--strap-skills); }
+.strap-assembly-number-2 { background: var(--strap-skills); color: var(--strap-ink-strong); }
 .strap-assembly-number-3 { background: var(--strap-secrets); }
 .strap-assembly-number-4 { background: var(--strap-agents); color: var(--strap-ink-strong); }
 .strap-assembly-row strong { display: block; color: var(--strap-ink-strong); }

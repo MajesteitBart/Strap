@@ -196,3 +196,36 @@ test("solid status actions keep white labels readable in both themes", async () 
     }
   }
 });
+
+test("public resource labels pair their fills with readable foregrounds", async () => {
+  const globals = await readFile("app/globals.css", "utf8");
+  const css = await readFile("app/strap-public.css", "utf8");
+  const vars = new Map<string, string>();
+  for (const block of [globals.match(/:root\s*\{([\s\S]*?)\n\}/)?.[1],
+    globals.match(/\.strap-site\s*\{([\s\S]*?)\n\}/)?.[1]]) {
+    for (const match of (block ?? "").matchAll(/(--[\w-]+):\s*([^;]+);/g)) vars.set(match[1], match[2]);
+  }
+  const resolve = (value: string): string => {
+    const variable = value.match(/^var\((--[\w-]+)\)$/)?.[1];
+    if (variable) return resolve(vars.get(variable) ?? "");
+    assert.match(value, /^#[\da-f]{3}(?:[\da-f]{3})?$/i);
+    return value.length === 4 ? value.slice(1).split("").map((c) => c + c).join("") : value.slice(1);
+  };
+  const luminance = (value: string) => {
+    const hex = resolve(value);
+    const rgb = [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
+      .map((v) => v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
+    return rgb[0] * 0.2126 + rgb[1] * 0.7152 + rgb[2] * 0.0722;
+  };
+  for (const tone of ["context", "skills", "secrets", "environments"]) {
+    for (const [source, selector] of [[css, `.strap-kicker-${tone}`],
+      [globals, `.strap-resource-${tone} .strap-chip`]]) {
+      const block = source.slice(source.indexOf(`${selector} {`)).split("}")[0];
+      const background = block.match(/background: ([^;]+);/)?.[1];
+      const foreground = block.match(/color: ([^;]+);/)?.[1];
+      assert.ok(background && foreground, `${selector} must declare its colours`);
+      const [a, b] = [luminance(background), luminance(foreground)].sort((x, y) => y - x);
+      assert.ok((a + 0.05) / (b + 0.05) >= 4.5, `${selector} must meet 4.5:1 contrast`);
+    }
+  }
+});
