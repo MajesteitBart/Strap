@@ -13,10 +13,11 @@ export interface BookTextIconHandle {
 
 interface BookTextIconProps extends HTMLAttributes<HTMLDivElement> {
   size?: number;
+  initialState?: "normal" | "animate";
 }
 
 const BookTextIcon = forwardRef<BookTextIconHandle, BookTextIconProps>(
-  ({ onMouseEnter, onMouseLeave, className, size = 28, ...props }, ref) => {
+  ({ onMouseEnter, onMouseLeave, className, size = 28, initialState = "normal", ...props }, ref) => {
     const controls = useAnimation();
     const isControlledRef = useRef(false);
 
@@ -60,6 +61,7 @@ const BookTextIcon = forwardRef<BookTextIconHandle, BookTextIconProps>(
       >
         <motion.svg
           animate={controls}
+          initial={initialState}
           fill="none"
           height={size}
           stroke="currentColor"

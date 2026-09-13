@@ -129,6 +129,8 @@ export async function syncSkills(input: {
             : "Not applied because another selected skill conflicts.",
       }));
     }
+    // Bind even an empty library before applying any planned operations.
+    if (!input.dryRun) await saveLedger(root, ledger);
     const results: SyncResult[] = [];
     for (const plan of plans) {
       let remote = plan.remote;

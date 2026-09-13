@@ -1,10 +1,10 @@
 ---
 id: T-004
 name: Verify and release shared skills
-status: planned
+status: in-progress
 workstream: WS-A
 created: 2026-09-13T13:38:19Z
-updated: 2026-09-13T13:38:19Z
+updated: 2026-09-13T15:18:44Z
 linear_issue_id:
 github_issue:
 github_pr:
@@ -41,4 +41,6 @@ Release only after final tests, local migration verification, browser acceptance
 - [ ] Docs updated
 
 ## Evidence Log
+
+- 2026-09-13T15:18:44Z: Browser acceptance complete; migration applied; final review, CI, package publication and production verification remain.
 - 2026-09-13T13:38:19Z: Created from .project/templates/task.md by `delano task add`.

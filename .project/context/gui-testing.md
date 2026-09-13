@@ -16,6 +16,8 @@
 ## Preview Environment Notes
 - The T3 collaborative preview can run navigation and DOM evaluation while its panel is hidden, but screenshots, viewport resize, real clicks, and keyboard presses fail in that state. Responsive checks can run inside a same-origin iframe sized to the target width, which honours media queries.
 - In an unpainted preview window `requestAnimationFrame` never fires, so React 19.2 keeps streamed Suspense boundaries queued (routes with `loading.tsx` stay on their skeleton). Calling `window.$RV(window.$RB)` in the page reveals them for inspection; painted browsers do not need this.
+- The user approved a separate browser for shared-skills acceptance after T3 Preview timed out. Playwright CLI with installed Chrome supports painted screens and native confirmation dialogs. Resize screenshots must wait for the shell's 200 ms grid transition to settle.
+- For a remote development hostname, set `STRAP_DEV_ORIGINS` to a comma-separated hostname list and restart Next.js. HTTPS alone is insufficient: a rejected HMR origin can leave development client hydration waiting, even when the HTML returns 200. This setting is ignored in production.
 
 ## Evidence Requirements
 - Record routes, states, viewport sizes, interactions exercised, and console/network outcome in the relevant task evidence.

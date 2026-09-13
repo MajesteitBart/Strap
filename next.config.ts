@@ -75,7 +75,14 @@ const nextConfig: NextConfig = {
   // race the primary dev server's artifacts. CREED_DIST_DIR remains a fallback.
   ...(process.env.NODE_ENV === "development"
     ? {
-        allowedDevOrigins: ["127.0.0.1", "localhost"],
+        allowedDevOrigins: [
+          "127.0.0.1",
+          "localhost",
+          ...(process.env.STRAP_DEV_ORIGINS ?? "")
+            .split(",")
+            .map((host) => host.trim())
+            .filter(Boolean),
+        ],
         distDir:
           process.env.STRAP_DIST_DIR ||
           process.env.CREED_DIST_DIR ||

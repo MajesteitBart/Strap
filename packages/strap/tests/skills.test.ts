@@ -88,6 +88,26 @@ async function fixture(t: TestContext) {
   return root;
 }
 
+test("an empty library binds the directory while dry-run stays read-only", async (t) => {
+  const root = await fixture(t), dir = join(root, "skills");
+  const { remote } = memoryRemote();
+  await syncSkills({ root: dir, server: "server", remote, push: true, dryRun: true });
+  await assert.rejects(access(dir));
+  assert.deepEqual(await syncSkills({ root: dir, server: "server", remote, push: true }), []);
+  const secondProfile: SkillRemote = {
+    ...remote,
+    list: async () => ({ strapId: "profile-b", canManage: true, skills: [] }),
+  };
+  await assert.rejects(
+    syncSkills({ root: dir, server: "server", remote: secondProfile, push: true }),
+    /another server or profile/,
+  );
+  await assert.rejects(
+    syncSkills({ root: dir, server: "other-server", remote, push: false }),
+    /another server or profile/,
+  );
+});
+
 test("valid skill names cannot inherit a phantom sync entry from the ledger prototype", async (t) => {
   const root = await fixture(t);
   const { remote } = memoryRemote();
