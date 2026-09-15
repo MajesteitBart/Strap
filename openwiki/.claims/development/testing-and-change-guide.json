@@ -1,0 +1,156 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:a3a64c8e16f7440b137eb60bf57bdc8465511917c8c13861d16046d243c9f333",
+  "claims": [
+    {
+      "id": "claim_974700b2fa054429a1037209bcdb777d",
+      "statement": "The root tsconfig.json excludes packages/strap and packages/creed-cli, so root typecheck and build do not compile CLI packages; the packages/strap checks (typecheck + test) must be run explicitly for CLI changes.",
+      "evidence": [
+        {
+          "resource": "repo://packages/strap/package.json#L21-L28",
+          "version": "repo-lines-v1:sha256:8899d225122c9b783838b02e581b86e5eef031e9e2876ce91219066313bf133d:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzQ4MzNkNTk0OWMwM2E0MGNhOTUyNDkxNjEwYTY2NTk2NDRiM2FhNDY2MzYyZjc5OTAyMGRiZjE5ODE1NDdkYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNGQ1Y2QyZmI0ZjNkZjg4NDUxNTI1NWIzOTUyM2YyZjhiNTQ3MmJlZWE5ZjU2NmZmY2EyMDRkYjgwMjU2MTA0MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMmM4ODhkZTFiZWZiYzRkNTdjMzA1ZWM2ZTA3ODRjOTJiZDU4ZTE3OTg5ODAyYmYxZDVjMWIxMTE5YzQxMWIxNSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDYyMWNiYWJkNjQ5Y2Y1YjY3NjRlYzIzZTk1Nzk1NWQ3OWMzMGYwYjVmYWY5NzVhYjM2YTUyZDk4ZTE3MTMyNyJ9"
+        },
+        {
+          "resource": "repo://tsconfig.json#L60-L65",
+          "version": "repo-lines-v1:sha256:69d6be89d354787dc48a260b4829a71274f88a251721d602b7fcf4002013f423:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNzhkM2JjM2E2MWY5NmY3NWFlMGQxZWU1MzMzMzFhMGRiOGM5NGUzMzFkM2FiZWE1ZGI2MDQzOTA4MmMwOWRlMSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYjk3NTRlYmI3NDBmZmM3ZGUzZjE3MmI4Y2VhZTZhYmQzZTRmZDY1NjBhZmYyNTM1MWRjMzQyMjkxY2ExOWU1ZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_e9f7da3d20af46e2a3368372a2061044",
+      "statement": "tests/skill-bundles.test.ts is a pure-function/contract test that imports the portable bundle validator (packages/strap/src/skills/bundle.ts) and the server toolset/guards (lib/skill-tools.ts) directly and asserts portable bundle validation, path safety, the batch-payload guard isSkillPayloadBatch, canPublishSkills/skillToolsFor gating, and skillReadPayload behavior in memory; it does not exercise live Supabase RPC, RLS, or MCP integration.",
+      "evidence": [
+        {
+          "resource": "repo://tests/skill-bundles.test.ts#L1-L48",
+          "version": "repo-lines-v1:sha256:4478c20c5102626d1c6bf5cf46a073c77efbf179d46952e766eeebca7ed20f21:eyJzZWxlY3RlZExpbmVDb3VudCI6NDgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk5ODY1YmNjMGI5NTc5NmJjZDE1MjRiMzBkNzFiZmFhN2M5NTY3MDQ3YjA2Mjg2NWRiMmQ0OTA2MGU5MmUzMmMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY2ZjViNDBiMTU4NDU3ZDE3ODY0ZjIxNzkwNzg2ZGQ1YTJlY2RiNjRiNjZhNjUxZjc4OGQ0ZTI1Y2QzMzAzZDIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNlN2QyZDU1NDZjY2Y3ODRmYThkMmNiZDYyNGJjYmE2NDU4Y2EwNmE1Zjk2ZGZhOTI2YzIxNzE0N2U3MGQ5NGUifQ"
+        },
+        {
+          "resource": "repo://tests/skill-bundles.test.ts#L130-L190",
+          "version": "repo-lines-v1:sha256:344aef0d6e0b4ec480312edd482105d064265a7047f99353328baaf926c4462d:eyJzZWxlY3RlZExpbmVDb3VudCI6NjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY2NzVjMTZiZjEwMzlmNjVjYzQwNTZiMTY5MmVhMTc0Yjk1Mjk3MTE2MTM4OWZhNzJkMDkzZTUzMzU3YjIzMjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY2ZjViNDBiMTU4NDU3ZDE3ODY0ZjIxNzkwNzg2ZGQ1YTJlY2RiNjRiNjZhNjUxZjc4OGQ0ZTI1Y2QzMzAzZDIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY4MGQyZGQ0ZjI4OWQyNmRjNzU3YzJiNjVhMDZjMzkyMjdhNjcxN2M0YjQ4YjVhMzk3OTJjOWYxMWU0MWFlYTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_7c0b9ec67a724821a0535e8d42174335",
+      "statement": "validateSkillBundle enforces 1-128 files, <=512 KiB per file, <=2 MiB per bundle, portable relative paths (no traversal, hidden folders, node_modules, credentials, Windows device names), canonical base64, UTF-8 round-trip, a root UTF-8 SKILL.md with YAML frontmatter (no aliases, unique keys, name 1-64 lowercase-hyphen-numeric, description 1-1024 chars), and frontmatter name matching the request.",
+      "evidence": [
+        {
+          "resource": "repo://packages/strap/src/skills/bundle.ts#L126-L233",
+          "version": "repo-lines-v1:sha256:e9bfa97e1fb8219e8d540cd83202b7e80aa114012ce592de5691e0ce331ac600:eyJzZWxlY3RlZExpbmVDb3VudCI6MTA4LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJkZWU4YTlkOTYwOTIzYWVjZTI4MTgyZDFmYjUxOTUzNDc2Mzc5NzIxNzZkZDJhYTNkZGE0Yjk0YjU4N2FlM2U5IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJjYjVmZWM3MzMzZGNhMTVlMDVkYjUxZGUyM2ZlYmZiMDQzYWU0NDhhMTFkZmFkNDYxMjliNTFhOThiODBmMzMwIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI5NmQyYzViNTgwM2RkZjBkMDgzMzkwODdlMTc1OWY3ZDhkZTFlMDQ3YzkxZDZhYzk5Y2M5NDdiNTFlNjgzODkzIn0"
+        },
+        {
+          "resource": "repo://packages/strap/src/skills/bundle.ts#L4-L6",
+          "version": "repo-lines-v1:sha256:41d31bf38196fc01f036c33bb9a53ed6003c780e309944706c79ffe00687796d:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOTdiY2Y3NWFkNmU1OGE0NjI3MmQ5YmZkZGQyMGI1YTdjZmI1MDBhMTgyNzdiYTE3ZThhMTA5YjdkYjRjYzIyZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZjlhMzhmZDAzYjM2MDJlNjY2N2QzZWQ0ODQ4OTcyZmJjMjRmNmQ4ZWVjMWI3ZTMzMmJhYzkyOTE1NmMxMDg2MiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMDc5MzhlNTE0YTk1NWEwMGZkZjAxZTYyNDlmMTc4OGJiNzIzNTQ1ZDZmZDk1OGY0YWU3MDc3MmVjZjdmMGZhOSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiODgxNDIwMjc0N2IyNGZhMzdjZTE3ODU3OWRmMjQxN2U2NmEzNzJhODFiYjA3NDA1YTY5ODQyMTBmNzM0Y2MyOCJ9"
+        },
+        {
+          "resource": "repo://packages/strap/src/skills/bundle.ts#L53-L83",
+          "version": "repo-lines-v1:sha256:9ef3735b276f1bbbd1c88512cba9868240a8128108286e47bd499ceeb438e24a:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdiZjJhYmM2Y2ExNjU4OTRkYjYzOGU3YTg4ZDRmMzBmMGRiNjc0MzFhNTQxNGFlYTkyYTExZTQ2MGFlNTUyYmEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjcxODg3MGE4MDQwOWY4YzRjOTk0ODA3YWY4MjU5Y2MwNGJkMGM1Y2EyZTlmMWMzYjEzZGVmMTBiMTYyNzg2ZDYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjIyNzZiNWU3NTljMmUyOWQ2ZjNkNjQxZWM3N2NmMzZhMTBlZDU0MmNlYzRiYWY1NjUyMzBmYTBiN2QyZjJhMTIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a4420f496dce4d74ab10bb5840096212",
+      "statement": "strap_skills_read and strap_skill_publish are security invoker, search_path = '' RPCs with all grants revoked from public/anon/authenticated and execute granted only to service_role; no client role receives direct table access, and the admin client invokes them after application-level checks.",
+      "evidence": [
+        {
+          "resource": "repo://supabase/migrations/20260913133911_shared_skills.sql#L132-L133",
+          "version": "repo-lines-v1:sha256:c253d83a0809be4eefcdcc2b79fd198a64770db09d621234ffbb8ea6fb8f2a4e:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiY2E0ODFhZjYxZGMyMmVjN2NlODc4ODdmOTE1YjI5YWM5MGNhODUxMWNkY2E0YzFlZDBjZGYwZjViZTA1ZGNkZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMmI2MDg3MWYzMzE2NTYzYTY2ZTQ0NjQzODRlOGYwMTRhNDk1Nzk4MWI0NjllNTlkMmJlYjMwNDcxYzBmZjg0ZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZmQyODE4ZWNhNzdmOWRkMTMwMTQ2MzY2MGI4ZTM1NDQzYTExNDNkMjg0YmUwZmZlNmExMDM4NTQwNWUzMDg3ZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260913133911_shared_skills.sql#L27-L31",
+          "version": "repo-lines-v1:sha256:9d4efb0755df8cd18c9226ad4b95820b96869e17bf9204fb2fd499071cad6482:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMTVlZjNhOGY0ZWVjMTQyNWY5YjE0MGMyNDc5MTFlMTQ0ZjAxYmI2ZjdkZTk0MDEwMWZjNWJkYWIwN2NmNWIxZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMmE0MmZmN2MyNmI2NzU5YmQwMGJiYzlkMmU5NGY0ZGU2N2U2ZDU3MWFkMTE0NzY5YjFjMjk4MjE3MzkzMzY1YiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNWRlNmJmMjkyOWRlNGVkMjNhMjVmZTE4YTc2MDI2NjIyZmJjNjEwMzc1MzBhNTI4NGJkYzdjNWNkMWIzZGZmOCJ9"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260913133911_shared_skills.sql#L75-L76",
+          "version": "repo-lines-v1:sha256:62e2f8fb1b2ca37a84bdc937a8f2ef7760e47396c1824f0cec63372747e08677:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNjQwNDU4ZWQzYTJhZjUyZjMzZTIwYTU4NTUzYTI4MTQyMGYyNTZlZWI5ZjRhZTUwNTJkYTI4ZGFhZTE1NmQzYSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYjFhNTI3MmUxYjJjMjk4YmI5YjA5ZTg4MzQ2NTJjN2UzZmQ5YjgwMWMxOThhNmNmYTc3ZmFmMmE2ZDZmYWVlYyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjQ3MjA3ODk4NmUzMjlhMTU5NDBmZWNiYmUzNjg2M2VkZjM5YTVjOGRjNDExOTNkZjEyOTAyYWVmYzZmMjhhOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNTQ2NTQ5ZDVlM2M0M2ZjNzQ2OTMzZGQzM2I0NDI5ZjJjMGQ0ZTYxMWViNzg2MWY0MmUxZmJlNzdmNTVhZDdkNyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_67d31a5b59924968ac777664317cab83",
+      "statement": "strap_skill_publish serializes per library (for update on creeds, for share on creed_members), rejects non-owner/admin with 42501, raises PT409 on stale baseRevision with an idempotent-retry exception that returns the existing document when files/digest/archive state match, enforces a 100-skill-per-library cap, prunes history to the most recent 20 versions, and rejects a 64 MiB total library storage budget with 54000.",
+      "evidence": [
+        {
+          "resource": "repo://supabase/migrations/20260913153559_bound_skill_storage.sql#L101-L125",
+          "version": "repo-lines-v1:sha256:362adee655bd31229c3771934e77aacd1b46a3e673021a916aeddfc21d938d32:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE2ZWE1ZWNlZWEwMWNmZWI4OThjMDUyNzkwZmE3ODVjOTYwMjkwNThhZjNkZjVmMTQwYzNmNGE0ZjRjYzI2ZjIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc3YjI0ZWI1N2VkNDZlZGNiYzNkYTU2ZDZiYTdlM2IwY2UxMTZkYzk0ZjY1MDkzZjgzYjUzZjllMjhiMDMxZDYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI2NTY5MmQyYzg4ZTQ1Y2RiODRkNTkwOWY5Mjk3NjQwY2ZhZTVlNzc5NTdkYTcwY2E0YTE1OGFiYTBiNjlmMGQifQ"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260913153559_bound_skill_storage.sql#L50-L100",
+          "version": "repo-lines-v1:sha256:50d11a94687fbb3f8a3479b3f67c7a47a910ee14426fe2cc681e9c15533f48c2:eyJzZWxlY3RlZExpbmVDb3VudCI6NTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE1NTVlMTk2YmQ4ZTNlOGU2MmZkMTc4MDdmNDMxYjE5YjcwYzgxNzgzOWI0NTYxMDc2MjFlOWQ4OThiNDQ1YmUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg3YzBkOTk2MzIxNWZlNjI4NTVlN2Q3MzIyYTY0NzliOWFmZWNlNDk3NmEzNGY0NDU2YWY3Njc5MGFiY2EyMTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjcxNTZlODU3OGE0YjQyZjFhMjJlNTRiNDk5OTViZWNhNDQ1NDVhZDAzYmU4NTJmMDg4ZmQyYjQ3NTA4MTdiYmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA2NGRiMTEyOGVkMjA5ZThhOTAyY2M1NDE3ZTliNzBjZjA3MmIxOTBmYzI3OTkyMmZmYWVlN2M1YjVhYWJiMjAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_0b3c217b659b4fcfa75f29db327b5a3e",
+      "statement": "isSkillPayloadBatch (lib/skill-tools.ts) rejects any 2-64 request batch containing a strap_get_skill, strap_export_skill, or strap_publish_skill tools/call, because full bundles are loaded even for selected-file reads; app/mcp/route.ts returns JSON-RPC -32600 for such batches.",
+      "evidence": [
+        {
+          "resource": "repo://app/mcp/route.ts#L2437-L2443",
+          "version": "repo-lines-v1:sha256:6bec2512205f037be23fb6f4a7d65031f4cc7f1867c1e9a88f6ed48ffed13dc4:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYWJlY2Y1Y2QxNjMwNGJjMzE0NzE3ODU3ZWQ2MzcyZmIwYTYwZjE2NDZlYWNiYzIyNDg5NTc3NTA1Yzg4OTJiNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMjdlNTc4OGQ1ZDlkNzNkMjRhODFkYmMwYTVhNzRiZmE4MmM5YzNiM2FmOTllNTJhZjc5NmU5MGI0NjhhOGEzZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTI1NDFmNzU0NTUwMWYyYTExNGFkOTM5ZTc0NDE1YmM5NjRmOGE1ZTk4NmMxMjA3NDY5MzNlMWQ0NmRlZjlkYyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNWQ1M2QyNjMzZDUyNDY0NDg0NGY3N2JiMWEwZjIxNjkwZTRlZDAyOTU4YWU1NTc4MmJjZDIwYWJmYzBmMTU0NCJ9"
+        },
+        {
+          "resource": "repo://lib/skill-tools.ts#L8-L29",
+          "version": "repo-lines-v1:sha256:25ec50844c9b1f1b41a8a7f140068e7aaa4f03024d0fb0216b0e89da88231a00:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhODM5MDE3MmExMDE0M2ZjNjBjODVhZGZiZTZjMWRlMTg0ZDZjMjhiNDE4NDY2YzExNThjY2FhZmRiZTdlMWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhlMzgxNjhmZjhlZDRmOWZkYWZkODAwYTMwYWMxMGJjMWY5MTVmZGMzYWIwNjVhODNmMThkYTgxNzkwOTY2M2QiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU3YTYzYmUwNmE3MmZmYWU0MDljMWM5Zjc5ZjRlMmM1ZDJmYjJlYzZlNzRjNmZlZmFmYTliN2NiNWE1NzgzY2UifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_67e549fc9f384365a10db91187be3048",
+      "statement": "skillToolsFor lists all four skill tools for any connection with a strapId but omits strap_publish_skill unless canPublishSkills(mode, role) is true (mode === 'direct' and role is owner or admin); callSkillTool re-checks canPublishSkills and applies a 20-request/60-second per-user publish rate limit.",
+      "evidence": [
+        {
+          "resource": "repo://app/mcp/route.ts#L2248-L2254",
+          "version": "repo-lines-v1:sha256:4abe27956d9b22f387bf1b70c088c665b35ea464534d570de594018948d00ecf:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODBmMDQ3YmIxOTRhN2NmNDk0OTE2ODA1MjdiNTAzYWE0MGVmNGJlM2FlODJjNjhiMTFiNGJhZWI0YTA5ZTJjYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMjJkMTFjYWY0M2U5N2VmMzY5ZTZiZWVkMWEyNjhiZDA1ODM4ZjI5YjlkZDI1NGJmNjliYTY0ODg0MTQ3MjM0YSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYmQwMjE0ZmVmMzliYzRlMzk2Yzc5OTdmMmQ5ODEyMDVhNjk1MWNjMjdkYWFlZjJlYzQ1MjQ5MmQxMjcxZmZkYyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOTY3ZjE0YTlkNzJiMDI0NWQ0YTQzMzI5Nzk0NmU4NjQyZDMyODAxNDRjOGFkNmY0MjI0YjcxNmNiNDY3MjRkOSJ9"
+        },
+        {
+          "resource": "repo://lib/skill-mcp.ts#L29-L52",
+          "version": "repo-lines-v1:sha256:c1368e56b1d5d1a13d8f4e1aba77da65d3f7f46a5f1cd8fe3c2a5d3cb0bee9c7:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZiYmJlMjdkMTcyOWVkMzM1YmIyOTdjZjhhMzBlN2Q5ZjAzZDAwZjU1NDhmNzRiYjdmYTM4MmUwMmE0YzUxMTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkyM2M0ODRlOTIyNTkzMzhjYzlmNWQwOTlhODM1OTQ3NWFjZTViZjA0MzVlZDQzOWJlMTRmZTgwZjVkYTI2NjciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhkMjZhNjg3MjhjMmJhNjQwZTk3YTQ2MGUxZGRlZjgwMDBhYTQ0M2YzMTVmYWFlOTFmY2MzMjEzNzRiMDc1ZjYifQ"
+        },
+        {
+          "resource": "repo://lib/skill-tools.ts#L122-L139",
+          "version": "repo-lines-v1:sha256:913d066c6c2b4cf821a920ef1432ae549ae50bef8d2ac5fea3170bf476259958:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY3Yjg5NjljOTJlZGYzOGFlMWU2NmYwOTNmODA5OGZlOWVlYzEzMzRmMjc0MTVhYzRkMzFmZDAxOTg5NWQ5NDAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE4YTkxNzU5NzJmZTE1ZTJhOTY0MWFiMTMxZjU3MWU2YzdjYWJjYTA2ODM3NjJlYmE1ZjIzNTNlNDgzYzNkNTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_1599ef4e4a1b4202878f8c598db7b68d",
+      "statement": "CLI skill sync (packages/strap/src/skills/sync.ts and files.ts) aborts the whole selection before any change if any planned skill conflicts, binds one server/profile per directory via the .strap-skills.json ledger, refuses symlinks/junctions, re-reads files during install to catch local edits, backs up originals outside the skill directory, and resolves --base-revision for pushSkill.",
+      "evidence": [
+        {
+          "resource": "repo://packages/strap/src/skills/files.ts#L158-L303",
+          "version": "repo-lines-v1:sha256:ac6e8af8d9c194af2feffacc7b9f7e948b5d227d4d72520766a5a9c32e55d1b5:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQ2LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI1YzdjMTQwY2JjOGMyMDEwYzQ2MTM2NjlkZmE2MDI4NGNhMWJkMTc5YzM1MDg5MTRiMThhYTJjZmY1MjNmODAyIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI3N2IxMTY3MTAzZmMzYTQ3YWYyZjc0NjEwNzViNzhhOWUyMTQ3M2JiNGM0YmQwYmNiN2U5NzU1OWM3ZDVhM2M4IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiIzYWE3YTY2OWU0ZDkzNDYzMmM4NzhjOTkwYjg0OWZjZmIzMWE0ZWJjZWM1ZjM2NGIzYTFhODYxOGVjY2NlYTdlIn0"
+        },
+        {
+          "resource": "repo://packages/strap/src/skills/files.ts#L67-L156",
+          "version": "repo-lines-v1:sha256:411f273deb7f59847320c3e652c8f73afbae160526d819faf89d18331073e53d:eyJzZWxlY3RlZExpbmVDb3VudCI6OTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhYjgxYWYxZmNkMDQ5MzViMGRhODdmNWNjZTVmNzMyMzZhZjM2ZTc5ZGM1M2FjMjIxNTA3NGU5ODk1NjI2ZWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZiNTgwZTk2NGY4M2E0NzNmNDNkNDQzODQ2Mjk0OWQ2OGI1NjAwZmRhNzg3ZjE2Mzc0NWQwMGRlODljYmYzNmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY1NjdjZGM5MmM3OWEyOTZmNTQ0NWY1OGY1ODViOGNkZjI1ZGM5Y2M3ZmVmNTk2Njg1YThiOWYyZjIzM2NjN2EifQ"
+        },
+        {
+          "resource": "repo://packages/strap/src/skills/sync.ts#L174-L225",
+          "version": "repo-lines-v1:sha256:a5f9764617b5d792c652f86d556a1b77d1d3a7175ae9ba2b3fbb848db8f160bd:eyJzZWxlY3RlZExpbmVDb3VudCI6NTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIyMmI1OGFiOWViYjk5MDgyMTNjNWUzODAxNjNjMjE5M2E0NTNiODNlNGYzYThjYTdhZTY0MjEwNDcyMGQ2MDYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ0Mjc1OTI1OTIwNDdlMTEwZDc1MzQ3MmIzMjVkNTllMDI4Nzk3MWJhYjFmMDM0ZjBiY2M4NmYwNGVkNThlYWQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImMzODcwNjhjNmU5YjJkMTBiNWRkNmFmODU1ZmZlZTZlYzViOGNlZmNkODgyY2UyYmQ5MzA2YzBhZDEzNGM3MmMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://packages/strap/src/skills/sync.ts#L36-L131",
+          "version": "repo-lines-v1:sha256:c30f8ef9e2760b2bd6a31426b3c12e7dd769fb92dff1dc153157ef8462db4546:eyJzZWxlY3RlZExpbmVDb3VudCI6OTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxM2U0ZjI3ZmVlMjNhYjUxYTA3ZGIwMGM0OGFlZTRhODNjYmNlYjBmNWEyNWUwMzk1YmM2MmM3ODBiOWQxZGQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY4MzlkNGE1YmE1MjI5ZjVkOWJmYjhlNDMyNTU3ZTBkMGJhMGI1ZDY2ZDIwZDRmMWFkNzJjYWI5NmQ3YjA2MjciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg0Mzg4ZDVhOWNhODhmZDM3YWExNWMyZWVkYzJjNGU4YjkxYjcxZjQ1NWQwMDljZTFhZmUwYzc3ZWM5ZmUxNjAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_4fd1633b362143e8b1ac2e53323fe5fe",
+      "statement": "The npm --prefix packages/strap test script builds then runs node --test on dist/tests/*.test.js (including skills.test.ts), so CLI skill changes require the packages/strap typecheck and test checks to be run explicitly rather than relying on root npm test.",
+      "evidence": [
+        {
+          "resource": "repo://packages/strap/package.json#L25-L27",
+          "version": "repo-lines-v1:sha256:55a9c58aa2aefd6d1e05903332cdd423c23aec5bb73ba3eaf967c5783f4bde94:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOTI2Mjc2N2Q2M2IxZjA0OWQyMjdjNDE5MGRmNmFmYjI5NjQwYzQ1YWJhMjdmN2QyMGJhMTA3M2MzMDJkNDE1OCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYWM3YTBmZjUyYTY5MDNiOGY4MzNlOGMxNzZmYTI2YWU5MGEyMDQyYTk5ZmE4ZTI4NGI5YzhiN2IxMDQ4YTg5ZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTU0Y2RjZDcxMTIzYmU4NDhkZjFjNmIyMmFlOTFlOGVmNTc2MWI5M2E0OWYzMjgwMDQ0N2IxOWViYTUzOTAzOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNmFjZDhjMjk1ZGJmN2I2NjY5ODVhMTcxZWM1ODhkNWUyMTY5ZDE2ZDFhNjI0NGMyOWRjZDIxOTQ3YzNjM2QzMSJ9"
+        },
+        {
+          "resource": "repo://packages/strap/tests/skills.test.ts#L1-L25",
+          "version": "repo-lines-v1:sha256:06b062a0cbd255c65d56f6a6003591f4acc95dfb7f566a1f377c2a7436cc9df5:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkwYjJjZTg2ZmE3MzE0YWNkMjYxYzQ1ZjA0Yjc5OGVlODdkNjQ5NzFlNDJiMTc4MzEwNzJmZjA4ZGI0NDgxZWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE3ZDgwNzdjYmYwOGJkMDA2NTc0ODcyNWI2ZWY2MGFhNmIxYmUzOGVhZjU3N2NlMDc1MWE4MzhiNTcwMWY4ZjAifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.2",
+    "at": "2026-09-15T08:01:45.050Z"
+  }
+}

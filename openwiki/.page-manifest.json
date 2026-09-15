@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "pages": {
+    "/openwiki/architecture/overview.md": {
+      "pageVersion": "sha256:4bf8ffc454c7abd65a958743fb3ecfc01f0a3c1e568ff3fba602d1b4ac3effc3",
+      "completedBy": "openwiki/0.5.2",
+      "completedRunId": "271e9ec2-b5d5-432a-be1c-fdd68738a37f",
+      "gitHead": "3d79a20c81765df390f9469759c33172f4c81345",
+      "sourceFingerprint": "sha256:579b3a99468b34c1a0ba06082ec070fbc93d806bfc94dc5a34fcd9457aab81b6"
+    },
+    "/openwiki/data/schema-and-security.md": {
+      "pageVersion": "sha256:7558c5e07f4ba7bd7e5220cca23d1b95269f56a9018abe964bda32b56a7481fa",
+      "completedBy": "openwiki/0.5.2",
+      "completedRunId": "271e9ec2-b5d5-432a-be1c-fdd68738a37f",
+      "gitHead": "3d79a20c81765df390f9469759c33172f4c81345",
+      "sourceFingerprint": "sha256:579b3a99468b34c1a0ba06082ec070fbc93d806bfc94dc5a34fcd9457aab81b6"
+    },
+    "/openwiki/development/testing-and-change-guide.md": {
+      "pageVersion": "sha256:a3a64c8e16f7440b137eb60bf57bdc8465511917c8c13861d16046d243c9f333",
+      "completedBy": "openwiki/0.5.2",
+      "completedRunId": "271e9ec2-b5d5-432a-be1c-fdd68738a37f",
+      "gitHead": "3d79a20c81765df390f9469759c33172f4c81345",
+      "sourceFingerprint": "sha256:579b3a99468b34c1a0ba06082ec070fbc93d806bfc94dc5a34fcd9457aab81b6"
+    },
+    "/openwiki/domain/skills-system.md": {
+      "pageVersion": "sha256:69e58a18ab05d36102f5340ef07e2cf3dcfc20a1a1196ee8695b28e7eeb9c2e2",
+      "completedBy": "openwiki/0.5.2",
+      "completedRunId": "271e9ec2-b5d5-432a-be1c-fdd68738a37f",
+      "gitHead": "3d79a20c81765df390f9469759c33172f4c81345",
+      "sourceFingerprint": "sha256:579b3a99468b34c1a0ba06082ec070fbc93d806bfc94dc5a34fcd9457aab81b6"
+    },
+    "/openwiki/domain/strap-model.md": {
+      "pageVersion": "sha256:5b526c4b099f8f8a19f12dc1abadcd38c5a69e1772f3fe5446af58d5b6439cb4",
+      "completedBy": "openwiki/0.5.2",
+      "completedRunId": "271e9ec2-b5d5-432a-be1c-fdd68738a37f",
+      "gitHead": "3d79a20c81765df390f9469759c33172f4c81345",
+      "sourceFingerprint": "sha256:579b3a99468b34c1a0ba06082ec070fbc93d806bfc94dc5a34fcd9457aab81b6"
+    },
+    "/openwiki/integrations/agents-and-oauth.md": {
+      "pageVersion": "sha256:5d80734c7870eea726b69f2ba18a787df52877eeabd0569a0e94388db05268f6",
+      "completedBy": "openwiki/0.5.2",
+      "completedRunId": "271e9ec2-b5d5-432a-be1c-fdd68738a37f",
+      "gitHead": "3d79a20c81765df390f9469759c33172f4c81345",
+      "sourceFingerprint": "sha256:579b3a99468b34c1a0ba06082ec070fbc93d806bfc94dc5a34fcd9457aab81b6"
+    },
+    "/openwiki/integrations/platform-services.md": {
+      "pageVersion": "sha256:864000c4dc9e22ae63d21e3b6977df0f70f99184bde5fcd2659aa7a5ad409da0",
+      "completedBy": "openwiki/0.5.2",
+      "completedRunId": "271e9ec2-b5d5-432a-be1c-fdd68738a37f",
+      "gitHead": "3d79a20c81765df390f9469759c33172f4c81345",
+      "sourceFingerprint": "sha256:579b3a99468b34c1a0ba06082ec070fbc93d806bfc94dc5a34fcd9457aab81b6"
+    },
+    "/openwiki/quickstart.md": {
+      "pageVersion": "sha256:3f8c3f2b1825896bfc3f0b3c144f39b17fc6559193e63e4a707ca4c798d63cfb",
+      "completedBy": "openwiki/0.5.2",
+      "completedRunId": "271e9ec2-b5d5-432a-be1c-fdd68738a37f",
+      "gitHead": "3d79a20c81765df390f9469759c33172f4c81345",
+      "sourceFingerprint": "sha256:579b3a99468b34c1a0ba06082ec070fbc93d806bfc94dc5a34fcd9457aab81b6"
+    }
+  }
+}

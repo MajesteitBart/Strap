@@ -1,0 +1,174 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:7558c5e07f4ba7bd7e5220cca23d1b95269f56a9018abe964bda32b56a7481fa",
+  "claims": [
+    {
+      "id": "claim_325daae6c2a24ce1aee69ad80d6dd787",
+      "statement": "The skill library uses new Strap-named objects (strap_skills, strap_skill_versions, strap_skills_read, strap_skill_publish) introduced alongside Creed-named contracts, not legacy Creed identifiers renamed for branding; they model workflow skills and should remain Strap-named.",
+      "evidence": [
+        {
+          "resource": "repo://supabase/migrations/20260913133911_shared_skills.sql",
+          "version": "repo-file-v1:sha256:c36c7bf238910c12555d83afbbd983ddeac51c513dfbe250eecf5996d40d9c09"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260913153559_bound_skill_storage.sql",
+          "version": "repo-file-v1:sha256:06fc499951d40b7ad025fc5905fe24f53be64a64e2ebfab583dd142227541e7f"
+        }
+      ]
+    },
+    {
+      "id": "claim_12d2a15ac73946839ce88277e8b584ee",
+      "statement": "strap_skills stores the current bundle per (strap_id, name) with a unique(strap_id, name) constraint; strap_skill_versions retains complete prior documents keyed by primary key (skill_id, revision); both cascade-delete with their creeds/strap_skills parent.",
+      "evidence": [
+        {
+          "resource": "repo://supabase/migrations/20260913133911_shared_skills.sql#L4-L25",
+          "version": "repo-lines-v1:sha256:54f89627859d215e0e91ecab74aa93f8b8ce13a2c0848aacd67558389521f02b:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhmOWU0NDM5NDFjODE1MjNlY2MwMzgwNzRiMzEyMTYwNGFiZTQ5MmU3NTdhYzNhNjkwM2ZkOTE1NDRlOTFjODAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ5OTY3ZWMxZWQzODM2ZjhlYjE3YWZmMTcyYjViZmVmN2RlNjA0ODVhNDM5YzZjYTExYzU5MWUxNzU1NzM5YWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE4ZjBlMzE3ZjQwMjViZDhmZGVjYmRmMTQwMzVkYTBlNDdhNTNhMjA3NGE2NzEzNjk1ZjYwM2VlMjIxNWVhZmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjVlZGIxMzQ3MzRiN2E3MGVkMTJkYThmMWFjNTVhNDk2NDcxZGJlYjZkMTM4MDllMTUxM2RiNzdiYzk2MzkyZjMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_669a5d3c98854a14af5a3f81befa8d7f",
+      "statement": "Both skill tables enable RLS and revoke all from public/anon/authenticated; only service_role gets table grants and RPC execute, so no client role receives direct table access.",
+      "evidence": [
+        {
+          "resource": "repo://supabase/migrations/20260913133911_shared_skills.sql#L132-L133",
+          "version": "repo-lines-v1:sha256:c253d83a0809be4eefcdcc2b79fd198a64770db09d621234ffbb8ea6fb8f2a4e:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiY2E0ODFhZjYxZGMyMmVjN2NlODc4ODdmOTE1YjI5YWM5MGNhODUxMWNkY2E0YzFlZDBjZGYwZjViZTA1ZGNkZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMmI2MDg3MWYzMzE2NTYzYTY2ZTQ0NjQzODRlOGYwMTRhNDk1Nzk4MWI0NjllNTlkMmJlYjMwNDcxYzBmZjg0ZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZmQyODE4ZWNhNzdmOWRkMTMwMTQ2MzY2MGI4ZTM1NDQzYTExNDNkMjg0YmUwZmZlNmExMDM4NTQwNWUzMDg3ZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260913133911_shared_skills.sql#L27-L30",
+          "version": "repo-lines-v1:sha256:6f932bf1d24bb2252c02d8cf719d44b33377be19325e1507349e1cedfb4fb98e:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMTVlZjNhOGY0ZWVjMTQyNWY5YjE0MGMyNDc5MTFlMTQ0ZjAxYmI2ZjdkZTk0MDEwMWZjNWJkYWIwN2NmNWIxZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiM2JlZTRiMGFlMTc0NWRlMjU2MTFhOGE0M2YxYzljNmY4YWU3ZjkyZDA0OWJjM2FmN2YyMzUwMWE4OWM0OGIyZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMmE0MmZmN2MyNmI2NzU5YmQwMGJiYzlkMmU5NGY0ZGU2N2U2ZDU3MWFkMTE0NzY5YjFjMjk4MjE3MzkzMzY1YiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjQwZDA5MDZhZmY4ODI4ZGVmZjljZGY2MWMxZTBlMzFlYjRiNDg1ZTQzYzExMTg1MjliM2EzMzJmM2ExNzcxMiJ9"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260913133911_shared_skills.sql#L42-L43",
+          "version": "repo-lines-v1:sha256:7a16015aa26b93acfa1b2b24c368b3a3ad02128e43e7864267444569622b84f4:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYjFkMjAyNTM5YTc4NWEwN2ZhN2NkNDkxNGRkNWM4MzBiZWJhYzRiMjY0NzE4NDBiZGMzMmI1YWVmNDhhNWIwOSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMjgwZDAwMDdjM2E2NWQzZDc1MTcyYjIyMzRmYTM1MjdmMDk5NzYwNzY5ZmIwYjk4MGQzYmNjYjhlMzk5MGI3OSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNzZlYjFjMzEwMmQzMzc5YzIzOTk5NzIwN2JhNjMzYjE2MjQ3Yjc1ZGFiYzI1MTc2ZmFmMDBlMzQyN2M2YWQ4ZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNWI0NGI0ZWI3ODk4Mjg1ODIzYzM5NGJjNmFkNTE0ZjdlODdmOGIwNDg0ODc1YTk4MTBjY2Q2ZTc4YmVhOTlhZiJ9"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260913133911_shared_skills.sql#L75-L76",
+          "version": "repo-lines-v1:sha256:62e2f8fb1b2ca37a84bdc937a8f2ef7760e47396c1824f0cec63372747e08677:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNjQwNDU4ZWQzYTJhZjUyZjMzZTIwYTU4NTUzYTI4MTQyMGYyNTZlZWI5ZjRhZTUwNTJkYTI4ZGFhZTE1NmQzYSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYjFhNTI3MmUxYjJjMjk4YmI5YjA5ZTg4MzQ2NTJjN2UzZmQ5YjgwMWMxOThhNmNmYTc3ZmFmMmE2ZDZmYWVlYyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjQ3MjA3ODk4NmUzMjlhMTU5NDBmZWNiYmUzNjg2M2VkZjM5YTVjOGRjNDExOTNkZjEyOTAyYWVmYzZmMjhhOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNTQ2NTQ5ZDVlM2M0M2ZjNzQ2OTMzZGQzM2I0NDI5ZjJjMGQ0ZTYxMWViNzg2MWY0MmUxZmJlNzdmNTVhZDdkNyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_fa598151061c4a6c94b66cd618175331",
+      "statement": "strap_skills_read and strap_skill_publish are security invoker, search_path='' RPCs executed only via the service-role admin client; both recheck live creed_members membership/role against the database before returning or writing, mirroring the service-role-only, client-revoked Vault RPC pattern (which uses security definer).",
+      "evidence": [
+        {
+          "resource": "repo://supabase/migrations/20260722120000_headless_access_and_secret_vault.sql#L224-L234",
+          "version": "repo-lines-v1:sha256:febf7b02dd02ba02f9c582f63382aa9234cac75b333d1bee056dd7f83c84b4c8:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNlYjEzYjNlZWIyYjgwYmM4MDQ0NTQ4Mjg2ZDNkMmU4ZGNlNTZkMGI4NTFkZGJmZjFiN2NmYWFkZWE2MDAxYjciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZjNGI1M2ZlMDQzNzk5YTE5NzA4YWJlNmNkNzIyMjI1ZWU1YThiYmM3OWNhNzMxNGE2MGRjOTY3YWIwMTU0NWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVmNGMyOWUzOGIxOTBmNjNlZjE4NDFiZWM5OGYzOGY3ZjAzMDM5NWM3MDE3YzVjMDg5YmY4ZjQxZWRjN2U5NzEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgwOTdlM2U4ZTVmOWJmNDg1ZWRiZDJhMzVhYWQwZjVkYTM0ZDFiY2Y0ODNiYmU4ZGRhNGNhOWExZTBkM2E5MDAifQ"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260913133911_shared_skills.sql#L45-L56",
+          "version": "repo-lines-v1:sha256:9bc96c3fe27350db56dcbcf731798353647a4b0b413584544e30c7503c13de6c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM2NzVjZDJkOGM3M2Q2MjJkNDBkNWFhNmFhMWNiODc1MjVkZjM5MDEwZGYwMjkxODliMWRmODIyNTViNzAxOWIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjlmOTYwNzllZTU1MWQyNTIyODE2YWY5ZDM4NmU5YmUyNDhkMjA3MmU5YmQ3ZjZiZDc4OTRkMjFmN2QyMWM1YzUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNkNjM5NTVmZDNmMzRhMGViNTNlZDFhM2QyMTZhNjE2ZGE5MjAwZTBhYzViZjQwY2E0ZWE2MmRiYzE4NWJkZjEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk5YmRkYWMxNWVlOTkwOGFhNDUxMzI2ZmQyYjg4MWQ2MTE3Mzk3MDY2ODVkYmJkMmYxZWUyMmMwZTIyMmNiYTEifQ"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260913133911_shared_skills.sql#L88-L96",
+          "version": "repo-lines-v1:sha256:13bdb6060384ab73e45b86e4ce70c3a207f3849c64d4be88fe53bb3d95feeb67:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNzJkZDIyM2FmNTQxZGQ3ZmQ1ZGY0OGJlZjc2NTYwM2M1Y2EwNzBjZTNiNDIxNTRiYTE5NzViYzJiNzQ1MjYyNSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiM2FiNTdmMmNlODFhYzhlMWNlODA5ZDEzYjYwZmRiNTFjZWMwZGIxODdkNmU5NThiYzAwYWFmOGY1YTYwNmFmMCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYjJjYWY1YmI2Y2FiMmNkOTY0MzcwNTY4NmRmZGQ5NmY4NzE0NWJjYjUzZWE0Njc5Mjg0NTdhYmEyZmIzMTU1MCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMWI5OTE5YmFkODIyYjE0NDUxZDg2MmIyMGY5OTEwOGZkZTI5NTY2ZTI4ZmMwNGFlMGVjM2YxNjYzMTU0MjlhYSJ9"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260913153559_bound_skill_storage.sql#L17-L20",
+          "version": "repo-lines-v1:sha256:6b671ecf68ada36c809aaf8cd2ca3511f14750ace667f8d2de3f013972362edc:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNzMwYzk2NTJkZWMxZDIzYjhhOTIxY2YwNzFmZjM1Zjc0ZDA2MDgzMmUwYjMxYmQzMjRhZjg3MWMwMDkyMTE3ZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOWY5NjA3OWVlNTUxZDI1MjI4MTZhZjlkMzg2ZTliZTI0OGQyMDcyZTliZDdmNmJkNzg5NGQyMWY3ZDIxYzVjNSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZGRlMzZjZmFmM2Q3MjM5ODcyM2EyZDhjZTdkNjNkMmMwOWM2ZGZhOWY5OTg4OWQ1MmVlNTVmNTYwNDdhZjdjMiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNTc0ZTZhMTlhMmViNjdjYTQ4ZjhhMGMxNWU2MmYyMzNjNzA3NDFlMTJhZjVhN2MwOWU0ZTVkMmFjMTRhN2Y2NyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_7ffa169bd78945b5a0c374ae3d3345ee",
+      "statement": "strap_skill_publish serializes per library with a for update lock on the creeds row, rechecks owner/admin role, and rejects a stale baseRevision with PT409 (HTTP 409); an identical-content retry (matching files, digest, and archive state) is idempotent and returns the existing document without a new revision.",
+      "evidence": [
+        {
+          "resource": "repo://supabase/migrations/20260913153559_bound_skill_storage.sql#L63-L81",
+          "version": "repo-lines-v1:sha256:7daf043350b2a428dc3fa8189fd340306aa63dcbfa0f196c7e439321f8b7e0b0:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI2YmE5MjgwN2UzOWYwZWJhYWM1ODg3NGRiOTAyNTM5NzI3OWRjYzFmNTBlMWY1ZWE5ODk4OWYzOWI1MzdjOGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhiMDNlOWU0ZDM3MGUyMDUyZjNhNTk4YThjYWFhNmFlOTIxY2NhZmQ4Yzg3Njg0ZjAzYTc4MzA0NzQ5ZTk5ZGUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRjYjM1OGQzZTM4NTllYTg0OTRkMTRlMzkxMmJiNmM3YTJmMzBkNzM5MmM2YTcwNjJhOGVlOTk1MDFkZThlMjYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRiYTcyNTJhYTFjODU4OTczYmViYjczMjVkY2JiOWNjMWIyMjU3MDQ5Zjc4ZWY1ZTM4YjJjZmQ3YTMwYTA4OTYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b888295f008e4bcead88dc37f887b5d8",
+      "statement": "A new skill requires baseRevision 0 and a supplied bundle, enforces a 100-skill-per-library cap (raising 54000/HTTP 422), and on publish increments revision, inserts a complete document into strap_skill_versions, and prunes versions older than revision - 20, keeping the most recent 20 including the current one.",
+      "evidence": [
+        {
+          "resource": "repo://supabase/migrations/20260913153559_bound_skill_storage.sql#L87-L100",
+          "version": "repo-lines-v1:sha256:ac3751fa61682d15aacf56a2e3e7f8c21dee7a2b1b48fc220e251adf376f7433:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhZmVjMjcyZTc2ZjI0OGE5M2NkZTcxNzc2ZjM5MzIxMDY4ZWFmYzMyODczNzVmN2E2YTgyNGRlOTg3NzgwZWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg3YzBkOTk2MzIxNWZlNjI4NTVlN2Q3MzIyYTY0NzliOWFmZWNlNDk3NmEzNGY0NDU2YWY3Njc5MGFiY2EyMTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE2MDE2NTMzYzdhYTdiMGUwYzdiNjcyY2Q3MTVmMzQxNjhhNjgzMWFkMjQyOWE4NmVmYzE0YzE4MWZhM2E3ZmMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA2NGRiMTEyOGVkMjA5ZThhOTAyY2M1NDE3ZTliNzBjZjA3MmIxOTBmYzI3OTkyMmZmYWVlN2M1YjVhYWJiMjAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_5da4e07eb7e14845bc10fdca5f775de7",
+      "statement": "The per-library storage budget is 64 MiB (67108864 bytes) shared between current strap_skills bundles and retained strap_skill_versions history; on overflow publish prunes the oldest historical copies first (only versions with revision < current, ordered by updatedAt), and rolls back the publication if usage is still over budget, raising 54000 (HTTP 422).",
+      "evidence": [
+        {
+          "resource": "repo://supabase/migrations/20260913153559_bound_skill_storage.sql#L101-L123",
+          "version": "repo-lines-v1:sha256:899693bddb3022ce1150a1a9fbea0b500456b50f38fd0dd730eee2bb02a431ef:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhYjU3ZjJjZTgxYWM4ZTFjZTgwOWQxM2I2MGZkYjUxY2VjMGRiMTg3ZDZlOTU4YmMwMGFhZjhmNWE2MDZhZjAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc3YjI0ZWI1N2VkNDZlZGNiYzNkYTU2ZDZiYTdlM2IwY2UxMTZkYzk0ZjY1MDkzZjgzYjUzZjllMjhiMDMxZDYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZkMjgxOGVjYTc3ZjlkZDEzMDE0NjM2NjBiOGUzNTQ0M2ExMTQzZDI4NGJlMGZmZTZhMTAzODU0MDVlMzA4N2QifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_2d6040f75f5e4b859bcc64eafe964870",
+      "statement": "Skill bundles are validated in-app before publishing: bundle.ts enforces 1-128 files, <=2 MiB total, <=512 KiB per file, portable paths excluding traversal/node_modules/credentials, canonical base64, valid UTF-8, and a root UTF-8 SKILL.md whose frontmatter name/description match the request; lib/skills.ts recomputes the SHA-256 digest over canonical content before calling strap_skill_publish.",
+      "evidence": [
+        {
+          "resource": "repo://lib/skills.ts#L96-L135",
+          "version": "repo-lines-v1:sha256:67fee0663eada7117ac1df0b2449c0a190fe8452039b19993c5bb12b454c7e15:eyJzZWxlY3RlZExpbmVDb3VudCI6NDAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgxMjI5MmUxNDc5NzkyY2U1MWMxZTY4NTIwZTI2ZjMzNzFhN2U2NTZlMTdiMWNmNDM5OThiOGNmZmIxYTQ4NGQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdlNWViYzMxMDUwN2MyNjY5OWEwMGEzYTAyNGE0MzJmMzBmMDVmZmY2NWIxYjk5ZDAyYWQxZjNiMDFlYzZlOTYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNmMDk1ZDBiMTM2MjgxOGU4ZGIzZjNlMzNlY2E4MzgwNjI4MWFhZjZhNTEwZGQ1ODk1NWMxYWIxZWNiYWE4ZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://packages/strap/src/skills/bundle.ts#L126-L233",
+          "version": "repo-lines-v1:sha256:e9bfa97e1fb8219e8d540cd83202b7e80aa114012ce592de5691e0ce331ac600:eyJzZWxlY3RlZExpbmVDb3VudCI6MTA4LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJkZWU4YTlkOTYwOTIzYWVjZTI4MTgyZDFmYjUxOTUzNDc2Mzc5NzIxNzZkZDJhYTNkZGE0Yjk0YjU4N2FlM2U5IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJjYjVmZWM3MzMzZGNhMTVlMDVkYjUxZGUyM2ZlYmZiMDQzYWU0NDhhMTFkZmFkNDYxMjliNTFhOThiODBmMzMwIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI5NmQyYzViNTgwM2RkZjBkMDgzMzkwODdlMTc1OWY3ZDhkZTFlMDQ3YzkxZDZhYzk5Y2M5NDdiNTFlNjgzODkzIn0"
+        }
+      ]
+    },
+    {
+      "id": "claim_ac1a1edc198d4bd7ab3f34e6446e1f13",
+      "statement": "Browser skill reads and publishes enter through app/api/app/skills/** authenticated via requireApiAuth (Supabase session) with private/no-store responses; the PUT publish is rate-limited to 20 publications per user per 60 seconds (429 on overflow), and lib/skills.ts maps RPC error codes to HTTP statuses (42501->403, P0002->404, PT409->409, 22023->400, 54000->422, unknown->503).",
+      "evidence": [
+        {
+          "resource": "repo://app/api/app/skills/%5Bname%5D/route.ts#L34-L71",
+          "version": "repo-lines-v1:sha256:90a3f84a1dda9917a10742e94ba2fa45a3abab635b216330ac88a0865372c905:eyJzZWxlY3RlZExpbmVDb3VudCI6MzgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ1YjUwMDNhZmI2ODM1M2NiYWY2ZWM0YWNkODQzNTA4NmQ1NGY2N2VhNzdlN2E3OTgxNzBlZDgxNWZmZTM3MWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZiNTgwZTk2NGY4M2E0NzNmNDNkNDQzODQ2Mjk0OWQ2OGI1NjAwZmRhNzg3ZjE2Mzc0NWQwMGRlODljYmYzNmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://lib/skills.ts#L56-L72",
+          "version": "repo-lines-v1:sha256:c77511db0ae7ad691fbdc7b2fa7c95c1942dafa01a5f9462ad3b89cdc1fc2751:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYwMzNmZGZlOGI5OTdiMzhkZmI4YzIxMDMzMDBhODJiMTk3ZWYyNTZjODdhODBjYTgzOTAwYzAwODAyMWY3ZDMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg2N2FlMjlkMGQ3OGRmZjdiZTJlNTUwZDQzOGUzZWRmNTBiNmZjYmQyNDYzMGNlMDkzMjlkMTBlNGYzNzVhNzAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU3NTc2YzQwNjEyZmY4OGM2MTMxOTg0Y2Y3Y2Y3YWI0NzQwMjY1NTIyNmQyZWJlMTBhNWQ0ODJhZWQ5MTkwOTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjkyZTg0NzgxZDFiODg4YjQ0MGE3ODQ3ZTkwMjYzOTlhMjlhMzFjMzZhMjU2MjJhNjgzOTY1Y2FkNTQ4MGQzODYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a8a5ab04f8034153afbbc29622cabd1a",
+      "statement": "Vault credentials use recoverable AES-256-GCM encryption in lib/secret-crypto.ts (separate from Supabase Vault) for OAuth/GitHub/OpenRouter/legacy application credentials, while OAuth access/refresh and legacy agent tokens, device/user codes, and headless API keys use SHA-256 hash-only lookup.",
+      "evidence": [
+        {
+          "resource": "repo://lib/secret-crypto.ts#L1-L51",
+          "version": "repo-lines-v1:sha256:e5cf9c69773cf919d846b60a6ee762a35b65864cb01c054646f51d2d735937f0:eyJzZWxlY3RlZExpbmVDb3VudCI6NTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBjMGY0OGUzOGZiZGI2YzBlZmU5ODdjOTg0NTIxZWQwNzQzMjc1NWI2YmFhY2NmNDVkOTc3ZTU3ZGI3Y2JhZDQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260722120000_headless_access_and_secret_vault.sql#L1-L60",
+          "version": "repo-lines-v1:sha256:a92190d1814ae0bf1fbae039eabab87047c3fabbafb4d6e13f91ff02e681c455:eyJzZWxlY3RlZExpbmVDb3VudCI6NjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRlMDBlNmFmN2I5ZThkODRmMzJhMGVlYzU4Njc1ZTk4NTU4NDI4ZTc1NjgwZjFkMzEyYzE1MWIxNWEwYTNhNjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFmNGRmYjExNThiNjQyMjk4OWYzZmZjZTJiMzljNjI2ZGJjNjZhYmY4YWNmYzhlMjNiMDFkYmExM2YyZTllYzAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQzMzU3N2Y4Y2Y5YmZkNTYxNjEyZDJkOGJkOTNjODY5N2ZiMzc3MzI2NTAyN2ZmM2M1NjNjNTg3NWRmMjVlOTYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_47fce7031c20468fb099682373f5383f",
+      "statement": "Migrations are forward-only: historical Creed- and Stripe-named tables/columns/RPCs must not be renamed; customer-facing defaults move to strap naming via 20260724120000_strap_profile_defaults.sql but internal Vault secret prefixes and Creed RPC/table names stay Creed-named.",
+      "evidence": [
+        {
+          "resource": "repo://supabase/migrations/20260724120000_strap_profile_defaults.sql",
+          "version": "repo-file-v1:sha256:c06608c4b76f98170a0c6351d1e2934e55cbb5730f47d988c22aab722e3e8472"
+        }
+      ]
+    },
+    {
+      "id": "claim_21e944c0f444449b905ec039f2d29d1e",
+      "statement": "Reveal is fail-closed: recordRequiredAuditEvent must persist vault.secret_revealed before plaintext is returned or the route returns 503; the reveal RPC has already decrypted and updated last_accessed_at, but plaintext is withheld from the HTTP response when the audit write fails.",
+      "evidence": [
+        {
+          "resource": "repo://lib/api-key-vault.ts#L120-L162",
+          "version": "repo-lines-v1:sha256:06586a88f362de00ac167b3acabb4bef1e4e66c4f655352a67d7a2dd8a896059:eyJzZWxlY3RlZExpbmVDb3VudCI6NDMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFkY2IwNTAwYTM5ODVkNmU2MTYxNjNkYWI3OTI2ZmUwYzU4ODdiMDYzY2MwMDgxODkxZjM2MzFkOTY1NzI5MDYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ5Mjk0YTBmNzIxMDVkODc0NGU4ZmJiZWU1ZjAzZTJjNWRkMTU0N2ViYzg5Nzk4ZTI0NGI5NDU3YjAyYTA3NGMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU2ODg1OWNhZWM4YTdkNDVmM2UyOTg3ZmEyZDhiNzU4NmFkMzNhYzQ2ZGY4MWFiNGQyOTVmYzNkZjMzNjMyZWQifQ"
+        },
+        {
+          "resource": "repo://lib/audit-log.ts#L100-L122",
+          "version": "repo-lines-v1:sha256:35d6fa5eb65b1a3e65883e62f1e26869dc0e13b650068e5abfb5bb88b4fdec7a:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZiM2VkMWJlOGNiMTdmOTZmZjBjOTk1MTJjODZmN2ExMTEwYTQyNzAyOTI3YzU1MDg2OGRmMjVmMjFjMGY5ZTIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRiYzdjYTllYTljNmNhNDI4NWU0M2Q0ODE4NGZjN2Y1MzhjNTQ3MDMyNTY5MGU4ZDVmZDdjZjViMWUzNmYyMjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.2",
+    "at": "2026-09-15T08:01:45.050Z"
+  }
+}

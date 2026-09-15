@@ -1,0 +1,202 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:5b526c4b099f8f8a19f12dc1abadcd38c5a69e1772f3fe5446af58d5b6439cb4",
+  "claims": [
+    {
+      "id": "claim_e378aff29c8e43cab91418bd311cae67",
+      "statement": "A Strap owns three deliberately separate resource kinds: context sections, Vault secrets, and a shared workflow skill library. Skill publishing is owner/admin + direct-connection only and is separate from section editing and the proposal lifecycle, with no path between skills and section content or the review queue.",
+      "evidence": [
+        {
+          "resource": "repo://lib/skill-tools.ts#L1-L29",
+          "version": "repo-lines-v1:sha256:cdb28140565a844af0dbc0874e45b69c59e1a06cf3b233423f8a940cde053810:eyJzZWxlY3RlZExpbmVDb3VudCI6MjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUxM2UwMzA1Y2NiYTliMTFhMzNmYjY3ZTFjYTI4OGRmOTBkZjdlYWYzNjdhOGQ1MDBjODIzMmZiMDE1MmE3ODMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU3YTYzYmUwNmE3MmZmYWU0MDljMWM5Zjc5ZjRlMmM1ZDJmYjJlYzZlNzRjNmZlZmFmYTliN2NiNWE1NzgzY2UifQ"
+        },
+        {
+          "resource": "repo://lib/skill-tools.ts#L122-L139",
+          "version": "repo-lines-v1:sha256:913d066c6c2b4cf821a920ef1432ae549ae50bef8d2ac5fea3170bf476259958:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY3Yjg5NjljOTJlZGYzOGFlMWU2NmYwOTNmODA5OGZlOWVlYzEzMzRmMjc0MTVhYzRkMzFmZDAxOTg5NWQ5NDAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE4YTkxNzU5NzJmZTE1ZTJhOTY0MWFiMTMxZjU3MWU2YzdjYWJjYTA2ODM3NjJlYmE1ZjIzNTNlNDgzYzNkNTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://lib/skills.ts#L96-L136",
+          "version": "repo-lines-v1:sha256:2bd2cce222faf91df9b347f5b185630fcaffd10f5e3fa487a11b8a7ccfa39c48:eyJzZWxlY3RlZExpbmVDb3VudCI6NDEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgxMjI5MmUxNDc5NzkyY2U1MWMxZTY4NTIwZTI2ZjMzNzFhN2U2NTZlMTdiMWNmNDM5OThiOGNmZmIxYTQ4NGQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNmMDk1ZDBiMTM2MjgxOGU4ZGIzZjNlMzNlY2E4MzgwNjI4MWFhZjZhNTEwZGQ1ODk1NWMxYWIxZWNiYWE4ZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_aa6dac934c76463285ace9fece8c060a",
+      "statement": "The permission lattice hidden < read-only < propose < direct is encoded in lib/strap-permissions.ts as a pure, dependency-free TypeScript module shared byte-identically by server payload builders, company write-route guards, and the client UI; the SQL RLS helpers creed_role() and creed_section_permission() are its twin and must stay in sync. lib/creed-permissions.ts is only a deprecated re-export shim.",
+      "evidence": [
+        {
+          "resource": "repo://lib/creed-permissions.ts",
+          "version": "repo-file-v1:sha256:0eb3381bfc96a872cef113ecde9c035633824116fffe19bfb0dc3633e6202df3"
+        },
+        {
+          "resource": "repo://lib/strap-permissions.ts#L1-L54",
+          "version": "repo-lines-v1:sha256:db04b843b9e1b3674dc0206d4bcaaeab9ce7c282edda8302211b11e339a5add8:eyJzZWxlY3RlZExpbmVDb3VudCI6NTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg5ZDE1OThiYmM2ZTIzNjc5ZWVkYzM0YWRmZGYwNjUwY2VhZjc5MWMxYWNmYTk4NTRiM2RjZGNjZmMzY2JmOWIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFhMWQxYTYzMzkwMjI5Yzc5ODM0N2U4M2EwNDA1NDQxYzk0MDAwMzUyODRhZDE2OGMxYmY2Y2RmMWQ3MGEzNzAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZkZjhiZDAzOWQzMTViM2NmZGMyMWU5MWRiNDk4NjhkZjg5MDBiZGJlNDQyNzE0MjhkNjU4YmRiM2ZlYmMxZjUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a989e3e806bc45ae99df9608587f56fd",
+      "statement": "A member's effective permission on a section is the per-section override defaulting to direct when absent; agent access is the min of member section permission, the member's agent ceiling, and the credential grant mode. A credential mode can only narrow access, never elevate it.",
+      "evidence": [
+        {
+          "resource": "repo://lib/company-sections.ts#L26-L43",
+          "version": "repo-lines-v1:sha256:29e4a9998bcdcc46ba98351047a87a3bd38a5e5200fe758004b22629cd839401:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI0NzVjYTM0NzE5NGYzMjAzZjVkNTQ4NDZmOTRhNTdkZDU0MGI4OTI1ZTg3MGQyNDMwMzc4MzI1NzU4YjNmMGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZiZDA1NGMyNDMzMmIzNTQ2MTQ2NmIxZjQ2MTFlYzI2OGRjZTBiMzRjMTdmZmZkOTRiZDQ0YjJmZmFkZWUzOGEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ4NmU3MGJiNjcwMjJmZDc3NTUyZWEyN2Y1OWUzNjJjZDMyOGQ5MDdhOTE2ZTk3MzU5NzAwY2VjOTMyMDQ0MGEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBlZTBhZDE2YjI0NGU0OGIyMDQ4YTY3ZDVlM2M0ZWFlMTQxNWVhYWY1NTQyYTBlYzI3NzgwNTdmMDNlZjBmMjcifQ"
+        },
+        {
+          "resource": "repo://lib/strap-permissions.ts#L56-L151",
+          "version": "repo-lines-v1:sha256:fe31de1595cc93e864992030f1b3873a239699990daf8d20e73d7cd4bb3ff95e:eyJzZWxlY3RlZExpbmVDb3VudCI6OTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVhNDk1MTYyOTc2MjdmZWFhOTVjYmFlNTE2OTBhMjE4ZWEyMmJkNDY3OGFmZDg0ZGM5Y2U4MzEyMTFkZjAzODMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_bf7fa887ce02430f8320e1ac754ea333",
+      "statement": "Company section writes never go through the personal full-state PUT: the /api/app/state PUT autosave path rejects any active Company Strap with a 409 companyMode error, and Company edits must use the per-section API with baseRevision optimistic concurrency.",
+      "evidence": [
+        {
+          "resource": "repo://app/api/app/state/route.ts#L35-L52",
+          "version": "repo-lines-v1:sha256:137007220ae07cbfd599d262d461cfdec2afdc40d9bdff2de833c37c38a3f593:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ3ZTExZjg0MzZjZTk4ZDJkOWY0NDIxOGY3N2Y0NGM4NjBlMTQ5YjZiZGY2MGMxZTNlNjdlNzY2NWU2YTI3MjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNlMDVlODg2ODRkMDhlNmUxNGFhYmI2N2JlOWE1NWRiYWMxNGVjOWEzN2MwZGUwMzgzNjUwZDU5NzJlYzUxOTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE4NTdlNTJmNmE4MjQxOGM1NDk1M2Y0MWM5ZDc3MDQ5N2E4MGQ3ZDE5NzkyMDZmMTlhMTc2N2FlY2YxYzBlYzEifQ"
+        },
+        {
+          "resource": "repo://lib/company-sections.ts#L26-L43",
+          "version": "repo-lines-v1:sha256:29e4a9998bcdcc46ba98351047a87a3bd38a5e5200fe758004b22629cd839401:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI0NzVjYTM0NzE5NGYzMjAzZjVkNTQ4NDZmOTRhNTdkZDU0MGI4OTI1ZTg3MGQyNDMwMzc4MzI1NzU4YjNmMGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZiZDA1NGMyNDMzMmIzNTQ2MTQ2NmIxZjQ2MTFlYzI2OGRjZTBiMzRjMTdmZmZkOTRiZDQ0YjJmZmFkZWUzOGEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ4NmU3MGJiNjcwMjJmZDc3NTUyZWEyN2Y1OWUzNjJjZDMyOGQ5MDdhOTE2ZTk3MzU5NzAwY2VjOTMyMDQ0MGEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBlZTBhZDE2YjI0NGU0OGIyMDQ4YTY3ZDVlM2M0ZWFlMTQxNWVhYWY1NTQyYTBlYzI3NzgwNTdmMDNlZjBmMjcifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b6dbe4243c544dd09fb9d97eedad2937",
+      "statement": "Company proposal review gates: owner/admin may review any visible proposal; members may review only where they hold direct; new-section proposals require owner/admin because a new section has no permission row (the member default of direct would otherwise let them approve structural changes); stale base_revision proposals are marked stale rather than applied; only pending proposals are reviewable to prevent double-apply.",
+      "evidence": [
+        {
+          "resource": "repo://lib/company-sections.ts#L1305-L1390",
+          "version": "repo-lines-v1:sha256:52fbebb44889e3452a60eb8205e62781c881315590de346f8f8e42dddbce5b5a:eyJzZWxlY3RlZExpbmVDb3VudCI6ODYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNiODMyZmY1M2ZiYzU1N2VhNTc4YTkxOWRlZTk0ZDk1MmI2NGJkZjFmOWJkNzRjZTBlMTNhZTE2N2JkY2EwMjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc5MWJkOWNkMThkOGQzYmNjNjMwZjJmNzhmYjg3Y2I3MmZkZjkwYmUyNzE4ZTg4NDI4MTA2ZjdhMTQ0NDM4MWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA5ODc5NDA2ZmI0MDFhZmI0NmI1NjQ5ZGQzYTFkZjk1MmNjMDI1NGFhZjYyZmFlMmQwNmEzMThkODRhZjMxMjYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZiN2YyMjljZjg2ZmRmN2VmMDk1NGRhMmUxZDg0YzNmOTMxNWIyYzYxNTZjNWZkMWE5NjZlMGE5ZjYyODlmNTQifQ"
+        },
+        {
+          "resource": "repo://lib/strap-permissions.ts#L86-L97",
+          "version": "repo-lines-v1:sha256:350332a6d0d35e2ee1e5dff483de808380968aed449d965b1b581cb9aa484f62:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNlZGZhZDRlZDQ2OTk3ZDA0YTYyNzRjM2VhM2Y0M2RmYTE3OGEwMGZmMWVhNWQ0Y2YyNGE2N2ZiYWIyMTE2ZGEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImYwMTczZDMxM2MyNDkyMDIwZDc5MDg1YzkyZjMzYTZjMzlkNDIyMjEzMDIxN2UxNjM3MmMxNzRmNzJhZjkzNDYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a3062e072b12463c873953bfe8ba368c",
+      "statement": "Company section restore writes the stored version's content/name/accent as a new revision via applyDraft (cause restore) so history is never destroyed and a restore can itself be undone; it is owner/admin only.",
+      "evidence": [
+        {
+          "resource": "repo://lib/company-sections.ts#L1636-L1700",
+          "version": "repo-lines-v1:sha256:8e44d25196b13cd30ac59fc34175ace1fec74c66d14d4692c13e437fc507d866:eyJzZWxlY3RlZExpbmVDb3VudCI6NjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkyMDQwZTA5NWE5NGUyYWRhNzRlNDIxZjM3MTg3NTFhOTFhODEwYmZkNjZmNDhmNGU5MzljN2I3NDgwZWI2NzAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc3ODc4NjIzNWNlN2M5OTM2ZjI4Nzk5ODBhMTQ5MzQ1ZDllMTQ3ZmQ4Y2I3ZmQ3MWE1NzA2NGZhZmNiMjdiZDMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_4572e5ef8bf84d5293fc21b99f8da690",
+      "statement": "POST /api/app/company idempotently creates or resumes the owner's one Company shell and owner membership via provision_company_creed, then makes it active; one owned company per user.",
+      "evidence": [
+        {
+          "resource": "repo://app/api/app/company/route.ts#L9-L32",
+          "version": "repo-lines-v1:sha256:4333f883a21ed7584b3e32c8bd87d72493cc3337ae5905ef494d6a22e219ab3b:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRlZGM0NTg5MThkMmNiNjM3YmFiYWFkMDlkYmY0OWNjY2M2M2ZkN2RhOWE2MTg2MmFmMTY5ODZjYTlmMDFlYzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRkM2Q5ZDMzNjAyZDVmZDc3MDFlYjhhMjdiYjQwZWMxOGRkZTA3NmQ1ODRlNTNkNTA0MzhkNzI4YTM4ZjhjOTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRmOGM2N2RhOTU4MWZlYTc3NWMyOTM0MzlhNzcyMTVkYjQ3N2UxN2RhYzQ2ZDEzOTJjODk0NzNlYWEyMGNjZTYifQ"
+        },
+        {
+          "resource": "repo://lib/company-provision.ts#L5-L28",
+          "version": "repo-lines-v1:sha256:04e78d00fea509ed806b7dfb33971e07d5299dc891eab82699bf14b5ac0862c7:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjEzODZjOTcxYjAxOTkyYmFjOWEzMjNhMzY0MDdkYjM5OWUyMjRjZjc5Y2ZlZmE0YjExYzdiOTU5ZmM1NzhmZTciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjcwNTUyM2FjZTBkMDlkY2I1MTVjZTI0YTc0ZmYxNWU1MDVmYTIwMzA3Y2M5NmZmYmY1NzZkNzM1NTI1OTBjYzQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e97fb45664ad4539a73d86fd3f4a77cf",
+      "statement": "The app layout resumes company onboarding by scanning every owned Strap (not just the active one) for an unfinished, owner Company record and redirecting to /onboarding/company, so a stale Personal active cookie cannot hide a resume.",
+      "evidence": [
+        {
+          "resource": "repo://app/(strap-app)/layout.tsx#L79-L93",
+          "version": "repo-lines-v1:sha256:72ebc8c30c99a107a477606958c5e51800012e84148fefdb213f93b47eefdfd2:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhNzIzZmVmMTBhM2E5ZmY0NDVkNmEwYWViNTNjODlmNDczODVkYmEwNWVhMDcwNWZiMmRjNDcyZWQyNDBkOGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk3ZDg2MzJlNTRlOTI5OGFiYjk1ODcyN2UyZDUxNDA4YWJhZjEzNjYwMzUzNzkxMDE0MGFiZjY1YjMwYWI2MTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjAzMTc2NzU5MTc1Y2M1MWEyMjZjMTFmOWViZjUyMjEyMjVmZjU1MmI4Y2YyNmVjYmY0NGM5ZDkzOTU2MTVmMzYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_fe78a6a86fa1421caa19b014472a06fb",
+      "statement": "GitHub profile-file path behavior: absent/blank or configured strap.md reads strap.md then creed.md fallback; any other explicit path reads only that path; push refuses to create strap.md beside a fallback-resolved creed.md without explicit migration.",
+      "evidence": [
+        {
+          "resource": "repo://lib/profile-file.ts",
+          "version": "repo-file-v1:sha256:2f88f8720accb32ce0c79a71b33255081af1774fc37a59f82b529571458d9584"
+        }
+      ]
+    },
+    {
+      "id": "claim_0c3c671a5fa3419ab558f632c3a2ab4d",
+      "statement": "GitHub serialization uses ## as section boundaries, shifts nested headings down on export and reverses the shift on import, and preserves accent in an HTML comment <!-- creed:accent=... --> under the heading that is a retained format identifier; the round trip targets supported editor markup, not arbitrary byte preservation.",
+      "evidence": [
+        {
+          "resource": "repo://lib/strap-data.ts#L1358-L1378",
+          "version": "repo-lines-v1:sha256:499f929a217e36f48fbca57be5e7b898f21b146df2a8f82d5e24c6c1c00ce9dc:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVhNmMwZjQ0NWRhMWIyYjM1YWI5ZmE1MGVlMzczZWE4NjFkYjEyYTI2N2ZkNTdiYTIwYmY1ZDQzMzlkNDg2ZWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRhZmQ3YzA5Mzc4MjdhYjlkOTMxMDk1M2E2NGU5NGE1MzEwZWZjNDkwYTRhOTE5ZTQyZGJjODI1MWEzMDAzM2YiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBlODM3MTAxYmEwY2U1ZDc4MWNjOGU4ZWNlYzA0NjYxNmRlNGRiYzBhMjY2NTY0ZTc1YmJlNzZiNWRjZDQ5NWIifQ"
+        },
+        {
+          "resource": "repo://lib/strap-markdown.ts#L98-L165",
+          "version": "repo-lines-v1:sha256:0b069f5613fe691c904fdd38a1c40931487e65ec688a815a61af3e806dd750a6:eyJzZWxlY3RlZExpbmVDb3VudCI6NjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZmOWM3OGM3OGJlMDU3OWExMmFkNTkwY2FiNmQ4Y2Q2OTUxYjBlZmQ3ZTA2Yjg2ZWYxOGYzMzc0ODUwOTY2NzAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA5ZjkzMDgzYzE5NzEyMWI5ODI3MDBiYThhZmFiZDE3MjJjZjFkM2U3NDA0NTA5ZTgwZWZhMjcyNDdmNjJmMDciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE4Y2Y5MjAwNTA5NTIxMTg0MzEyMTQ2NDFjN2FkMWI0MTg1MTYxMGNiZjY2MzZlY2IxYmQxMGZjY2RiYzRmOWUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_8da6f851016d4fb6bc0b094d53921d0c",
+      "statement": "Personal supports GitHub pull preview/apply; Company currently supports push only because pull/apply overwrites sections via the personal full-state persist, which is blocked for Company Straps, so it returns an error for a managed Company context.",
+      "evidence": [
+        {
+          "resource": "repo://app/api/app/github/pull/apply/route.ts#L19-L27",
+          "version": "repo-lines-v1:sha256:55f5046102867019ecfc05faa0f8ff83cc8dc0fc64b7c52157357956744767a7:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOGM3ODM5NjFmNjU1ODU2M2E1OWQ5NmM0NzQxYTdlODQxMmZiMWJhY2MzM2FjNjc2NTk4ZGNhMjExZjU5ZWQwMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg5M2Y0MGUzNzgxZWI4OTZjODJkMDQ2YTA4MDY3YTExZTM1Y2RmMmYxZGZhZjI2ZmVhOTBiOGRiNjY3NjQxMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjQyNGNmZjY3MjNlNDMwNGRkOTNjOGFkNTk5M2Y0OTIwNzQ4M2FhM2M5NmFiM2ZjNjQ2M2UzYjExYmE4ZjBlMSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYjFlZmFhZjIzYTc1NzJiYjlhZDhjZjU3ZDk1ZThhYmI5MzgxNmUyNGM3NmI4YzhhNTk5MGRhNzI3ZGJiYmY5NSJ9"
+        },
+        {
+          "resource": "repo://app/api/app/github/push/route.ts#L47-L57",
+          "version": "repo-lines-v1:sha256:b2ccc8a504440230fbd494bef83195eb4c4190f67887b83eac467f81e878050c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBhZjVjZDE3ZTQxNThlNzZmZDVhYTYwZmJmYzZkMTY3N2Q4OWU3OTFjOGMyYWU0NTQxMTQ2OTA0YWFjN2U4NWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk5ZjgwZTZmYTA2M2RmNTFlOGE5ZTAwZDZiMzUyZTJkNjc1ZDc5MzU2Y2FlYTBiZDRhODg1NGFjZjEwMTNmOGUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRhMzFmMGQ2YjVjMmIwMzI2OWFiMjAxMjdmZTYyYzhlYmM3ZTQxNGRiZmY1MDk1ODk3OGNhZjZlOWE2NTY0NDciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjlkMTZkNzg4MWQ5MGJmZDljMWZmMTkyODQxOGI5YTE3NjQ2MThiNjBkMGM1MDk4MDMwNGY2YTc1ZWE5MTk1MzQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_3e6a2878774a4493babb9db3b9e2d857",
+      "statement": "Personal onboarding compiles a deterministic five-section skeleton (Identity, Goals, Work, Preferences, Routines), all agent-writable; optional sections grow in-app later via agent proposals.",
+      "evidence": [
+        {
+          "resource": "repo://lib/onboarding/compile.ts#L106-L198",
+          "version": "repo-lines-v1:sha256:8442af2b891cbe575846df87c3b1cce97acb2bc2d51d31e400d2a9c5bfec9592:eyJzZWxlY3RlZExpbmVDb3VudCI6OTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZjYWMxZDc0ODQ1YWVlMTE4ODI1YTMwMWMxNTg0ZGZjNzZlZDlmMzY1ZDQ2OWE1MzE4N2FlMjY4NzJjMjk2ZjIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjgwNjM2Yzc4M2M1NTNmNzU5M2QxNWJkNTcxNmMwMjdjMzU2ZDRjZjYzY2Q5N2ExNTZiOTE3MTc0ZDRiY2RmZGUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://lib/onboarding/compile.ts#L12-L21",
+          "version": "repo-lines-v1:sha256:9d33405286f80cc23c693641bfde7ddc137bf8abf423963c9f0512f7da0c9e31:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIwNThlOTc3MzM5M2JmYzZiNDY4NTBkY2IzMDZiYTJiZTdlOGExYzM4ZDJkODA1YmMwN2FlYTBiYzc0NDA4NzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM5YjAzMmYyYTJmMmQ2NmQ4NTRlMGU3MzY5NmY4OTNiYzA0NmM3NDNiOWNjMzI5OTQ4NzJhMTg3Yzc0MjQ5NTciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdhMzA5NjJjNmU5ZjI1OTU0NDUzZjcxYjlkYjJlODRkM2M3OTkwMDdjYmU4ZmRjZjBkY2QzYzA5NzdhYWRlMWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJiYThjM2QwOWRkMThhOTQ3ODNiMmMzNmMzOGZjMGFiYjY3ZDhiZWFhYWY1YjAyNGJmMDk1NDc0YTU5MWEwODIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_82d6db583a604f6b842fd5292ada29f0",
+      "statement": "Company onboarding compiles eight sections (Company, Ethos, Operating Rules, People, Projects, Clients, Tools, Agent Rules) from organization answers, with answered sections carrying the company's words and the rest shipping as light stubs.",
+      "evidence": [
+        {
+          "resource": "repo://lib/onboarding/compile-company.ts#L14-L20",
+          "version": "repo-lines-v1:sha256:168efb8d4edf654d5263862782909814dad1eb61018bda6ceaead39e3ecb0736:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNTAxZDQ2N2VjNWUyNjE0YjI2MWMzMzljNmI5ZmI0MzU4ZThhOThkMzNlYjZiNTRjOTllY2MzYmNjZDVmOTg4NCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZWVjY2M4NzFhZjI2YzVjMzlhZTE2ZWJhYjRmNTZkMzg4ZTg0OWIxMTA1ZWRiMDg1MTRmNDYzMWE3YTc3NmMyOSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNWFiN2JmY2M0ZGExYzU1MTg5M2JhZDlmMDNmMzkyNjEwNDEyYWI4Mjg1N2Y0NDFjNmEyYzhjOGVhODRkN2I4MCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNGYwOGQxYTczZmU2YmFlMjE0MmRkMWY3Y2MxOTI2N2E2ZDgzZmE4MDhkNjI1NDVlZTRkNWEyNWYxZDFhMmUyNSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_94f2dae4b7504116964d36916b9f7911",
+      "statement": "The old lib/creed-* paths are deprecated compatibility re-export shims that re-export from their lib/strap-* counterparts; Creed-named database identifiers remain compatibility contracts.",
+      "evidence": [
+        {
+          "resource": "repo://lib/creed-backend.ts",
+          "version": "repo-file-v1:sha256:e1ff99da9b0af4158025ff96a0a9eb096f2d7e9b5eb074204c2775116b715d06"
+        },
+        {
+          "resource": "repo://lib/creed-data.ts",
+          "version": "repo-file-v1:sha256:08d6f743b437127a5b015b711962d9b3d8fbf70b3e8222326d29b8b386ddfff7"
+        },
+        {
+          "resource": "repo://lib/creed-membership.ts",
+          "version": "repo-file-v1:sha256:bfd1168bd1f515258c99523ef5baaab878e25acc88cf744a356a5837fc88c7b2"
+        },
+        {
+          "resource": "repo://lib/creed-permissions.ts",
+          "version": "repo-file-v1:sha256:0eb3381bfc96a872cef113ecde9c035633824116fffe19bfb0dc3633e6202df3"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.2",
+    "at": "2026-09-15T08:01:45.050Z"
+  }
+}

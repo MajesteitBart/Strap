@@ -1,0 +1,246 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:5d80734c7870eea726b69f2ba18a787df52877eeabd0569a0e94388db05268f6",
+  "claims": [
+    {
+      "id": "claim_59fcdf0e99d24014afba1d39590fd7a2",
+      "statement": "The MCP server at /mcp accepts three credential kinds, all validated per request: OAuth access tokens from dynamic-registration authorization-code flow with PKCE S256, OAuth access tokens from RFC 8628 device authorization, and scoped API keys (new strap_key_ and compatible existing creed_key_).",
+      "evidence": [
+        {
+          "resource": "repo://app/mcp/route.ts#L29-L31",
+          "version": "repo-lines-v1:sha256:239281043d60a01412f5761379d3d21c14686fa69765969319acdb5880380f6f:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZDFlODNkMGRjNjZiYmVhYWY1MjFhNWYzMGQxYzIzZDU4MDMyM2RhMDZiYzAzMDI3YjRkOGYwMWZmZWY0MGRhMCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiM2Q0NWM4OTNhNGU4MzI1MmVjMmM1YzYyZDVkZGZiYjM4ZmY1MGFlMzczMTI4NzY2ZTQ1MTM1YWZiNDFkMWYzMCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZmM3YWI2ODNkMzE4ZjFlNWJjNWYyYmM4NjllOGE3OTI4YjM1MmI2MmZjYmM4MDM2ZDNjYjUzMGZlZDViMTYwZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOGZkMDZmMjg1Yzg3NTIyNzVkNTg2NGRjZTJiY2Y0NjQyNjNlZWI5OWU5ODAwYTU1MTNjMjg4MDFmMTBiZDgyNCJ9"
+        },
+        {
+          "resource": "repo://lib/oauth.ts",
+          "version": "repo-file-v1:sha256:fdc129399fea9df4a6d360b408a315c12ec5c5b33c53141e7b93d8b4e3fcde4a"
+        }
+      ]
+    },
+    {
+      "id": "claim_352b0e5802b747cfb09c48abf755cd25",
+      "statement": "Modern credentials bind exactly one Personal or Company Strap plus a maximum access mode; every call rechecks token/key validity, explicit grant, live membership, and section policy. Modes are ceilings: read-only forbids proposal/direct mutation tools, proposal-only allows proposals where policy permits and removes direct editing, and direct is limited by live Personal policy or Company member/section permissions.",
+      "evidence": [
+        {
+          "resource": "repo://app/mcp/route.ts#L2244-L2255",
+          "version": "repo-lines-v1:sha256:8026a082965ab032c5300dc5a565c1407a617e2c126952f1d0d904f94151d59e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk5NGRmMzZlZTQ4MDk5NGJjMTc4Y2IyOWNlNWE4OTM0YTg0ODY3NzQxMTYzMTk0Mjg4Mjk4ZGJiNjgzNjQwNzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVlMTJiNjExODk0M2UzMGMwMDY4MzNlNzgxNjMwYTUzYjMyZjQxN2VmNWY5Nzk1YzNmMTJmMzMwODAyNGM1ZDkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU2MzEzNzE2ZTY2N2Y0NzZjMWEwZmRiODM2NTQ4Mjg4MjlhZjNlYzZmZDU3ZjViYzgxZGY4MGM2MTJkMDUzNzMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_ad66560698f04869909f5469cc68baad",
+      "statement": "If a modern grant becomes inaccessible, resolveMcpState returns an empty state and a missing Strap id is never interpreted as permission to fall back to Personal; only positively identified pre-explicit-grant OAuth tokens retain historical Personal fallback.",
+      "evidence": [
+        {
+          "resource": "repo://app/mcp/route.ts#L2444-L2465",
+          "version": "repo-lines-v1:sha256:494a532f25f1e7c40d2665825f1be0dbb62a062553c5b2357a6be00e4431e4e1:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBkNjkxYzgyNmI5ZjQ4YjE4YmM3OTk4YzU1NzVmZjc2N2Q0NzQ1YzhjMDJkNGE0ZWVlMjE3ZGQ5NTNhMjE3NzYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4MTUxZTViMTYzNGVjNjM5Yzk0OWZjZjM1YmE0MTcyNTU3YjRiZDAyOWNhZjk5Yzg4OTk0Y2ZkZjllMzI0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImMxNGQyMTUzM2UzN2IyMTFjN2ZiMTY5YmJjMjE4ZGJkZWE2ZjBlZmI5YmNiNDdmYTMxOGFkYjdlYTBjNTRiZmYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRiMDg5M2RkYWViZTkzNjVmZWI5Yzk0NGYwOTE3MzBjNDczYzJhYmU0NDJkZGY1YjNiNzIxZDE1MGIzN2M4ZGQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_bcb065a3173d4d37aed85d823256ea10",
+      "statement": "The authorization-code flow discovers protected-resource and authorization-server metadata, dynamically registers, starts /authorize with PKCE; the user selects exactly one Personal or Company Strap; /authorize/decision revalidates session/client/redirect/membership/selection before issuing a short-lived code; /token atomically claims the code, verifies PKCE/redirect, issues one-hour access and rotating 30-day refresh tokens; /revoke supports revocation. Browser consent records a direct ceiling with no mode picker and relies on live section policy to narrow rights.",
+      "evidence": [
+        {
+          "resource": "repo://app/mcp/route.ts#L2338-L2350",
+          "version": "repo-lines-v1:sha256:a7cbf3d8aa4c0c8a424f0c8ba75422277a5ad3e06d4c33649620fd1cc35dd6b6:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVkYzVkMTdiYTQ1ZDIwNjdlYzRmM2QzOWQ2ZDZhNDQxMDlkMjg3ZDNkMTcwMjY1OGRlNTY2ZTllOGFiNTk1NjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk5MTE1MGVmMjY2MDJlNDY5MWZiYTkxNjVjMDlkNDUyMmEzYTFjZGRkZmExOTgxMDM2ODQ0NjBiNTc2NTdmZmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQxMjIzYTk2OTc3Y2ViY2M4ODFlZmM4ODIwNTg4MDIxYmRiZmU3YTAyZGZlMWEwNjhjYzMyMTgwNDc0NzY0OTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImFhYTBiZTM3MjIzNGEzNDNkZjAzYmNkNGQwZjFjMzhjZTViZTc3YWVmZWJhZTgxNzBmNGE2YjJjOWVkN2E2NzMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e41eb51a8a314979ab96d45c6a6fff4a",
+      "statement": "RFC 8628 device authorization advertises /device/authorize and the device-code grant; a registered client receives a hash-at-rest device code, eight-character user code, /device verification URI, ten-minute lifetime, and five-second initial polling. The user enters the code, verifies the client, chooses one Strap and a mode allowed by scopes; polling handles pending, slow_down, denial, expiry, client mismatch, and one-time consumption. Durable poll timing is serialized in Postgres while local endpoint limits are process-local.",
+      "evidence": [
+        {
+          "resource": "repo://lib/oauth-device-shared.ts",
+          "version": "repo-file-v1:sha256:8b0ec1fcac02d7d63cdf1f15708082900501b5ce14c3c6eb2a8f84b07d22115b"
+        },
+        {
+          "resource": "repo://lib/oauth-device.ts",
+          "version": "repo-file-v1:sha256:03e38bc5d6d4a71f62c976d16af48e4bde2ddc914a29c1470bcee7e135d6d982"
+        }
+      ]
+    },
+    {
+      "id": "claim_d7e34013497540589025553097216eff",
+      "statement": "API keys are created/relisted/revoked through session APIs under app/api/app/headless-access/**; any current Strap member can create a key with a name, explicit mode, and optional expiry no more than 366 days away. lib/headless-access-shared.ts generates strap_key_ values from random material, persists only SHA-256 digest and short prefix, returns plaintext once, and recognizes creed_key_ solely as compatibility keys; resolution checks revocation, expiry, creator membership, and records last_used_at best-effort.",
+      "evidence": [
+        {
+          "resource": "repo://lib/headless-access-shared.ts",
+          "version": "repo-file-v1:sha256:1ee06638738381efab6d81fa27af5cf059093b8afc85f7162fafab6234bd9868"
+        }
+      ]
+    },
+    {
+      "id": "claim_c9eb868929d242ef8a3ce495cd147102",
+      "statement": "The MCP route supports JSON-RPC tools, resources, prompts, batching, CORS discovery, and MCP protocol 2025-06-18, advertising canonical Strap-first names such as list_straps, read_strap, strap_get_section, strap_search, strap://profile, and the skill tools.",
+      "evidence": [
+        {
+          "resource": "repo://app/mcp/route.ts#L2244-L2296",
+          "version": "repo-lines-v1:sha256:0b97eed40b4d10c3a151334c10143c0bbbe9351be10beb67410fa6fa8cb156f0:eyJzZWxlY3RlZExpbmVDb3VudCI6NTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk5NGRmMzZlZTQ4MDk5NGJjMTc4Y2IyOWNlNWE4OTM0YTg0ODY3NzQxMTYzMTk0Mjg4Mjk4ZGJiNjgzNjQwNzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVlMTJiNjExODk0M2UzMGMwMDY4MzNlNzgxNjMwYTUzYjMyZjQxN2VmNWY5Nzk1YzNmMTJmMzMwODAyNGM1ZDkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNiNjBmMGU4NTQ4YjVlYmVmYjFiYmM3OTU0ZmFhMTk0ZjUwZTVjMjQ3YTk1N2RkZWFmZTliY2MxNTYzMGYzZmYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_f104fcbac43a4d4b95d7ba9091b48f3d",
+      "statement": "Four skill tools are the canonical Strap-first skill surface: strap_list_skills (metadata only, includeArchived default false), strap_get_skill (SKILL.md instructions plus bounded manifest or one selected file; archived returns 410), strap_export_skill (full versioned bundle with base64 assets), and strap_publish_skill (publishes a bundle, gated to direct mode + owner/admin). They are appended to tools/list via skillToolsFor(strapId, mode, role); with no connected profile no skill tools are offered, and strap_publish_skill is included only when canPublishSkills(mode, role) is true.",
+      "evidence": [
+        {
+          "resource": "repo://app/mcp/route.ts#L2248-L2255",
+          "version": "repo-lines-v1:sha256:88345531b5a575364e9238fde07d5ac0287ce3455ea56d5f28c17abd5b8f3d8c:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODBmMDQ3YmIxOTRhN2NmNDk0OTE2ODA1MjdiNTAzYWE0MGVmNGJlM2FlODJjNjhiMTFiNGJhZWI0YTA5ZTJjYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMjdlNTc4OGQ1ZDlkNzNkMjRhODFkYmMwYTVhNzRiZmE4MmM5YzNiM2FmOTllNTJhZjc5NmU5MGI0NjhhOGEzZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYmQwMjE0ZmVmMzliYzRlMzk2Yzc5OTdmMmQ5ODEyMDVhNjk1MWNjMjdkYWFlZjJlYzQ1MjQ5MmQxMjcxZmZkYyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTYzMTM3MTZlNjY3ZjQ3NmMxYTBmZGI4MzY1NDgyODgyOWFmM2VjNmZkNTdmNWJjODFkZjgwYzYxMmQwNTM3MyJ9"
+        },
+        {
+          "resource": "repo://lib/skill-tools.ts#L50-L139",
+          "version": "repo-lines-v1:sha256:25a233eac5d0f3e05ff5ed7d501352e9189b469fe287594ded234b3c6dedb58b:eyJzZWxlY3RlZExpbmVDb3VudCI6OTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE3ZmVhODRlNTM5MjNiMTAwNDQ0Mjk3YjY2OTMwNDZlZjE5N2UxYWE5ZWFlZDgwYmUxNjVkMjA3ZGFhOTNiMDgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkyMDQwZTA5NWE5NGUyYWRhNzRlNDIxZjM3MTg3NTFhOTFhODEwYmZkNjZmNDhmNGU5MzljN2I3NDgwZWI2NzAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_6d973f5ac53c438d85fd8051eaa37681",
+      "statement": "There are no Creed-named compatibility aliases for skill tools; skills are a new Strap-first surface and are not mirrored under creed_* names, unlike the section/proposal tools.",
+      "evidence": [
+        {
+          "resource": "repo://app/mcp/route.ts#L985-L992",
+          "version": "repo-lines-v1:sha256:5e2f3693cec0e0d4a7e35310049fea3df6d05624bd46997d42c83e45a5787eb0:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTk0MmY0ZTM2M2Y0MTEyYjUyMDgzN2FjYjlhNjlkNmMyOWFhMmRjZTllYjE3ODU5YmIxOTYwYTI1N2EyMGYzYyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMjdlNTc4OGQ1ZDlkNzNkMjRhODFkYmMwYTVhNzRiZmE4MmM5YzNiM2FmOTllNTJhZjc5NmU5MGI0NjhhOGEzZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNmQ5MDc3N2ExYWY0ZGQ5MWMzZTA4ZmU2ZTY4OWRmZDc1N2E0MTQ2Y2UyNTdhZTNjYWUyYjY1MTkzOGM0ODNmNyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMDA3NzU4NTcxMmM2NTE3NTYzYjQxNGJjMTAxOGJhOTJjMTQyZGY4OTYxYmViZWFjMDRlYTA3OWZiOGUwZjk3OSJ9"
+        },
+        {
+          "resource": "repo://lib/skill-tools.ts#L50-L120",
+          "version": "repo-lines-v1:sha256:ba8a37779c36e95e6f0628b50687be548d81cd55c0df87e04f6aebf525916ffb:eyJzZWxlY3RlZExpbmVDb3VudCI6NzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE3ZmVhODRlNTM5MjNiMTAwNDQ0Mjk3YjY2OTMwNDZlZjE5N2UxYWE5ZWFlZDgwYmUxNjVkMjA3ZGFhOTNiMDgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIwMmQyYzBkNmRjNWU3NGQ5MmZhMTRiOTFkYmVhMjY0MDkwYmViMzVmZGI5MTg4ZDliMzQxMTgxZGNlOWY0Y2UiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkyMDQwZTA5NWE5NGUyYWRhNzRlNDIxZjM3MTg3NTFhOTFhODEwYmZkNjZmNDhmNGU5MzljN2I3NDgwZWI2NzAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBhMGZmYmM3MGJlYzRhM2RjYzJlMzQ3OTkwNDUxYjQ5NTVmMjkzODEzYzAzYTdmMjcxNTFhNDAxOTYxZDk3M2UifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_45b6c578585242cbbd3d4925d97155af",
+      "statement": "Skill tools/call short-circuits to callSkillTool with userId, strapId, mode, and role derived from the resolved state; skill discovery and publishing are separate from section editing and the proposal lifecycle.",
+      "evidence": [
+        {
+          "resource": "repo://app/mcp/route.ts#L985-L992",
+          "version": "repo-lines-v1:sha256:5e2f3693cec0e0d4a7e35310049fea3df6d05624bd46997d42c83e45a5787eb0:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTk0MmY0ZTM2M2Y0MTEyYjUyMDgzN2FjYjlhNjlkNmMyOWFhMmRjZTllYjE3ODU5YmIxOTYwYTI1N2EyMGYzYyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMjdlNTc4OGQ1ZDlkNzNkMjRhODFkYmMwYTVhNzRiZmE4MmM5YzNiM2FmOTllNTJhZjc5NmU5MGI0NjhhOGEzZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNmQ5MDc3N2ExYWY0ZGQ5MWMzZTA4ZmU2ZTY4OWRmZDc1N2E0MTQ2Y2UyNTdhZTNjYWUyYjY1MTkzOGM0ODNmNyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMDA3NzU4NTcxMmM2NTE3NTYzYjQxNGJjMTAxOGJhOTJjMTQyZGY4OTYxYmViZWFjMDRlYTA3OWZiOGUwZjk3OSJ9"
+        },
+        {
+          "resource": "repo://lib/skill-mcp.ts#L6-L66",
+          "version": "repo-lines-v1:sha256:da5148d7436557b743a24d1c8bc7db6d38ebcddba1ed7052715e2571032b7947:eyJzZWxlY3RlZExpbmVDb3VudCI6NjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU4MDg1NDE5OTgwODhkYzIxNzI3ZjA4ODYwODk2MmI4NjhhMWMxMDcyZjE1MTVkN2JmMDRhNmMxOTMxYzAwYzIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI4OThiZTgyNDkzY2Y4YmUyYjk3YmZlYmMyZDNjOWQ5YmZiMTI5ZTQyZjhjYzliNTMzYjZjN2RhNTg0ZTQyNGMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjUyNmJjZjg3YTBlNmE4ZDY5OWJhMTAyNjk1MzdiNjBlYjRlOTQ1NGM5OGM4ZGMzODQyYWM3OWEzYjNiZGIyNmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_4b09bd23b84e4c7085622407ebd5ed87",
+      "statement": "isSkillPayloadBatch flags any JSON-RPC batch of more than one request containing strap_get_skill, strap_export_skill, or strap_publish_skill, and the MCP route rejects such batches with -32600 before resolving state, because full bundles are loaded even for selected-file reads and must not be multiplied. A single skill call is allowed and a batch of strap_list_skills plus a non-skill call is not flagged.",
+      "evidence": [
+        {
+          "resource": "repo://app/mcp/route.ts#L2437-L2443",
+          "version": "repo-lines-v1:sha256:6bec2512205f037be23fb6f4a7d65031f4cc7f1867c1e9a88f6ed48ffed13dc4:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYWJlY2Y1Y2QxNjMwNGJjMzE0NzE3ODU3ZWQ2MzcyZmIwYTYwZjE2NDZlYWNiYzIyNDg5NTc3NTA1Yzg4OTJiNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMjdlNTc4OGQ1ZDlkNzNkMjRhODFkYmMwYTVhNzRiZmE4MmM5YzNiM2FmOTllNTJhZjc5NmU5MGI0NjhhOGEzZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTI1NDFmNzU0NTUwMWYyYTExNGFkOTM5ZTc0NDE1YmM5NjRmOGE1ZTk4NmMxMjA3NDY5MzNlMWQ0NmRlZjlkYyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNWQ1M2QyNjMzZDUyNDY0NDg0NGY3N2JiMWEwZjIxNjkwZTRlZDAyOTU4YWU1NTc4MmJjZDIwYWJmYzBmMTU0NCJ9"
+        },
+        {
+          "resource": "repo://lib/skill-tools.ts#L8-L29",
+          "version": "repo-lines-v1:sha256:25ec50844c9b1f1b41a8a7f140068e7aaa4f03024d0fb0216b0e89da88231a00:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhODM5MDE3MmExMDE0M2ZjNjBjODVhZGZiZTZjMWRlMTg0ZDZjMjhiNDE4NDY2YzExNThjY2FhZmRiZTdlMWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhlMzgxNjhmZjhlZDRmOWZkYWZkODAwYTMwYWMxMGJjMWY5MTVmZGMzYWIwNjVhODNmMThkYTgxNzkwOTY2M2QiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU3YTYzYmUwNmE3MmZmYWU0MDljMWM5Zjc5ZjRlMmM1ZDJmYjJlYzZlNzRjNmZlZmFmYTliN2NiNWE1NzgzY2UifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_0e1a43521e224385861ea75adb9b3d57",
+      "statement": "The exact Creed compatibility tool names (list_creeds, read_creed, propose_creed_update, direct_edit_creed, creed_update/create/delete/rename/recolor/append_to/reorder/get_section, creed_search, creed_get_recent_activity, creed_get_quality_report) and the creed://profile resource URI remain callable compatibility aliases, alongside unprefixed stable operations get_write_policy and list_sections.",
+      "evidence": [
+        {
+          "resource": "repo://app/mcp/route.ts#L123-L400",
+          "version": "repo-lines-v1:sha256:0b0d7beec0f4b3061d05536045a750bb9cfc25916d4721298aaf5c9d5abd861b:eyJzZWxlY3RlZExpbmVDb3VudCI6Mjc4LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiIzY2UxMDQ0YWQzYjNiYmJlYWZiZDVmODY4MWJjNmRlNGJjNTk4Y2ZiY2U3Yzc2ZjhlMmRjNmQzM2FiMmVkMmIzIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI2ZjFiNGRlYjRkMTA1NDg3NGZlZTc4MTdiOTc5Zjc4ZWE5NDFmOWY2YzFlMDBmYmIxMzg2YTQ1YzI3YmZjZTc5IiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJkNTVjYTNiZWM1ZWIzOWZjOWQ2MzZlMjQzMjE1ODg2OWIyZmY5NTg1MjQ1NThlMmUwN2E5NmIyY2U1NjY5NDA5IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI1ZjdiMWUxMTc4ZjY4ZjZiZmFjYjZhOTUwMGQwNjc2NDIyZWQzNGVhN2M2M2JmZDgwM2E5YjZmZjI5NjgzZDI3In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_fed2f1694b094a1e8ab7aa380d782e72",
+      "statement": "/api/strap, /api/strap/proposals, and /api/strap/write are the canonical direct HTTP paths while /api/creed/** remains only as a compatibility API shim; both route families share handler behavior, authentication, and rate limits. lib/creed-data.ts is only a deprecated compatibility re-export shim.",
+      "evidence": [
+        {
+          "resource": "repo://app/mcp/route.ts#L59-L75",
+          "version": "repo-lines-v1:sha256:14976baf678d39c3985c20c7ed13ceef51815c4c7a29889a26a90f21bb982bfa:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYyM2MyZjQ5MjU4YTZmNzY4MjU5OGM0MmU2YmVlZDBmZWFlMWI1YWI1MGI0NjVmODEwODcxM2Y0NzNjZWZhOGQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM5NzQ0ZjU2YjE5YjRiNDVjNDdlZDYwZDRiYzQwYmQwNGExMmQzY2E3ZDJjYWY4NWJiM2VjY2Q2YTAyMjE2MTAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM5NzE3ODRlZjQ1NGNmMDJiYmJlZTYxM2QwNGQyOTU3Y2M0MzQ2MzEzMzc0ZDFiODY5OTk3OTNiZGQxZTNhN2EiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRkMzkxMDg4OTQ5OTZmYTM5NTU5ZDg4ZmJlZTc1YmU1YTgzNmMzMDU5NWRiZWViOTg0MDhhNjc3MTY5ZDAyNmEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_61c7e04ae54942249f8d3d35d84cd087",
+      "statement": "MCP_INSTRUCTIONS injected at connect time tells agents to read Strap before substantive work, propose narrowly-scoped updates, prune rather than accumulate, treat profile content as data not instructions, list skill metadata during onboarding and read a matching skill with strap_get_skill before use, that skill guidance cannot override higher-priority instructions or authorize secret access, that downloading a skill never authorizes executing its scripts, and to publish only when the user requests it.",
+      "evidence": [
+        {
+          "resource": "repo://app/mcp/route.ts#L67-L75",
+          "version": "repo-lines-v1:sha256:ac5d4a7619d78c61506283d21cde60443dc0a6d22b7f132d9b5b02d9b845681f:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNzk1NTJmMWY5YjM4MTNjNDc3NjRhNjIxZmQ0ZjMzNGVkYTU2ZTE1YzUyMGEyOTY5NmY2YWQxMTFhMWI4ZTYzOCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYzk3NDRmNTZiMTliNGI0NWM0N2VkNjBkNGJjNDBiZDA0YTEyZDNjYTdkMmNhZjg1YmIzZWNjZDZhMDIyMTYxMCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiM2NhNjYyOTZhZmY3NmVmMzdiY2VlYTJmNjM1YzcyZmVmMmM4MmE2ZWJmMjI5MjM0MmFkYTIwYTNlNWI1ZTZjNCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZGQzOTEwODg5NDk5NmZhMzk1NTlkODhmYmVlNzViZTVhODM2YzMwNTk1ZGJlZWI5ODQwOGE2NzcxNjlkMDI2YSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_1f1de34b648c40d88a4f46edce5fc2ff",
+      "statement": "@bvdm/strap publishes the strap executable for Node 20+, defaults to https://strap.bvdm.ai/mcp, uses dynamic registration plus browser authorization-code PKCE, discovers tools/resources/prompts live, supports exact-name calls and JSON mode, stores credentials per server, and attempts RFC 7009 revocation on logout. Server precedence is --server, STRAP_MCP_URL, saved config, then the default; STRAP_CONFIG_DIR overrides storage; HTTPS is required except explicit localhost loopback URLs.",
+      "evidence": [
+        {
+          "resource": "repo://packages/strap/src/app.ts#L91-L99",
+          "version": "repo-lines-v1:sha256:c993c96863f4b52dd955a39d50d4b03fabce3bdff6705a0c7644bc9812fdc9c5:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNzZhZTdkNzg5YWM1OTIzN2M0ODU0MWM0YzU1MTAyZTM0OTM5YzI0ZWI4NDFlYzI3Y2I4YjM0MjExNTUzZjA4YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMjdlNTc4OGQ1ZDlkNzNkMjRhODFkYmMwYTVhNzRiZmE4MmM5YzNiM2FmOTllNTJhZjc5NmU5MGI0NjhhOGEzZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNTI4ODFlMWFjYTM1NDJiODUwMWVkZTZmMGM4ODFhMzIwY2QwNDY2MTU2YWRlYmM0MjMzYjE4MDE3NWRkYTJkMCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDE3NWU2N2ZkNzk2MzcxYmQxNTRlYjg1OWYwOGZhN2NhOWRkZGM5NmJhN2EzYjNjMDEyM2MyNjRmMzY4ZDAzMyJ9"
+        },
+        {
+          "resource": "repo://packages/strap/src/constants.ts",
+          "version": "repo-file-v1:sha256:2815041a2170ee14aaee248c55254b6b6df453f4afdc85480192bccaafacf6c8"
+        }
+      ]
+    },
+    {
+      "id": "claim_d1183e89516b407fa4c8dd3e609e2ff4",
+      "statement": "Current packages/strap source implements browser OAuth only; the server supports device authorization and API keys but the CLI does not implement device or API-key login commands.",
+      "evidence": [
+        {
+          "resource": "repo://packages/strap/src/app.ts#L112-L121",
+          "version": "repo-lines-v1:sha256:8a21ac642630ae2ba291c35c85928966f3a312ffc0306153b26037b54f1d7d3e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVmN2M1MDliMmRmNTQ5MWQ2NWFkYmM5ODU5NGIxNjg0ODM5YmViNGMzYmYwNjlmYTcwY2EwNDkxMDQ1Y2VjMzciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM2ZTUxZTBkMDA4ZjE2YzdhMmI3MDAyZThiYzQ2NTQ4N2FlMmY1YTMzYjA4ZjczZjUzNWQwMGJmMjhiODdmZTIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY0MjZkY2I0MTJkNTE1NTcyNTg5ZGZjM2ZmMmQ0MzA4MDA0NTE4MWFlYjY0ODg2ZmE1YTc4N2I2NzQ0ZWNmYjAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_fc2ddfb0d3314574a106dc90a0f6a9c3",
+      "statement": "strap skills implements list, push <dir>, pull [name], and sync [name] with --target codex|claude [--global] and --dry-run; the default target is .agents/skills (Codex-compatible), --target claude uses .claude/skills, and --global installs into the home directory. Pull downloads published skills; sync also publishes local edits to managed skills, checks for conflicts, backs up replaced files outside the skill directory, and never executes scripts.",
+      "evidence": [
+        {
+          "resource": "repo://packages/strap/src/skills/command.ts#L9-L79",
+          "version": "repo-lines-v1:sha256:37461974864bed67a3a3885a8901b351745dd3926d0d466e98936a368d3df17e:eyJzZWxlY3RlZExpbmVDb3VudCI6NzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImViN2ZhZTAxYzUyMGU0MGU3NTM4N2VmZmE3M2JmNDJlMzJhY2JjY2E3NzRlYThhYjZiMDJlMGFhNTZlMTM3ODkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkwYmUwNDIwOGJmOWI5M2U2N2QyZDRiMjcyZDFjYmJhYWY4MWQyZGUyMThmNTc2YTkzNjM2YTA1Njk0ZjZmOGUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjlkN2NlMjgwYTRmMjQ4MTkwNWZmZDNkMzU0ZmMwYTI0NjMwMzRiZjgxN2M1MGEwYzI4MDAxZTc0OTQ3MjhlMzYifQ"
+        },
+        {
+          "resource": "repo://packages/strap/src/skills/sync.ts#L73-L172",
+          "version": "repo-lines-v1:sha256:3ec226eb45e7ad1755485b5f4db23811afbf715290e2b489c19ff722579e585a:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAwLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJlMmU5M2I5MDFkZGUxOWVhMTM2NGJjZWIwMDAxYjYzZTc0NzYwZDY4OWZjOTUxZWIzY2FhYjE1MDc2ODljODY0IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJiZTNhNjI5MjAwZGQ2YmE4Zjk4NGFmZmYxZjMyNjc0ZDYzYjcwYzk4NjYwOWY3NzYzNmMxNTM3YzUxNTcwNTk0IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiIxMzU4NzExOWJhZGU2NDgzZjJiZjdmOWUxOTM5ZjdhYWY1ZmNjN2UzOGFmMzNkMDU0OWJhNThmMTgwMDA2NGZlIn0"
+        }
+      ]
+    },
+    {
+      "id": "claim_51a9f14e82e74082bbea6e80b37c2330",
+      "statement": "The CLI talks to the server through the MCP skill tools via mcpSkillRemote: list calls strap_list_skills, get calls strap_export_skill, and publish calls strap_publish_skill; every server response is re-validated with validateStoredSkill and cross-checked against expected strapId, name, and recomputed digest via verifyRemote.",
+      "evidence": [
+        {
+          "resource": "repo://packages/strap/src/skills/command.ts#L99-L131",
+          "version": "repo-lines-v1:sha256:db8ccd00d38e8c57f8796f4cd94e1564afa9e4eba2f3a953edd9a28c4d07d064:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA5NWZhMGYxMTE3YjVlYTQwNDM0MTQwZGRlMWEzNDBjNzIwZGRiZjMyNjIxMmUxOTE4MzhkNGIxNTZkMzE2YmMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVhZmRjN2Q2OTU1MDIzOTk2YWZmMTFkZjQxMDkzYjVkMWYyMjRkMmRiM2IzOTVkZWU5MjEwMTIxZGJmMjEwZTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE0YTI4MjI2ZGQ0Yzg4M2M1MzQzNmVhMDE4YjgyNzgzMTdlZThlOWJlNmQ4MGFmMDU2ZDRiNDBhZDIyMzBjOTQifQ"
+        },
+        {
+          "resource": "repo://packages/strap/src/skills/sync.ts#L56-L71",
+          "version": "repo-lines-v1:sha256:5501242978998d9a9edd0526fe103f556d29449bdedd4b7dc1180d8b1ed69cd2:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZlMjE0OGRlZWI0MDc1NWIyNWEzYjJjMjU5MDUxMGY0NmRmYmEwNjlkZDYzYjhlMzgxNjU1ZTQ5MjIwNGFkODciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjMzMzNjYWFiNzdjZDNiNzBkZDU2NGE4NTU2MWVlMmU3NmQxYWE3NDZiNzgxYTQ3MDdkZWIzNTE0YTc4YjYzZGMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRiMTMzYTEyMjMzMzM4OGU3MzJiOWU5YTUwMTBlZmU0OTVmNGQ5ZDFlZmNkNzkzYzg4MTg0MjcxYzExNjgyMzMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_74aa31b198d74a9b873a2d9de8c8fc20",
+      "statement": "packages/creed-cli is a separate legacy compatibility package exposing creed/creed-cli and defaulting to https://creed.md/mcp; it does not share or migrate credentials with @bvdm/strap.",
+      "evidence": [
+        {
+          "resource": "repo://packages/creed-cli/src/constants.ts",
+          "version": "repo-file-v1:sha256:e1b16b42417fb8c86c43ba5694425ba4dae0a94e10f9c1356edf66cd976bc66f"
+        }
+      ]
+    },
+    {
+      "id": "claim_5234ffdfeec54beb9d4c1ffb9bb8cccf",
+      "statement": "Raw credentials never belong in logs, query strings, rate-limit identifiers, or docs; MCP hashes bearer values before rate limiting via digestCredential, and lib/rate-limit.ts is process-local. Dynamic registration can accept supported custom schemes, so consent and redirects matter more than the displayed client name.",
+      "evidence": [
+        {
+          "resource": "repo://app/mcp/route.ts#L53-L61",
+          "version": "repo-lines-v1:sha256:95db656e220c8920c9061d1ef707e1b227b5eddf07f28c9013e7623c97b716e5:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYzdmYzVjYzgyZDVkODllMWRmMmYxYTJkMTViMzU5OGYyODUyZTEzNjY1ZDc2YTQ4YTI4MTUzMDc3NzQ5ZTcwMyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMTc0ZWU4YThkMWFhODQ1MzkxYmM2NzllYjcwY2U3ZjQ2YTNjZDZmYjJkMTZmY2NhNjdmYTE3OGY0ZjhjMWUwZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTg4ZmM3OGMyMWE5NjY3ZjBhOTUxN2Y4ZmMwNTgxOGRlYWIyYmMxZGJkZjc2YjJkNjBjYzliZjg5ZWJmNDgwZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYjc5YWRhMDA1NzQ5YTk0MjZjNWQ0N2U5MGRlZGY0ZWU1ZTVjOTRlOTlmZDNhNmYzMTA4OTliZDI3ZGU1MDJmNSJ9"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.2",
+    "at": "2026-09-15T08:01:45.050Z"
+  }
+}

@@ -1,0 +1,256 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:864000c4dc9e22ae63d21e3b6977df0f70f99184bde5fcd2659aa7a5ad409da0",
+  "claims": [
+    {
+      "id": "claim_042f765012eb4f3ea7671c6c5e3139c9",
+      "statement": "Shared workflow skills are stored in Supabase as new Strap-named tables (strap_skills and strap_skill_versions) accessed only through service-role RPCs (strap_skills_read, strap_skill_publish) that revoke execution from public/anon/authenticated and recheck live creed_members membership and role; each profile library is bounded by a 64 MiB storage budget and a 100-skill cap.",
+      "evidence": [
+        {
+          "resource": "repo://lib/skills.ts#L43-L94",
+          "version": "repo-lines-v1:sha256:17e574da2db5506cc34e6bb7b49486dbe0aca89d440fdff6ca999f1b4a82e6dd:eyJzZWxlY3RlZExpbmVDb3VudCI6NTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA5OGRmMzM1NWQ3ZmE5NzAxN2M3ODVjZmM3ZWNkYjY0YzMxOTBmZDRhNmI1NjlhN2JlMDYzNjQyZDljYjVlYjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjI4MDAyMDk5N2JiMjcxMGJkZDQxYjhkYWFmYWM0YjQyOTU3ZDcyOGMzZjhiODJhMmU3MWM4NWU2M2YyMTk2YTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE0NmY4ODRjNjVjYTZkN2IxYTU5NjViNmM5OGE4MzlhNjA1MTJlMjk1MWNhZjBjN2M0YmEwNjEwMDg2NmY4ZGIifQ"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260913133911_shared_skills.sql#L1-L76",
+          "version": "repo-lines-v1:sha256:6bf810466e99a6fc07e4fcd52dabe26e2a137526c53949455861b64d7b44178e:eyJzZWxlY3RlZExpbmVDb3VudCI6NzYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM4ZjIxNzI1NTdmZWE1OGFjMmRmYzE1NzE5NmI5ODdhODM4YjA0NjA2OGRiZjU0NWQyYThkNTYyMWZkZjY3MTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIxYTUyNzJlMWIyYzI5OGJiOWIwOWU4ODM0NjUyYzdlM2ZkOWI4MDFjMTk4YTZjZmE3N2ZhZjJhNmQ2ZmFlZWMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU0NjU0OWQ1ZTNjNDNmYzc0NjkzM2RkMzNiNDQyOWYyYzBkNGU2MTFlYjc4NjFmNDJlMWZiZTc3ZjU1YWQ3ZDcifQ"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260913153559_bound_skill_storage.sql#L50-L128",
+          "version": "repo-lines-v1:sha256:55adbf6b62d259b3d743a923e6098b5c4b2db222821cb3629e253c7704673d88:eyJzZWxlY3RlZExpbmVDb3VudCI6NzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE1NTVlMTk2YmQ4ZTNlOGU2MmZkMTc4MDdmNDMxYjE5YjcwYzgxNzgzOWI0NTYxMDc2MjFlOWQ4OThiNDQ1YmUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJiNjA4NzFmMzMxNjU2M2E2NmU0NDY0Mzg0ZThmMDE0YTQ5NTc5ODFiNDY5ZTU5ZDJiZWIzMDQ3MWMwZmY4NGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjcxNTZlODU3OGE0YjQyZjFhMjJlNTRiNDk5OTViZWNhNDQ1NDVhZDAzYmU4NTJmMDg4ZmQyYjQ3NTA4MTdiYmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_5ba38582854641bf997001c3e3e7e1fe",
+      "statement": "OpenRouter Included AI uses OPENROUTER_PLATFORM_KEY and the historical stored ai_mode 'credits' (surfaced as Included) with no credits sold or debited; BYOK decrypts a valid Personal or Company OpenRouter key, and a deployment without a platform key requires BYOK.",
+      "evidence": [
+        {
+          "resource": "repo://lib/ai/credits.ts#L119-L150",
+          "version": "repo-lines-v1:sha256:1ac1acb7b9dab63ba4f448bfabf6ac4c54881d14746d290dd261a8366666eb9d:eyJzZWxlY3RlZExpbmVDb3VudCI6MzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFmYTY1MjU3OWEyZGZmNGIwYmEyZTJhMDcyMGY5OWQ4ZWQ2MjhlM2Q0N2VkNzNmMTA3YTY3ZDBkNzAxMWIwMzgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjI3MGQ1ZTFkMmIyNmU5NTA5MjI1YjA4OTQzMjc1YmQxMWExYWQxZjE1NmVmOGUwMjE4OGExNjcxOWRiYTgzZGMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://lib/ai/credits.ts#L25-L41",
+          "version": "repo-lines-v1:sha256:b7f3ea64beee231d6721bcfe4837311c925ad5251a52a12e866443cfbc014eea:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZjYjYyMmI0NGE4NTBmNWNmZDQwNzNhMWU5YjAzODhmNjBmZjVhYzA0NzVjODcxYzNlNzVhMDUxZmVjMzgzZDEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQyYzg5ZDRmNmZiYTY3OGJkNmU3ZWNkZjgyMWE1ZDUyYTM2Yjc0Y2ViYjczNDRhZmIwNzMyOWQ2Yjg0NTAwMTIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFmNTZiNjY4YTE5ZDZmNmJlMTM5ZTcwNTJhNjYwMDI2NWU0ZGFkNTU1MzJhNjRlMTAyOTU0YzgyNWU1MWIwMWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQyNGFhZWJlMDA3MzIxMTI4NDgwN2U2ZGZhMDdlMGFhMTg2MmY5ZjAzMjYyZGYwZDkwM2YxMWJlMTk3MDBlMGMifQ"
+        },
+        {
+          "resource": "repo://lib/ai/credits.ts#L81-L108",
+          "version": "repo-lines-v1:sha256:9edf3a196dc86ec56f37c8b29c5bf821bdb3367655e90233836ad2cca16a5963:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJjYmNmOGQwMDIwNjUyNTgwMGY3MzFjMTdlMzIxNmI3Nzk5MjVmNzdiZWU3M2IxNGQ2MzRkMjVhNTg2N2UwMjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM5MTMwYTk4YTM2ZjM2ZjUwZTgxMzY4NzEwMmRiZWY5OGFlMTk5NGM1Y2E5NmI3MGQ0MzNkOGU4NTZlNDMyNGQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE1YmIzZjVkODhhYWFlOWM1NjRiZmVkNGUwMDE5YmQ1NTYzOWVjMDU4OWMxNzFjZTc5NDM0YWI2NjQ3NWM0ZjgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_d416e25085a542d0b7ee4615877964e3",
+      "statement": "lib/ai/credits.ts enforces operational rather than billing limits for included AI: a 20-request/60-second process-local burst per user, a default $0.50 trailing-24-hour estimated-cost ceiling summed from creed_ai_usage credits rows, overridable by INCLUDED_AI_DAILY_LIMIT_USD; BYOK calls do not count toward the limit.",
+      "evidence": [
+        {
+          "resource": "repo://lib/ai/credits.ts#L15-L75",
+          "version": "repo-lines-v1:sha256:31d5171add68d52f5ca0c9971a4ca170f48489c4eaebd8d5ffbd083ceb6f5024:eyJzZWxlY3RlZExpbmVDb3VudCI6NjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVhZDM0ODY3OTgzOTczYWZjZjVhMGZkMjI3MjE0NGI1YmUyMThkNTRmOWNkMjY3NWQ1YzgxMGQ3YjQ4ZmVhYjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjYzM2YxMmQ4OGM3ODYyMDMzMDcwZDkyZTc4ODViZDQ1MTU0NzFiMWZlMjI0Y2EyNWVhZjg4NjgxMjQ3YzE4NDciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUyMGQ2ODk5YmExMDZhODQyYzdiOGZkN2UzMzkzNGI5ZDE4MDczMzE4MTk2YmExNjc3ODRhMmQyMGVhYzcxN2MifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_983530558d6f428ca4f58952f9a3c0b5",
+      "statement": "Every successful AI call records a row in creed_ai_usage via recordAiUsage with feature, model, tokens, at-cost estimated_cost_usd, and charged_micro_usd (marked-up in credits mode, at-cost in BYOK); company usage is stamped with the Company creed_id for spend attribution, and there is no debit RPC, prepaid balance, checkout, or runtime payment flow.",
+      "evidence": [
+        {
+          "resource": "repo://lib/ai/persistence.ts#L210-L260",
+          "version": "repo-lines-v1:sha256:e8b423a5c2355237a77ba2a906c2b06917a5e938f5d3962cc61b3b80ec342236:eyJzZWxlY3RlZExpbmVDb3VudCI6NTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI0ZTYwNGM5ZDk5NjQxZmM0OGE5YWQ5YmE4OWRiYmNlZjMwZDlkMGFlM2MwYzZlN2M3ODkwYWExNzhmZWVjNDQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJjNzVkMTdmMzcwMTAyZjg5M2E4YTlmNTUwZmZkNDA5NmVmNTQ3MmJjMGNhNjgwNzdmNmUxMmM2Mzg0OGQ0OWMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQwMmY5YjljZjUxOGYzNjZhM2QzM2ZhYTUxOTdkOTg2NThlY2M3Yzk1OTE0MDM5YWM3YmM3NDNiM2Q5NzQ0YjAifQ"
+        },
+        {
+          "resource": "repo://lib/ai/persistence.ts#L296-L317",
+          "version": "repo-lines-v1:sha256:2bfd3f5f2d5be1664c57af490cec0ccfafbb7378de80759811ff72af81696143:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY5MDVhZDBlMjBmNDFmMTBlY2IxMDcxMTFmZDZhYjhlZGI5NDA5NTcwM2U1NGNjYWU3NWIwNmVjZDczMGQ1NTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZlNmZlY2NlNDJlNmU0NmU4ZGUwYTVkMzZhOGZkNjFhMDkwYTQ1YmQ1MzdmZmI2M2U2NDI4Njk1YjNhODk0ZTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjI0MjQ5NTIxYzMyNzNkZTE1MDFiYzFmNjEzNGUyMTQ4ZDE5YzU4NjJiNWY5NmU2ZjBkMGU3MzJlY2U3ZjVhNjkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_0a6ea1e7f4f448588a8efc5f2eec38c7",
+      "statement": "OpenRouter calls go to https://openrouter.ai/api/v1/chat/completions with HTTP-Referer set to the site URL and X-Title Strap, request usage include true, prefer OpenRouter's authoritative usage.cost for recorded cost (falling back to estimateAiCostUsd), and profile content sent to OpenRouter crosses an external privacy boundary; BYOK values are exposed client-side only as safe status/last-four metadata.",
+      "evidence": [
+        {
+          "resource": "repo://lib/ai/openrouter.ts#L1-L7",
+          "version": "repo-lines-v1:sha256:63245fc3e416df7f3bfc5701612df267006422f532e16678c2a88b2e62b3dd4c:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMGMwZjQ4ZTM4ZmJkYjZjMGVmZTk4N2M5ODQ1MjFlZDA3NDMyNzU1YjZiYWFjY2Y0NWQ5NzdlNTdkYjdjYmFkNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYzAxOWE3OTcxMmZlYTFiZjk3NTIzZGRlYjdiNDFiNmE1N2QzOGUxOTY4OTIwZjU5YzYwYTM1YTg4YmE4NTBlZCJ9"
+        },
+        {
+          "resource": "repo://lib/ai/openrouter.ts#L119-L142",
+          "version": "repo-lines-v1:sha256:5c4964f291e3199ad205b7b5d0c74efe78cf14073b3d7b006a3757e7febcc0b1:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQwNmVhYjlmYjlhM2Y2ZWIwMGY5ZjQxMzZjNDRjZjlhZjk3ZDcwNWM2MDRiNTdlMTY3MzJlMjUwYWVmYjc5MzUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIyZDExY2FmNDNlOTdlZjM2OWU2YmVlZDFhMjY4YmQwNTgzOGYyOWI5ZGQyNTRiZjY5YmE2NDg4NDE0NzIzNGEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZmYWZiMmYxZWQ0ODRmNzE5MmQ3YmZmM2M4N2JlMjczOTU0MWU2MWFlMDI0MWVlMjlmYzdhOTE2NzJmMzRiMTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjMyMTZkNWE1ZDc3Mzc2ODUwZDZlM2Y2NjQyZWM5NjUyMWMyMDk3NTgzYjAzM2I1MDQ4OGRjZDc4MmI0MTNjYmQifQ"
+        },
+        {
+          "resource": "repo://lib/ai/openrouter.ts#L226-L239",
+          "version": "repo-lines-v1:sha256:492ddf0da37df8b56bddbac668415c583e97b6d7e402af737ef5df1a77451b1d:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU2MmRhMjRiNzgzMWUyODhhNzA0NTQ5MDYyZTc3N2E2ZmVmMmNlNjQ5MDIzOWNiZTJlOTFhYTViYzhiZDdlY2YiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhkNTliNGRhMGExYTg2MWZmN2MzNzAxZDFmZDE0ZjZlNGE4NGI0ZDI5NGM2YjJkNzNjYmJmZjQ0N2MxZjU2ZWIifQ"
+        },
+        {
+          "resource": "repo://lib/ai/persistence.ts#L68-L76",
+          "version": "repo-lines-v1:sha256:a5d0d5e6bfaf647d26c6b6e560ee03e8226fe4c893a92d160c2db2360bac3f5e:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTg4NWRhZjI1ZmU0N2U3MzhhYzczMGMzOWI0MjhmMDg3N2NmZTY5MTEzMTVmNWJiODNiZTI3NjQwNGZjZDZhNiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZmI1ODBlOTY0ZjgzYTQ3M2Y0M2Q0NDM4NDYyOTQ5ZDY4YjU2MDBmZGE3ODdmMTYzNzQ1ZDAwZGU4OWNiZjM2YSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDY3ZDIwMjA1OTJjYTkxOGQwMmM2MDM3Yjg4NmYyYjdkYmZmNjJmYWMzZWJhZDQxNjY0YWQ1ZTlmN2Q4NTcxNyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_08f9494e746a4c4593b6877ba962ca24",
+      "statement": "New Personal and Company GitHub configurations default to visible strap.md (migration 20260724120000_strap_profile_defaults.sql); lib/profile-file.ts resolves blank or configured strap.md to candidates strap.md then legacy creed.md, reads any other stored path exactly, and push refuses to create a competing strap.md when a read resolved legacy creed.md.",
+      "evidence": [
+        {
+          "resource": "repo://app/api/app/github/push/route.ts#L13-L32",
+          "version": "repo-lines-v1:sha256:017e0bdc0cfdf81c4603d47470fc55398b78f7a8c43b05ddc70692d1572593dd:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk0YTUxZjY4YTAyOTBkMDYwYjEzYjBjMmE0MGVkNjMwZGIzYmQ3MGIyNWEzMDg0MjUzNWE3NmVkNmJiOWIyM2UiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNmMWUxZWZkZWUwYzI2OGJkZGJkNDYyMWI1YzhjZGE1NjQyNTI0ZDMzZGIzMGQ3MTVkMjZmMjU2OGIyYTczYTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY0MjRjZmY2NzIzZTQzMDRkZDkzYzhhZDU5OTNmNDkyMDc0ODNhYTNjOTZhYjNmYzY0NjNlM2IxMWJhOGYwZTEifQ"
+        },
+        {
+          "resource": "repo://lib/profile-file.ts#L1-L27",
+          "version": "repo-lines-v1:sha256:2f88f8720accb32ce0c79a71b33255081af1774fc37a59f82b529571458d9584:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYzZmU5NGQxNDE0MWE5ZmM3YmY1Y2Y5NWU0M2Y0MjVkYWI1ZDc1OTMzMTM4ZTNjMWNlMDE5NmE3ZWRmMWRjOWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b72b0e0a65e4463c89086aa51d466179",
+      "statement": "GitHub push fetches the remote SHA and uses GitHub Contents optimistic concurrency (PUT with sha) with default message Update Strap; Company managers push to the company repo on the team GitHub connection while personal Straps push on the user's own connection.",
+      "evidence": [
+        {
+          "resource": "repo://app/api/app/github/push/route.ts#L34-L90",
+          "version": "repo-lines-v1:sha256:ca1c54ba27a9354ea1a2a710348436984968f6af753d7682122e25980e3b36fa:eyJzZWxlY3RlZExpbmVDb3VudCI6NTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIwMzI3MTM1MDI5NzgwNjMxYzhhMWEzMDYyNjM0M2Y5YzA1NmE1YTMyNDA5ZWEyNGJmYzM3YWRjZGExNGQ5OTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZiNTgwZTk2NGY4M2E0NzNmNDNkNDQzODQ2Mjk0OWQ2OGI1NjAwZmRhNzg3ZjE2Mzc0NWQwMGRlODljYmYzNmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg1YjAyOWMwYmRjZjc1NTczNzFiY2M4OTc0YmZlOWExNjA2OGNjMWY1YWRlN2M1NDBlYzJlNWMzOGI1MDkzZDkifQ"
+        },
+        {
+          "resource": "repo://app/api/app/github/push/route.ts#L92-L152",
+          "version": "repo-lines-v1:sha256:fe3129d75cdb22d09b5bc1665aa607a6edbe3f20c0851347c7638e1fb75b1b2f:eyJzZWxlY3RlZExpbmVDb3VudCI6NjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjExZTY5OWQwN2ZkOWY1NDA3NDFjOWJhMzNjNDdlNmI0MWVhYTQzZDgyNGI3OWI5YzI3ZDAyMTQ0NTlkYWQ5YTciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM3NGJhOGM3MGIzZjEzMzAzNGUyYWJkMzZhZjEyMGI5OGZhNjNmZjFhNDEzMjRjZjg1OGFjNTVjOWJlMTg2OTYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjMwNjNiZjJlNzlmMDBjMDliZmUwNGExMzVkZmRjNmY4NTk1ZjUyODU2MmIzMWFlNDIzY2ZkN2MxNGI2MDlhNWIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk0ZGNlZWQ4ZjRkY2M3YmEwYzU1MDU1ODlhOTZlMTJmZTkzZTI4MmU1M2UzZTgyYTAzM2I5OWQ1MzBhMmVhOTkifQ"
+        },
+        {
+          "resource": "repo://lib/github.ts#L289-L339",
+          "version": "repo-lines-v1:sha256:18367b7c7d306a2ed05232f8d50d4c9132e72d5256ccd444d59c8bb3667f6f54:eyJzZWxlY3RlZExpbmVDb3VudCI6NTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1YzVjNzk5NDhlODkwMTM0MDQyYjhmZmQyYjBjNGU0YmYzMjQwM2ZhODMxNTVhMzE2ZTQ4OWU3OWY4N2JiZDUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZjMmEzZDNkNGYwZGFkMWExNGEyMTJjYjQzNzEzYzZmZWUzYTc1Y2UxYTlkNjI3ZjM4YjdhMGZhNmQ3Y2Y5M2EiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdjNmM2NzVmOWVmNTIxMzUwMzY3OTNiMWQ5OTBhZWM5YzlhYjFjMTAyODQ1ODgxMzkwYTljOWEzYWVmNzMwMDgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_fff92a80130d48248e1ad14e9de46499",
+      "statement": "Personal GitHub pull has preview and apply phases: preview fetches and parses the remote file without writing; apply replaces active sections with imported ones, forces imported sections to agentWritable true with agentPermission propose, clears proposals, and retains archived sections not reintroduced. Company pull is not implemented.",
+      "evidence": [
+        {
+          "resource": "repo://app/api/app/github/pull/apply/route.ts#L17-L113",
+          "version": "repo-lines-v1:sha256:5ed6db895e68e6665e21c64be4103a0f9edeb1d6dc5fefc34b6c9ae36134a1a6:eyJzZWxlY3RlZExpbmVDb3VudCI6OTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIwMzI3MTM1MDI5NzgwNjMxYzhhMWEzMDYyNjM0M2Y5YzA1NmE1YTMyNDA5ZWEyNGJmYzM3YWRjZGExNGQ5OTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU1NmEyOGNhMmFiY2Q1NTljOTNiYTM2Y2Q0NTAwNWJjYjFlYjc5YzFmZjA4NGM0MzEyZDA0NmJmMmEyZTk5MDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://app/api/app/github/pull/preview/route.ts#L11-L62",
+          "version": "repo-lines-v1:sha256:4f0293ef78f3fa2c89df7198d62f2e12f5262fb4831ef13101086f9e33f5393d:eyJzZWxlY3RlZExpbmVDb3VudCI6NTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIwMzI3MTM1MDI5NzgwNjMxYzhhMWEzMDYyNjM0M2Y5YzA1NmE1YTMyNDA5ZWEyNGJmYzM3YWRjZGExNGQ5OTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIyZDExY2FmNDNlOTdlZjM2OWU2YmVlZDFhMjY4YmQwNTgzOGYyOWI5ZGQyNTRiZjY5YmE2NDg4NDE0NzIzNGEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjEzZjk4NTQwNGNjODQ2NmEzZTM0ZDgyZDhjMjdmYTllNmY2MWYxNzA4OGFjNTI3YWQ4NTQ3ZTM3OWQ0NGU4MmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQyYTZlMDNiMmUxNDFmMmI4YzE1ZjQ2ZDg4MmUxMmFmYjgzZDM1N2E2MWRlYTBjNjdjMjM1NTYzODZjMjA1MGIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_d72e3a9e13f848649a43254e9be320c0",
+      "statement": "GitHub authorize mints an anti-CSRF nonce in a short-lived github_oauth_state httpOnly cookie with mode and optional creedId, redirects to GitHub login/oauth/authorize with scope repo read:user and prompt consent, and the shared callback verifies cookie/session/nonce, exchanges the code, fetches the viewer, and stores an AES-256-GCM encrypted token (personal per user, company per creed manager-only) via a single shared OAuth App.",
+      "evidence": [
+        {
+          "resource": "repo://app/api/app/github/authorize/route.ts#L33-L82",
+          "version": "repo-lines-v1:sha256:5c49e8ac16743e53eb68dbe529e92f422a0b741155ae216a8cd4ec5ec733a96d:eyJzZWxlY3RlZExpbmVDb3VudCI6NTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJjNGFhMjExZDg5ZTY1NDM5MThlNzkzZDIxNjFmYTA2ZjdkMzJkZWU4MDlkNzkzYzdhMDFmOTE3MjEyNjAwYzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI3YWRjZGYzYTYzYWVmNWFlZWRiZGQ0ZGY3MzRiY2E4YzE5NTE4NTYyY2VhZTk4MTg4M2Y5MWEzZWJiYjdhZGQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://app/auth/github/callback/route.ts#L34-L100",
+          "version": "repo-lines-v1:sha256:18712ddcaa5717d3572b1d67386761c9c87cce55677a4699c776e9bf79c3e9f7:eyJzZWxlY3RlZExpbmVDb3VudCI6NjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJjNGFhMjExZDg5ZTY1NDM5MThlNzkzZDIxNjFmYTA2ZjdkMzJkZWU4MDlkNzkzYzdhMDFmOTE3MjEyNjAwYzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ3ZmQyNTZjNTEyZjM1YjM4YTBjMmEwYjQ3Y2Q4OWE2NDllMGU2ZTgyYzU0MjlmZjdmZDRiZDJkYjMyY2NmY2MiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI3YWRjZGYzYTYzYWVmNWFlZWRiZGQ0ZGY3MzRiY2E4YzE5NTE4NTYyY2VhZTk4MTg4M2Y5MWEzZWJiYjdhZGQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI4Mjc1ZGJmY2ZlYWNhZDM2ODVhN2VlN2RhOTE5MDZhMDU1ZDNhNDFhYmI3ZTdhODE3NGZjOWRmNTc5OTY3OTQifQ"
+        },
+        {
+          "resource": "repo://lib/github.ts#L78-L168",
+          "version": "repo-lines-v1:sha256:1197d44bc61039ec0d9832c88393759cfcd550d0b8ca369dcf1be7256aa402bc:eyJzZWxlY3RlZExpbmVDb3VudCI6OTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkzODlmM2NiM2I4ZTcxNGY3OTQ5OTcwNTkxNmZmZmIzYzUxOWI3NjYzOGI2OGQ5NWNlMGUwYmQwNDA0Yzk3ODAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg3YWE2YTk3NDk3NGU3NGY4ODhlYzZlYzQ4MmNiMDFmMzJiOTAwNTRmNmE3NzRhM2FmYTQ2NDcyZDEwNzgxYTgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk2ODQ4YTIxNjcyMjM3YjlkYmFlODE1NmEyYjIzZTMyMDgyYmJmMTJkNzczNjgxZDZlODkxNDZmZWQzNTY5YjAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b63f07dac394455b96f73a5e89052998",
+      "statement": "GitHub token refresh is handled by withAuthenticatedGitHubAccess: it proactively refreshes when the token expires within two minutes and retries once on a bad credentials/expired error; refresh requires GITHUB_OAUTH_CLIENT_ID/SECRET to be configured.",
+      "evidence": [
+        {
+          "resource": "repo://lib/github-version-control.ts#L55-L178",
+          "version": "repo-lines-v1:sha256:37c3d3478e8c6c5488ebad5b0fdf08adb5f6381ddd91eaeb33f93c857511bf73:eyJzZWxlY3RlZExpbmVDb3VudCI6MTI0LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI4MzRjZmZkNDUzMDNiZTRiZGU1YjFlMzdmZDk3ODMxMmRjNDEzZTMxOTA1NDMxMjMyOTgyNTlmNGYxNTgxY2U1IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJmYjU4MGU5NjRmODNhNDczZjQzZDQ0Mzg0NjI5NDlkNjhiNTYwMGZkYTc4N2YxNjM3NDVkMDBkZTg5Y2JmMzZhIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI2YzlhZmYyNGIwOTNhMDI3N2I5MmFmZjg3OGE4YzZmNDFlMDFjMjc3YmU2NTdmYTdlZjViYWU5ZTZjYTc4MTk3In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_91e57189531c4c87a49905e2db727804",
+      "statement": "lib/marketing/pricing.ts is the single public pricing source shared by pricing cards, the crawlable pricing reference, the SoftwareApplication Offer schema, and /llms.txt; Open, Personal, and Company are all $0 forever.",
+      "evidence": [
+        {
+          "resource": "repo://lib/marketing/pricing.ts#L1-L51",
+          "version": "repo-lines-v1:sha256:5e9a701cefe869512f135077250afe2a3a15dec50b8a16b5ae6897d0ca2bb13a:eyJzZWxlY3RlZExpbmVDb3VudCI6NTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVkYjBlMzZiYTg2ZmZlYmFkZTk4MTY2OWRhYmMxZjIxNjBlOTg0NTQxMGY1OTA0NGJmMGZkNjNlNGZmZDgzYTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE4NGRmNWQ0MDc2MmYxNzBmNDk1MmVjMjI5YWQ1M2FlNTdmY2M5YzZkOTQyNWFkNTAzMzIzYmMzOTMyMWNjZjAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_dbd9159ee8aa47969dcce69b078291a3",
+      "statement": "Stripe is removed from active dependencies and runtime routes; Company creation is direct and idempotent through POST /api/app/company (provisionCompany, one owned company per owner) and invites are not purchased seats. The only remaining Stripe touchpoint is legacy offboarding via /api/app/legacy-subscriptions reading historical entitlement/billing rows and self-canceling pre-existing subscriptions when STRIPE_SECRET_KEY is still configured.",
+      "evidence": [
+        {
+          "resource": "repo://app/api/app/company/route.ts#L9-L32",
+          "version": "repo-lines-v1:sha256:4333f883a21ed7584b3e32c8bd87d72493cc3337ae5905ef494d6a22e219ab3b:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRlZGM0NTg5MThkMmNiNjM3YmFiYWFkMDlkYmY0OWNjY2M2M2ZkN2RhOWE2MTg2MmFmMTY5ODZjYTlmMDFlYzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRkM2Q5ZDMzNjAyZDVmZDc3MDFlYjhhMjdiYjQwZWMxOGRkZTA3NmQ1ODRlNTNkNTA0MzhkNzI4YTM4ZjhjOTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRmOGM2N2RhOTU4MWZlYTc3NWMyOTM0MzlhNzcyMTVkYjQ3N2UxN2RhYzQ2ZDEzOTJjODk0NzNlYWEyMGNjZTYifQ"
+        },
+        {
+          "resource": "repo://app/api/app/legacy-subscriptions/route.ts#L16-L72",
+          "version": "repo-lines-v1:sha256:2d01e2e1ecd2cccbdbc9a6742063648da0c9b48c089621475f8bfe300e9836fa:eyJzZWxlY3RlZExpbmVDb3VudCI6NTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI4NGFhYTE3YjkyYjY2ODE2Nzg3Nzk0MjBjZWMyZDVkYTdmMTE4YzZhY2I5NjE0MjAzOTZmZGVhYjBmNDE1YTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBmY2UwZDhjNzkzZGJjMTQ1OTU5NTA3N2M1MjkzYmM1MWY1NWE5NGE2NGNmNjY5MmQzNjFlZTE1YTJhMDFhZjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImMzM2I4OTI2Zjc5OTc3ZTgzMGE3MDExODNmZjU4NGJhYWVkNDI5NDlmZWUzYTg3OTVmYjA2MWMyZWRhNmM5NmEifQ"
+        },
+        {
+          "resource": "repo://package.json#L14-L57",
+          "version": "repo-lines-v1:sha256:29ac9c0c1799962bfa5c736e158374b2d36e1fa5ea1eba74f77dcc7d101ac286:eyJzZWxlY3RlZExpbmVDb3VudCI6NDQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJhM2I0NjlkOWUwOTc1NzIyNDY2NjczNGM5ZWY3YjI1NGQ4ODUzNGY1ZDViYjcwOTg5NjA4MDVjNTUzZGMzMDciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMxMjQwNzhmY2M5ZTAyNmZkYjliNDRmZDU1NmQ2N2ZjMWVkYzI2ZjE5YzI3ZmVkY2M0MGJmNDc4N2YxMTk0M2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkzYWE5YTQ5Y2RkMjYzMDA1NjNiMzU2MDM0YTVmNjViODU1OWI3OGUxOGE4MjdiMGRmNzgzNzhmOWQ0NWIyMDQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRhZTM2ZTIyNjk3MWI3MDUxYWNhYmNhMzM4NTZlYjBkYWYzMTYwYjY4ZjEwZjMxMWE3YTQ0NTIwMTM3MTlhNDUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_1ae4421b800c4150bc9ca38beea27710",
+      "statement": "Historical creed_entitlements and creed_company_billing rows remain for forward-only migration history and limited compatibility state; lib/welcome.ts uses them for one-time welcome dismissal (not billing) and every welcome helper is fault-tolerant, resolving to don't-show on any error.",
+      "evidence": [
+        {
+          "resource": "repo://lib/welcome.ts#L1-L26",
+          "version": "repo-lines-v1:sha256:a215c728591d952a339e8ba97c4b3740490a59296d24b732930ddcb98c2e3fa1:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBjMGY0OGUzOGZiZGI2YzBlZmU5ODdjOTg0NTIxZWQwNzQzMjc1NWI2YmFhY2NmNDVkOTc3ZTU3ZGI3Y2JhZDQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJlYTQ5Yjg2NzI2MTBlZWNiOWI5ODdmOGE2NjFhOGQ4NmM3MWY4ZDEzY2RhMDMzZTMwNDMyY2M1N2IyNWNiODAifQ"
+        },
+        {
+          "resource": "repo://lib/welcome.ts#L63-L100",
+          "version": "repo-lines-v1:sha256:c198580375e2f41e977f1f0822ac74c2dba3b455e32bac9aff97876bb04b1eff:eyJzZWxlY3RlZExpbmVDb3VudCI6MzgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQyODEyMjQ1MWJmMmYzMmI3OGY5YmQzZDFhMThjNWViMTk3YTc1YTVkZjQ4ZjU4ZDhhNWVmZjM5OTFkMWUwMjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVhNzc1YjMxMzI1YmYxNTNmM2EyMjA1NTk1ZWZjYzMyYzZjMjBhNmVjZjMyYTNiNzMzYjc5ODUwNDg2ZjZhNzMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQwNmQwZTlmOTMwMGZiMTE3OWRiZDgzMzVmMWZhZjlhNzhmNjgzNDA0ZTBhODNjNmE1ODk2OGQxN2Y3YjkyNTQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_3a084c9ff22d4195a39921fe8ea58a02",
+      "statement": "STRAP_ENCRYPTION_SECRET wins over CREED_ENCRYPTION_SECRET for token/payload encryption, and STRAP_AGENT_MODEL wins over CREED_AGENT_MODEL for the included AI agent model; both are read as process.env.STRAP_* || process.env.CREED_* lower-priority fallbacks.",
+      "evidence": [
+        {
+          "resource": "repo://lib/ai/model-catalog.ts#L121-L133",
+          "version": "repo-lines-v1:sha256:977077be14c83e829af82c08f0e7861c00478d93073f40e054322c06eca7105d:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY0YzE5Nzg4ZmE0MWU3Yzk5M2QxNTBkN2Q3ZDg5ZGQzNjMxYzMwYTM4ZjlkYTJkM2QzNDM0NTAyNGY4OGI5ZTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE3Njg1MmQwZDNiY2U1MjkxMzIzOWE5YzUyMmQ5OGJkNzkwMGE2NWIwZDRhMTY3YTEzYjM3MzBkN2EwNjM3NWMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg5NGYxMWY0ZmYxYWYyMTY3MDNhZjNkYzBmOTk1ZmFhZDM1ZTdjNDU0MzEwMmJhNDY0M2QxMjE2OGZmNjg1MTEifQ"
+        },
+        {
+          "resource": "repo://lib/secret-crypto.ts#L7-L19",
+          "version": "repo-lines-v1:sha256:cb953b650848caf94bf990343d4fa33ce1798b9a984010d8953386a4fd7e88af:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY4OTU1NDhlNWVlMWY5Mjk1Y2NiZDFkMWIwNjNiNGQ3ZTM2YTcwNzZjNGY0ZDQ4ZWQ2ODQ2Y2JkNmEzNDc3ZjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjMzZTFkOGRjYTJlNWFiOGNjYThmOGUxY2JkMzBiYTU0NjczYTkzY2U4YmYxZTY3ODhmZjk2NzA3ZTlkYTJkZjYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjkyNjA2MjQyZDQwYTNkNTIxMWIzNDVjZDNmNGY4ODJmOGE0NjRjZWZmM2E2ZmMzZmNhOGRkMzc0MzIxY2I2ODIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_73868c0480dd4814ba42631c435abecd",
+      "statement": "CSP enforcement flips from Report-Only to enforcing when STRAP_CSP_ENFORCE=1 (falling back to CREED_CSP_ENFORCE=1) in next.config.ts, which constrains connect-src to Supabase, OpenRouter, and GitHub API origins, blocks framing via frame-ancestors self, and pins user-specific HTML paths to private no-store while caching static /assets hard.",
+      "evidence": [
+        {
+          "resource": "repo://next.config.ts#L129-L151",
+          "version": "repo-lines-v1:sha256:97e2d421161b2709632170d7842edc558b751a578c9d769cd1fd5191fe5ec0f7:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY4MjAxMmViNjkzOWViZGUyZTNhMWZlNDc3MjIxM2QyMWEyNjFhZWRkOTNjOWZjNzg1NGM0MTczNWFmODliMzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFhMWQxYTYzMzkwMjI5Yzc5ODM0N2U4M2EwNDA1NDQxYzk0MDAwMzUyODRhZDE2OGMxYmY2Y2RmMWQ3MGEzNzAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjI5YTJiYTQ3ODk1YTNjYzllZWE4OTEzNjliZjAxZjc5ZDA4MzI3YWY5MjRiYjc3YWFiYjMzZTU4ZTQxZDJkOTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoyLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE3OTBiMGIxZGVlZmIxMGI5MmIyODkwZTZiZDNmY2Q5N2ExNTcwMDJmMDMyNTU5NzlmOTc0MDgwY2UzZTBlZTUifQ"
+        },
+        {
+          "resource": "repo://next.config.ts#L4-L59",
+          "version": "repo-lines-v1:sha256:e809aa8b6bd0167c2e25ef4ef8cd5341a241a1fff3fc99a9bc087227c68b934b:eyJzZWxlY3RlZExpbmVDb3VudCI6NTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhmODU1MTQzZmFmZGMxY2ZiYWFkNTc2NDA2MWI2MmU3YjNmYTcxOTk2NDZjMjgzZGU1NmNkMzU1NmRkMzFiMjciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIwMmQyYzBkNmRjNWU3NGQ5MmZhMTRiOTFkYmVhMjY0MDkwYmViMzVmZGI5MTg4ZDliMzQxMTgxZGNlOWY0Y2UiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRlZTM2OWVhMzQ4ZGQ4YjcyNDZmYTFkYjVhMGI5YzY2ZmU4NWRhYzczOWMwYjhlMWNjZjc1ZDU3OTFlMTI0MjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBmYTU2ZGUxMWM2NDRkNDQ0OTc0MDZjN2JlZGI1ZDZiOTA3NmY3MDRkZDZmNWJmMzE2MWVkOWM1Y2MzNzE5M2IifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_30dcde117b8c40a0beb419b1a1914edd",
+      "statement": "Root tsconfig.json excludes both independent CLI packages packages/strap and packages/creed-cli from the root TypeScript project, so the primary @bvdm/strap CLI must be verified with its own typecheck and test scripts.",
+      "evidence": [
+        {
+          "resource": "repo://tsconfig.json#L60-L64",
+          "version": "repo-lines-v1:sha256:bace78097770d33318071f4c2aed42f0c6c4031964c933973dd39ec804f26d98:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNzhkM2JjM2E2MWY5NmY3NWFlMGQxZWU1MzMzMzFhMGRiOGM5NGUzMzFkM2FiZWE1ZGI2MDQzOTA4MmMwOWRlMSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMzA2NDhmNzdmZDVhOWM2M2IzY2RkMGFmNDlkYWExMjk5MjIwYjc1NDFlODhjYTE3ZWZlMWE2YTExNGI5ZmYyYSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYjk3NTRlYmI3NDBmZmM3ZGUzZjE3MmI4Y2VhZTZhYmQzZTRmZDY1NjBhZmYyNTM1MWRjMzQyMjkxY2ExOWU1ZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjEsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_52357f8f05c648a7922b259bbd0ccb7b",
+      "statement": "The Git remote and repository/package metadata use MajesteitBart/Strap; MajesteitBart/Creed is retained only when documenting explicit historical evidence.",
+      "evidence": [
+        {
+          "resource": "repo://package.json#L63-L74",
+          "version": "repo-lines-v1:sha256:bbc0b146310a36790bdaa82599a093c7d95cccb205ec29401dc8b3498542ad57:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE2OWViNmNhNmQzNTQzOWU0ZmEwZmQwNzcwNTdmZTRlZWJkMGU0M2I3NWZiNDEyOGI3MmJiZTdiNWUyNDQ4OWIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM0ZjUxMzAzMzA2NGU0NGVhNDdmY2FlOWYzOTY0NThjZmI5M2Y1ZmI3MTYyMmUxYzkxYTYzMTFhOTE1ODYzMzMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY4ODRkNjRiM2RkNTQ1NTk1YzQ5N2QxY2RhMTIwM2RhODc4OWY2Y2Q0NDA4NzFlODg0Yzg3Y2ZiYzZlYzFlMzQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.2",
+    "at": "2026-09-15T08:01:45.050Z"
+  }
+}

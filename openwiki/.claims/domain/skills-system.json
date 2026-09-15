@@ -1,0 +1,254 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:69e58a18ab05d36102f5340ef07e2cf3dcfc20a1a1196ee8695b28e7eeb9c2e2",
+  "claims": [
+    {
+      "id": "claim_84bd3a83d6014454ae3e0a48ff26b5c0",
+      "statement": "Skill storage uses two Strap-named Postgres tables, strap_skills (one row per strap_id+name, current revision) and strap_skill_versions (full document snapshots per skill_id+revision); both have RLS enabled with all grants revoked from public/anon/authenticated and only service_role gets select/insert/update/delete, so no client role receives table access.",
+      "evidence": [
+        {
+          "resource": "repo://supabase/migrations/20260913133911_shared_skills.sql#L4-L30",
+          "version": "repo-lines-v1:sha256:1ba385ed27cd9f9ce2277ceb837ac73687d818af33c7a0751a688d38863f3a43:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhmOWU0NDM5NDFjODE1MjNlY2MwMzgwNzRiMzEyMTYwNGFiZTQ5MmU3NTdhYzNhNjkwM2ZkOTE1NDRlOTFjODAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNiZWU0YjBhZTE3NDVkZTI1NjExYThhNDNmMWM5YzZmOGFlN2Y5MmQwNDliYzNhZjdmMjM1MDFhODljNDhiMmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE4ZjBlMzE3ZjQwMjViZDhmZGVjYmRmMTQwMzVkYTBlNDdhNTNhMjA3NGE2NzEzNjk1ZjYwM2VlMjIxNWVhZmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY0MGQwOTA2YWZmODgyOGRlZmY5Y2RmNjFjMWUwZTMxZWI0YjQ4NWU0M2MxMTE4NTI5YjNhMzMyZjNhMTc3MTIifQ"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260913153559_bound_skill_storage.sql#L1-L8",
+          "version": "repo-lines-v1:sha256:f633f27319f9d422d22623c2a6ab2a169f3c030ae1024381056c7f47031ace24:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMTkxZmI3MGZlMDJhYWI4N2U1ZjU5YTBlNmFmNTgzN2FkMWE2ZGQ3MmNlZTg4MjNhMzU4MzA0ZjlkNWVhYTQ2OCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOTMyODhmNzg1Njk2OGM0N2UxZjZlZWNhZTA5N2YyOThhMjRkMjBmY2FmNWZhMWFhYWIyNTUxNTM1NTMxYTlmNSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNWI0NGI0ZWI3ODk4Mjg1ODIzYzM5NGJjNmFkNTE0ZjdlODdmOGIwNDg0ODc1YTk4MTBjY2Q2ZTc4YmVhOTlhZiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_8156e1731d0d446ebad6f0543515e4ce",
+      "statement": "strap_skills_read takes FOR SHARE locks on the profile and the caller's creed_members row, allows any member to read, returns metadata (plus storageBytes and canManage) when p_name is null and the skill document plus version summaries when p_name is set, and rechecks live membership every call.",
+      "evidence": [
+        {
+          "resource": "repo://supabase/migrations/20260913153559_bound_skill_storage.sql#L10-L48",
+          "version": "repo-lines-v1:sha256:5cf4485766c17f0bc5cc9414f559220b835cfd2eb17e548111f5db7e0bfb1d26:eyJzZWxlY3RlZExpbmVDb3VudCI6MzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM2NzVjZDJkOGM3M2Q2MjJkNDBkNWFhNmFhMWNiODc1MjVkZjM5MDEwZGYwMjkxODliMWRmODIyNTViNzAxOWIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIxYTUyNzJlMWIyYzI5OGJiOWIwOWU4ODM0NjUyYzdlM2ZkOWI4MDFjMTk4YTZjZmE3N2ZhZjJhNmQ2ZmFlZWMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJhYTUxZDcwNmNiYjllOGJmNTlhN2Y5OGVmODQxNzc4N2I3N2JkZmU2ODk5ZjBjYTc4YjU2MmYzNjQzOTM5YTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU0NjU0OWQ1ZTNjNDNmYzc0NjkzM2RkMzNiNDQyOWYyYzBkNGU2MTFlYjc4NjFmNDJlMWZiZTc3ZjU1YWQ3ZDcifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_4e09e2fea1b641c48e9f9bf2842b75e1",
+      "statement": "strap_skill_publish serializes publication with a FOR UPDATE lock on the profile row, requires owner/admin role, rejects a stale baseRevision with PT409 (except an identical-content idempotent retry that returns the current document), caps new libraries at 100 skills with 54000, increments the revision and inserts a version snapshot, deletes versions older than revision-20, and enforces a 64 MiB library budget by pruning oldest history first (never a current revision) and rolling back with 54000 if still over.",
+      "evidence": [
+        {
+          "resource": "repo://supabase/migrations/20260913133911_shared_skills.sql#L78-L133",
+          "version": "repo-lines-v1:sha256:93686e7fa1609fb9a50bc18c8d180c563a0cfda1741f21366a3e6e9639433304:eyJzZWxlY3RlZExpbmVDb3VudCI6NTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE1NTVlMTk2YmQ4ZTNlOGU2MmZkMTc4MDdmNDMxYjE5YjcwYzgxNzgzOWI0NTYxMDc2MjFlOWQ4OThiNDQ1YmUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJiNjA4NzFmMzMxNjU2M2E2NmU0NDY0Mzg0ZThmMDE0YTQ5NTc5ODFiNDY5ZTU5ZDJiZWIzMDQ3MWMwZmY4NGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjcxNTZlODU3OGE0YjQyZjFhMjJlNTRiNDk5OTViZWNhNDQ1NDVhZDAzYmU4NTJmMDg4ZmQyYjQ3NTA4MTdiYmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260913153559_bound_skill_storage.sql#L50-L128",
+          "version": "repo-lines-v1:sha256:55adbf6b62d259b3d743a923e6098b5c4b2db222821cb3629e253c7704673d88:eyJzZWxlY3RlZExpbmVDb3VudCI6NzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE1NTVlMTk2YmQ4ZTNlOGU2MmZkMTc4MDdmNDMxYjE5YjcwYzgxNzgzOWI0NTYxMDc2MjFlOWQ4OThiNDQ1YmUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJiNjA4NzFmMzMxNjU2M2E2NmU0NDY0Mzg0ZThmMDE0YTQ5NTc5ODFiNDY5ZTU5ZDJiZWIzMDQ3MWMwZmY4NGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjcxNTZlODU3OGE0YjQyZjFhMjJlNTRiNDk5OTViZWNhNDQ1NDVhZDAzYmU4NTJmMDg4ZmQyYjQ3NTA4MTdiYmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_3b7c7f812b69475eaf83bae76b3cf34b",
+      "statement": "The application layer in lib/skills.ts maps SQL error codes to HTTP statuses (42501 to 403, P0002 to 404, PT409 to 409, 22023 to 400, 54000 to 422, otherwise 503) and validates user/strapId/name/revision before invoking service-role RPCs, so application authorization precedes the RLS-bypassing service_role call.",
+      "evidence": [
+        {
+          "resource": "repo://lib/skills.ts#L43-L73",
+          "version": "repo-lines-v1:sha256:ae2aa86b03501af882afa3fa21ce8b59c9b5dfa66f4b96cf3339a7fd11148312:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA5OGRmMzM1NWQ3ZmE5NzAxN2M3ODVjZmM3ZWNkYjY0YzMxOTBmZDRhNmI1NjlhN2JlMDYzNjQyZDljYjVlYjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjI4MDAyMDk5N2JiMjcxMGJkZDQxYjhkYWFmYWM0YjQyOTU3ZDcyOGMzZjhiODJhMmU3MWM4NWU2M2YyMTk2YTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE3YzY0ZWJmMzY3MzFjYzY2NGExZDk2ZjRjMDAwN2M0N2MzMWNmN2Y1OGU0NTEwOWFhMTIwNzk2ZmQ5YzAxN2IifQ"
+        },
+        {
+          "resource": "repo://lib/skills.ts#L96-L136",
+          "version": "repo-lines-v1:sha256:2bd2cce222faf91df9b347f5b185630fcaffd10f5e3fa487a11b8a7ccfa39c48:eyJzZWxlY3RlZExpbmVDb3VudCI6NDEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgxMjI5MmUxNDc5NzkyY2U1MWMxZTY4NTIwZTI2ZjMzNzFhN2U2NTZlMTdiMWNmNDM5OThiOGNmZmIxYTQ4NGQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNmMDk1ZDBiMTM2MjgxOGU4ZGIzZjNlMzNlY2E4MzgwNjI4MWFhZjZhNTEwZGQ1ODk1NWMxYWIxZWNiYWE4ZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_54d182b938f24c909ef90270e840085f",
+      "statement": "The portable skill bundle format requires a UTF-8 SKILL.md with YAML frontmatter (name 1-64 lowercase-kebab, description 1-1024 chars, no aliases/duplicate keys) plus 1-128 portable relative files, each at most 512 KiB and the whole bundle at most 2 MiB; the shared validator in packages/strap/src/skills/bundle.ts (validateSkillBundle, validateSkillName, validateSkillPath, encodeSkillFile, fileBytes, canonicalSkillContent) is used by the CLI, browser editor, and server.",
+      "evidence": [
+        {
+          "resource": "repo://packages/strap/src/skills/bundle.ts#L1-L49",
+          "version": "repo-lines-v1:sha256:7e0bee8a4ece67b8579886b1ac85fb32beab88135946c8a8dda00f539e5c0fb2:eyJzZWxlY3RlZExpbmVDb3VudCI6NDksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg0ZWUxMzNlNGYzNmIzNDAxN2ViNDk2YzlhODBhYjNmNDE1NDBlZDk5ZDJiNzkxNDEzMWJjYjVkOGExNWQ3NTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJiZDJmYmIxOTQyOWI4ZGZmYzcxMWY0MTY5NDUzYWE0NWE3NzcxM2ZiOWI5NmU1OGQ0YzQ3OWUwNjE5ODA3YjkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjcxODg3MGE4MDQwOWY4YzRjOTk0ODA3YWY4MjU5Y2MwNGJkMGM1Y2EyZTlmMWMzYjEzZGVmMTBiMTYyNzg2ZDYifQ"
+        },
+        {
+          "resource": "repo://packages/strap/src/skills/bundle.ts#L126-L245",
+          "version": "repo-lines-v1:sha256:0acb81802d18228a870cdc6391c230ccb371b9f24ce4e0cbf9ac9f679b56181c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIwLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJkZWU4YTlkOTYwOTIzYWVjZTI4MTgyZDFmYjUxOTUzNDc2Mzc5NzIxNzZkZDJhYTNkZGE0Yjk0YjU4N2FlM2U5IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJjYjVmZWM3MzMzZGNhMTVlMDVkYjUxZGUyM2ZlYmZiMDQzYWU0NDhhMTFkZmFkNDYxMjliNTFhOThiODBmMzMwIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiIyZmI2ZmFjZDNlNTEwOTc5NTk5MmE4NTFlNjhjZWYxOTIxNzA5YmE1MTlhZWFlNmMyYzQyZjQ1OTY4NGFiMDk3In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_21406cee555141608eb1a798a8792e92",
+      "statement": "validateSkillPath rejects traversal, absolute paths, backslashes, hidden folders, Windows device names, node_modules, and credential/SSH filenames; validateSkillBundle additionally rejects case-only path collisions, file-vs-folder collisions, non-round-tripping UTF-8, and non-canonical base64.",
+      "evidence": [
+        {
+          "resource": "repo://packages/strap/src/skills/bundle.ts#L149-L192",
+          "version": "repo-lines-v1:sha256:6639623843b10006cbdcdbefab95936935492c0ba32d107d2c8f135aeae268ff:eyJzZWxlY3RlZExpbmVDb3VudCI6NDQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ1OGQxYWE0YWZlNzY0MTk2ZGIyNmJlYjA5ZjMxNjE3N2NkMmY1YjExMTRiNDQzYTA0ZGRiMTZjYzJiZDZhNTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJhYTUwNDljMmIzNWIyYzA5MGQ2ZGU5MjU5MGNkM2UxMDAyNzEyMDU0MTY2MjMyMGFjMDMzMDlmZGVkMTAzODUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjYyYzU3MDFiZmRlNmMyNDQzMzFjYTc5MWM4MDJhYzhhYzM2NzEzZTc3NDVhNGZmMTliY2VlZGMyYWJlZDQ5NWEifQ"
+        },
+        {
+          "resource": "repo://packages/strap/src/skills/bundle.ts#L53-L98",
+          "version": "repo-lines-v1:sha256:cabae28cb2390773247411a162428f094cf911a950ef4053d8d4c2dd74e2bab7:eyJzZWxlY3RlZExpbmVDb3VudCI6NDYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdiZjJhYmM2Y2ExNjU4OTRkYjYzOGU3YTg4ZDRmMzBmMGRiNjc0MzFhNTQxNGFlYTkyYTExZTQ2MGFlNTUyYmEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRkZmZiNGJiM2NmNDBlM2ZmZmRjNTYxYjhjOTQzM2E3NTkzM2U5ZDEyNDViZTJkOTczZDRlZTJlMmM3NDg5MzYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjcxODg3MGE4MDQwOWY4YzRjOTk0ODA3YWY4MjU5Y2MwNGJkMGM1Y2EyZTlmMWMzYjEzZGVmMTBiMTYyNzg2ZDYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImMwNzFlNzdlOTU5MTRiNDc3NjhkNTNlNTg4NGNhMDUwNzNhZjI3OGYzMDg1OGZjOTMxMWY2MjBmZGU2MzRiOWYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_873cb593ab004f40b3f1eab1b4952faa",
+      "statement": "Browser skill APIs use requireApiAuth (Supabase session): GET /api/app/skills lists a library, GET /api/app/skills/[name] reads a skill or historical revision, and PUT /api/app/skills/[name] publishes or archives with a 20/min per-user skill-publish rate limit and no-store responses.",
+      "evidence": [
+        {
+          "resource": "repo://app/api/app/skills/%5Bname%5D/route.ts#L15-L72",
+          "version": "repo-lines-v1:sha256:671068f7d4acc5e30108a8bb234946a7ac0724474f14cee8b70bc0f8716d1bba:eyJzZWxlY3RlZExpbmVDb3VudCI6NTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc4YWVhZDQ3NDEyM2MwZjY2MGViZmZhNTkzNTJiMDI5NTQ2Yjg4NzMzNmIyMGI2ZWNjZmJjYTkyYzc5ZTA4NjIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc5YjllZjE3ODNmMDQ0YWEwNjJiZTE0YjdhOWJiNDNkZWI0NzhlNTc4Yzc1MDA3ZjAwMzU3ODAzODFiOTczNWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://app/api/app/skills/route.ts#L9-L23",
+          "version": "repo-lines-v1:sha256:22ba60238eeb4acb22195162a2b04b26f1cf3325de02cda6f4bfe7c37259545f:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJjNGFhMjExZDg5ZTY1NDM5MThlNzkzZDIxNjFmYTA2ZjdkMzJkZWU4MDlkNzkzYzdhMDFmOTE3MjEyNjAwYzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFhMDZjYTAyMWRkNmU0ZTY2ZWJmOGE4OWNlMjk0YTIxYTg2N2Q1ZmFkYTYzNGZlZDBhZTRmMGZkMmI3NjFmMDYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_7b39fb7445244df68295156a638d92f1",
+      "statement": "MCP skill tools are added via skillToolsFor(state.creedId, mode, role): no tools when no profile is connected, and strap_publish_skill is only included when canPublishSkills(mode, role) is true (direct mode AND owner/admin); list/get/export are available to any member in any mode.",
+      "evidence": [
+        {
+          "resource": "repo://app/mcp/route.ts#L2248-L2254",
+          "version": "repo-lines-v1:sha256:4abe27956d9b22f387bf1b70c088c665b35ea464534d570de594018948d00ecf:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODBmMDQ3YmIxOTRhN2NmNDk0OTE2ODA1MjdiNTAzYWE0MGVmNGJlM2FlODJjNjhiMTFiNGJhZWI0YTA5ZTJjYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMjJkMTFjYWY0M2U5N2VmMzY5ZTZiZWVkMWEyNjhiZDA1ODM4ZjI5YjlkZDI1NGJmNjliYTY0ODg0MTQ3MjM0YSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYmQwMjE0ZmVmMzliYzRlMzk2Yzc5OTdmMmQ5ODEyMDVhNjk1MWNjMjdkYWFlZjJlYzQ1MjQ5MmQxMjcxZmZkYyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOTY3ZjE0YTlkNzJiMDI0NWQ0YTQzMzI5Nzk0NmU4NjQyZDMyODAxNDRjOGFkNmY0MjI0YjcxNmNiNDY3MjRkOSJ9"
+        },
+        {
+          "resource": "repo://lib/skill-tools.ts#L122-L139",
+          "version": "repo-lines-v1:sha256:913d066c6c2b4cf821a920ef1432ae549ae50bef8d2ac5fea3170bf476259958:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY3Yjg5NjljOTJlZGYzOGFlMWU2NmYwOTNmODA5OGZlOWVlYzEzMzRmMjc0MTVhYzRkMzFmZDAxOTg5NWQ5NDAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE4YTkxNzU5NzJmZTE1ZTJhOTY0MWFiMTMxZjU3MWU2YzdjYWJjYTA2ODM3NjJlYmE1ZjIzNTNlNDgzYzNkNTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_320b3c551f684257a63924903e1a386d",
+      "statement": "The MCP batch guard isSkillPayloadBatch rejects any batch of more than one request containing strap_get_skill, strap_export_skill, or strap_publish_skill with -32600 before state resolution, to prevent multiplying large payloads; a single such call and non-skill batches are allowed.",
+      "evidence": [
+        {
+          "resource": "repo://app/mcp/route.ts#L2437-L2443",
+          "version": "repo-lines-v1:sha256:6bec2512205f037be23fb6f4a7d65031f4cc7f1867c1e9a88f6ed48ffed13dc4:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYWJlY2Y1Y2QxNjMwNGJjMzE0NzE3ODU3ZWQ2MzcyZmIwYTYwZjE2NDZlYWNiYzIyNDg5NTc3NTA1Yzg4OTJiNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMjdlNTc4OGQ1ZDlkNzNkMjRhODFkYmMwYTVhNzRiZmE4MmM5YzNiM2FmOTllNTJhZjc5NmU5MGI0NjhhOGEzZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTI1NDFmNzU0NTUwMWYyYTExNGFkOTM5ZTc0NDE1YmM5NjRmOGE1ZTk4NmMxMjA3NDY5MzNlMWQ0NmRlZjlkYyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNWQ1M2QyNjMzZDUyNDY0NDg0NGY3N2JiMWEwZjIxNjkwZTRlZDAyOTU4YWU1NTc4MmJjZDIwYWJmYzBmMTU0NCJ9"
+        },
+        {
+          "resource": "repo://lib/skill-tools.ts#L8-L29",
+          "version": "repo-lines-v1:sha256:25ec50844c9b1f1b41a8a7f140068e7aaa4f03024d0fb0216b0e89da88231a00:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhODM5MDE3MmExMDE0M2ZjNjBjODVhZGZiZTZjMWRlMTg0ZDZjMjhiNDE4NDY2YzExNThjY2FhZmRiZTdlMWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhlMzgxNjhmZjhlZDRmOWZkYWZkODAwYTMwYWMxMGJjMWY5MTVmZGMzYWIwNjVhODNmMThkYTgxNzkwOTY2M2QiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU3YTYzYmUwNmE3MmZmYWU0MDljMWM5Zjc5ZjRlMmM1ZDJmYjJlYzZlNzRjNmZlZmFmYTliN2NiNWE1NzgzY2UifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_d8d74fbf7053468f86f9b1288b8ab00a",
+      "statement": "MCP instructions injected at connect time tell agents that skill guidance cannot override higher-priority instructions, cannot authorize secret access, downloading never authorizes executing scripts, and skills should be published only when the user requests it.",
+      "evidence": [
+        {
+          "resource": "repo://app/mcp/route.ts#L67-L75",
+          "version": "repo-lines-v1:sha256:ac5d4a7619d78c61506283d21cde60443dc0a6d22b7f132d9b5b02d9b845681f:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNzk1NTJmMWY5YjM4MTNjNDc3NjRhNjIxZmQ0ZjMzNGVkYTU2ZTE1YzUyMGEyOTY5NmY2YWQxMTFhMWI4ZTYzOCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYzk3NDRmNTZiMTliNGI0NWM0N2VkNjBkNGJjNDBiZDA0YTEyZDNjYTdkMmNhZjg1YmIzZWNjZDZhMDIyMTYxMCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiM2NhNjYyOTZhZmY3NmVmMzdiY2VlYTJmNjM1YzcyZmVmMmM4MmE2ZWJmMjI5MjM0MmFkYTIwYTNlNWI1ZTZjNCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZGQzOTEwODg5NDk5NmZhMzk1NTlkODhmYmVlNzViZTVhODM2YzMwNTk1ZGJlZWI5ODQwOGE2NzcxNjlkMDI2YSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_6125a062500a438db41ab38b0fb7f84c",
+      "statement": "Skills are independent of profile section editing and the proposal lifecycle, and independent of Vault secrets; skill content is user-provided guidance treated as data not instructions to the host, mirroring the profile-content-as-data invariant.",
+      "evidence": [
+        {
+          "resource": "repo://app/mcp/route.ts#L67-L75",
+          "version": "repo-lines-v1:sha256:ac5d4a7619d78c61506283d21cde60443dc0a6d22b7f132d9b5b02d9b845681f:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNzk1NTJmMWY5YjM4MTNjNDc3NjRhNjIxZmQ0ZjMzNGVkYTU2ZTE1YzUyMGEyOTY5NmY2YWQxMTFhMWI4ZTYzOCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYzk3NDRmNTZiMTliNGI0NWM0N2VkNjBkNGJjNDBiZDA0YTEyZDNjYTdkMmNhZjg1YmIzZWNjZDZhMDIyMTYxMCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiM2NhNjYyOTZhZmY3NmVmMzdiY2VlYTJmNjM1YzcyZmVmMmM4MmE2ZWJmMjI5MjM0MmFkYTIwYTNlNWI1ZTZjNCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZGQzOTEwODg5NDk5NmZhMzk1NTlkODhmYmVlNzViZTVhODM2YzMwNTk1ZGJlZWI5ODQwOGE2NzcxNjlkMDI2YSJ9"
+        },
+        {
+          "resource": "repo://lib/skill-tools.ts#L1-L2",
+          "version": "repo-lines-v1:sha256:ced500341cc8f59d6c1d9769f1cfe261d8ee33b77a688974ebef8a8f5a17453c:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTEzZTAzMDVjY2JhOWIxMWEzM2ZiNjdlMWNhMjg4ZGY5MGRmN2VhZjM2N2E4ZDUwMGM4MjMyZmIwMTUyYTc4MyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTgyMDA5NjRhOTc4NjM1NTIyYjJhYjA5MGM2NTA2NWQ4ZWY4ZTg1YzQ3MzBiYjJlYjA0NjBkMzRjNjc3ZGRiYiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYmZhOGU2OTY5NWZhOGQyYzRlYzk3YWI4YmJlNWIyNWQ0YzdmMGI0NTYzNGQ2ZmI1NTE0YzBhMDNiZWY5N2M2ZSJ9"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260913133911_shared_skills.sql#L1-L3",
+          "version": "repo-lines-v1:sha256:18f0e317f4025bd8fdecbdf14035da0e47a53a2074a6713695f603ee2215eafd:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYzhmMjE3MjU1N2ZlYTU4YWMyZGZjMTU3MTk2Yjk4N2E4MzhiMDQ2MDY4ZGJmNTQ1ZDJhOGQ1NjIxZmRmNjcxNSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNjhlMDdhNDBiODgwZGJhZTNmMjQ0MGQyOThkMTQ5Y2FlYzdlN2ZmYzFiYWIwNjg1YWJmNmU4NDUwMGVjZmJjMSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOGNjMzI2ODk3NDNlZjI0MWZhY2FhNjVjNmM5MWYyMmYwZGExYzI4ZTFlYjZmMzM3NjgxMDg0YjZjMGEzMjczMyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_38c5781260f842eb8f57f8fb3463efe8",
+      "statement": "The strap skills CLI exposes exactly four actions (list, push, pull, sync) with --target codex|claude, --global, --dir, --dry-run, and --base-revision; the default target is .agents/skills (Codex-compatible) and --target claude uses .claude/skills.",
+      "evidence": [
+        {
+          "resource": "repo://packages/strap/src/skills/command.ts#L9-L79",
+          "version": "repo-lines-v1:sha256:37461974864bed67a3a3885a8901b351745dd3926d0d466e98936a368d3df17e:eyJzZWxlY3RlZExpbmVDb3VudCI6NzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImViN2ZhZTAxYzUyMGU0MGU3NTM4N2VmZmE3M2JmNDJlMzJhY2JjY2E3NzRlYThhYjZiMDJlMGFhNTZlMTM3ODkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkwYmUwNDIwOGJmOWI5M2U2N2QyZDRiMjcyZDFjYmJhYWY4MWQyZGUyMThmNTc2YTkzNjM2YTA1Njk0ZjZmOGUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjlkN2NlMjgwYTRmMjQ4MTkwNWZmZDNkMzU0ZmMwYTI0NjMwMzRiZjgxN2M1MGEwYzI4MDAxZTc0OTQ3MjhlMzYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_84652e8bcd66446d94da600b38797fa7",
+      "statement": "CLI sync uses a per-directory .strap-skills.json ledger that binds one profile/server and tracks base revision, digest, executables, and archived state; a directory belonging to another server or profile is rejected, and a .strap-skills.lock serializes syncs per directory.",
+      "evidence": [
+        {
+          "resource": "repo://packages/strap/src/skills/files.ts#L158-L208",
+          "version": "repo-lines-v1:sha256:cfb08f57a1e124b025e61fe24c7ce637bfc294be8d36674a612651713ff4fa8a:eyJzZWxlY3RlZExpbmVDb3VudCI6NTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVjN2MxNDBjYmM4YzIwMTBjNDYxMzY2OWRmYTYwMjg0Y2ExYmQxNzljMzUwODkxNGIxOGFhMmNmZjUyM2Y4MDIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc3YjExNjcxMDNmYzNhNDdhZjJmNzQ2MTA3NWI3OGE5ZTIxNDczYmI0YzRiZDBiY2I3ZTk3NTU5YzdkNWEzYzgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJkZWM5OWZjYmJmZTA4NzUxM2QxY2EzOTdhOGRlOGVmYzgzMTcyNTc3ZjAxODA4NWFjZjVjMWZlYjU3MjBkOGIifQ"
+        },
+        {
+          "resource": "repo://packages/strap/src/skills/files.ts#L221-L243",
+          "version": "repo-lines-v1:sha256:36592a686bb3b2322aaf677618018a48c14e05925fe59b9769a6c1bee7387f05:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNhYWM5ZDc4NzY0YjRjMmQyZDMwOTg5MjgwNDVkYzc5MmFmOWE1MTgzNmNkYzRmNTMyMjk0NzczOTJmNWU2MjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkyMDQwZTA5NWE5NGUyYWRhNzRlNDIxZjM3MTg3NTFhOTFhODEwYmZkNjZmNDhmNGU5MzljN2I3NDgwZWI2NzAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzZmIyYWNkZjg5OTc0ZDY2ZWY2ZWZiOThjNzk5NDYwOGQwYmQyZDM4OGJiZmZjYmIzNDljZThjODdhY2E1MjcifQ"
+        },
+        {
+          "resource": "repo://packages/strap/src/skills/files.ts#L38-L50",
+          "version": "repo-lines-v1:sha256:ff23a40aaa600ebc27911a7c5997e6b674215f588fd3681962fd52366934159c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY5Y2RlOThkYTZjMjA5OGNiZWE3Njg3NWQ4NTdlNjRiM2YxNTFmYTljODJmNGY0MTY3MjRmNGE3NGM3ZTlmYTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEwYTJjYzUyNDdmNzMxNjNhZmExNWRiM2EzNzdjMGRhYmVlNDYzNjcxNmMyOGFiZmRmNmQwYjA1YTg5OGYwMzgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM5MzY3MTY1MmE1ZDI5MjVjOTM0MWU1NmE0M2VkMDQ4ZGU5NDQ4ZGJiMDM4NTI4MGU5MWE2N2E1OWZjZjY4NTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBiNzU4NDRmNmEzZjkyMTgyOWUwNmMyNzc2NmQxNjU3MjkxMDc1MDdhZGM4YTk2ZjM1NjUyM2I3ZTE0ZjZjMTYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_6eb1aa6b06154b8d96f6f4c0308ab1ab",
+      "statement": "syncDecision resolves one of install/update/publish/unchanged/archive/conflict by comparing the local digest, remote digest/archive state, the ledger base entry, and whether push is enabled; a planned publish is downgraded to conflict when canManage is false, and any conflict stops the whole selection before changes are made.",
+      "evidence": [
+        {
+          "resource": "repo://packages/strap/src/skills/sync.ts#L36-L54",
+          "version": "repo-lines-v1:sha256:32213a67c813e380f1a4e427df056d4a38e21312ce1241b3e5684010e86d3072:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxM2U0ZjI3ZmVlMjNhYjUxYTA3ZGIwMGM0OGFlZTRhODNjYmNlYjBmNWEyNWUwMzk1YmM2MmM3ODBiOWQxZGQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY4MzlkNGE1YmE1MjI5ZjVkOWJmYjhlNDMyNTU3ZTBkMGJhMGI1ZDY2ZDIwZDRmMWFkNzJjYWI5NmQ3YjA2MjciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJkNTNhYjE4ZjQxMDAzNGVhOTAwNzE5MTk1OGM1OTcwMzlkMjQ5MWVmOTczYmE5MDdkYzMxMTM1ZTVkZGNmMGUifQ"
+        },
+        {
+          "resource": "repo://packages/strap/src/skills/sync.ts#L92-L131",
+          "version": "repo-lines-v1:sha256:ee1bd96c488df8d33e76809243e44ae3dfe1189aec132178f472df24485e3db8:eyJzZWxlY3RlZExpbmVDb3VudCI6NDAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc0MWU0ZGM5ZjIzODdlYjdjNjFmOGJkYmMyOWVmOWRlZGNkZjg3ODdlZWRjNTk4ZDk0MWM2OWQxNjNlY2VhYTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUyN2VkM2U4MzM3NGM0NTkxNDlkYzJkZmYwMWNmNzhmOTE0YjUzZTRjMGE0YTAwMzI5ZDY0NDdhNzZiYjZiNjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg0Mzg4ZDVhOWNhODhmZDM3YWExNWMyZWVkYzJjNGU4YjkxYjcxZjQ1NWQwMDljZTFhZmUwYzc3ZWM5ZmUxNjAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_c1df3901bcee422a9b9a89d92586f8bf",
+      "statement": "installSkill replaces a skill directory atomically by staging new files in a backup folder outside the agent skills directory, writing with wx (no overwrite) and executable mode bits, renaming the existing directory into a backup and staging into place; scripts and assets are copied without execution, and a mid-sync local change aborts and restores the original.",
+      "evidence": [
+        {
+          "resource": "repo://packages/strap/src/skills/files.ts#L245-L303",
+          "version": "repo-lines-v1:sha256:f16adb1dd9bde885c8a124614f89e4ff8f971d4b51c870691731ac44f4dc587b:eyJzZWxlY3RlZExpbmVDb3VudCI6NTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQwYmQ5Yjg0MDM2MDliZDM2ZTBhY2I1MDg0NDE5YzBmNjA5ODcwZDBhMTFjN2Y3ZWRiNmE0Y2IzNjlhMjljZmMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZiNTgwZTk2NGY4M2E0NzNmNDNkNDQzODQ2Mjk0OWQ2OGI1NjAwZmRhNzg3ZjE2Mzc0NWQwMGRlODljYmYzNmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNhYTdhNjY5ZTRkOTM0NjMyYzg3OGM5OTBiODQ5ZmNmYjMxYTRlYmNlYzVmMzY0YjNhMWE4NjE4ZWNjY2VhN2UifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b0101be8f89d474ea5dbc1b1117b9444",
+      "statement": "readSkillDirectory validates paths before traversal, refuses symlinks/junctions (checking each ancestor), refuses linked or special files (nlink > 1, O_NOFOLLOW), detects files that change while being read, and reads the executable bit from the ledger on Windows or the file mode on POSIX.",
+      "evidence": [
+        {
+          "resource": "repo://packages/strap/src/skills/files.ts#L67-L156",
+          "version": "repo-lines-v1:sha256:411f273deb7f59847320c3e652c8f73afbae160526d819faf89d18331073e53d:eyJzZWxlY3RlZExpbmVDb3VudCI6OTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhYjgxYWYxZmNkMDQ5MzViMGRhODdmNWNjZTVmNzMyMzZhZjM2ZTc5ZGM1M2FjMjIxNTA3NGU5ODk1NjI2ZWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZiNTgwZTk2NGY4M2E0NzNmNDNkNDQzODQ2Mjk0OWQ2OGI1NjAwZmRhNzg3ZjE2Mzc0NWQwMGRlODljYmYzNmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY1NjdjZGM5MmM3OWEyOTZmNTQ0NWY1OGY1ODViOGNkZjI1ZGM5Y2M3ZmVmNTk2Njg1YThiOWYyZjIzM2NjN2EifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_5f15e42910d34a739dbfa7d26cd611ed",
+      "statement": "The /skills screen lets an owner/admin create, import (folder or bundle), edit, publish, restore earlier versions, download, and archive skills scoped to the active Personal or Company profile, and blocks publishing a folder import until the user confirms executable file settings because browsers cannot read executable permissions from folders.",
+      "evidence": [
+        {
+          "resource": "repo://components/strap/skills-screen.tsx#L355-L409",
+          "version": "repo-lines-v1:sha256:c0d2cee71ce24873a355c1a6e6c896ca34a78d355a445e8dc923fb6db85f4833:eyJzZWxlY3RlZExpbmVDb3VudCI6NTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUyMjRkNTkyYjk0NDhjNmM1MWYwNjdiMmU2MGUwZTRkYjk5Y2U4MThmNDljOWY1ZDdjYmMzN2VkOGZiYTU5M2EiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYyMDBjZTIyYzcyZGUxYTk0YzI4ODkxMjM2NTUyZGFiZTk2MGRmYzU4Y2JjZDA0YzkxNmE2YzJlNWM0YWIyMTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU4NDM4ODliOGI4OTVjNTRjOWVkZjdmYzcwMmU1N2U4YzY1ODg3MGNiZDgwZGE1MTM2YjQ5ZGIxZTZjMzZkOTQifQ"
+        },
+        {
+          "resource": "repo://components/strap/skills-screen.tsx#L781-L806",
+          "version": "repo-lines-v1:sha256:97584966af093002a38c91452aa8b633c52ac982eac7684cd09ee3c7a9b0eae4:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY5ZjdlYjRjOTQwMTY2ZTFjMGFkYjdiN2U5MDNlZDdiMzhlMWQ0MzgzYTk1MjlkMWU4OTFhMTdmMDZiYzI3MWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg3YTdiZmUwODMxZmNlNzA4MzNiOWU5NzVlNGM1N2M5MTcyZDA5YWM3N2I5NTFjNmJiZGI0YTAyMjFmOTU3ZWYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBiYjE2OGM2MzBmNGE5YTAyM2I2NTU3ZjFkMDg2ZGM1ZjE2MTY1Nzk0ZmM3Y2UxNzM0YzUzOTU1YTZhYzliYzQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNlZWFkN2YwNGFkYTFkNTc3MTViZDE1YWZjY2Q1YjQ2ZjdiMmViZTY2ZTdmOGUxNDIyMTNjN2EzZDdiYjMzZTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_26b628f2a67a482f9df22910bafc0028",
+      "statement": "The MCP transport rate limit uses digestCredential(bearer) as the identifier so the bearer is hashed before rate limiting and no secret appears in the rate-limit key; browser and MCP publish both apply a 20/min skill-publish limit keyed by user id.",
+      "evidence": [
+        {
+          "resource": "repo://app/api/app/skills/%5Bname%5D/route.ts#L37-L53",
+          "version": "repo-lines-v1:sha256:2cd0f69f768ed246ce139a7ca7ef7d0e1eb37bce916465effbf7c47db68632f4:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM0NTMzOTRhZDVmMWQ3MTEzNDJhYjQ0MTZjNTNiYjUwZWRlODEwZDQ1OGVhZDdiOGI1MmMzMDJmYTNhZjAyYTAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg0ZTQyMDhjZDZmZmI4YzRhMzU0N2IyZjU0YWRhMTk5NzhjM2YzNjVlNzhmOTUwMmVmNTE0NWNkZDJhYTg1NDMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA3ZjQyMzMzMGNkMjJmNzcwYTI0MWNlZDhjMGU1NWRjMWI3NTg4NDJlYmJiMTM2OWE3MTMwMDJjMDA2NjZkNjMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRkMGQ4M2YzYWRjMmFjYzhkMTZkZDA2ZWExYTdhNGYwNjU4Yzk0M2Y3ODBiMmU5NTQ3MTU5MDBjMDQzMjMyYTUifQ"
+        },
+        {
+          "resource": "repo://app/mcp/route.ts#L2385-L2395",
+          "version": "repo-lines-v1:sha256:91c1634618d7ba5da0173960c975bd396eb3aa3bb156a15d358c1dfb2acc8391:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM0YzU0YWRjZmViZDVmZDY0NDA0OWRkZDdjNmVlZjljZGYwMTkzNzM3NTAyYTllNmExNGM1NTZiMWVhNDJiYjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhM2U0NmY5NDI3NmI2ZjZmNGVkMWYwMmFmNzhiZWY2YTJlZTFjNDM5ZGQ1NTg0Yjk3Mzk0ODMxMzIxNGQyYjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFkYjNlN2NkMGMzYTYyMzA0NzY2ODE2MWQxMDRlOTlkODYyMDljYTNlNzc1NGEyNWIxMTlhNDkwNzg3ODA0MjYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjcyMmY1OWQ2YzhmMzUyYzIwZTgyN2M3Y2U4NzEzYTA3MzUyZTdjNDc5ZmVmMzdiNTExMzA4NTlhODRkY2RlMWIifQ"
+        },
+        {
+          "resource": "repo://lib/skill-mcp.ts#L35-L42",
+          "version": "repo-lines-v1:sha256:daa0cc72392b3fd1273a006bb5807e6e177f41633c454a978ab792d4d36c45e6:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNGY4OTc2MzQ0MDJmMGMyNzlkNWFhNTA4OWZkNzY3ZWRhYzczNDU1YjcxNWI1ZGZjN2FlYzY1ZDkzZGQ5MDRiYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMjVlMmM4YzU3MGE4ZDMxZWM4ZWUxZDI2NGZhYmQzODdjMDk4N2NmNjYyNTJjNmFkMTkwOWNjODZiM2VhYWViYyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYTFkZmI3MjA1OTRmNDE1YzNlODk5ZmRjZDk1MGEwOGI5ZmQwYTJlMWJjZTMzMzBkNTg4ODQ1MDRjN2YxZmE3YiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTA5MmM4YmQ5NGFlY2NjMzk3ZDE0MGNhMzZhMjU2NDdiNDMzODNlYzhhMjdlNThlYTM4YjNkOTM4NWNmNmY4NSJ9"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.2",
+    "at": "2026-09-15T08:01:45.050Z"
+  }
+}
