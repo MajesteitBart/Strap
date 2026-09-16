@@ -1,11 +1,14 @@
 {
   "name": "@bvdm/varlock-strap-plugin",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Resolve explicitly authorized Strap Vault secrets in Varlock.",
   "license": "MIT",
   "type": "module",
   "main": "dist/plugin.cjs",
-  "exports": "./dist/plugin.cjs",
+  "exports": {
+    ".": "./dist/plugin.cjs",
+    "./plugin": "./dist/plugin.cjs"
+  },
   "files": ["dist/plugin.cjs", "README.md", "LICENSE"],
   "engines": { "node": ">=22" },
   "peerDependencies": { "varlock": "^1.19.0" },
