@@ -1,5 +1,5 @@
+import { getSiteUrl } from "@/lib/env";
 import { NextResponse } from "next/server";
-import { getSiteUrl } from "@/lib/supabase/env";
 
 // RFC 8414 authorization-server metadata. Tells MCP clients where to register,
 // authorize, and exchange tokens, and that PKCE S256 is required and clients

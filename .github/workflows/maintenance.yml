@@ -1,0 +1,19 @@
+name: Activity retention
+on:
+  schedule:
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+permissions: {}
+jobs:
+  retention:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Prune activity older than 90 days
+        env:
+          STRAP_SITE_URL: ${{ vars.STRAP_SITE_URL }}
+          STRAP_MAINTENANCE_SECRET: ${{ secrets.STRAP_MAINTENANCE_SECRET }}
+        run: |
+          test -n "$STRAP_SITE_URL" && test -n "$STRAP_MAINTENANCE_SECRET"
+          curl --fail --silent --show-error --max-time 45 --request POST \
+            --header "Authorization: Bearer $STRAP_MAINTENANCE_SECRET" \
+            "${STRAP_SITE_URL%/}/api/internal/maintenance"

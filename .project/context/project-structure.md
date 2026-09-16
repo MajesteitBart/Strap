@@ -13,7 +13,7 @@ Document major repository boundaries and ownership.
 - `app/`: public, authenticated, OAuth, API, and MCP routes; the signed-in route group is `app/(strap-app)/`.
 - `components/`: product UI under `components/strap/`, plus marketing, auth, and shared UI.
 - `lib/`: domain, persistence, authorization, integrations, AI, crypto, logging, and shared helpers. Canonical shared domain modules use `lib/strap-*`; `lib/creed-*` re-export shims preserve source compatibility where required.
-- `supabase/migrations/`: forward-only canonical database schema and policies.
+- `db/schema/` and `db/migrations/`: canonical Drizzle schema and forward-only migrations; `lib/authz/` replaces database RLS.
 - `packages/strap/`: independently built and tested `@bvdm/strap` MCP terminal client.
 - `packages/creed-cli/`: preserved legacy CLI compatibility package.
 - `tests/`: Node tests for logic, migrations, and contracts.

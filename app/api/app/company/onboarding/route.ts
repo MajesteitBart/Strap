@@ -1,11 +1,9 @@
-import { NextResponse } from "next/server";
-import { randomBytes } from "node:crypto";
+import * as tables from "@/db/schema/application";
 import { requireApiAuth } from "@/lib/api-auth";
-import { getSupabaseAdminClient } from "@/lib/supabase/admin";
-import type { SupabaseLikeClient } from "@/lib/supabase/types";
-import { getCreedRole } from "@/lib/strap-membership";
-import { setActiveCreed } from "@/lib/strap-context";
-import { parseCreedMarkdown } from "@/lib/strap-markdown";
+import { authorizeValues } from "@/lib/authz/policies";
+import type { DatabaseContext } from "@/lib/db/context";
+import { conflictSet, query } from "@/lib/db/query";
+import { serviceContext } from "@/lib/db/service";
 import {
   buildCompanyOnboardingSections,
   companyNameFromOnboarding,
@@ -13,6 +11,12 @@ import {
   type CompanyOnboardingState,
 } from "@/lib/onboarding/compile-company";
 import { readStrapId } from "@/lib/strap-api";
+import { setActiveCreed } from "@/lib/strap-context";
+import { parseCreedMarkdown } from "@/lib/strap-markdown";
+import { getCreedRole } from "@/lib/strap-membership";
+import { and, asc, eq, isNull } from "drizzle-orm";
+import { NextResponse } from "next/server";
+import { randomBytes } from "node:crypto";
 
 // Company onboarding, mirroring the personal compose flow with three actions:
 //   seed     - persist the deterministic starter sections from the answers,
@@ -26,8 +30,8 @@ import { readStrapId } from "@/lib/strap-api";
 const EMPTY_PLACEHOLDER = "Start shaping this section.";
 const MAX_MARKDOWN = 100_000;
 
-function admin(): SupabaseLikeClient {
-  return getSupabaseAdminClient() as unknown as SupabaseLikeClient;
+function admin(): DatabaseContext {
+  return serviceContext("app/api/app/company/onboarding/route.ts");
 }
 
 function stripCodeFence(input: string): string {
@@ -52,7 +56,7 @@ export async function POST(request: Request) {
   }
   const action = body.action === "compose" || body.action === "complete" ? body.action : "seed";
 
-  const role = await getCreedRole(auth.supabase, auth.user.id, creedId);
+  const role = await getCreedRole(auth.context, auth.user.id, creedId);
   if (role !== "owner") {
     return NextResponse.json({ error: "Only the owner can set up the company." }, { status: 403 });
   }
@@ -62,7 +66,8 @@ export async function POST(request: Request) {
 
   // ── complete ──────────────────────────────────────────────────────────────
   if (action === "complete") {
-    await db.from("creed_activity").insert({
+    await query(db, tables.creed_activity, "insert", async (database, _scope) => {
+    const values = {
       id: randomBytes(16).toString("hex"),
       creed_id: creedId,
       user_id: auth.user.id,
@@ -72,13 +77,20 @@ export async function POST(request: Request) {
       summary: "Set up the company Strap",
       status: "direct",
       event_kind: "edit",
-    });
-    await db.from("creeds").update({ onboarding_stage: null, updated_at: now }).eq("id", creedId);
+    } as typeof tables.creed_activity.$inferInsert;
+    await authorizeValues(db, tables.creed_activity, "insert", values);
+    return database.insert(tables.creed_activity).values(values);
+  });
+    await query(db, tables.creeds, "update", async (database, scope) => {
+    const values = { onboarding_stage: null, updated_at: now } as Partial<typeof tables.creeds.$inferInsert>;
+    await authorizeValues(db, tables.creeds, "update", values);
+    return database.update(tables.creeds).set(values).where(and(scope, eq(tables.creeds.id, creedId)));
+  });
     // Activate the Company Strap the owner just finished building. Without this
     // the active-Strap cookie stays unset, and resolveActiveCreed prefers a
     // Personal Strap, so a dual-Strap owner would land back in their Personal
     // Strap instead of the company they just set up.
-    await setActiveCreed(auth.supabase, auth.user, creedId);
+    await setActiveCreed(auth.context, auth.user, creedId);
     return NextResponse.json({ ok: true });
   }
 
@@ -91,12 +103,7 @@ export async function POST(request: Request) {
     if (markdown.length > MAX_MARKDOWN) {
       return NextResponse.json({ error: "That's too long to be a Strap." }, { status: 400 });
     }
-    const { data: sectionRows } = (await db
-      .from("creed_sections")
-      .select("section_id, name, accent, payload, revision, position")
-      .eq("creed_id", creedId)
-      .is("deleted_at", null)
-      .order("position", { ascending: true })) as {
+    const { data: sectionRows } = (await query(db, tables.creed_sections, "select", (database, scope) => database.select({ section_id: tables.creed_sections.section_id, name: tables.creed_sections.name, accent: tables.creed_sections.accent, payload: tables.creed_sections.payload, revision: tables.creed_sections.revision, position: tables.creed_sections.position }).from(tables.creed_sections).where(and(scope, eq(tables.creed_sections.creed_id, creedId), isNull(tables.creed_sections.deleted_at))).orderBy(asc(tables.creed_sections.position)))) as {
       data: Array<{ section_id: string; name: string; accent: string; payload: { content?: string } & Record<string, unknown>; revision: number; position: number }> | null;
     };
     if (!sectionRows || sectionRows.length === 0) {
@@ -121,18 +128,18 @@ export async function POST(request: Request) {
     for (const [i, row] of sectionRows.entries()) {
       if (!sections[i].changed) continue;
       matched += 1;
-      await db
-        .from("creed_sections")
-        .update({
+      await query(db, tables.creed_sections, "update", async (database, scope) => {
+    const values = {
           payload: { ...row.payload, content: sections[i].content },
           revision: row.revision + 1,
           last_edited_by: "Your assistant",
           last_edited_type: "agent",
           last_edited_at: now,
           updated_at: now,
-        })
-        .eq("creed_id", creedId)
-        .eq("section_id", row.section_id);
+        } as Partial<typeof tables.creed_sections.$inferInsert>;
+    await authorizeValues(db, tables.creed_sections, "update", values);
+    return database.update(tables.creed_sections).set(values).where(and(scope, eq(tables.creed_sections.creed_id, creedId), eq(tables.creed_sections.section_id, row.section_id)));
+  });
     }
 
     return NextResponse.json({
@@ -175,17 +182,20 @@ export async function POST(request: Request) {
     updated_at: now,
   }));
 
-  const { error: sectionsError } = await db
-    .from("creed_sections")
-    .upsert(sectionRows, { onConflict: "creed_id,section_id" });
+  const { error: sectionsError } = await query(db, tables.creed_sections, "insert", async (database, scope) => {
+    const values = sectionRows as typeof tables.creed_sections.$inferInsert[];
+    await authorizeValues(db, tables.creed_sections, "insert", values);
+    return database.insert(tables.creed_sections).values(values).onConflictDoUpdate({ target: [tables.creed_sections.creed_id, tables.creed_sections.section_id], set: conflictSet(tables.creed_sections, values), setWhere: scope });
+  });
   if (sectionsError) {
     return NextResponse.json({ error: "Could not seed the company Strap." }, { status: 500 });
   }
 
-  await db
-    .from("creeds")
-    .update({ name, onboarding_stage: "composing", updated_at: now })
-    .eq("id", creedId);
+  await query(db, tables.creeds, "update", async (database, scope) => {
+    const values = { name, onboarding_stage: "composing", updated_at: now } as Partial<typeof tables.creeds.$inferInsert>;
+    await authorizeValues(db, tables.creeds, "update", values);
+    return database.update(tables.creeds).set(values).where(and(scope, eq(tables.creeds.id, creedId)));
+  });
 
   return NextResponse.json({ ok: true });
 }

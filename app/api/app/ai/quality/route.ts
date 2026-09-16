@@ -1,11 +1,11 @@
-import { NextResponse } from "next/server";
 import { analyzeCreedQuality, readQualityBaseline } from "@/lib/ai/quality";
-import type { StrapSection } from "@/lib/strap-data";
 import { requireApiAuth } from "@/lib/api-auth";
+import { serviceContext } from "@/lib/db/service";
 import { resolveActiveStrap } from "@/lib/strap-context";
+import type { StrapSection } from "@/lib/strap-data";
 import { getPersonalStrapId } from "@/lib/strap-membership";
 import { canRunAnalysis } from "@/lib/strap-permissions";
-import { getSupabaseAdminClient } from "@/lib/supabase/admin";
+import { NextResponse } from "next/server";
 
 // Quality analysis can take 30–90s depending on the model. Give the route
 // enough budget to finish even if the client disconnects mid-flight, so the
@@ -33,8 +33,8 @@ export async function POST(request: Request) {
     // Every member can read the shared company baseline for the sections they
     // can see (their client only sends visible sections, so hidden-section
     // scores never reach them).
-    const admin = getSupabaseAdminClient();
-    const active = await resolveActiveStrap(auth.supabase, auth.user);
+    const admin = serviceContext("app/api/app/ai/quality/route.ts");
+    const active = await resolveActiveStrap(auth.context, auth.user);
     const companyEntry = active?.creeds.find(
       (c) => c.id === active.creedId && c.type === "company"
     );
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
 
     if (body.readOnly) {
       const result = await readQualityBaseline({
-        client: auth.supabase,
+        client: auth.context,
         userId: auth.user.id,
         creedId: reportCreedId,
         sections: body.sections,
@@ -70,7 +70,7 @@ export async function POST(request: Request) {
     }
 
     const result = await analyzeCreedQuality({
-      client: auth.supabase,
+      client: auth.context,
       userId: auth.user.id,
       creedId: reportCreedId,
       companyId,

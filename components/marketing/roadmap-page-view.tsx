@@ -1,19 +1,19 @@
-import Link from "next/link";
+import { ROADMAP_STATUS_TONE, RoadmapStatusPill } from "@/components/marketing/roadmap-status";
 import {
   StrapPageHero,
   StrapSiteFooter,
   StrapSiteHeader,
 } from "@/components/marketing/strap-site-shell";
-import { ROADMAP_STATUS_TONE, RoadmapStatusPill } from "@/components/marketing/roadmap-status";
+import { isDatabaseConfigured } from "@/lib/env";
 import type { RoadmapColumn, RoadmapTask } from "@/lib/marketing/roadmap";
-import { isSupabaseConfigured } from "@/lib/supabase/env";
+import Link from "next/link";
 
 export function RoadmapPageView({ columns }: { columns: RoadmapColumn[] }) {
   const total = columns.reduce((sum, column) => sum + column.tasks.length, 0);
 
   return (
     <div className="strap-site">
-      <StrapSiteHeader configured={isSupabaseConfigured()} current="roadmap" />
+      <StrapSiteHeader configured={isDatabaseConfigured()} current="roadmap" />
 
       <main>
         <StrapPageHero

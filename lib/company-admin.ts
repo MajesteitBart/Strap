@@ -1,13 +1,18 @@
-import "server-only";
-import type { User } from "@supabase/supabase-js";
-import { getSupabaseAdminClient } from "@/lib/supabase/admin";
-import type { SupabaseLikeClient } from "@/lib/supabase/types";
-import { getStrapRole } from "@/lib/strap-membership";
+import * as tables from "@/db/schema/application";
+import { recordAuditEvent } from "@/lib/audit-log";
+import type { User } from "@/lib/auth/user";
+import { authorizeValues } from "@/lib/authz/policies";
+import type { DatabaseContext } from "@/lib/db/context";
+import { callProcedure } from "@/lib/db/procedures";
+import { conflictSet, query } from "@/lib/db/query";
+import { serviceContext } from "@/lib/db/service";
+import { checkLegacyDeletion } from "@/lib/legacy-subscription-deletion";
 import { encryptSecret, hashSecret } from "@/lib/secret-crypto";
 import type { AgentPermission } from "@/lib/strap-data";
-import { recordAuditEvent } from "@/lib/audit-log";
+import { getStrapRole } from "@/lib/strap-membership";
 import { getDisplayName } from "@/lib/user-name";
-import { checkLegacyDeletion } from "@/lib/legacy-subscription-deletion";
+import { and, eq, inArray } from "drizzle-orm";
+import "server-only";
 
 // Owner/admin management operations for a Company Strap: roles, member removal,
 // per-section permissions, rename, ownership transfer, delete, and BYOK. All run
@@ -17,8 +22,8 @@ import { checkLegacyDeletion } from "@/lib/legacy-subscription-deletion";
 export type AdminResult =
   { ok: true } | { ok: false; error: string; status: number };
 
-function admin(): SupabaseLikeClient {
-  return getSupabaseAdminClient() as unknown as SupabaseLikeClient;
+function admin(): DatabaseContext {
+  return serviceContext("lib/company-admin.ts");
 }
 
 function actorName(user: User): string {
@@ -33,7 +38,8 @@ async function activity(
 ): Promise<void> {
   const db = admin();
   const { randomBytes } = await import("node:crypto");
-  await db.from("creed_activity").insert({
+  await query(db, tables.creed_activity, "insert", async (database, _scope) => {
+    const values = {
     id: randomBytes(16).toString("hex"),
     creed_id: creedId,
     user_id: user.id,
@@ -43,6 +49,9 @@ async function activity(
     summary,
     status: "direct",
     event_kind: eventKind,
+  } as typeof tables.creed_activity.$inferInsert;
+    await authorizeValues(db, tables.creed_activity, "insert", values);
+    return database.insert(tables.creed_activity).values(values);
   });
 }
 
@@ -78,11 +87,11 @@ export async function setMemberRole(params: {
       status: 400,
     };
   }
-  const { error } = await db
-    .from("creed_members")
-    .update({ role: params.role })
-    .eq("creed_id", params.creedId)
-    .eq("user_id", params.targetUserId);
+  const { error } = await query(db, tables.creed_members, "update", async (database, scope) => {
+    const values = { role: params.role } as Partial<typeof tables.creed_members.$inferInsert>;
+    await authorizeValues(db, tables.creed_members, "update", values);
+    return database.update(tables.creed_members).set(values).where(and(scope, eq(tables.creed_members.creed_id, params.creedId), eq(tables.creed_members.user_id, params.targetUserId)));
+  });
   if (error)
     return { ok: false, error: "Could not change the role.", status: 500 };
   await recordAuditEvent({
@@ -145,36 +154,18 @@ export async function removeMember(params: {
     };
   }
 
-  const { error: removeError } = await db
-    .from("creed_members")
-    .delete()
-    .eq("creed_id", params.creedId)
-    .eq("user_id", params.targetUserId);
+  const { error: removeError } = await query(db, tables.creed_members, "delete", (database, scope) => database.delete(tables.creed_members).where(and(scope, eq(tables.creed_members.creed_id, params.creedId), eq(tables.creed_members.user_id, params.targetUserId))));
   if (removeError) {
     return { ok: false, error: "Could not remove the member.", status: 500 };
   }
-  await db
-    .from("creed_member_section_permissions")
-    .delete()
-    .eq("creed_id", params.creedId)
-    .eq("user_id", params.targetUserId);
+  await query(db, tables.creed_member_section_permissions, "delete", (database, scope) => database.delete(tables.creed_member_section_permissions).where(and(scope, eq(tables.creed_member_section_permissions.creed_id, params.creedId), eq(tables.creed_member_section_permissions.user_id, params.targetUserId))));
   // Revoke the removed member's MCP grants for this Strap (their token rows stay;
   // only the per-Strap grant is dropped).
-  const { data: tokens } = (await db
-    .from("oauth_tokens")
-    .select("id")
-    .eq("user_id", params.targetUserId)) as {
+  const { data: tokens } = (await query(db, tables.oauth_tokens, "select", (database, scope) => database.select({ id: tables.oauth_tokens.id }).from(tables.oauth_tokens).where(and(scope, eq(tables.oauth_tokens.user_id, params.targetUserId))))) as {
     data: Array<{ id: string }> | null;
   };
   if (tokens && tokens.length > 0) {
-    await db
-      .from("oauth_token_creeds")
-      .delete()
-      .eq("creed_id", params.creedId)
-      .in(
-        "token_id",
-        tokens.map((t) => t.id),
-      );
+    await query(db, tables.oauth_token_creeds, "delete", (database, scope) => database.delete(tables.oauth_token_creeds).where(and(scope, eq(tables.oauth_token_creeds.creed_id, params.creedId), inArray(tables.oauth_token_creeds.token_id, tokens.map((t) => t.id)))));
   }
   await recordAuditEvent({
     userId: params.actor.id,
@@ -220,17 +211,18 @@ export async function setSectionPermission(params: {
       status: 400,
     };
   }
-  const { error } = await db.from("creed_member_section_permissions").upsert(
-    {
+  const { error } = await query(db, tables.creed_member_section_permissions, "insert", async (database, scope) => {
+    const values = {
       creed_id: params.creedId,
       user_id: params.targetUserId,
       section_id: params.sectionId,
       permission: params.permission,
       updated_by: params.actor.id,
       updated_at: new Date().toISOString(),
-    },
-    { onConflict: "creed_id,user_id,section_id" },
-  );
+    } as typeof tables.creed_member_section_permissions.$inferInsert;
+    await authorizeValues(db, tables.creed_member_section_permissions, "insert", values);
+    return database.insert(tables.creed_member_section_permissions).values(values).onConflictDoUpdate({ target: [tables.creed_member_section_permissions.creed_id, tables.creed_member_section_permissions.user_id, tables.creed_member_section_permissions.section_id], set: conflictSet(tables.creed_member_section_permissions, values), setWhere: scope });
+  });
   if (error)
     return {
       ok: false,
@@ -294,10 +286,11 @@ export async function updateCompanyGeneral(params: {
     }
     patch.avatar_url = avatarUrl;
   }
-  const { error } = await db
-    .from("creeds")
-    .update(patch)
-    .eq("id", params.creedId);
+  const { error } = await query(db, tables.creeds, "update", async (database, scope) => {
+    const values = patch as Partial<typeof tables.creeds.$inferInsert>;
+    await authorizeValues(db, tables.creeds, "update", values);
+    return database.update(tables.creeds).set(values).where(and(scope, eq(tables.creeds.id, params.creedId)));
+  });
   if (error) {
     return { ok: false, error: "Could not update company settings.", status: 500 };
   }
@@ -332,10 +325,8 @@ export async function transferOwnership(params: {
   // one transaction via the RPC, so a partial failure can't leave creed_members
   // and creeds.owner_user_id disagreeing with no safe retry. The RPC demotes
   // before promoting to satisfy the one-owner-per-creed index.
-  const rpc = getSupabaseAdminClient() as unknown as {
-    rpc: (fn: string, args: Record<string, unknown>) => Promise<{ error: { message: string } | null }>;
-  };
-  const { error: transferError } = await rpc.rpc("transfer_creed_ownership", {
+  const rpc = serviceContext("lib/company-admin.ts");
+  const { error: transferError } = await callProcedure(rpc, "transfer_creed_ownership", {
     p_creed_id: params.creedId,
     p_from: params.actor.id,
     p_to: params.targetUserId,
@@ -379,10 +370,7 @@ export async function deleteCompany(params: {
     action: "company.deleted",
     metadata: { creedId: params.creedId },
   });
-  const { error } = await db
-    .from("creeds")
-    .delete()
-    .eq("id", params.creedId);
+  const { error } = await query(db, tables.creeds, "delete", (database, scope) => database.delete(tables.creeds).where(and(scope, eq(tables.creeds.id, params.creedId))));
   if (error) {
     return { ok: false, error: "Could not delete the company Strap.", status: 500 };
   }
@@ -420,9 +408,11 @@ export async function setCompanyByok(params: {
     row.key_status = "present";
     row.ai_mode = params.mode ?? "byok";
   }
-  const { error } = await db
-    .from("creed_company_ai_settings")
-    .upsert(row, { onConflict: "creed_id" });
+  const { error } = await query(db, tables.creed_company_ai_settings, "insert", async (database, scope) => {
+    const values = row as typeof tables.creed_company_ai_settings.$inferInsert;
+    await authorizeValues(db, tables.creed_company_ai_settings, "insert", values);
+    return database.insert(tables.creed_company_ai_settings).values(values).onConflictDoUpdate({ target: [tables.creed_company_ai_settings.creed_id], set: conflictSet(tables.creed_company_ai_settings, values), setWhere: scope });
+  });
   if (error)
     return { ok: false, error: "Could not update BYOK settings.", status: 500 };
   await recordAuditEvent({
@@ -459,17 +449,16 @@ export async function setCompanyAiMode(params: {
       status: 403,
     };
   }
-  const { error } = await db
-    .from("creed_company_ai_settings")
-    .upsert(
-      {
+  const { error } = await query(db, tables.creed_company_ai_settings, "insert", async (database, scope) => {
+    const values = {
         creed_id: params.creedId,
         ai_mode: params.mode,
         updated_by: params.actor.id,
         updated_at: new Date().toISOString(),
-      },
-      { onConflict: "creed_id" },
-    );
+      } as typeof tables.creed_company_ai_settings.$inferInsert;
+    await authorizeValues(db, tables.creed_company_ai_settings, "insert", values);
+    return database.insert(tables.creed_company_ai_settings).values(values).onConflictDoUpdate({ target: [tables.creed_company_ai_settings.creed_id], set: conflictSet(tables.creed_company_ai_settings, values), setWhere: scope });
+  });
   if (error)
     return { ok: false, error: "Could not update AI settings.", status: 500 };
   await recordAuditEvent({

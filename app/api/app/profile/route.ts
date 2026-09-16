@@ -1,6 +1,8 @@
-import { NextResponse } from "next/server";
+import { users } from "@/db/schema/auth";
 import { requireApiAuth } from "@/lib/api-auth";
 import { log } from "@/lib/observability";
+import { eq } from "drizzle-orm";
+import { NextResponse } from "next/server";
 
 export async function PATCH(request: Request) {
   const auth = await requireApiAuth();
@@ -18,30 +20,15 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Invalid name" }, { status: 400 });
   }
 
-  // display_name is the key the app reads first (see lib/user-name.ts): OAuth
-  // logins refresh name/full_name from the provider's identity, so a custom
-  // name stored only there gets clobbered on the next Google sign-in. The
-  // legacy keys are still written for anything external that reads them.
-  const { data, error } = await auth.supabase.auth.updateUser({
-    data: {
-      display_name: name,
-      name,
-      full_name: name,
-    },
-  });
-
-  if (error) {
-    log.error("profile_update_failed", { userId: auth.user.id }, error);
+  try {
+    await auth.context.database.update(users).set({ displayName: name, updatedAt: new Date() }).where(eq(users.id, auth.user.id));
+  } catch {
+    log.error("profile_update_failed", { userId: auth.user.id });
     return NextResponse.json({ error: "Could not update your profile." }, { status: 500 });
   }
 
   return NextResponse.json({
     ok: true,
-    user: data.user
-      ? {
-          name,
-          email: data.user.email ?? "",
-        }
-      : null,
+    user: { name, email: auth.user.email },
   });
 }

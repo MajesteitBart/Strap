@@ -1,5 +1,5 @@
+import { getSiteUrl } from "@/lib/env";
 import type { MetadataRoute } from "next";
-import { getSiteUrl } from "@/lib/supabase/env";
 
 // Indexable surface = marketing pages only. Everything behind auth or
 // payment plus the API routes are disallowed so crawlers don't waste

@@ -1,8 +1,8 @@
-import type { Metadata } from "next";
 import { DocsPageView } from "@/components/marketing/docs-page-view";
 import { JsonLd } from "@/components/marketing/json-ld";
+import { isDatabaseConfigured } from "@/lib/env";
 import { breadcrumbSchema, graph, webPageSchema } from "@/lib/seo/structured-data";
-import { isSupabaseConfigured } from "@/lib/supabase/env";
+import type { Metadata } from "next";
 
 const PATH = "/docs";
 const TITLE = "Docs";
@@ -27,7 +27,7 @@ export default function DocsPage() {
           ])
         )}
       />
-      <DocsPageView configured={isSupabaseConfigured()} />
+      <DocsPageView configured={isDatabaseConfigured()} />
     </>
   );
 }

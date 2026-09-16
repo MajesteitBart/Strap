@@ -1,14 +1,16 @@
-import { NextResponse } from "next/server";
+import * as tables from "@/db/schema/application";
 import { requireApiAuth } from "@/lib/api-auth";
-import { getSupabaseAdminClient } from "@/lib/supabase/admin";
-import type { SupabaseLikeClient } from "@/lib/supabase/types";
+import { recordAuditEvent } from "@/lib/audit-log";
 import { createInvite } from "@/lib/company-invites";
+import { maybeOne, query } from "@/lib/db/query";
+import { serviceContext } from "@/lib/db/service";
 import { sendEmail } from "@/lib/email";
 import { companyInviteSubject, renderCompanyInviteEmail } from "@/lib/email-templates/company-invite";
-import { getSiteUrl } from "@/lib/supabase/env";
-import { recordAuditEvent } from "@/lib/audit-log";
-import { getDisplayName } from "@/lib/user-name";
+import { getSiteUrl } from "@/lib/env";
 import { readStrapId } from "@/lib/strap-api";
+import { getDisplayName } from "@/lib/user-name";
+import { and, eq } from "drizzle-orm";
+import { NextResponse } from "next/server";
 
 // POST /api/app/company/invites { creedId, email, role } - owner/admin.
 // Creates a pending invite (seat + freeze checked in the lib) and emails the
@@ -44,12 +46,8 @@ export async function POST(request: Request) {
   }
 
   // Compose + send the invite email (best-effort).
-  const admin = getSupabaseAdminClient() as unknown as SupabaseLikeClient;
-  const { data: creed } = (await admin
-    .from("creeds")
-    .select("name")
-    .eq("id", creedId)
-    .maybeSingle()) as { data: { name: string } | null };
+  const admin = serviceContext("app/api/app/company/invites/route.ts");
+  const { data: creed } = (await query(admin, tables.creeds, "select", (database, scope) => database.select({ name: tables.creeds.name }).from(tables.creeds).where(and(scope, eq(tables.creeds.id, creedId)))).then(maybeOne)) as { data: { name: string } | null };
   const inviterName = getDisplayName(auth.user, "A teammate");
   const siteUrl = getSiteUrl();
   const companyName = creed?.name ?? "the company";

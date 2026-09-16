@@ -1,21 +1,10 @@
 import { NextResponse } from "next/server";
-import type { SupabaseClient, User } from "@supabase/supabase-js";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import type { User } from "./auth/user";
+import type { DatabaseContext } from "./db/context";
+import { getRequestAuth } from "./request-auth";
 
-export type AuthContext = {
-  supabase: SupabaseClient;
-  user: User;
-};
-
+export type AuthContext = { context: DatabaseContext; user: User };
 export async function requireApiAuth(): Promise<AuthContext | NextResponse> {
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  return { supabase, user };
+  const auth = await getRequestAuth();
+  return auth.user ? { context: auth.context, user: auth.user } : NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 }

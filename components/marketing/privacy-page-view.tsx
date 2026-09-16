@@ -1,17 +1,17 @@
-import Link from "next/link";
 import {
   StrapPageHero,
   StrapSiteFooter,
   StrapSiteHeader,
 } from "@/components/marketing/strap-site-shell";
-import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { isDatabaseConfigured } from "@/lib/env";
+import Link from "next/link";
 
 // Legal placeholder. The published sentence is the product's current claim
 // and stays verbatim until a privacy policy replaces it.
 export function PrivacyPageView() {
   return (
     <div className="strap-site">
-      <StrapSiteHeader configured={isSupabaseConfigured()} current="privacy" />
+      <StrapSiteHeader configured={isDatabaseConfigured()} current="privacy" />
 
       <main>
         <StrapPageHero

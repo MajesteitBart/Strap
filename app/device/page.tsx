@@ -1,8 +1,8 @@
-import Link from "next/link";
 import { ConsentMessage, ConsentShell } from "@/components/strap/consent-shell";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getDeviceApproval } from "@/lib/oauth-device";
 import { deviceGrantModesForScope } from "@/lib/oauth-device-shared";
+import { getRequestAuth } from "@/lib/request-auth";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -10,8 +10,7 @@ type Params = { request?: string; result?: string; error?: string };
 
 export default async function DevicePage({ searchParams }: { searchParams: Promise<Params> }) {
   const params = await searchParams;
-  const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await getRequestAuth().then(({ user }) => ({ data: { user } }));
 
   if (!user) {
     return (

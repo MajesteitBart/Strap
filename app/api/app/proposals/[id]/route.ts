@@ -1,13 +1,12 @@
-import { NextResponse } from "next/server";
 import { requireApiAuth } from "@/lib/api-auth";
 import {
   reviewCompanyProposal,
   reviewPersonalProposal,
 } from "@/lib/company-sections";
-import { getPersonalCreedId } from "@/lib/strap-membership";
-import { getSupabaseAdminClient } from "@/lib/supabase/admin";
-import type { SupabaseLikeClient } from "@/lib/supabase/types";
+import { serviceContext } from "@/lib/db/service";
 import { readStrapId } from "@/lib/strap-api";
+import { getPersonalCreedId } from "@/lib/strap-membership";
+import { NextResponse } from "next/server";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -54,7 +53,7 @@ export async function POST(request: Request, ctx: Ctx) {
   // the personal path; anything else (a company, or someone else's personal
   // Strap) goes through reviewCompanyProposal, whose role check rejects
   // non-members.
-  const admin = getSupabaseAdminClient() as unknown as SupabaseLikeClient;
+  const admin = serviceContext("app/api/app/proposals/[id]/route.ts");
   const personalCreedId = await getPersonalCreedId(admin, auth.user.id);
   const result =
     personalCreedId && personalCreedId === strapId

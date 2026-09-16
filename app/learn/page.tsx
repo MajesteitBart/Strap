@@ -1,14 +1,14 @@
-import type { Metadata } from "next";
-import Link from "next/link";
-import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { JsonLd } from "@/components/marketing/json-ld";
 import {
   StrapPageHero,
   StrapSiteFooter,
   StrapSiteHeader,
 } from "@/components/marketing/strap-site-shell";
-import { JsonLd } from "@/components/marketing/json-ld";
+import { isDatabaseConfigured } from "@/lib/env";
 import { articlesByCluster, learnArticles } from "@/lib/marketing/learn";
 import { breadcrumbSchema, graph, webPageSchema } from "@/lib/seo/structured-data";
+import type { Metadata } from "next";
+import Link from "next/link";
 
 const PATH = "/learn";
 const TITLE = "Learn";
@@ -39,7 +39,7 @@ export default function LearnIndexPage() {
         )}
       />
       <div className="strap-site">
-        <StrapSiteHeader configured={isSupabaseConfigured()} current="learn" />
+        <StrapSiteHeader configured={isDatabaseConfigured()} current="learn" />
 
         <main>
           <StrapPageHero

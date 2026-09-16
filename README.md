@@ -34,45 +34,52 @@ The resource model extends beyond context:
 
 Personal Strap is the core one-user product. Company Strap applies the same model to a governed workspace with roles, per-section permissions, attribution, and invites.
 
+Strap is built on [Creed](https://creed.md), the foundation for its curated personal context model and collaboration with connected agents.
+
 ## Current capabilities
 
 - `/file` keeps Personal and Company profiles compact, reviewable, permission-aware, and exportable as Markdown.
 - `/connections` supports browser OAuth and device authorization. Headless workflows can create a scoped `strap_key_` key whose plaintext is shown once; each key is bound to one Personal or Company profile and a maximum access mode. Existing `creed_key_` credentials remain accepted.
-- `/vault` stores secret values in Supabase Vault. Ordinary lists, logs, and agent context expose metadata or `secret://` references only; plaintext is returned solely through an explicit, audited reveal.
+- `/vault` stores secret values encrypted in Postgres. Ordinary lists, logs, and agent context expose metadata or `secret://` references only; plaintext is returned solely through an explicit, audited reveal.
 - `@bvdm/strap` is the primary terminal client. It discovers the live MCP contract and supports interactive browser login, device login, and scoped API-key authentication.
-- The current product has no paid plans. Self-hosted operation still requires the configured Supabase services and any optional provider credentials used by enabled integrations.
+- The current product has no paid plans. Self-hosted operation still requires Postgres and Better Auth and any optional provider credentials used by enabled integrations.
 
 Live product and protocol guidance is available in [Docs](https://strap.bvdm.ai/docs).
 
 ## Quickstart
 
-Prerequisites: Node.js 20+ and a Supabase project. OpenRouter is optional and only required for AI features.
+Prerequisites: Node.js 22+ and Docker. OpenRouter is optional and only required for AI features. Full setup and import rehearsal instructions are in [db/README.md](db/README.md).
 
 ```bash
 git clone https://github.com/MajesteitBart/Strap.git strap
 cd strap
-npm install
+npm ci
 cp .env.example .env.local
-npx supabase link --project-ref <your-project-ref>
-npx supabase db push
+# Configure the secrets below before starting the application.
+npm run db:up
+npm run db:migrate
 npm run dev
 ```
 
-Minimum `.env.local`:
+Minimum .env.local:
 
 ```bash
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
-NEXT_PUBLIC_SUPABASE_URL=https://<project>.supabase.co
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<publishable-key>
-SUPABASE_SECRET_KEY=<service-role-key>
+DATABASE_URL=postgresql://strap:strap-local-only@127.0.0.1:55433/strap
+BETTER_AUTH_URL=http://localhost:3000
+BETTER_AUTH_SECRET=<independent-random-secret-at-least-32-characters>
 STRAP_ENCRYPTION_SECRET=<32-byte-base64-secret>
+STRAP_VAULT_SECRET=<independent-32-byte-base64-secret>
+STRAP_MAINTENANCE_SECRET=<independent-32-byte-base64-secret>
 ```
+
+Configure Resend for verification/reset emails. Google and X use their own optional OAuth credentials. Never copy the example placeholders as real secrets.
 
 New configuration uses `STRAP_ENCRYPTION_SECRET` and `STRAP_AGENT_MODEL`; existing `CREED_ENCRYPTION_SECRET` and `CREED_AGENT_MODEL` values remain lower-priority fallbacks. Canonical direct APIs live under `/api/strap/**`, and MCP discovery uses Strap tools, prompts, and `strap://profile`. `/api/creed/**`, `creed_*`, `creed://profile`, and other lower-level Creed identifiers remain compatibility contracts.
 
 Every optional variable is documented in [`.env.example`](./.env.example). Never commit `.env.local`.
 
-For existing installations, apply pending migrations before deploying application changes. Company creation now uses the atomic provisioning migration `20260913092518_provision_company_atomic.sql`.
+Apply reviewed Drizzle migrations before deploying application changes. Existing installations moving from the previous backend require the scripted import rehearsal and a separate cutover window; this branch has only been exercised locally.
 
 Installations with subscriptions from the retired paid plans can keep `STRIPE_SECRET_KEY` configured for owner-only status and cancellation in Settings. This schedules cancellation at the end of the billing period and preserves profile data. Without the key, affected users receive a support link. Checkout and billing webhooks remain retired.
 Account and Company deletion require live confirmation that any recorded legacy subscription has ended or is scheduled to cancel, so deletion cannot discard a subscription that may still renew.
@@ -106,7 +113,7 @@ The CLI discovers tools, resources, and prompts from the live MCP server. Its co
 |---|---|
 | Framework | Next.js 16 App Router, React 19, strict TypeScript |
 | UI | Tailwind CSS v4, shadcn/ui, Tiptap, Motion |
-| Backend | Supabase Auth and Postgres with RLS, realtime, and Vault |
+| Backend | Postgres 17, Drizzle, Better Auth, explicit authorization and encrypted Vault |
 | AI | OpenRouter with included and BYOK modes |
 | Sync | GitHub push/pull with lossless Markdown round trips |
 | Agent access | OAuth 2.1, MCP, scoped API keys, and `@bvdm/strap` |
@@ -121,7 +128,8 @@ components/             product, marketing, auth, and shared UI
 lib/                    domain, persistence, authorization, AI, and integrations
 packages/strap/         @bvdm/strap CLI package
 packages/creed-cli/     legacy CLI compatibility package
-supabase/migrations/    canonical forward-only schema and RLS
+db/schema/              Drizzle application and auth schema
+db/migrations/          squashed baseline and future forward-only migrations
 tests/                  Node contract and logic tests
 .project/               Delano delivery contracts and durable context
 ```

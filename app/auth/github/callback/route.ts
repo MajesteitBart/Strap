@@ -1,7 +1,6 @@
-import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { requireApiAuth } from "@/lib/api-auth";
-import { getStrapRole } from "@/lib/strap-membership";
+import { recordAuditEvent } from "@/lib/audit-log";
+import { upsertCompanyGitHubIntegration } from "@/lib/company-github";
 import {
   exchangeGitHubOAuthCode,
   getGitHubOAuthAppCredentials,
@@ -9,8 +8,9 @@ import {
   GITHUB_OAUTH_STATE_COOKIE,
 } from "@/lib/github";
 import { upsertGitHubIntegration } from "@/lib/strap-backend";
-import { upsertCompanyGitHubIntegration } from "@/lib/company-github";
-import { recordAuditEvent } from "@/lib/audit-log";
+import { getStrapRole } from "@/lib/strap-membership";
+import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 
 // Shared OAuth callback for the GitHub version-control integration (personal +
 // team, one "Creed" app). We verify the anti-CSRF cookie, exchange the code, and
@@ -68,7 +68,7 @@ export async function GET(request: Request) {
 
   if (mode === "company") {
     if (!creedId) return backToSettings(origin, param, "error");
-    const role = await getStrapRole(auth.supabase, auth.user.id, creedId);
+    const role = await getStrapRole(auth.context, auth.user.id, creedId);
     if (role !== "owner" && role !== "admin") {
       return backToSettings(origin, param, "forbidden");
     }
@@ -100,7 +100,7 @@ export async function GET(request: Request) {
         metadata: { creedId, providerLogin: viewer.login },
       });
     } else {
-      await upsertGitHubIntegration(auth.supabase, auth.user.id, {
+      await upsertGitHubIntegration(auth.context, auth.user.id, {
         status: "connected",
         providerAccountId: String(viewer.id),
         providerLogin: viewer.login,

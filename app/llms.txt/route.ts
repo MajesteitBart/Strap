@@ -1,7 +1,7 @@
-import { getSiteUrl } from "@/lib/supabase/env";
+import { getSiteUrl } from "@/lib/env";
 import { BRAND_DESCRIPTION, BRAND_TAGLINE } from "@/lib/marketing/brand";
-import { PRICING_ONE_LINER } from "@/lib/marketing/pricing";
 import { learnArticles } from "@/lib/marketing/learn";
+import { PRICING_ONE_LINER } from "@/lib/marketing/pricing";
 
 // Serves /llms.txt - the emerging convention that gives AI crawlers a clean,
 // plain-text map of the site's most citable pages and a one-paragraph summary

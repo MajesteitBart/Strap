@@ -1,18 +1,19 @@
-import type { User } from "@supabase/supabase-js";
-import type { GitHubSyncStatus } from "@/lib/strap-data";
-import {
-  readGitHubIntegration,
-  readVersionControlConfig,
-  upsertGitHubIntegration,
-} from "@/lib/strap-backend";
+import type { User } from "@/lib/auth/user";
+import { findUser } from "@/lib/db/repositories/users";
+import { serviceContext } from "@/lib/db/service";
 import {
   getGitHubFileSnapshot,
   isGitHubTokenRefreshConfigured,
   refreshGitHubAccessToken,
 } from "@/lib/github";
 import { getProfilePathCandidates, resolveProfilePath } from "@/lib/profile-file";
-import { getSupabaseAdminClient } from "@/lib/supabase/admin";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getRequestAuth, getRequestDatabaseContext } from "@/lib/request-auth";
+import {
+  readGitHubIntegration,
+  readVersionControlConfig,
+  upsertGitHubIntegration,
+} from "@/lib/strap-backend";
+import type { GitHubSyncStatus } from "@/lib/strap-data";
 
 function hasLinkedGitHubIdentity(user: {
   identities?: Array<{
@@ -40,8 +41,8 @@ function hasLinkedGitHubIdentity(user: {
 
 async function enrichAuthenticatedUser(user: User): Promise<User> {
   try {
-    const admin = getSupabaseAdminClient();
-    const { data, error } = await admin.auth.admin.getUserById(user.id);
+    const admin = serviceContext("lib/github-version-control.ts");
+    const { data, error } = await findUser(admin, user.id);
     if (error || !data.user) {
       return user;
     }
@@ -75,7 +76,7 @@ function isRefreshableGitHubError(error: unknown) {
 }
 
 async function refreshGitHubIntegrationIfPossible(
-  supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
+  context: Awaited<ReturnType<typeof getRequestDatabaseContext>>,
   userId: string,
   integration: NonNullable<Awaited<ReturnType<typeof readGitHubIntegration>>>,
   force = false
@@ -90,7 +91,7 @@ async function refreshGitHubIntegrationIfPossible(
 
   const refreshed = await refreshGitHubAccessToken(integration.refresh_token!.trim());
 
-  await upsertGitHubIntegration(supabase, userId, {
+  await upsertGitHubIntegration(context, userId, {
     status: "connected",
     providerAccountId: integration.provider_account_id,
     providerLogin: integration.provider_login,
@@ -109,19 +110,19 @@ async function refreshGitHubIntegrationIfPossible(
 }
 
 export async function requireAuthenticatedGitHubAccess() {
-  const supabase = await createSupabaseServerClient();
+  const context = await getRequestDatabaseContext();
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await getRequestAuth().then(({ user }) => ({ data: { user } }));
 
   if (!user) {
     throw new Error("Unauthorized");
   }
 
   const enrichedUser = await enrichAuthenticatedUser(user);
-  let integration = await readGitHubIntegration(supabase, user.id);
+  let integration = await readGitHubIntegration(context, user.id);
   if (integration) {
-    integration = await refreshGitHubIntegrationIfPossible(supabase, user.id, integration);
+    integration = await refreshGitHubIntegrationIfPossible(context, user.id, integration);
   }
   if (!integration?.access_token) {
     if (
@@ -137,10 +138,10 @@ export async function requireAuthenticatedGitHubAccess() {
     throw new Error("GitHub is not connected");
   }
 
-  const versionControl = await readVersionControlConfig(supabase, user.id);
+  const versionControl = await readVersionControlConfig(context, user.id);
 
   return {
-    supabase,
+    context,
     user: enrichedUser,
     integration,
     versionControl,
@@ -162,7 +163,7 @@ export async function withAuthenticatedGitHubAccess<T>(
     }
 
     const refreshedIntegration = await refreshGitHubIntegrationIfPossible(
-      context.supabase,
+      context.context,
       context.user.id,
       context.integration,
       true
@@ -178,10 +179,10 @@ export async function withAuthenticatedGitHubAccess<T>(
 }
 
 export async function requireAuthenticatedUser() {
-  const supabase = await createSupabaseServerClient();
+  const context = await getRequestDatabaseContext();
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await getRequestAuth().then(({ user }) => ({ data: { user } }));
 
   if (!user) {
     throw new Error("Unauthorized");
@@ -189,7 +190,7 @@ export async function requireAuthenticatedUser() {
 
   const enrichedUser = await enrichAuthenticatedUser(user);
 
-  return { supabase, user: enrichedUser };
+  return { context, user: enrichedUser };
 }
 
 export { hasLinkedGitHubIdentity };

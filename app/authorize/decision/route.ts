@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import {
   DEFAULT_SCOPE,
   DIRECT_EDIT_SCOPE,
@@ -7,8 +6,9 @@ import {
   issueAuthorizationCode,
   type CreedGrant,
 } from "@/lib/oauth";
+import { getRequestAuth, getRequestDatabaseContext } from "@/lib/request-auth";
 import { listUserStraps } from "@/lib/strap-membership";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { NextResponse } from "next/server";
 
 // Handles the Allow / Deny POST from the consent screen. The user is
 // re-resolved from the session (never a form field) and the client + redirect
@@ -55,10 +55,10 @@ export async function POST(request: Request) {
     return badRequest("Invalid client or redirect URI.");
   }
 
-  const supabase = await createSupabaseServerClient();
+  const context = await getRequestDatabaseContext();
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await getRequestAuth().then(({ user }) => ({ data: { user } }));
   if (!user) {
     // Session expired between render and submit. Send them home to sign in
     // again rather than leaking anything to the redirect URI. 303 so the POST
@@ -88,7 +88,7 @@ export async function POST(request: Request) {
   const scope = (grantedScopes.length ? grantedScopes : allowedScopes).join(" ");
 
   // Which Strap this agent may reach. One connection reaches exactly one Strap
-  // (single-select, like scoping a Supabase token to one project). The consent
+  // (one profile per connection). The consent
   // form posts the chosen id, but hidden fields are attacker-controllable, so we
   // re-derive the user's real Straps and keep the chosen one only if they belong
   // to it. Fall back to the Personal Strap, then the first Strap, so an entitled
@@ -98,7 +98,7 @@ export async function POST(request: Request) {
   const requestedCreedId = String(
     form.get("strap_grant") ?? form.get("creed_grant") ?? "",
   ).trim();
-  const creeds = await listUserStraps(supabase, user.id);
+  const creeds = await listUserStraps(context, user.id);
   const target =
     creeds.find((c) => c.id === requestedCreedId) ??
     creeds.find((c) => c.type === "personal") ??

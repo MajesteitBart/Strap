@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server";
-import type { StrapSection } from "@/lib/strap-data";
-import { createBlankStrapState, persistStrapState } from "@/lib/strap-backend";
-import { ensurePersonalStrapId } from "@/lib/strap-context";
 import { requireApiAuth } from "@/lib/api-auth";
 import { recordAuditEvent } from "@/lib/audit-log";
+import { createBlankStrapState, persistStrapState } from "@/lib/strap-backend";
+import { ensurePersonalStrapId } from "@/lib/strap-context";
+import type { StrapSection } from "@/lib/strap-data";
+import { NextResponse } from "next/server";
 
 const ALLOWED_KINDS = new Set([
   "rich-text",
@@ -80,8 +80,8 @@ export async function POST(request: Request) {
   nextState.proposals = [];
   nextState.activity = [];
 
-  await ensurePersonalStrapId(auth.supabase, auth.user);
-  await persistStrapState(auth.supabase, auth.user.id, nextState);
+  await ensurePersonalStrapId(auth.context, auth.user);
+  await persistStrapState(auth.context, auth.user.id, nextState);
 
   void recordAuditEvent({
     userId: auth.user.id,

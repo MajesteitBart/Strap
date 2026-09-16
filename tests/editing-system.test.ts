@@ -1,13 +1,3 @@
-// Pure-function tests for the editing-system invariants that recently broke.
-// No test runner is wired into CI yet — run these manually with:
-//
-//   node --test --experimental-strip-types tests/editing-system.test.ts
-//
-// on Node 22+, or `npx tsx --test tests/editing-system.test.ts` on Node 20.
-//
-// These tests are deliberately scoped to pure functions so they don't need
-// Supabase, fetch mocking, or a running Next server. Route-level integration
-// goes through the running app.
 
 import { strict as assert } from "node:assert";
 import { test } from "node:test";
