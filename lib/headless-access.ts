@@ -2,6 +2,8 @@ import "server-only";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import type { SupabaseLikeClient } from "@/lib/supabase/types";
 import { getStrapRole } from "@/lib/strap-membership";
+import { listVaultItems, VaultAccessError } from "@/lib/api-key-vault";
+import { parseVaultItemGrants } from "@/lib/vault-grants";
 import {
   createHeadlessKey,
   digestCredential,
@@ -20,6 +22,7 @@ type HeadlessKeyRow = {
   revoked_at: string | null;
   last_used_at: string | null;
   created_at: string;
+  vault_item_ids?: string[];
 };
 
 export type HeadlessKeyMetadata = {
@@ -32,6 +35,7 @@ export type HeadlessKeyMetadata = {
   revokedAt: string | null;
   lastUsedAt: string | null;
   createdAt: string;
+  vaultItemIds: string[];
 };
 
 export type ResolvedHeadlessKey = {
@@ -40,6 +44,7 @@ export type ResolvedHeadlessKey = {
   creedId: string;
   clientName: string;
   mode: HeadlessKeyMode;
+  vaultItemIds: string[];
 };
 
 function adminDb(): SupabaseLikeClient {
@@ -57,13 +62,14 @@ function toMetadata(row: HeadlessKeyRow): HeadlessKeyMetadata {
     revokedAt: row.revoked_at,
     lastUsedAt: row.last_used_at,
     createdAt: row.created_at,
+    vaultItemIds: row.vault_item_ids ?? [],
   };
 }
 
 export async function listHeadlessKeys(userId: string, creedId: string): Promise<HeadlessKeyMetadata[]> {
   const { data, error } = await adminDb()
     .from("creed_headless_access_keys")
-    .select("id, creed_id, user_id, name, key_prefix, mode, expires_at, revoked_at, last_used_at, created_at")
+    .select("id, creed_id, user_id, name, key_prefix, mode, expires_at, revoked_at, last_used_at, created_at, vault_item_ids")
     .eq("user_id", userId)
     .eq("creed_id", creedId)
     .order("created_at", { ascending: false });
@@ -77,7 +83,18 @@ export async function createHeadlessAccessKey(input: {
   name: string;
   mode: HeadlessKeyMode;
   expiresAt: string | null;
+  vaultItemIds?: string[];
 }): Promise<{ key: string; metadata: HeadlessKeyMetadata }> {
+  const vaultItemIds = parseVaultItemGrants(input.vaultItemIds);
+  if (!vaultItemIds) throw new VaultAccessError("Invalid Vault item grants.", 400);
+  if (vaultItemIds.length) {
+    // This rechecks live Vault permissions, including the Company admin gate.
+    const items = await listVaultItems(input.userId, input.creedId);
+    const allowed = new Set(items.map((item) => item.id));
+    if (vaultItemIds.some((id) => !allowed.has(id))) {
+      throw new VaultAccessError("Vault items must belong to the selected Strap.", 403);
+    }
+  }
   const generated = createHeadlessKey();
   const { data, error } = await adminDb()
     .from("creed_headless_access_keys")
@@ -89,8 +106,9 @@ export async function createHeadlessAccessKey(input: {
       key_hash: generated.hash,
       mode: input.mode,
       expires_at: input.expiresAt,
+      vault_item_ids: vaultItemIds,
     })
-    .select("id, creed_id, user_id, name, key_prefix, mode, expires_at, revoked_at, last_used_at, created_at")
+    .select("id, creed_id, user_id, name, key_prefix, mode, expires_at, revoked_at, last_used_at, created_at, vault_item_ids")
     .single();
   if (error || !data) throw new Error("Could not create headless access key.");
   return { key: generated.key, metadata: toMetadata(data as HeadlessKeyRow) };
@@ -117,7 +135,7 @@ export async function resolveHeadlessAccessKey(token: string): Promise<ResolvedH
   const admin = adminDb();
   const { data, error } = await admin
     .from("creed_headless_access_keys")
-    .select("id, creed_id, user_id, name, key_prefix, mode, expires_at, revoked_at, last_used_at, created_at")
+    .select("id, creed_id, user_id, name, key_prefix, mode, expires_at, revoked_at, last_used_at, created_at, vault_item_ids")
     .eq("key_hash", digestCredential(token))
     .maybeSingle();
   if (error || !data) return null;
@@ -140,5 +158,6 @@ export async function resolveHeadlessAccessKey(token: string): Promise<ResolvedH
     creedId: row.creed_id,
     clientName: row.name,
     mode: row.mode,
+    vaultItemIds: row.vault_item_ids ?? [],
   };
 }

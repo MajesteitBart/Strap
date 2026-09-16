@@ -16,6 +16,7 @@
 - TypeScript stays strict with no `any`; server logging uses `lib/observability.ts` rather than `console.log`.
 
 ## Integration Points
+- `packages/varlock-strap-plugin/` is the independent `@bvdm/varlock-strap-plugin` provider (Varlock 1.19+, Node 22+). Build, typecheck, test, and pack it separately; CI includes it in the package matrix. It uses the explicit POST `/api/strap/vault/reveal` boundary, never MCP plaintext. Deployment requires `20260916015234_headless_vault_item_grants.sql` before application rollout.
 - Shared skills use the additive `20260913133911_shared_skills.sql` migration: service-only SECURITY INVOKER RPCs check live profile membership and publish revision-checked bundles atomically. RLS and explicit privilege revokes keep tables and RPCs unavailable to browser roles.
 - `packages/strap/src/skills/bundle.ts` is the shared app/CLI validator, using pinned yaml 2.9.1 with alias expansion disabled. Libraries retain 100 skills and up to 20 complete versions per skill; each bundle is limited to 128 files and 2 MiB. The follow-up `20260913153559_bound_skill_storage.sql` caches metadata outside full file payloads and serializes a 64 MiB encoded-data quota across current bundles and history, pruning oldest historical copies while preserving every current revision. Importing the validator intentionally brings it into the app type-check despite the broader CLI exclusion.
 - Supabase for auth, persistence, RLS, realtime, and scheduled jobs.

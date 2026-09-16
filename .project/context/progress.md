@@ -2,6 +2,8 @@
 
 ## What Changed
 
+- The local `varlock-secrets` feature adds an independently packaged Varlock provider and opt-in per-item grants on scoped keys, plus an audited POST reveal boundary. Existing keys grant no secrets; ordinary MCP remains metadata-only. Implementation and verification are recorded under `.project/projects/varlock-secrets/`; production migration, deployment and npm publication have not been performed.
+
 - The completed `strap-rebrand` project establishes Strap as the canonical public product at `https://strap.bvdm.ai` with the positioning "Bootstrap your agents with context, skills, and secrets." On 2026-07-23 the user revised public messaging to "Bootstrap your agents with context, skills, and keys."; the technical model (vault, secret references, `secret://` URIs) keeps "secrets".
 - The supplied Strap logo, warm worktable visual system, resource colors, and typography now drive the public homepage, metadata, public chrome, authenticated UI, auth, and email surfaces.
 - New profile exports and GitHub integrations default to `strap.md`. Existing stored paths remain authoritative; default reads fall back to `creed.md`; pushes refuse to create a divergent second file.

@@ -32,6 +32,7 @@ Capture architecture and delivery patterns that should be reused.
 - Enforce credential modes at the mutation boundary by clamping section permissions and stripping write/direct tokens before tool dispatch.
 
 ## Vault Plaintext Boundary
+- Headless reveals require an opt-in list of immutable Vault item IDs on a scoped key. Existing keys default to an empty grant. Key context-editing modes are independent of secret grants; live Vault permissions, profile binding, expiry, revocation, and a required metadata-only audit govern each reveal. OAuth and ordinary MCP responses remain outside this boundary.
 - Store application-owned secret metadata in `public.creed_vault_items`; plaintext belongs only to Supabase Vault.
 - Vault RPCs are service-role-only `SECURITY DEFINER` functions with an empty search path, fully qualified objects, and explicit execute revokes.
 - List responses and audits contain metadata only. Explicit reveal uses `no-store` and fails closed when its required audit row cannot be persisted.

@@ -1,0 +1,27 @@
+{
+  "name": "@bvdm/varlock-strap-plugin",
+  "version": "0.1.0",
+  "description": "Resolve explicitly authorized Strap Vault secrets in Varlock.",
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/plugin.cjs",
+  "exports": "./dist/plugin.cjs",
+  "files": ["dist/plugin.cjs", "README.md", "LICENSE"],
+  "engines": { "node": ">=22" },
+  "peerDependencies": { "varlock": "^1.19.0" },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "esbuild": "^0.28.1",
+    "typescript": "^5.9.3",
+    "varlock": "1.19.0"
+  },
+  "scripts": {
+    "build": "esbuild src/plugin.ts --bundle --platform=node --format=cjs --target=node22 --external:varlock/plugin-lib --outfile=dist/plugin.cjs",
+    "typecheck": "tsc --noEmit",
+    "test": "npm run build && tsc -p tsconfig.test.json && node --test dist/tests/*.test.js",
+    "prepack": "npm run typecheck && npm run build",
+    "prepublishOnly": "npm test"
+  },
+  "publishConfig": { "access": "public" },
+  "repository": { "type": "git", "url": "git+https://github.com/MajesteitBart/Strap.git", "directory": "packages/varlock-strap-plugin" }
+}

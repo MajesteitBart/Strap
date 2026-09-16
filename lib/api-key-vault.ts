@@ -121,8 +121,16 @@ export async function revealVaultItem(input: {
   userId: string;
   itemId: string;
   request: Request;
+  /** Required for headless reveals; browser reveals use the signed-in user's access. */
+  credential?: { keyId: string; creedId: string; vaultItemIds: readonly string[] };
 }): Promise<{ item: VaultItem; secret: string }> {
+  if (input.credential && !input.credential.vaultItemIds.includes(input.itemId)) {
+    throw new VaultAccessError("Secret access was not granted to this key.", 403);
+  }
   const metadata = await requireVaultItemAccess(input.userId, input.itemId);
+  if (input.credential && metadata.creed_id !== input.credential.creedId) {
+    throw new VaultAccessError("Secret access was not granted to this key.", 403);
+  }
   const { data, error } = await rpcDb().rpc("creed_vault_reveal_secret", {
     p_item_id: input.itemId,
   });
@@ -142,7 +150,11 @@ export async function revealVaultItem(input: {
     await recordRequiredAuditEvent({
       userId: input.userId,
       action: "vault.secret_revealed",
-      metadata: { itemId: input.itemId, creedId: metadata.creed_id },
+      metadata: {
+        itemId: input.itemId,
+        creedId: metadata.creed_id,
+        ...(input.credential ? { keyId: input.credential.keyId, source: "headless" } : {}),
+      },
       request: input.request,
     });
   } catch {

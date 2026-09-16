@@ -23,6 +23,7 @@ const eslintConfig = defineConfig([
     ".delano/**",
     "out/**",
     "build/**",
+    "packages/varlock-strap-plugin/dist/**",
     "next-env.d.ts",
   ]),
   {

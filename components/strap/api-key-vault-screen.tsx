@@ -178,13 +178,14 @@ export function ApiKeyVaultScreen() {
                 const visible = revealed?.itemId === item.id;
                 return (
                   <article key={item.id} className="p-4 md:p-5">
-                    <div className="flex flex-wrap items-start justify-between gap-4">
+                    <div className="flex flex-col items-start gap-3 sm:flex-row sm:justify-between">
                       <div className="min-w-0 flex-1">
-                        <h2 className="text-[14px] font-medium">{item.name}</h2>
+                        <h2 className="break-all text-[14px] font-medium">{item.name}</h2>
                         {item.description ? <p className="mt-1 text-[13px] leading-6 text-[var(--strap-text-secondary)]">{item.description}</p> : null}
                         <p className="mt-2 text-[12px] text-[var(--strap-text-tertiary)]">Updated {new Date(item.updatedAt).toLocaleDateString()}{item.lastAccessedAt ? ` · Revealed ${new Date(item.lastAccessedAt).toLocaleDateString()}` : ""}</p>
                       </div>
-                      <div className="flex items-center gap-1">
+                      <div className="flex shrink-0 items-center gap-1">
+                        <Button size="icon" variant="ghost" aria-label={`Copy reference for ${item.name}`} title="Copy secret reference for Varlock" onClick={() => void navigator.clipboard.writeText(`secret://${item.id}`)}><Copy className="h-4 w-4" /></Button>
                         <Button size="icon" variant="ghost" aria-label={visible ? `Hide ${item.name}` : `Reveal ${item.name}`} onClick={() => void revealItem(item.id)}>{visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</Button>
                         <Button size="icon" variant="ghost" aria-label={`Edit ${item.name}`} onClick={() => openEdit(item)}><Pencil className="h-4 w-4" /></Button>
                         <Button size="icon" variant="ghost" aria-label={`Delete ${item.name}`} onClick={() => void deleteItem(item)}><Trash2 className="h-4 w-4" /></Button>

@@ -17,7 +17,7 @@
 - Strap is not a notes app, journal, chat-memory store, or generic AI wrapper.
 - Marketing routes never load user state.
 - Browser APIs require a Supabase session; agent APIs require hashed token or OAuth authentication.
-- Hidden sections and secrets never leave the server. Company access never exceeds the user's effective permissions.
+- Hidden sections are filtered server-side. Secret plaintext leaves only through explicit browser or scoped headless reveal; Varlock can load individually granted items at runtime. Company access never exceeds the user's effective permissions.
 - Personal and Company persistence paths remain distinct. Billing and frozen-state gates remain effective.
 - Agent-contract changes affect every connected agent and require focused multi-model validation.
 - `https://strap.bvdm.ai` is canonical. `https://creed.md`, `/api/creed/**`, `creed_*` tools, credential prefixes, and other documented identifiers remain compatibility contracts until an approved migration removes them.
