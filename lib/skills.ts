@@ -1,6 +1,5 @@
-import "server-only";
-import { createHash } from "node:crypto";
-import { getSupabaseAdminClient } from "@/lib/supabase/admin";
+import { callProcedure, type ProcedureName } from "@/lib/db/procedures";
+import { serviceContext } from "@/lib/db/service";
 import {
   canonicalSkillContent,
   fileBytes,
@@ -9,6 +8,8 @@ import {
   type SkillSummary,
   type StoredSkill,
 } from "@/packages/strap/src/skills/bundle";
+import { createHash } from "node:crypto";
+import "server-only";
 
 export class SkillError extends Error {
   constructor(
@@ -41,19 +42,11 @@ export function validateRevision(value: unknown): number {
 }
 
 async function rpc(
-  name: string,
+  name: ProcedureName,
   args: Record<string, unknown>,
 ): Promise<unknown> {
-  const client = getSupabaseAdminClient() as unknown as {
-    rpc(
-      name: string,
-      args: Record<string, unknown>,
-    ): Promise<{
-      data: unknown;
-      error: { code: string; message: string } | null;
-    }>;
-  };
-  const { data, error } = await client.rpc(name, args);
+  const client = serviceContext("lib/skills.ts");
+  const { data, error } = await callProcedure(client, name, args);
   if (error) {
     const status = (
       {

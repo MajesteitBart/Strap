@@ -17,14 +17,13 @@ export function BackendSetupScreen({
     <ConsentShell chip="Backend setup needed" tone="warning" wide>
       <h1>Auth is working. The Strap tables just aren&apos;t live yet.</h1>
       <p>
-        Your Supabase project is connected, but the schema migration still needs to be run
+        Your database is connected, but the schema migration still needs to be run
         once before Strap can persist sections, proposals, activity, connections, and
         tokens.
       </p>
       <div className="strap-consent-form">
         <div className="strap-notice">
-          Apply the SQL in <code className="strap-mono">supabase/migrations/20260403190000_init_creed.sql</code> to
-          your Supabase project, then reload.
+          Run <code className="strap-mono">npm run db:migrate</code>, then reload.
         </div>
         <ul className="strap-consent-list" aria-label="Missing tables">
           {MISSING_TABLES.map((table) => (

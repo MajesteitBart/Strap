@@ -1,60 +1,19 @@
 "use client";
 
-import { useState, useEffect, type ReactNode } from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import {
-  AlertTriangle,
-  Check,
-  ChevronDown,
-  LoaderCircle,
-  Mail,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Separator } from "@/components/ui/separator";
-import { SelectMenu } from "@/components/ui/select-menu";
-import {
-  SectionPermissionControl,
-  PERMISSION_OPTIONS,
-  GLOBAL_PERMISSION_OPTIONS,
-} from "@/components/strap/section-permission-control";
-import {
-  UsageCard,
-  IntegrationRow,
-  ConnectButton,
-  DisconnectButton,
-  ReauthorizeButton,
-} from "@/components/strap/settings-screen";
-import { SearchableSelect } from "@/components/strap/searchable-select";
-import { RichTextEditor } from "@/components/strap/rich-text-editor";
+import { AnimatedIconButton } from "@/components/strap/animated-icon-action";
+import { useAnimatedIconControls } from "@/components/strap/animated-icon-controls";
+import { LegacySubscriptionNotice } from "@/components/strap/legacy-subscription-notice";
 import {
   EditableProfileAvatar,
   ProfileAvatar,
 } from "@/components/strap/profile-avatar";
-import { AnimatedIconButton } from "@/components/strap/animated-icon-action";
-import { useAnimatedIconControls } from "@/components/strap/animated-icon-controls";
-import { DownloadIcon } from "@/components/ui/download";
-import { SendIcon } from "@/components/ui/send";
-import { AnimatePresence, motion } from "framer-motion";
-import { ChevronRight } from "lucide-react";
+import { RichTextEditor } from "@/components/strap/rich-text-editor";
+import { SearchableSelect } from "@/components/strap/searchable-select";
 import {
-  type RepoOption,
-  type BranchOption,
-} from "@/components/strap/settings-preload";
-import { useStrap } from "@/components/strap/strap-provider";
+  GLOBAL_PERMISSION_OPTIONS,
+  PERMISSION_OPTIONS,
+  SectionPermissionControl,
+} from "@/components/strap/section-permission-control";
 import type {
   AiMode,
   AiUsageRange,
@@ -63,6 +22,37 @@ import type {
   PublicAiSettings,
 } from "@/components/strap/settings-preload";
 import {
+  type BranchOption,
+  type RepoOption,
+} from "@/components/strap/settings-preload";
+import {
+  ConnectButton,
+  DisconnectButton,
+  IntegrationRow,
+  ReauthorizeButton,
+  UsageCard,
+} from "@/components/strap/settings-screen";
+import { useStrap } from "@/components/strap/strap-provider";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { DownloadIcon } from "@/components/ui/download";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { SelectMenu } from "@/components/ui/select-menu";
+import { SendIcon } from "@/components/ui/send";
+import { Separator } from "@/components/ui/separator";
+import { STRAP_FILE_NAME } from "@/lib/profile-file";
+import {
   accentColorMap,
   isAccentKey,
   type AgentPermission,
@@ -70,8 +60,18 @@ import {
 } from "@/lib/strap-data";
 import { permissionsUpTo } from "@/lib/strap-permissions";
 import { cn } from "@/lib/utils";
-import { LegacySubscriptionNotice } from "@/components/strap/legacy-subscription-notice";
-import { STRAP_FILE_NAME } from "@/lib/profile-file";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  AlertTriangle,
+  Check,
+  ChevronDown,
+  ChevronRight,
+  LoaderCircle,
+  Mail,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState, type ReactNode } from "react";
+import { toast } from "sonner";
 
 // A section's accent chip colour, tolerating custom/unknown accents the same
 // way the connections charts do.
@@ -688,7 +688,7 @@ export function CompanySettings() {
   }
 
   // The TEAM's GitHub connection is authorized through a dedicated OAuth App
-  // (not Supabase identity linking, which is one-GitHub-per-user). Connecting is
+  // (not account identity linking, which is one-GitHub-per-user). Connecting is
   // a full-page redirect through GitHub; the callback stores the team token and
   // returns to /settings?teamGithub=<status>, which the effect below toasts.
   function connectGitHub() {

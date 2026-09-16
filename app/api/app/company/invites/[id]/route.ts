@@ -1,23 +1,21 @@
-import { NextResponse } from "next/server";
+import * as tables from "@/db/schema/application";
 import { requireApiAuth } from "@/lib/api-auth";
-import { getSupabaseAdminClient } from "@/lib/supabase/admin";
-import type { SupabaseLikeClient } from "@/lib/supabase/types";
+import { recordAuditEvent } from "@/lib/audit-log";
 import { revokeInvite, rotateInviteToken } from "@/lib/company-invites";
+import { maybeOne, query } from "@/lib/db/query";
+import { serviceContext } from "@/lib/db/service";
 import { sendEmail } from "@/lib/email";
 import { companyInviteSubject, renderCompanyInviteEmail } from "@/lib/email-templates/company-invite";
-import { getSiteUrl } from "@/lib/supabase/env";
-import { recordAuditEvent } from "@/lib/audit-log";
+import { getSiteUrl } from "@/lib/env";
 import { getDisplayName } from "@/lib/user-name";
+import { and, eq } from "drizzle-orm";
+import { NextResponse } from "next/server";
 
 type Ctx = { params: Promise<{ id: string }> };
 
 async function resolveCreedId(inviteId: string): Promise<string | null> {
-  const admin = getSupabaseAdminClient() as unknown as SupabaseLikeClient;
-  const { data } = (await admin
-    .from("creed_invites")
-    .select("creed_id")
-    .eq("id", inviteId)
-    .maybeSingle()) as { data: { creed_id: string } | null };
+  const admin = serviceContext("app/api/app/company/invites/[id]/route.ts");
+  const { data } = (await query(admin, tables.creed_invites, "select", (database, scope) => database.select({ creed_id: tables.creed_invites.creed_id }).from(tables.creed_invites).where(and(scope, eq(tables.creed_invites.id, inviteId)))).then(maybeOne)) as { data: { creed_id: string } | null };
   return data?.creed_id ?? null;
 }
 
@@ -53,12 +51,8 @@ export async function POST(request: Request, ctx: Ctx) {
   const rotated = await rotateInviteToken({ creedId, actorUserId: auth.user.id, inviteId: id });
   if (!rotated.ok) return NextResponse.json({ error: rotated.error }, { status: 403 });
 
-  const admin = getSupabaseAdminClient() as unknown as SupabaseLikeClient;
-  const { data: creed } = (await admin
-    .from("creeds")
-    .select("name")
-    .eq("id", creedId)
-    .maybeSingle()) as { data: { name: string } | null };
+  const admin = serviceContext("app/api/app/company/invites/[id]/route.ts");
+  const { data: creed } = (await query(admin, tables.creeds, "select", (database, scope) => database.select({ name: tables.creeds.name }).from(tables.creeds).where(and(scope, eq(tables.creeds.id, creedId)))).then(maybeOne)) as { data: { name: string } | null };
   const inviterName = getDisplayName(auth.user, "A teammate");
   const siteUrl = getSiteUrl();
   const companyName = creed?.name ?? "the company";

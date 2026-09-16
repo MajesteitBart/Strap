@@ -1,9 +1,13 @@
-import { NextResponse } from "next/server";
+import * as tables from "@/db/schema/application";
 import { requireApiAuth } from "@/lib/api-auth";
-import { getCreedRole } from "@/lib/strap-membership";
-import { getSupabaseAdminClient } from "@/lib/supabase/admin";
-import type { SupabaseLikeClient } from "@/lib/supabase/types";
+import { authorizeValues } from "@/lib/authz/policies";
+import type { DatabaseContext } from "@/lib/db/context";
+import { conflictSet, query } from "@/lib/db/query";
+import { serviceContext } from "@/lib/db/service";
 import { readStrapId } from "@/lib/strap-api";
+import { getCreedRole } from "@/lib/strap-membership";
+import { and, eq, isNull } from "drizzle-orm";
+import { NextResponse } from "next/server";
 
 // A member's OWN per-section agent ceiling on a Company Strap (the company twin
 // of the personal creed_sections.agent_permission). Strictly self-serve: every
@@ -14,8 +18,8 @@ import { readStrapId } from "@/lib/strap-api";
 
 const LEVELS = new Set(["hidden", "read-only", "propose", "direct"]);
 
-function admin(): SupabaseLikeClient {
-  return getSupabaseAdminClient() as unknown as SupabaseLikeClient;
+function admin(): DatabaseContext {
+  return serviceContext("app/api/app/company/agent-permissions/route.ts");
 }
 
 // POST { creedId, sectionId, permission } - set one section's level for the
@@ -47,7 +51,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "sectionId is required." }, { status: 400 });
   }
 
-  const role = await getCreedRole(auth.supabase, auth.user.id, strapId);
+  const role = await getCreedRole(auth.context, auth.user.id, strapId);
   if (!role) {
     return NextResponse.json({ error: "You are not a member of this Strap." }, { status: 403 });
   }
@@ -56,11 +60,7 @@ export async function POST(request: Request) {
   const now = new Date().toISOString();
 
   if (allSections) {
-    const { data } = (await db
-      .from("creed_sections")
-      .select("section_id")
-      .eq("creed_id", strapId)
-      .is("deleted_at", null)) as { data: Array<{ section_id: string }> | null };
+    const { data } = (await query(db, tables.creed_sections, "select", (database, scope) => database.select({ section_id: tables.creed_sections.section_id }).from(tables.creed_sections).where(and(scope, eq(tables.creed_sections.creed_id, strapId), isNull(tables.creed_sections.deleted_at))))) as { data: Array<{ section_id: string }> | null };
     const rows = (data ?? []).map((row) => ({
       creed_id: strapId,
       user_id: auth.user.id,
@@ -69,9 +69,11 @@ export async function POST(request: Request) {
       updated_at: now,
     }));
     if (rows.length > 0) {
-      const { error } = await db
-        .from("creed_member_agent_permissions")
-        .upsert(rows, { onConflict: "creed_id,user_id,section_id" });
+      const { error } = await query(db, tables.creed_member_agent_permissions, "insert", async (database, scope) => {
+    const values = rows as typeof tables.creed_member_agent_permissions.$inferInsert[];
+    await authorizeValues(db, tables.creed_member_agent_permissions, "insert", values);
+    return database.insert(tables.creed_member_agent_permissions).values(values).onConflictDoUpdate({ target: [tables.creed_member_agent_permissions.creed_id, tables.creed_member_agent_permissions.user_id, tables.creed_member_agent_permissions.section_id], set: conflictSet(tables.creed_member_agent_permissions, values), setWhere: scope });
+  });
       if (error) {
         return NextResponse.json({ error: "Could not update agent permissions." }, { status: 500 });
       }
@@ -79,16 +81,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true });
   }
 
-  const { error } = await db.from("creed_member_agent_permissions").upsert(
-    {
+  const { error } = await query(db, tables.creed_member_agent_permissions, "insert", async (database, scope) => {
+    const values = {
       creed_id: strapId,
       user_id: auth.user.id,
       section_id: b.sectionId,
       permission: b.permission,
       updated_at: now,
-    },
-    { onConflict: "creed_id,user_id,section_id" }
-  );
+    } as typeof tables.creed_member_agent_permissions.$inferInsert;
+    await authorizeValues(db, tables.creed_member_agent_permissions, "insert", values);
+    return database.insert(tables.creed_member_agent_permissions).values(values).onConflictDoUpdate({ target: [tables.creed_member_agent_permissions.creed_id, tables.creed_member_agent_permissions.user_id, tables.creed_member_agent_permissions.section_id], set: conflictSet(tables.creed_member_agent_permissions, values), setWhere: scope });
+  });
   if (error) {
     return NextResponse.json({ error: "Could not update the agent permission." }, { status: 500 });
   }

@@ -1,19 +1,19 @@
-import type { ReactNode } from "react";
-import { redirect } from "next/navigation";
 import { AppShellLayout } from "@/components/strap/app-shell-layout";
 import { AppVersionNotifier } from "@/components/strap/app-version-notifier";
-import { getAppVersion } from "@/lib/app-version";
 import { AuthedProviders } from "@/components/strap/authed-providers";
-import { hasPersistedStrap } from "@/lib/strap-backend";
-import { isSupabaseTableMissingError } from "@/lib/strap-backend-errors";
-import {
-  getEntitlementWelcomeState,
-  getCompanyWelcomeState,
-} from "@/lib/welcome";
-import { hasCompanyMembership } from "@/lib/strap-membership";
-import { resolveActiveStrap } from "@/lib/strap-context";
+import { getAppVersion } from "@/lib/app-version";
+import { isDatabaseConfigured } from "@/lib/env";
 import { getRequestAuth } from "@/lib/request-auth";
-import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { hasPersistedStrap } from "@/lib/strap-backend";
+import { isDatabaseTableMissingError } from "@/lib/strap-backend-errors";
+import { resolveActiveStrap } from "@/lib/strap-context";
+import { hasCompanyMembership } from "@/lib/strap-membership";
+import {
+  getCompanyWelcomeState,
+  getEntitlementWelcomeState,
+} from "@/lib/welcome";
+import { redirect } from "next/navigation";
+import type { ReactNode } from "react";
 
 // Auth + onboarding gate for everything inside the (strap-app) route group
 // (/file, /connections, /settings). Two-layer check:
@@ -36,9 +36,9 @@ import { isSupabaseConfigured } from "@/lib/supabase/env";
 export const dynamic = "force-dynamic";
 
 export default async function StrapAppLayout({ children }: { children: ReactNode }) {
-  if (!isSupabaseConfigured()) {
-    // Local dev without Supabase config: skip the gate so the rest of
-    // the app can render. Production deployments always have Supabase.
+  if (!isDatabaseConfigured()) {
+    // Local dev without database config: skip the gate so the rest of
+    // the app can render. Production deployments always configure a database.
     return (
       <AuthedProviders>
         <AppShellLayout showWelcome={false} welcomePaidAt={null}>
@@ -49,13 +49,13 @@ export default async function StrapAppLayout({ children }: { children: ReactNode
     );
   }
 
-  const { supabase, user } = await getRequestAuth();
+  const { context, user } = await getRequestAuth();
 
   if (!user) {
     redirect("/pricing");
   }
 
-  const companyMember = await hasCompanyMembership(supabase, user.id);
+  const companyMember = await hasCompanyMembership(context, user.id);
 
   // Personal-only users pass the personal onboarding gate: a user with no
   // persisted Strap is routed to /onboarding to finish first-run. Company
@@ -65,9 +65,9 @@ export default async function StrapAppLayout({ children }: { children: ReactNode
   if (!companyMember) {
     let sectionsPersisted = false;
     try {
-      sectionsPersisted = await hasPersistedStrap(supabase, user.id);
+      sectionsPersisted = await hasPersistedStrap(context, user.id);
     } catch (error) {
-      if (!isSupabaseTableMissingError(error)) {
+      if (!isDatabaseTableMissingError(error)) {
         throw error;
       }
     }
@@ -82,7 +82,7 @@ export default async function StrapAppLayout({ children }: { children: ReactNode
   // switcher's "Set up" entry lands here too. Scan every Strap, not just the
   // active one: a dual-Strap owner whose active cookie points at their personal
   // Strap (the resolveActiveStrap default) must still be resumed into setup.
-  const active = await resolveActiveStrap(supabase, user);
+  const active = await resolveActiveStrap(context, user);
   if (active) {
     const unfinishedOwned = active.creeds.find(
       (c) => c.type === "company" && c.needsSetup && c.role === "owner"
@@ -111,7 +111,7 @@ export default async function StrapAppLayout({ children }: { children: ReactNode
       ({ showWelcome, paidAt } = await getCompanyWelcomeState(activeEntry.id));
     }
   } else {
-    ({ showWelcome, paidAt } = await getEntitlementWelcomeState(supabase, user.id));
+    ({ showWelcome, paidAt } = await getEntitlementWelcomeState(context, user.id));
   }
 
   return (

@@ -1,17 +1,17 @@
-import Link from "next/link";
-import { IntegrationGlyph } from "@/components/strap/brand";
 import { AuthorizeSpacePicker, type SpaceOption } from "@/components/strap/authorize-space-picker";
+import { IntegrationGlyph } from "@/components/strap/brand";
 import { ConsentMessage, ConsentShell } from "@/components/strap/consent-shell";
 import { getAgentIconKind } from "@/lib/agent-icon";
+import { isDatabaseConfigured } from "@/lib/env";
 import { getOAuthClient, isAllowedRedirectUri } from "@/lib/oauth";
+import { getRequestAuth, getRequestDatabaseContext } from "@/lib/request-auth";
 import {
   getAvatarInitials,
   getAvatarUrl,
   getUserName,
 } from "@/lib/strap-backend";
 import { listUserStraps } from "@/lib/strap-membership";
-import { isSupabaseConfigured } from "@/lib/supabase/env";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import Link from "next/link";
 
 // Strap-branded OAuth consent screen. A signed-in, set-up user sees a single
 // Allow / Deny choice with the connecting client's icon. The page renders only;
@@ -36,7 +36,7 @@ export default async function AuthorizePage({
 }) {
   const params = await searchParams;
 
-  if (!isSupabaseConfigured()) {
+  if (!isDatabaseConfigured()) {
     return (
       <ConsentShell chip="Connect an agent" tone="warning">
         <ConsentMessage
@@ -94,10 +94,10 @@ export default async function AuthorizePage({
   }
   const returnTo = `/authorize?${returnParams.toString()}`;
 
-  const supabase = await createSupabaseServerClient();
+  const context = await getRequestDatabaseContext();
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await getRequestAuth().then(({ user }) => ({ data: { user } }));
 
   if (!user) {
     return (
@@ -125,7 +125,7 @@ export default async function AuthorizePage({
   // keeps the connect flow a single click. A user in one or more Company Straps
   // gets the picker so they can scope the agent to personal or one company (a
   // connection reaches exactly one Strap).
-  const creeds = await listUserStraps(supabase, user.id);
+  const creeds = await listUserStraps(context, user.id);
   if (creeds.length === 0) {
     return (
       <ConsentShell chip="Connect an agent">

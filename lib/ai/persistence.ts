@@ -1,11 +1,15 @@
-import "server-only";
-import { randomBytes } from "node:crypto";
-import { encryptSecret } from "@/lib/secret-crypto";
-import type { AiModelQuality } from "@/lib/ai/model-catalog";
+import * as tables from "@/db/schema/application";
 import { normalizeFeature } from "@/lib/ai/features";
-import { getSupabaseAdminClient } from "@/lib/supabase/admin";
+import type { AiModelQuality } from "@/lib/ai/model-catalog";
+import { authorizeValues } from "@/lib/authz/policies";
+import { conflictSet, maybeOne, query } from "@/lib/db/query";
+import { serviceContext } from "@/lib/db/service";
+import { encryptSecret } from "@/lib/secret-crypto";
+import { and, asc, eq, gte } from "drizzle-orm";
+import { randomBytes } from "node:crypto";
+import "server-only";
 
-import type { SupabaseLikeClient } from "@/lib/supabase/types";
+import type { DatabaseContext } from "@/lib/db/context";
 
 const MICRO_PER_USD = 1_000_000;
 
@@ -75,19 +79,15 @@ export function buildPublicAiSettings(row?: AiSettingsRow | null): PublicAiSetti
   };
 }
 
-export async function readAiSettings(client: unknown, userId: string) {
-  const db = client as SupabaseLikeClient;
-  const { data, error } = await db
-    .from("creed_ai_settings")
-    .select("*")
-    .eq("user_id", userId)
-    .maybeSingle();
+export async function readAiSettings(client: DatabaseContext, userId: string) {
+  const db = client;
+  const { data, error } = await query(db, tables.creed_ai_settings, "select", (database, scope) => database.select().from(tables.creed_ai_settings).where(and(scope, eq(tables.creed_ai_settings.user_id, userId)))).then(maybeOne);
 
   assertNoError(error, "Could not load AI settings.");
   return (data as AiSettingsRow | null) ?? null;
 }
 
-export async function readPublicAiSettings(client: unknown, userId: string) {
+export async function readPublicAiSettings(client: DatabaseContext, userId: string) {
   return buildPublicAiSettings(await readAiSettings(client, userId));
 }
 
@@ -102,12 +102,8 @@ type CompanyAiSettingsRow = {
 // the shared settings card renders identically to personal. Read via the admin
 // client (company AI settings are owner-only under RLS).
 export async function readCompanyPublicAiSettings(creedId: string): Promise<PublicAiSettings> {
-  const admin = getSupabaseAdminClient() as unknown as SupabaseLikeClient;
-  const { data } = await admin
-    .from("creed_company_ai_settings")
-    .select("ai_mode, key_status, api_key_last_four")
-    .eq("creed_id", creedId)
-    .maybeSingle();
+  const admin = serviceContext("lib/ai/persistence.ts");
+  const { data } = await query(admin, tables.creed_company_ai_settings, "select", (database, scope) => database.select({ ai_mode: tables.creed_company_ai_settings.ai_mode, key_status: tables.creed_company_ai_settings.key_status, api_key_last_four: tables.creed_company_ai_settings.api_key_last_four }).from(tables.creed_company_ai_settings).where(and(scope, eq(tables.creed_company_ai_settings.creed_id, creedId)))).then(maybeOne);
   const row = (data as CompanyAiSettingsRow | null) ?? null;
   return {
     provider: "openrouter",
@@ -124,13 +120,13 @@ export async function upsertAiSettings({
   clearApiKey,
   aiMode,
 }: {
-  client: unknown;
+  client: DatabaseContext;
   userId: string;
   apiKey?: string;
   clearApiKey?: boolean;
   aiMode?: AiMode;
 }) {
-  const db = client as SupabaseLikeClient;
+  const db = client;
   const existing = await readAiSettings(db, userId);
   const now = new Date().toISOString();
   const trimmedKey = apiKey?.trim();
@@ -170,9 +166,11 @@ export async function upsertAiSettings({
     created_at: existing?.created_at ?? now,
   };
 
-  const { error } = await db
-    .from("creed_ai_settings")
-    .upsert(row, { onConflict: "user_id" });
+  const { error } = await query(db, tables.creed_ai_settings, "insert", async (database, scope) => {
+    const values = row as typeof tables.creed_ai_settings.$inferInsert;
+    await authorizeValues(db, tables.creed_ai_settings, "insert", values);
+    return database.insert(tables.creed_ai_settings).values(values).onConflictDoUpdate({ target: [tables.creed_ai_settings.user_id], set: conflictSet(tables.creed_ai_settings, values), setWhere: scope });
+  });
 
   assertNoError(error, "Could not save AI settings.");
   return buildPublicAiSettings(row);
@@ -220,7 +218,7 @@ export async function recordAiUsage({
   chargedMicroUsd,
   aiMode,
 }: {
-  client: unknown;
+  client: DatabaseContext;
   userId: string;
   // The Strap the spend belongs to. Set to the Company Strap id for company AI
   // so the company spend chart (readCompanyAiUsageSummary) can attribute it;
@@ -239,8 +237,9 @@ export async function recordAiUsage({
   chargedMicroUsd: number;
   aiMode: AiMode;
 }) {
-  const db = client as SupabaseLikeClient;
-  const { error } = await db.from("creed_ai_usage").insert({
+  const db = client;
+  const { error } = await query(db, tables.creed_ai_usage, "insert", async (database, _scope) => {
+    const values = {
     id: `ai_${Date.now().toString(36)}_${randomBytes(5).toString("hex")}`,
     user_id: userId,
     creed_id: creedId ?? null,
@@ -251,9 +250,12 @@ export async function recordAiUsage({
     ai_mode: aiMode,
     input_tokens: Math.max(0, Math.round(inputTokens)),
     output_tokens: Math.max(0, Math.round(outputTokens)),
-    estimated_cost_usd: Number(costUsd.toFixed(6)),
+    estimated_cost_usd: costUsd.toFixed(6),
     charged_micro_usd: Math.max(0, Math.round(chargedMicroUsd)),
     created_at: new Date().toISOString(),
+  } as typeof tables.creed_ai_usage.$inferInsert;
+    await authorizeValues(db, tables.creed_ai_usage, "insert", values);
+    return database.insert(tables.creed_ai_usage).values(values);
   });
 
   assertNoError(error, "Could not record AI usage.");
@@ -275,19 +277,13 @@ type UsageRow = {
 };
 
 export async function readAiUsageSummary(
-  client: unknown,
+  client: DatabaseContext,
   userId: string,
   range: AiUsageRange,
   mode: AiMode
 ) {
-  const db = client as SupabaseLikeClient;
-  const { data, error } = await db
-    .from("creed_ai_usage")
-    .select("feature, charged_micro_usd, estimated_cost_usd, input_tokens, output_tokens, created_at")
-    .eq("user_id", userId)
-    .eq("ai_mode", mode)
-    .gte("created_at", getRangeStart(range))
-    .order("created_at", { ascending: true });
+  const db = client;
+  const { data, error } = await query(db, tables.creed_ai_usage, "select", (database, scope) => database.select({ feature: tables.creed_ai_usage.feature, charged_micro_usd: tables.creed_ai_usage.charged_micro_usd, estimated_cost_usd: tables.creed_ai_usage.estimated_cost_usd, input_tokens: tables.creed_ai_usage.input_tokens, output_tokens: tables.creed_ai_usage.output_tokens, created_at: tables.creed_ai_usage.created_at }).from(tables.creed_ai_usage).where(and(scope, eq(tables.creed_ai_usage.user_id, userId), eq(tables.creed_ai_usage.ai_mode, mode), gte(tables.creed_ai_usage.created_at, getRangeStart(range)))).orderBy(asc(tables.creed_ai_usage.created_at)));
 
   assertNoError(error, "Could not load AI usage.");
   return foldUsageRows((data as UsageRow[] | null) ?? [], range);
@@ -303,14 +299,8 @@ export async function readCompanyAiUsageSummary(
   range: AiUsageRange,
   mode: AiMode
 ) {
-  const admin = getSupabaseAdminClient() as unknown as SupabaseLikeClient;
-  const { data, error } = await admin
-    .from("creed_ai_usage")
-    .select("feature, charged_micro_usd, estimated_cost_usd, input_tokens, output_tokens, created_at")
-    .eq("creed_id", creedId)
-    .eq("ai_mode", mode)
-    .gte("created_at", getRangeStart(range))
-    .order("created_at", { ascending: true });
+  const admin = serviceContext("lib/ai/persistence.ts");
+  const { data, error } = await query(admin, tables.creed_ai_usage, "select", (database, scope) => database.select({ feature: tables.creed_ai_usage.feature, charged_micro_usd: tables.creed_ai_usage.charged_micro_usd, estimated_cost_usd: tables.creed_ai_usage.estimated_cost_usd, input_tokens: tables.creed_ai_usage.input_tokens, output_tokens: tables.creed_ai_usage.output_tokens, created_at: tables.creed_ai_usage.created_at }).from(tables.creed_ai_usage).where(and(scope, eq(tables.creed_ai_usage.creed_id, creedId), eq(tables.creed_ai_usage.ai_mode, mode), gte(tables.creed_ai_usage.created_at, getRangeStart(range)))).orderBy(asc(tables.creed_ai_usage.created_at)));
 
   assertNoError(error, "Could not load AI usage.");
   return foldUsageRows((data as UsageRow[] | null) ?? [], range);

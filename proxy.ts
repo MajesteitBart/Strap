@@ -1,7 +1,4 @@
-import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { isMarketingPath } from "@/lib/marketing-routes";
-import { getSupabasePublishableKey, getSupabaseUrl, isSupabaseConfigured } from "@/lib/supabase/env";
 
 export const config = {
   // Run on every route except static assets and Next internals.
@@ -27,41 +24,7 @@ export async function proxy(request: NextRequest) {
   // marketing routes that never read user state.
   requestHeaders.set("x-pathname", request.nextUrl.pathname);
 
-  let response = NextResponse.next({ request: { headers: requestHeaders } });
-
-  // Refresh the Supabase session on app routes. @supabase/ssr requires this in
-  // middleware: Server Components can read cookies but can't reliably write
-  // them, so this is the only place an expired access token gets refreshed and
-  // the new cookie written back. Without it, server renders intermittently see
-  // a stale/expired session - login loops, the /pricing bounce, and the
-  // seed/empty state that only resolves on a manual refresh. Marketing routes
-  // are skipped to keep them fast; they don't gate on the session server-side.
-  if (isSupabaseConfigured() && !isMarketingPath(request.nextUrl.pathname)) {
-    const supabase = createServerClient(getSupabaseUrl(), getSupabasePublishableKey(), {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          // Update the request cookies so this same request's server render
-          // (the root layout's loadCreedState) sees the refreshed token, then
-          // rebuild the response from the updated request and re-apply our
-          // forwarded headers + the Set-Cookie for the browser.
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-          const refreshedHeaders = new Headers(request.headers);
-          refreshedHeaders.set("x-request-id", requestId);
-          refreshedHeaders.set("x-pathname", request.nextUrl.pathname);
-          response = NextResponse.next({ request: { headers: refreshedHeaders } });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
-          );
-        },
-      },
-    });
-
-    // getUser() is what triggers the token refresh + the setAll cookie write.
-    await supabase.auth.getUser();
-  }
+  const response = NextResponse.next({ request: { headers: requestHeaders } });
 
   response.headers.set("x-request-id", requestId);
   return response;

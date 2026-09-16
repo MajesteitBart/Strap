@@ -1,12 +1,12 @@
-import { NextResponse } from "next/server";
-import { buildAgentPayloadForToken } from "@/lib/strap-backend";
+import { serviceContext } from "@/lib/db/service";
+import { isDatabaseConfigured } from "@/lib/env";
 import { checkRateLimit } from "@/lib/rate-limit";
-import { getSupabaseAdminClient } from "@/lib/supabase/admin";
-import { isSupabaseAdminConfigured } from "@/lib/supabase/env";
+import { buildAgentPayloadForToken } from "@/lib/strap-backend";
+import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
-  if (!isSupabaseAdminConfigured()) {
-    return new NextResponse("Supabase admin configuration is missing.", { status: 503 });
+  if (!isDatabaseConfigured()) {
+    return new NextResponse("Database configuration is missing.", { status: 503 });
   }
 
   const { searchParams } = new URL(request.url);
@@ -39,7 +39,7 @@ export async function GET(request: Request) {
     });
   }
 
-  const admin = getSupabaseAdminClient();
+  const admin = serviceContext("app/api/creed/route.ts");
   const result = await buildAgentPayloadForToken(admin as never, token, integration);
 
   if (!result) {

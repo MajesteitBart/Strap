@@ -1,16 +1,16 @@
-import Link from "next/link";
 import {
   StrapSiteFooter,
   StrapSiteHeader,
 } from "@/components/marketing/strap-site-shell";
-import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { isDatabaseConfigured } from "@/lib/env";
+import Link from "next/link";
 
 // 404 for any unmatched route under the app router. Rendered on the public
 // worktable so it reads as part of Strap rather than a Next.js default page.
 export default function NotFound() {
   return (
     <div className="strap-site">
-      <StrapSiteHeader configured={isSupabaseConfigured()} />
+      <StrapSiteHeader configured={isDatabaseConfigured()} />
       <main className="strap-wrap strap-empty strap-tone-agents">
         <span className="strap-empty-code">404 · not found</span>
         <h1>Page not found</h1>

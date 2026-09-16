@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
 import { requireApiAuth } from "@/lib/api-auth";
 import { setActiveStrap } from "@/lib/strap-context";
+import { NextResponse } from "next/server";
 
 // POST /api/app/straps/activate { strapId } - switch the active Strap.
 // Validates membership before setting the cookie; a non-member gets 403 so a
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "strapId is required." }, { status: 400 });
   }
 
-  const role = await setActiveStrap(auth.supabase, auth.user, creedId);
+  const role = await setActiveStrap(auth.context, auth.user, creedId);
   if (!role) {
     return NextResponse.json(
       { error: "You are not a member of that Strap." },

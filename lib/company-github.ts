@@ -1,11 +1,15 @@
-import "server-only";
-import { getSupabaseAdminClient } from "@/lib/supabase/admin";
-import type { SupabaseLikeClient } from "@/lib/supabase/types";
-import { decryptSecret, encryptSecret } from "@/lib/secret-crypto";
+import * as tables from "@/db/schema/application";
+import { authorizeValues } from "@/lib/authz/policies";
+import type { DatabaseContext } from "@/lib/db/context";
+import { conflictSet, maybeOne, query } from "@/lib/db/query";
+import { serviceContext } from "@/lib/db/service";
 import {
   getGitHubOAuthAppCredentials,
   refreshGitHubAccessToken,
 } from "@/lib/github";
+import { decryptSecret, encryptSecret } from "@/lib/secret-crypto";
+import { and, eq } from "drizzle-orm";
+import "server-only";
 
 // The team's GitHub connection (creed_company_github_integration): a single
 // team-wide token, authorized by an owner/admin through the dedicated company
@@ -34,8 +38,8 @@ export type CompanyGitHubIntegration = {
   tokenExpiresAt: string | null;
 };
 
-function admin(): SupabaseLikeClient {
-  return getSupabaseAdminClient() as unknown as SupabaseLikeClient;
+function admin(): DatabaseContext {
+  return serviceContext("lib/company-github.ts");
 }
 
 function decryptOrNull(value: string | null | undefined): string | null {
@@ -57,13 +61,7 @@ function decryptOrNull(value: string | null | undefined): string | null {
 export async function readCompanyGitHubIntegration(
   creedId: string
 ): Promise<CompanyGitHubIntegration | null> {
-  const { data } = (await admin()
-    .from("creed_company_github_integration")
-    .select(
-      "creed_id, status, provider_account_id, provider_login, encrypted_access_token, encrypted_refresh_token, token_expires_at"
-    )
-    .eq("creed_id", creedId)
-    .maybeSingle()) as { data: CompanyGitHubRow | null };
+  const { data } = (await query(admin(), tables.creed_company_github_integration, "select", (database, scope) => database.select({ creed_id: tables.creed_company_github_integration.creed_id, status: tables.creed_company_github_integration.status, provider_account_id: tables.creed_company_github_integration.provider_account_id, provider_login: tables.creed_company_github_integration.provider_login, encrypted_access_token: tables.creed_company_github_integration.encrypted_access_token, encrypted_refresh_token: tables.creed_company_github_integration.encrypted_refresh_token, token_expires_at: tables.creed_company_github_integration.token_expires_at }).from(tables.creed_company_github_integration).where(and(scope, eq(tables.creed_company_github_integration.creed_id, creedId)))).then(maybeOne)) as { data: CompanyGitHubRow | null };
   if (!data) return null;
   return {
     status: data.status,
@@ -86,10 +84,8 @@ export async function upsertCompanyGitHubIntegration(params: {
   tokenExpiresAt: string | null;
 }): Promise<void> {
   const now = new Date().toISOString();
-  await admin()
-    .from("creed_company_github_integration")
-    .upsert(
-      {
+  await query(admin(), tables.creed_company_github_integration, "insert", async (database, scope) => {
+    const values = {
         creed_id: params.creedId,
         provider: "github",
         status: "connected",
@@ -102,9 +98,10 @@ export async function upsertCompanyGitHubIntegration(params: {
         token_expires_at: params.tokenExpiresAt,
         connected_by: params.connectedBy,
         updated_at: now,
-      },
-      { onConflict: "creed_id" }
-    );
+      } as typeof tables.creed_company_github_integration.$inferInsert;
+    await authorizeValues(admin(), tables.creed_company_github_integration, "insert", values);
+    return database.insert(tables.creed_company_github_integration).values(values).onConflictDoUpdate({ target: [tables.creed_company_github_integration.creed_id], set: conflictSet(tables.creed_company_github_integration, values), setWhere: scope });
+  });
 }
 
 /**
@@ -118,9 +115,8 @@ export async function upsertCompanyGitHubIntegration(params: {
 export async function clearCompanyGitHubIntegration(creedId: string): Promise<void> {
   const db = admin();
   await Promise.all([
-    db
-      .from("creed_company_github_integration")
-      .update({
+    query(db, tables.creed_company_github_integration, "update", async (database, scope) => {
+    const values = {
         status: "disconnected",
         provider_account_id: null,
         provider_login: null,
@@ -128,12 +124,15 @@ export async function clearCompanyGitHubIntegration(creedId: string): Promise<vo
         encrypted_refresh_token: null,
         token_expires_at: null,
         updated_at: new Date().toISOString(),
-      })
-      .eq("creed_id", creedId),
-    db
-      .from("creed_company_version_control")
-      .update({ sync_status: "unknown" })
-      .eq("creed_id", creedId),
+      } as Partial<typeof tables.creed_company_github_integration.$inferInsert>;
+    await authorizeValues(db, tables.creed_company_github_integration, "update", values);
+    return database.update(tables.creed_company_github_integration).set(values).where(and(scope, eq(tables.creed_company_github_integration.creed_id, creedId)));
+  }),
+    query(db, tables.creed_company_version_control, "update", async (database, scope) => {
+    const values = { sync_status: "unknown" } as Partial<typeof tables.creed_company_version_control.$inferInsert>;
+    await authorizeValues(db, tables.creed_company_version_control, "update", values);
+    return database.update(tables.creed_company_version_control).set(values).where(and(scope, eq(tables.creed_company_version_control.creed_id, creedId)));
+  }),
   ]);
 }
 
@@ -157,9 +156,8 @@ async function refreshCompanyToken(
   }
   const refreshed = await refreshGitHubAccessToken(integration.refreshToken, creds);
   const now = new Date().toISOString();
-  await admin()
-    .from("creed_company_github_integration")
-    .update({
+  await query(admin(), tables.creed_company_github_integration, "update", async (database, scope) => {
+    const values = {
       encrypted_access_token: encryptSecret(refreshed.accessToken),
       encrypted_refresh_token: refreshed.refreshToken
         ? encryptSecret(refreshed.refreshToken)
@@ -169,8 +167,10 @@ async function refreshCompanyToken(
       token_expires_at: refreshed.expiresAt,
       status: "connected",
       updated_at: now,
-    })
-    .eq("creed_id", creedId);
+    } as Partial<typeof tables.creed_company_github_integration.$inferInsert>;
+    await authorizeValues(admin(), tables.creed_company_github_integration, "update", values);
+    return database.update(tables.creed_company_github_integration).set(values).where(and(scope, eq(tables.creed_company_github_integration.creed_id, creedId)));
+  });
   return {
     ...integration,
     accessToken: refreshed.accessToken,

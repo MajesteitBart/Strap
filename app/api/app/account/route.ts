@@ -1,10 +1,13 @@
-import { NextResponse } from "next/server";
-import { getSupabaseAdminClient } from "@/lib/supabase/admin";
+import { users } from "@/db/schema/auth";
 import { requireApiAuth } from "@/lib/api-auth";
 import { recordAuditEvent } from "@/lib/audit-log";
-import { log } from "@/lib/observability";
+import { getAuthServer } from "@/lib/auth/server";
+import type { DatabaseContext } from "@/lib/db/context";
+import { serviceContext } from "@/lib/db/service";
 import { checkLegacyDeletion } from "@/lib/legacy-subscription-deletion";
-import type { SupabaseLikeClient } from "@/lib/supabase/types";
+import { log } from "@/lib/observability";
+import { eq } from "drizzle-orm";
+import { NextResponse } from "next/server";
 
 export async function DELETE(request: Request) {
   const auth = await requireApiAuth();
@@ -14,9 +17,9 @@ export async function DELETE(request: Request) {
   // the dialog (open + Confirm), and the user can only act on their own
   // record because `requireApiAuth` returns the signed-in user.
   try {
-    const admin = getSupabaseAdminClient();
+    const admin = serviceContext("app/api/app/account/route.ts");
 
-    const blocker = await checkLegacyDeletion(admin as unknown as SupabaseLikeClient,
+    const blocker = await checkLegacyDeletion(admin as unknown as DatabaseContext,
       { scope: "account", userId: auth.user.id });
     if (blocker) return NextResponse.json({ error: blocker.error }, { status: blocker.status });
 
@@ -28,16 +31,13 @@ export async function DELETE(request: Request) {
       metadata: { email: auth.user.email },
     });
 
-    const { error } = await admin.auth.admin.deleteUser(auth.user.id);
+    const signout = await getAuthServer().api.signOut({ headers: request.headers, asResponse: true });
+    if (!signout.ok) return signout;
+    await auth.context.database.delete(users).where(eq(users.id, auth.user.id));
 
-    if (error) {
-      log.error("account_delete_admin_failed", { userId: auth.user.id }, error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    await auth.supabase.auth.signOut();
-
-    return NextResponse.json({ ok: true });
+    const response = NextResponse.json({ ok: true });
+    for (const cookie of signout.headers.getSetCookie()) response.headers.append("Set-Cookie", cookie);
+    return response;
   } catch (error) {
     log.error("account_delete_failed", { userId: auth.user.id }, error);
     return NextResponse.json(

@@ -1,11 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { Copy, Eye, EyeOff, KeyRound, Pencil, Plus, Trash2 } from "lucide-react";
+import { useStrap } from "@/components/strap/strap-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useStrap } from "@/components/strap/strap-provider";
+import { Copy, Eye, EyeOff, KeyRound, Pencil, Plus, Trash2 } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 
 type VaultItem = {
   id: string;
@@ -146,7 +146,7 @@ export function ApiKeyVaultScreen() {
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <h1 className="font-heading text-[1.75rem] font-semibold tracking-[-0.03em] text-[var(--strap-text-primary)]">API key Vault</h1>
-            <p className="mt-2 max-w-2xl text-[14px] leading-7 text-[var(--strap-text-secondary)]">Store external API keys in Supabase Vault. Secret values stay hidden until you explicitly reveal them.</p>
+            <p className="mt-2 max-w-2xl text-[14px] leading-7 text-[var(--strap-text-secondary)]">Store external API keys in your Vault. Secret values stay hidden until you explicitly reveal them.</p>
           </div>
           <Button onClick={openCreate}><Plus className="h-4 w-4" /> Add secret</Button>
         </div>

@@ -1,23 +1,14 @@
 "use client";
 
-// Split-screen sign-in / create-account surface shared by /login and /signup,
-// rendered inside <AuthShell>.
-//
-// Google and X go through Supabase OAuth (useOAuthSignIn). Email/password uses
-// Supabase signInWithPassword / signUp directly. Signup transparently handles
-// both project configs: with email confirmation on we show a "check your inbox"
-// state, otherwise the new session lands the user in the app. "Forgot password?"
-// sends a reset link via resetPasswordForEmail (the /reset-password page
-// finishes the flow).
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
-import Link from "next/link";
-import { LoaderCircle, MailCheck } from "lucide-react";
-import { toast } from "sonner";
-import { AuthShell } from "@/components/auth/auth-shell";
 import { AuthCheckbox, AuthField, AuthSubmitButton, PasswordField } from "@/components/auth/auth-fields";
+import { AuthShell } from "@/components/auth/auth-shell";
 import { readLastAuthProvider, useOAuthSignIn, type OAuthProvider } from "@/components/auth/use-oauth-sign-in";
-import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { authClient } from "@/lib/auth/client";
+import { LoaderCircle, MailCheck } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { toast } from "sonner";
 
 type AuthMode = "login" | "signup";
 
@@ -55,13 +46,12 @@ const copy: Record<AuthMode, {
   },
 };
 
-// Map Supabase auth errors to one clean, user-meaningful sentence.
 function authErrorMessage(message: string, mode: AuthMode) {
   const m = message.toLowerCase();
-  if (m.includes("invalid login credentials")) {
+  if (m.includes("invalid login credentials") || m.includes("invalid email or password")) {
     return "That email or password is incorrect.";
   }
-  if (m.includes("email not confirmed")) {
+  if (m.includes("email not confirmed") || m.includes("email not verified")) {
     return "Confirm your email first, then sign in. Check your inbox.";
   }
   if (m.includes("already registered") || m.includes("already been registered")) {
@@ -133,22 +123,17 @@ export function AuthScreen({
   // tab in automatically.
   useEffect(() => {
     if (confirmation?.kind !== "signup") return;
-    const supabase = getSupabaseBrowserClient();
     let active = true;
     const checkSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (active && data.session) window.location.assign(nextPath);
+      const { data } = await authClient.getSession();
+      if (active && data?.session) window.location.assign(nextPath);
     };
     const intervalId = window.setInterval(() => void checkSession(), 3000);
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event: unknown, session: unknown) => {
-      if (active && session) window.location.assign(nextPath);
-    });
+
     return () => {
       active = false;
       window.clearInterval(intervalId);
-      subscription.unsubscribe();
+
     };
   }, [confirmation, nextPath]);
 
@@ -184,18 +169,18 @@ export function AuthScreen({
       return;
     }
 
-    const supabase = getSupabaseBrowserClient();
     const trimmedEmail = email.trim();
     setSubmitting(true);
 
     try {
       if (mode === "login") {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { error } = await authClient.signIn.email({
           email: trimmedEmail,
           password,
+          rememberMe: remember,
         });
         if (error) {
-          toast.error(authErrorMessage(error.message, mode));
+          toast.error(authErrorMessage(error.message ?? "", mode));
           return;
         }
         // Full navigation so server components pick up the new session.
@@ -203,30 +188,17 @@ export function AuthScreen({
         return;
       }
 
-      const { data, error } = await supabase.auth.signUp({
+      const { error } = await authClient.signUp.email({
         email: trimmedEmail,
         password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`,
-        },
+        name: trimmedEmail.split("@")[0],
+        callbackURL: new URL(nextPath, window.location.origin).toString(),
       });
       if (error) {
-        toast.error(authErrorMessage(error.message, mode));
+        toast.error(authErrorMessage(error.message ?? "", mode));
         return;
       }
-      // Confirmation off -> we get a session straight away.
-      if (data.session) {
-        window.location.assign(nextPath);
-        return;
-      }
-      // Supabase returns a user with no identities for an already-registered
-      // email (anti-enumeration), so surface it as a normal field error.
-      if (data.user && (data.user.identities?.length ?? 0) === 0) {
-        setErrors({ email: "An account with this email already exists." });
-        emailRef.current?.focus();
-        return;
-      }
-      // Confirmation on -> swap to the check-your-inbox state.
+      // Confirmation is required; duplicate addresses get the same response.
       setConfirmation({ email: trimmedEmail, kind: "signup" });
     } finally {
       if (mounted.current) setSubmitting(false);
@@ -244,15 +216,12 @@ export function AuthScreen({
 
     setSubmitting(true);
     try {
-      const supabase = getSupabaseBrowserClient();
-      const { error } = await supabase.auth.resetPasswordForEmail(trimmedEmail, {
-        redirectTo: `${window.location.origin}/auth/callback?next=/reset-password`,
-      });
+        const { error } = await authClient.requestPasswordReset({ email: trimmedEmail, redirectTo: `${window.location.origin}/reset-password` });
       if (error) {
         toast.error(error.message || "Couldn't send the reset link. Try again.");
         return;
       }
-      // Supabase returns success even for unknown emails (anti-enumeration), so
+      // Unknown email resets also return success to prevent account enumeration, so
       // we always land on the same confirmation state.
       setConfirmation({ email: trimmedEmail, kind: "reset" });
     } finally {

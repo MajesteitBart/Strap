@@ -1,14 +1,10 @@
-import { NextResponse } from "next/server";
-import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getAppVersion } from "@/lib/app-version";
-import {
-  isSupabaseAdminConfigured,
-  isSupabaseConfigured,
-} from "@/lib/supabase/env";
+import { getAuthServer } from "@/lib/auth/server";
+import { serviceContext } from "@/lib/db/service";
+import { isDatabaseConfigured } from "@/lib/env";
+import { sql } from "drizzle-orm";
+import { NextResponse } from "next/server";
 
-// Run on the Node.js runtime so we can use the Supabase admin client for
-// the database probe. Force-dynamic + no-store so monitors never see a
-// cached response.
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
@@ -111,82 +107,22 @@ async function buildPayload(): Promise<{
 }
 
 async function probeDatabase(): Promise<ComponentStatus> {
-  if (!isSupabaseAdminConfigured()) {
-    return {
-      ok: false,
-      latencyMs: 0,
-      error: "supabase_admin_not_configured",
-    };
-  }
-
+  if (!isDatabaseConfigured()) return { ok: false, latencyMs: 0, error: "database_not_configured" };
   const start = Date.now();
   try {
-    const admin = getSupabaseAdminClient();
-    // Cheapest probe we can run that proves a real round-trip to Postgres:
-    // a HEAD-style count against a table we know exists. limit(1) keeps it
-    // constant-time regardless of row count.
-    const result = await withTimeout(
-      admin
-        .from("creed_files")
-        .select("id", { count: "exact", head: true })
-        .limit(1),
-      PROBE_TIMEOUT_MS
-    );
-
-    if (result.error) {
-      return {
-        ok: false,
-        latencyMs: Date.now() - start,
-        error: redactError(result.error.message),
-      };
-    }
-
+    await withTimeout(serviceContext("health probe").database.execute(sql`select id from public.creeds limit 1`), PROBE_TIMEOUT_MS);
     return { ok: true, latencyMs: Date.now() - start };
-  } catch (error) {
-    return {
-      ok: false,
-      latencyMs: Date.now() - start,
-      error: redactError(error),
-    };
-  }
+  } catch (error) { return { ok: false, latencyMs: Date.now() - start, error: redactError(error) }; }
 }
 
 async function probeAuth(): Promise<ComponentStatus> {
-  if (!isSupabaseConfigured() || !isSupabaseAdminConfigured()) {
-    return {
-      ok: false,
-      latencyMs: 0,
-      error: "supabase_admin_not_configured",
-    };
-  }
-
+  if (!isDatabaseConfigured()) return { ok: false, latencyMs: 0, error: "auth_not_configured" };
   const start = Date.now();
   try {
-    const admin = getSupabaseAdminClient();
-    // listUsers with perPage=1 is the lightest auth round-trip available
-    // and exercises the auth.users path without surfacing user data of
-    // consequence. The response shape is intentionally discarded.
-    const result = await withTimeout(
-      admin.auth.admin.listUsers({ page: 1, perPage: 1 }),
-      PROBE_TIMEOUT_MS
-    );
-
-    if (result.error) {
-      return {
-        ok: false,
-        latencyMs: Date.now() - start,
-        error: redactError(result.error.message),
-      };
-    }
-
+    getAuthServer();
+    await withTimeout(serviceContext("auth health probe").database.execute(sql`select id from public.users limit 1`), PROBE_TIMEOUT_MS);
     return { ok: true, latencyMs: Date.now() - start };
-  } catch (error) {
-    return {
-      ok: false,
-      latencyMs: Date.now() - start,
-      error: redactError(error),
-    };
-  }
+  } catch (error) { return { ok: false, latencyMs: Date.now() - start, error: redactError(error) }; }
 }
 
 function withTimeout<T>(promise: PromiseLike<T>, ms: number): Promise<T> {

@@ -1,12 +1,12 @@
-import { NextResponse } from "next/server";
 import { requireApiAuth } from "@/lib/api-auth";
-import { getCreedRole } from "@/lib/strap-membership";
+import { recordAuditEvent } from "@/lib/audit-log";
 import {
   createHeadlessAccessKey,
   listHeadlessKeys,
 } from "@/lib/headless-access";
 import { isHeadlessKeyMode, parseOptionalExpiry } from "@/lib/headless-access-shared";
-import { recordAuditEvent } from "@/lib/audit-log";
+import { getCreedRole } from "@/lib/strap-membership";
+import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -22,7 +22,7 @@ export async function GET(request: Request) {
   if (!creedId) {
     return NextResponse.json({ error: "strapId is required." }, { status: 400 });
   }
-  if (!(await getCreedRole(auth.supabase, auth.user.id, creedId))) {
+  if (!(await getCreedRole(auth.context, auth.user.id, creedId))) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
   const keys = await listHeadlessKeys(auth.user.id, creedId);
@@ -44,7 +44,7 @@ export async function POST(request: Request) {
       { status: 400 },
     );
   }
-  if (!(await getCreedRole(auth.supabase, auth.user.id, creedId))) {
+  if (!(await getCreedRole(auth.context, auth.user.id, creedId))) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
   const created = await createHeadlessAccessKey({

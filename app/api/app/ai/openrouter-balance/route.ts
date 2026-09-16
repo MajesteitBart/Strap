@@ -1,11 +1,15 @@
-import { NextResponse } from "next/server";
-import { NO_STORE_HEADERS } from "@/lib/http-headers";
-import type { User } from "@supabase/supabase-js";
+import * as tables from "@/db/schema/application";
 import { fetchOpenRouterBalance, readAiSettings } from "@/lib/ai/persistence";
 import { requireApiAuth } from "@/lib/api-auth";
-import { resolveMemberCompanyStrap } from "@/lib/strap-context";
-import { getSupabaseAdminClient } from "@/lib/supabase/admin";
+import type { User } from "@/lib/auth/user";
+import type { DatabaseContext } from "@/lib/db/context";
+import { maybeOne, query } from "@/lib/db/query";
+import { serviceContext } from "@/lib/db/service";
+import { NO_STORE_HEADERS } from "@/lib/http-headers";
 import { decryptSecret } from "@/lib/secret-crypto";
+import { resolveMemberCompanyStrap } from "@/lib/strap-context";
+import { and, eq } from "drizzle-orm";
+import { NextResponse } from "next/server";
 
 // Live OpenRouter balance for the BYOK settings card. Only meaningful when a
 // valid key is saved; returns { balance: null } otherwise (no key, or the
@@ -15,19 +19,13 @@ import { decryptSecret } from "@/lib/secret-crypto";
 // The key itself is never exposed either way.
 
 
-async function resolveByokKey(client: unknown, user: User): Promise<string | null> {
+async function resolveByokKey(client: DatabaseContext, user: User): Promise<string | null> {
   const company = await resolveMemberCompanyStrap(client, user);
   if (company) {
     if (company.role !== "owner") return null;
     const companyId = company.creedId;
-    const admin = getSupabaseAdminClient() as unknown as {
-      from: (t: string) => { select: (c: string) => { eq: (col: string, v: string) => { maybeSingle: () => Promise<{ data: { encrypted_openrouter_key?: string | null; key_status?: string } | null }> } } };
-    };
-    const { data } = await admin
-      .from("creed_company_ai_settings")
-      .select("encrypted_openrouter_key, key_status")
-      .eq("creed_id", companyId)
-      .maybeSingle();
+    const admin = serviceContext("app/api/app/ai/openrouter-balance/route.ts");
+    const { data } = await query(admin, tables.creed_company_ai_settings, "select", (database, scope) => database.select({ encrypted_openrouter_key: tables.creed_company_ai_settings.encrypted_openrouter_key, key_status: tables.creed_company_ai_settings.key_status }).from(tables.creed_company_ai_settings).where(and(scope, eq(tables.creed_company_ai_settings.creed_id, companyId)))).then(maybeOne);
     if (!data?.encrypted_openrouter_key || data.key_status !== "present") return null;
     return decryptSecret(data.encrypted_openrouter_key);
   }
@@ -41,7 +39,7 @@ export async function GET() {
   const auth = await requireApiAuth();
   if (auth instanceof NextResponse) return auth;
 
-  const key = await resolveByokKey(auth.supabase, auth.user);
+  const key = await resolveByokKey(auth.context, auth.user);
   if (!key) {
     return NextResponse.json({ balance: null }, { headers: NO_STORE_HEADERS });
   }

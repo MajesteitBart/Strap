@@ -9,9 +9,9 @@
 // Render the output through <JsonLd> (components/marketing/json-ld.tsx).
 
 import { GITHUB_URL, INSTAGRAM_URL, TWITTER_URL } from "@/lib/branding";
-import type { FaqItem } from "@/lib/marketing/faq";
+import { getSiteUrl } from "@/lib/env";
 import { BRAND_DESCRIPTION, BRAND_NAME, BRAND_TAGLINE } from "@/lib/marketing/brand";
-import { getSiteUrl } from "@/lib/supabase/env";
+import type { FaqItem } from "@/lib/marketing/faq";
 
 const SITE_NAME = BRAND_NAME;
 

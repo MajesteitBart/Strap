@@ -1,6 +1,10 @@
+import * as tables from "@/db/schema/application";
+import { authorizeValues } from "@/lib/authz/policies";
+import type { DatabaseContext } from "@/lib/db/context";
+import { maybeOne, query } from "@/lib/db/query";
+import { serviceContext } from "@/lib/db/service";
+import { and, eq } from "drizzle-orm";
 import "server-only";
-import { getSupabaseAdminClient } from "@/lib/supabase/admin";
-import type { SupabaseLikeClient } from "@/lib/supabase/types";
 
 // One-time welcome tour state. Historically keyed off the purchase records
 // (creed_entitlements / creed_company_billing paid_at + welcomed_at); those
@@ -32,16 +36,12 @@ export type WelcomeState = { showWelcome: boolean; paidAt: string | null };
  * already-authed client (the "Read own entitlement" RLS policy).
  */
 export async function getEntitlementWelcomeState(
-  client: unknown,
+  client: DatabaseContext,
   userId: string
 ): Promise<WelcomeState> {
-  const db = client as SupabaseLikeClient;
+  const db = client;
   try {
-    const { data, error } = (await db
-      .from("creed_entitlements")
-      .select("paid_at, welcomed_at")
-      .eq("user_id", userId)
-      .maybeSingle()) as {
+    const { data, error } = (await query(db, tables.creed_entitlements, "select", (database, scope) => database.select({ paid_at: tables.creed_entitlements.paid_at, welcomed_at: tables.creed_entitlements.welcomed_at }).from(tables.creed_entitlements).where(and(scope, eq(tables.creed_entitlements.user_id, userId)))).then(maybeOne)) as {
       data: { paid_at?: string | null; welcomed_at?: string | null } | null;
       error: { message: string } | null;
     };
@@ -61,11 +61,12 @@ export async function getEntitlementWelcomeState(
  * service-role admin client - the table has no RLS update policy.
  */
 export async function markEntitlementWelcomed(userId: string): Promise<void> {
-  const admin = getSupabaseAdminClient() as unknown as SupabaseLikeClient;
-  const { error } = await admin
-    .from("creed_entitlements")
-    .update({ welcomed_at: new Date().toISOString() })
-    .eq("user_id", userId);
+  const admin = serviceContext("lib/welcome.ts");
+  const { error } = await query(admin, tables.creed_entitlements, "update", async (database, scope) => {
+    const values = { welcomed_at: new Date().toISOString() } as Partial<typeof tables.creed_entitlements.$inferInsert>;
+    await authorizeValues(admin, tables.creed_entitlements, "update", values);
+    return database.update(tables.creed_entitlements).set(values).where(and(scope, eq(tables.creed_entitlements.user_id, userId)));
+  });
   if (error) {
     throw new Error(error.message);
   }
@@ -78,13 +79,9 @@ export async function markEntitlementWelcomed(userId: string): Promise<void> {
 export async function getCompanyWelcomeState(
   creedId: string
 ): Promise<WelcomeState> {
-  const admin = getSupabaseAdminClient() as unknown as SupabaseLikeClient;
+  const admin = serviceContext("lib/welcome.ts");
   try {
-    const { data, error } = (await admin
-      .from("creed_company_billing")
-      .select("paid_at, welcomed_at")
-      .eq("creed_id", creedId)
-      .maybeSingle()) as {
+    const { data, error } = (await query(admin, tables.creed_company_billing, "select", (database, scope) => database.select({ paid_at: tables.creed_company_billing.paid_at, welcomed_at: tables.creed_company_billing.welcomed_at }).from(tables.creed_company_billing).where(and(scope, eq(tables.creed_company_billing.creed_id, creedId)))).then(maybeOne)) as {
       data: { paid_at?: string | null; welcomed_at?: string | null } | null;
       error: { message: string } | null;
     };
@@ -101,11 +98,12 @@ export async function getCompanyWelcomeState(
 
 /** Mark the company welcome tour as seen. Fails soft like the personal marker. */
 export async function markCompanyWelcomed(creedId: string): Promise<void> {
-  const admin = getSupabaseAdminClient() as unknown as SupabaseLikeClient;
-  const { error } = await admin
-    .from("creed_company_billing")
-    .update({ welcomed_at: new Date().toISOString() })
-    .eq("creed_id", creedId);
+  const admin = serviceContext("lib/welcome.ts");
+  const { error } = await query(admin, tables.creed_company_billing, "update", async (database, scope) => {
+    const values = { welcomed_at: new Date().toISOString() } as Partial<typeof tables.creed_company_billing.$inferInsert>;
+    await authorizeValues(admin, tables.creed_company_billing, "update", values);
+    return database.update(tables.creed_company_billing).set(values).where(and(scope, eq(tables.creed_company_billing.creed_id, creedId)));
+  });
   if (error) {
     throw new Error(error.message);
   }

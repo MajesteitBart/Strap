@@ -1,7 +1,10 @@
-import "server-only";
-import { getSupabaseAdminClient } from "@/lib/supabase/admin";
-import { isSupabaseAdminConfigured } from "@/lib/supabase/env";
+import * as tables from "@/db/schema/application";
+import { authorizeValues } from "@/lib/authz/policies";
+import { query } from "@/lib/db/query";
+import { serviceContext } from "@/lib/db/service";
+import { isDatabaseConfigured } from "@/lib/env";
 import { log } from "@/lib/observability";
+import "server-only";
 
 export type AuditAction =
   | "tokens.rotated"
@@ -61,25 +64,23 @@ function clientIp(request: Request | undefined): string | null {
  * so failed actions don't pollute the log.
  */
 export async function recordAuditEvent(input: AuditLogInput): Promise<void> {
-  if (!isSupabaseAdminConfigured()) {
+  if (!isDatabaseConfigured()) {
     return;
   }
 
   try {
-    const admin = getSupabaseAdminClient() as unknown as {
-      from: (table: string) => {
-        insert: (values: Record<string, unknown>) => Promise<{
-          error: { message: string } | null;
-        }>;
-      };
-    };
-    await admin.from("creed_audit_log").insert({
+    const admin = serviceContext("lib/audit-log.ts");
+    await query(admin, tables.creed_audit_log, "insert", async (database, _scope) => {
+    const values = {
       user_id: input.userId,
       action: input.action,
       metadata: input.metadata ?? {},
       ip_address: clientIp(input.request),
       user_agent: input.request?.headers.get("user-agent") ?? null,
-    });
+    } as typeof tables.creed_audit_log.$inferInsert;
+    await authorizeValues(admin, tables.creed_audit_log, "insert", values);
+    return database.insert(tables.creed_audit_log).values(values);
+  });
   } catch (error) {
     // Audit is best-effort (never blocks the mutation), but the failure must
     // still be observable - the old console.warn was gated to non-production,
@@ -98,23 +99,21 @@ export async function recordAuditEvent(input: AuditLogInput): Promise<void> {
  * unavailable so callers can fail closed before returning sensitive data.
  */
 export async function recordRequiredAuditEvent(input: AuditLogInput): Promise<void> {
-  if (!isSupabaseAdminConfigured()) {
+  if (!isDatabaseConfigured()) {
     throw new Error("Audit logging is unavailable.");
   }
 
-  const admin = getSupabaseAdminClient() as unknown as {
-    from: (table: string) => {
-      insert: (values: Record<string, unknown>) => Promise<{
-        error: { message: string } | null;
-      }>;
-    };
-  };
-  const { error } = await admin.from("creed_audit_log").insert({
+  const admin = serviceContext("lib/audit-log.ts");
+  const { error } = await query(admin, tables.creed_audit_log, "insert", async (database, _scope) => {
+    const values = {
     user_id: input.userId,
     action: input.action,
     metadata: input.metadata ?? {},
     ip_address: clientIp(input.request),
     user_agent: input.request?.headers.get("user-agent") ?? null,
+  } as typeof tables.creed_audit_log.$inferInsert;
+    await authorizeValues(admin, tables.creed_audit_log, "insert", values);
+    return database.insert(tables.creed_audit_log).values(values);
   });
   if (error) {
     throw new Error("Required audit event could not be persisted.");

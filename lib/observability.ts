@@ -1,8 +1,5 @@
 import "server-only";
 
-// Structured logging shim. Today this writes JSON to stdout (Vercel/Supabase
-// logs auto-pick those up). The interface is shaped so we can swap in Sentry,
-// DataDog, or OpenTelemetry by changing one file.
 
 export type LogLevel = "info" | "warn" | "error";
 

@@ -32,6 +32,6 @@ Capture architecture and delivery patterns that should be reused.
 - Enforce credential modes at the mutation boundary by clamping section permissions and stripping write/direct tokens before tool dispatch.
 
 ## Vault Plaintext Boundary
-- Store application-owned secret metadata in `public.creed_vault_items`; plaintext belongs only to Supabase Vault.
-- Vault RPCs are service-role-only `SECURITY DEFINER` functions with an empty search path, fully qualified objects, and explicit execute revokes.
+- Store application-owned secret metadata in `public.creed_vault_items`; ciphertext stays server-side and plaintext crosses only the audited reveal boundary.
+- Vault repositories require a verified viewer and live owner/admin authorization. AES-256-GCM binds ciphertext to the item and profile under its independent key.
 - List responses and audits contain metadata only. Explicit reveal uses `no-store` and fails closed when its required audit row cannot be persisted.

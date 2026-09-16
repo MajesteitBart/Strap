@@ -1,14 +1,14 @@
-import { NextResponse } from "next/server";
-import { randomBytes } from "node:crypto";
-import { cookies } from "next/headers";
 import { requireApiAuth } from "@/lib/api-auth";
-import { getCreedRole } from "@/lib/strap-membership";
 import {
   buildGitHubAuthorizeUrl,
   getGitHubOAuthAppCredentials,
-  isGitHubOAuthAppConfigured,
   GITHUB_OAUTH_STATE_COOKIE,
+  isGitHubOAuthAppConfigured,
 } from "@/lib/github";
+import { getCreedRole } from "@/lib/strap-membership";
+import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
+import { randomBytes } from "node:crypto";
 
 // Start a GitHub connection for the version-control integration. Shared by the
 // personal ("mode=personal") and team ("mode=company&creedId=") flows on the
@@ -52,7 +52,7 @@ export async function GET(request: Request) {
       url.searchParams.get("creedId")?.trim() ||
       undefined;
     if (!creedId) return backToSettings(origin, param, "invalid");
-    const role = await getCreedRole(auth.supabase, auth.user.id, creedId);
+    const role = await getCreedRole(auth.context, auth.user.id, creedId);
     if (role !== "owner" && role !== "admin") {
       return backToSettings(origin, param, "forbidden");
     }

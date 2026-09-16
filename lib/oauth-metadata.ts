@@ -1,5 +1,5 @@
+import { getSiteUrl } from "@/lib/env";
 import { NextResponse } from "next/server";
-import { getSiteUrl } from "@/lib/supabase/env";
 
 // RFC 9728 protected-resource metadata, shared by the root well-known route and
 // the path-inserted `/mcp` variant. Both serve the identical document (the

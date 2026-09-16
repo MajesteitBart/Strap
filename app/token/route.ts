@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { isDatabaseConfigured } from "@/lib/env";
 import {
   getOAuthClient,
   isAllowedRedirectUri,
@@ -7,9 +7,9 @@ import {
   rotateRefreshToken,
   type IssuedTokens,
 } from "@/lib/oauth";
-import { checkRateLimit } from "@/lib/rate-limit";
 import { pollDeviceAuthorization } from "@/lib/oauth-device";
-import { isSupabaseAdminConfigured } from "@/lib/supabase/env";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { NextResponse } from "next/server";
 
 // OAuth 2.1 token endpoint. Handles the authorization_code grant (PKCE-verified
 // code exchange) and the refresh_token grant (rotating refresh). Public clients,
@@ -96,7 +96,7 @@ function parseBasicAuthClientId(authHeader: string | null): string {
 }
 
 export async function POST(request: Request) {
-  if (!isSupabaseAdminConfigured()) {
+  if (!isDatabaseConfigured()) {
     return oauthError("server_error", 503);
   }
 

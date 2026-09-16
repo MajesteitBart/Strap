@@ -1,4 +1,11 @@
-import { NextResponse } from "next/server";
+import * as tables from "@/db/schema/application";
+import { authorizeValues } from "@/lib/authz/policies";
+import { conflictSet, query } from "@/lib/db/query";
+import { findUser } from "@/lib/db/repositories/users";
+import { serviceContext } from "@/lib/db/service";
+import { isDatabaseConfigured } from "@/lib/env";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { findUserIdByProposalToken, loadCreedState, recordConnectionUsage } from "@/lib/strap-backend";
 import {
   ACCENT_KEYS,
   getMetaProposalDiffText,
@@ -10,11 +17,8 @@ import {
   normalizeProposalForSection,
   type Proposal,
 } from "@/lib/strap-data";
-import { findUserIdByProposalToken, loadCreedState, recordConnectionUsage } from "@/lib/strap-backend";
 import { getPersonalCreedId } from "@/lib/strap-membership";
-import { checkRateLimit } from "@/lib/rate-limit";
-import { getSupabaseAdminClient } from "@/lib/supabase/admin";
-import { isSupabaseAdminConfigured } from "@/lib/supabase/env";
+import { NextResponse } from "next/server";
 
 type ProposalSubmission = Omit<Proposal, "timeLabel" | "status" | "accent"> & {
   accent?: Proposal["accent"];
@@ -22,8 +26,8 @@ type ProposalSubmission = Omit<Proposal, "timeLabel" | "status" | "accent"> & {
 };
 
 export async function POST(request: Request) {
-  if (!isSupabaseAdminConfigured()) {
-    return NextResponse.json({ error: "Supabase admin configuration is missing." }, { status: 503 });
+  if (!isDatabaseConfigured()) {
+    return NextResponse.json({ error: "Database configuration is missing." }, { status: 503 });
   }
 
   const authHeader = request.headers.get("authorization");
@@ -51,14 +55,14 @@ export async function POST(request: Request) {
     );
   }
 
-  const admin = getSupabaseAdminClient();
+  const admin = serviceContext("app/api/creed/proposals/route.ts");
   const userId = await findUserIdByProposalToken(admin as never, proposalToken);
 
   if (!userId) {
     return NextResponse.json({ error: "Invalid proposal token." }, { status: 401 });
   }
 
-  const { data: userData, error: userError } = await admin.auth.admin.getUserById(userId);
+  const { data: userData, error: userError } = await findUser(admin, userId);
   if (userError || !userData.user) {
     return NextResponse.json({ error: userError?.message ?? "Could not load token owner." }, { status: 500 });
   }
@@ -365,27 +369,21 @@ export async function POST(request: Request) {
     created_at: now,
   };
 
-  const proposalTable = admin.from("creed_proposals") as unknown as {
-    upsert: (
-      values: typeof proposalRow,
-      options: { onConflict: string }
-    ) => Promise<{ error: { message: string } | null }>;
-  };
-  const { error: proposalError } = await proposalTable.upsert(proposalRow, {
-    onConflict: "id",
+
+  const { error: proposalError } = await query(admin, tables.creed_proposals, "insert", async (database, scope) => {
+    const values = proposalRow as typeof tables.creed_proposals.$inferInsert;
+    await authorizeValues(admin, tables.creed_proposals, "insert", values);
+    return database.insert(tables.creed_proposals).values(values).onConflictDoUpdate({ target: [tables.creed_proposals.id], set: conflictSet(tables.creed_proposals, values), setWhere: scope });
   });
   if (proposalError) {
     return NextResponse.json({ error: proposalError.message }, { status: 500 });
   }
 
-  const activityTable = admin.from("creed_activity") as unknown as {
-    upsert: (
-      values: typeof activityRow,
-      options: { onConflict: string }
-    ) => Promise<{ error: { message: string } | null }>;
-  };
-  const { error: activityError } = await activityTable.upsert(activityRow, {
-    onConflict: "id",
+
+  const { error: activityError } = await query(admin, tables.creed_activity, "insert", async (database, scope) => {
+    const values = activityRow as typeof tables.creed_activity.$inferInsert;
+    await authorizeValues(admin, tables.creed_activity, "insert", values);
+    return database.insert(tables.creed_activity).values(values).onConflictDoUpdate({ target: [tables.creed_activity.id], set: conflictSet(tables.creed_activity, values), setWhere: scope });
   });
   if (activityError) {
     return NextResponse.json({ error: activityError.message }, { status: 500 });

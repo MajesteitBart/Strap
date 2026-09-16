@@ -1,27 +1,31 @@
-import "server-only";
-import { randomBytes } from "node:crypto";
-import type { User } from "@supabase/supabase-js";
-import { getSupabaseAdminClient } from "@/lib/supabase/admin";
-import type { SupabaseLikeClient } from "@/lib/supabase/types";
-import { getStrapRole } from "@/lib/strap-membership";
+import * as tables from "@/db/schema/application";
+import type { User } from "@/lib/auth/user";
+import { authorizeValues } from "@/lib/authz/policies";
+import type { DatabaseContext } from "@/lib/db/context";
+import { conflictSet, maybeOne, query } from "@/lib/db/query";
+import { serviceContext } from "@/lib/db/service";
 import {
-  resolveSectionPermission,
-  canApproveProposal,
-  canManageSectionsLifecycle,
-  minPermission,
-  type StrapRole,
-} from "@/lib/strap-permissions";
+  normalizeRichTextInput,
+  richTextContentEquivalent,
+} from "@/lib/rich-text";
+import { actorLabel } from "@/lib/strap-attribution";
 import {
   normalizeLegacyProposalDraft,
   type AgentPermission,
   type ProposalDraft,
 } from "@/lib/strap-data";
-import { actorLabel } from "@/lib/strap-attribution";
-import { getDisplayName } from "@/lib/user-name";
+import { getStrapRole } from "@/lib/strap-membership";
 import {
-  normalizeRichTextInput,
-  richTextContentEquivalent,
-} from "@/lib/rich-text";
+  canApproveProposal,
+  canManageSectionsLifecycle,
+  minPermission,
+  resolveSectionPermission,
+  type StrapRole,
+} from "@/lib/strap-permissions";
+import { getDisplayName } from "@/lib/user-name";
+import { and, asc, desc, eq, isNull, lte } from "drizzle-orm";
+import { randomBytes } from "node:crypto";
+import "server-only";
 
 // Write path for company Creeds.
 //
@@ -77,8 +81,8 @@ export type SectionCreateResult =
   | { ok: true; sectionId: string; revision: number; name: string; accent: string }
   | SectionWriteError;
 
-function admin(): SupabaseLikeClient {
-  return getSupabaseAdminClient() as unknown as SupabaseLikeClient;
+function admin(): DatabaseContext {
+  return serviceContext("lib/company-sections.ts");
 }
 
 function memberName(user: User): string {
@@ -143,24 +147,12 @@ async function effectivePermission(
   if (role === "owner" || role === "admin") {
     ceiling = "direct";
   } else {
-    const { data } = (await db
-      .from("creed_member_section_permissions")
-      .select("permission")
-      .eq("creed_id", creedId)
-      .eq("user_id", userId)
-      .eq("section_id", sectionId)
-      .maybeSingle()) as { data: { permission: AgentPermission } | null };
+    const { data } = (await query(db, tables.creed_member_section_permissions, "select", (database, scope) => database.select({ permission: tables.creed_member_section_permissions.permission }).from(tables.creed_member_section_permissions).where(and(scope, eq(tables.creed_member_section_permissions.creed_id, creedId), eq(tables.creed_member_section_permissions.user_id, userId), eq(tables.creed_member_section_permissions.section_id, sectionId)))).then(maybeOne)) as { data: { permission: AgentPermission } | null };
     ceiling = resolveSectionPermission(role, data?.permission);
   }
   if (!asAgent) return ceiling;
 
-  const { data: agentRow } = (await db
-    .from("creed_member_agent_permissions")
-    .select("permission")
-    .eq("creed_id", creedId)
-    .eq("user_id", userId)
-    .eq("section_id", sectionId)
-    .maybeSingle()) as { data: { permission: AgentPermission } | null };
+  const { data: agentRow } = (await query(db, tables.creed_member_agent_permissions, "select", (database, scope) => database.select({ permission: tables.creed_member_agent_permissions.permission }).from(tables.creed_member_agent_permissions).where(and(scope, eq(tables.creed_member_agent_permissions.creed_id, creedId), eq(tables.creed_member_agent_permissions.user_id, userId), eq(tables.creed_member_agent_permissions.section_id, sectionId)))).then(maybeOne)) as { data: { permission: AgentPermission } | null };
   return minPermission(ceiling, agentRow?.permission ?? "propose");
 }
 
@@ -177,7 +169,8 @@ async function writeVersion(params: {
   cause: WriteCause;
 }): Promise<void> {
   const db = admin();
-  const { error } = await db.from("creed_section_versions").insert({
+  const { error } = await query(db, tables.creed_section_versions, "insert", async (database, _scope) => {
+    const values = {
     creed_id: params.creedId,
     section_id: params.sectionId,
     revision: params.revision,
@@ -188,6 +181,9 @@ async function writeVersion(params: {
     actor_type: params.actorType,
     agent_name: params.agentName,
     cause: params.cause,
+  } as typeof tables.creed_section_versions.$inferInsert;
+    await authorizeValues(db, tables.creed_section_versions, "insert", values);
+    return database.insert(tables.creed_section_versions).values(values);
   });
   if (error) {
     throw new Error(error.message);
@@ -195,23 +191,12 @@ async function writeVersion(params: {
   // Lazy prune: keep the latest MAX_VERSIONS_PER_SECTION. Fetch the newest
   // MAX+1 ids; if a (MAX+1)th exists, delete it and everything older (<= its id),
   // leaving exactly the newest MAX. Avoids offset/range (not on the query shim).
-  const { data: recent } = (await db
-    .from("creed_section_versions")
-    .select("id")
-    .eq("creed_id", params.creedId)
-    .eq("section_id", params.sectionId)
-    .order("id", { ascending: false })
-    .limit(MAX_VERSIONS_PER_SECTION + 1)) as {
+  const { data: recent } = (await query(db, tables.creed_section_versions, "select", (database, scope) => database.select({ id: tables.creed_section_versions.id }).from(tables.creed_section_versions).where(and(scope, eq(tables.creed_section_versions.creed_id, params.creedId), eq(tables.creed_section_versions.section_id, params.sectionId))).orderBy(desc(tables.creed_section_versions.id)).limit(MAX_VERSIONS_PER_SECTION + 1))) as {
     data: Array<{ id: number }> | null;
   };
   if (recent && recent.length > MAX_VERSIONS_PER_SECTION) {
     const cutoff = recent[MAX_VERSIONS_PER_SECTION].id;
-    await db
-      .from("creed_section_versions")
-      .delete()
-      .eq("creed_id", params.creedId)
-      .eq("section_id", params.sectionId)
-      .lte("id", cutoff);
+    await query(db, tables.creed_section_versions, "delete", (database, scope) => database.delete(tables.creed_section_versions).where(and(scope, eq(tables.creed_section_versions.creed_id, params.creedId), eq(tables.creed_section_versions.section_id, params.sectionId), lte(tables.creed_section_versions.id, cutoff))));
   }
 }
 
@@ -233,7 +218,8 @@ async function writeActivity(params: {
   afterText?: string | null;
 }): Promise<void> {
   const db = admin();
-  const { error } = await db.from("creed_activity").insert({
+  const { error } = await query(db, tables.creed_activity, "insert", async (database, _scope) => {
+    const values = {
     id: randomBytes(16).toString("hex"),
     creed_id: params.creedId,
     user_id: params.actorUserId,
@@ -249,6 +235,9 @@ async function writeActivity(params: {
     event_kind: params.eventKind,
     after_text: params.afterText ?? null,
     before_text: params.beforeText ?? null,
+  } as typeof tables.creed_activity.$inferInsert;
+    await authorizeValues(db, tables.creed_activity, "insert", values);
+    return database.insert(tables.creed_activity).values(values);
   });
   if (error) {
     throw new Error(error.message);
@@ -303,12 +292,7 @@ type ApplyResult =
 /** The visible section ids in display order (used to renumber on create/move). */
 async function orderedSectionIds(creedId: string): Promise<string[]> {
   const db = admin();
-  const { data } = (await db
-    .from("creed_sections")
-    .select("section_id, position")
-    .eq("creed_id", creedId)
-    .is("deleted_at", null)
-    .order("position", { ascending: true })) as {
+  const { data } = (await query(db, tables.creed_sections, "select", (database, scope) => database.select({ section_id: tables.creed_sections.section_id, position: tables.creed_sections.position }).from(tables.creed_sections).where(and(scope, eq(tables.creed_sections.creed_id, creedId), isNull(tables.creed_sections.deleted_at))).orderBy(asc(tables.creed_sections.position)))) as {
     data: Array<{ section_id: string }> | null;
   };
   return (data ?? []).map((row) => row.section_id);
@@ -322,41 +306,20 @@ async function renumberSections(
 ): Promise<void> {
   const db = admin();
   for (let i = 0; i < orderedIds.length; i += 1) {
-    await db
-      .from("creed_sections")
-      .update({ position: i, updated_at: now })
-      .eq("creed_id", creedId)
-      .eq("section_id", orderedIds[i]);
+    await query(db, tables.creed_sections, "update", async (database, scope) => {
+    const values = { position: i, updated_at: now } as Partial<typeof tables.creed_sections.$inferInsert>;
+    await authorizeValues(db, tables.creed_sections, "update", values);
+    return database.update(tables.creed_sections).set(values).where(and(scope, eq(tables.creed_sections.creed_id, creedId), eq(tables.creed_sections.section_id, orderedIds[i])));
+  });
   }
 }
 
-async function deleteSectionRows(
-  creedId: string,
-  sectionId: string,
-): Promise<{ ok: true } | { ok: false; error: string }> {
+async function deleteSectionRows(creedId: string, sectionId: string): Promise<{ ok: true } | { ok: false; error: string }> {
   const db = admin();
-  const cleanupTargets = [
-    "creed_section_versions",
-    "creed_member_section_permissions",
-    "creed_proposals",
-    "creed_activity",
-  ];
-
-  for (const table of cleanupTargets) {
-    const { error } = await db
-      .from(table)
-      .delete()
-      .eq("creed_id", creedId)
-      .eq("section_id", sectionId);
+  for (const table of [tables.creed_section_versions, tables.creed_member_section_permissions, tables.creed_member_agent_permissions, tables.creed_proposals, tables.creed_activity, tables.creed_sections]) {
+    const { error } = await query(db, table, "delete", (database, scope) => database.delete(table).where(and(scope, eq(table.creed_id, creedId), eq(table.section_id, sectionId))));
     if (error) return { ok: false, error: error.message };
   }
-
-  const { error } = await db
-    .from("creed_sections")
-    .delete()
-    .eq("creed_id", creedId)
-    .eq("section_id", sectionId);
-  if (error) return { ok: false, error: error.message };
   return { ok: true };
 }
 
@@ -406,8 +369,8 @@ async function applyDraft(params: {
     const name = draft.name.trim();
     const accent = draft.accent ?? "custom";
     const content = draft.contentHtml ?? "";
-    const { error } = await db.from("creed_sections").upsert(
-      {
+    const { error } = await query(db, tables.creed_sections, "insert", async (database, scope) => {
+    const values = {
         creed_id: creedId,
         user_id: actor.userId,
         section_id: sectionId,
@@ -424,9 +387,10 @@ async function applyDraft(params: {
         last_edited_type: actor.actorType,
         last_edited_at: now,
         updated_at: now,
-      },
-      { onConflict: "creed_id,section_id" },
-    );
+      } as typeof tables.creed_sections.$inferInsert;
+    await authorizeValues(db, tables.creed_sections, "insert", values);
+    return database.insert(tables.creed_sections).values(values).onConflictDoUpdate({ target: [tables.creed_sections.creed_id, tables.creed_sections.section_id], set: conflictSet(tables.creed_sections, values), setWhere: scope });
+  });
     if (error) return { ok: false, code: "failed", error: "Could not create the section." };
 
     // Place the new section after the requested anchor (or at the end), then
@@ -469,12 +433,7 @@ async function applyDraft(params: {
   }
 
   const sectionId = params.sectionId ?? "";
-  const { data: current } = (await db
-    .from("creed_sections")
-    .select("section_id, kind, name, accent, payload, revision")
-    .eq("creed_id", creedId)
-    .eq("section_id", sectionId)
-    .maybeSingle()) as { data: SectionRow | null };
+  const { data: current } = (await query(db, tables.creed_sections, "select", (database, scope) => database.select({ section_id: tables.creed_sections.section_id, kind: tables.creed_sections.kind, name: tables.creed_sections.name, accent: tables.creed_sections.accent, payload: tables.creed_sections.payload, revision: tables.creed_sections.revision }).from(tables.creed_sections).where(and(scope, eq(tables.creed_sections.creed_id, creedId), eq(tables.creed_sections.section_id, sectionId)))).then(maybeOne)) as { data: SectionRow | null };
   if (!current) return { ok: false, code: "not_found", error: "Section not found." };
 
   if (draft.kind === "delete-section") {
@@ -536,8 +495,8 @@ async function applyDraft(params: {
   }
 
   const nextRevision = current.revision + 1;
-  const { error } = await db.from("creed_sections").upsert(
-    {
+  const { error } = await query(db, tables.creed_sections, "insert", async (database, scope) => {
+    const values = {
       creed_id: creedId,
       user_id: actor.userId,
       section_id: sectionId,
@@ -550,9 +509,10 @@ async function applyDraft(params: {
       last_edited_type: actor.actorType,
       last_edited_at: now,
       updated_at: now,
-    },
-    { onConflict: "creed_id,section_id" },
-  );
+    } as typeof tables.creed_sections.$inferInsert;
+    await authorizeValues(db, tables.creed_sections, "insert", values);
+    return database.insert(tables.creed_sections).values(values).onConflictDoUpdate({ target: [tables.creed_sections.creed_id, tables.creed_sections.section_id], set: conflictSet(tables.creed_sections, values), setWhere: scope });
+  });
   if (error) return { ok: false, code: "failed", error: "Could not save the section." };
 
   await writeVersion({
@@ -618,12 +578,7 @@ async function fileCompanyProposal(params: {
   let currentName = params.sectionName;
   let currentAccent = params.accent;
   if (!isNew) {
-    const { data } = (await db
-      .from("creed_sections")
-      .select("name, accent, payload, revision")
-      .eq("creed_id", params.creedId)
-      .eq("section_id", params.sectionId)
-      .maybeSingle()) as {
+    const { data } = (await query(db, tables.creed_sections, "select", (database, scope) => database.select({ name: tables.creed_sections.name, accent: tables.creed_sections.accent, payload: tables.creed_sections.payload, revision: tables.creed_sections.revision }).from(tables.creed_sections).where(and(scope, eq(tables.creed_sections.creed_id, params.creedId), eq(tables.creed_sections.section_id, params.sectionId)))).then(maybeOne)) as {
       data: { name: string; accent: string; payload: { content?: string }; revision: number } | null;
     };
     if (data) {
@@ -642,7 +597,8 @@ async function fileCompanyProposal(params: {
   });
   const defaults = PROPOSAL_DEFAULTS[params.draft.kind];
 
-  const { error: proposalInsertError } = await db.from("creed_proposals").insert({
+  const { error: proposalInsertError } = await query(db, tables.creed_proposals, "insert", async (database, _scope) => {
+    const values = {
     id: proposalId,
     creed_id: params.creedId,
     user_id: params.user.id,
@@ -662,6 +618,9 @@ async function fileCompanyProposal(params: {
     draft: params.draft,
     status: "pending",
     base_revision: baseRevision,
+  } as typeof tables.creed_proposals.$inferInsert;
+    await authorizeValues(db, tables.creed_proposals, "insert", values);
+    return database.insert(tables.creed_proposals).values(values);
   });
   // Fail loud: writeActivity below references this proposal, so a swallowed
   // insert error would leave a dangling activity row and report success.
@@ -775,12 +734,8 @@ export async function createCompanySection(params: {
     if (!/^section-[0-9a-f]{16}$/.test(params.sectionId)) {
       return { ok: false, code: "failed", error: "Invalid section id." };
     }
-    const { data: clash } = (await db
-      .from("creed_sections")
-      .select("section_id")
-      .eq("creed_id", creedId)
-      .eq("section_id", params.sectionId)
-      .maybeSingle()) as { data: { section_id: string } | null };
+    const requestedSectionId = params.sectionId;
+    const { data: clash } = (await query(db, tables.creed_sections, "select", (database, scope) => database.select({ section_id: tables.creed_sections.section_id }).from(tables.creed_sections).where(and(scope, eq(tables.creed_sections.creed_id, creedId), eq(tables.creed_sections.section_id, requestedSectionId)))).then(maybeOne)) as { data: { section_id: string } | null };
     if (clash) return { ok: false, code: "exists", error: "That section already exists." };
     sectionId = params.sectionId;
   }
@@ -846,12 +801,7 @@ export async function updateCompanySection(params: {
     return { ok: false, code: "forbidden", error: "You cannot edit this section." };
   }
 
-  const { data: current } = (await db
-    .from("creed_sections")
-    .select("section_id, name, accent, payload, revision")
-    .eq("creed_id", creedId)
-    .eq("section_id", sectionId)
-    .maybeSingle()) as {
+  const { data: current } = (await query(db, tables.creed_sections, "select", (database, scope) => database.select({ section_id: tables.creed_sections.section_id, name: tables.creed_sections.name, accent: tables.creed_sections.accent, payload: tables.creed_sections.payload, revision: tables.creed_sections.revision }).from(tables.creed_sections).where(and(scope, eq(tables.creed_sections.creed_id, creedId), eq(tables.creed_sections.section_id, sectionId)))).then(maybeOne)) as {
     data: { section_id: string; name: string; accent: string; payload: { content?: string }; revision: number } | null;
   };
   if (!current) return { ok: false, code: "not_found", error: "Section not found." };
@@ -1023,13 +973,7 @@ export async function companyMcpWrite(params: {
   }
 
   const sectionId = op.sectionId;
-  const { data: current } = (await db
-    .from("creed_sections")
-    .select("section_id, name, accent, payload, revision")
-    .eq("creed_id", creedId)
-    .eq("section_id", sectionId)
-    .is("deleted_at", null)
-    .maybeSingle()) as {
+  const { data: current } = (await query(db, tables.creed_sections, "select", (database, scope) => database.select({ section_id: tables.creed_sections.section_id, name: tables.creed_sections.name, accent: tables.creed_sections.accent, payload: tables.creed_sections.payload, revision: tables.creed_sections.revision }).from(tables.creed_sections).where(and(scope, eq(tables.creed_sections.creed_id, creedId), eq(tables.creed_sections.section_id, sectionId), isNull(tables.creed_sections.deleted_at)))).then(maybeOne)) as {
     data: { section_id: string; name: string; accent: string; payload: { content?: string }; revision: number } | null;
   };
   if (!current) return { ok: false, code: "not_found", error: "Section not found." };
@@ -1206,12 +1150,7 @@ export async function setCompanySectionArchived(params: {
     };
   }
 
-  const { data: current } = (await db
-    .from("creed_sections")
-    .select("section_id, name, accent, revision, archived_at")
-    .eq("creed_id", creedId)
-    .eq("section_id", sectionId)
-    .maybeSingle()) as {
+  const { data: current } = (await query(db, tables.creed_sections, "select", (database, scope) => database.select({ section_id: tables.creed_sections.section_id, name: tables.creed_sections.name, accent: tables.creed_sections.accent, revision: tables.creed_sections.revision, archived_at: tables.creed_sections.archived_at }).from(tables.creed_sections).where(and(scope, eq(tables.creed_sections.creed_id, creedId), eq(tables.creed_sections.section_id, sectionId)))).then(maybeOne)) as {
     data: {
       section_id: string;
       name: string;
@@ -1223,14 +1162,14 @@ export async function setCompanySectionArchived(params: {
   if (!current) return { ok: false, code: "not_found", error: "Section not found." };
 
   const now = new Date().toISOString();
-  const { error } = await db
-    .from("creed_sections")
-    .update({
+  const { error } = await query(db, tables.creed_sections, "update", async (database, scope) => {
+    const values = {
       archived_at: params.archived ? (current.archived_at ?? now) : null,
       updated_at: now,
-    })
-    .eq("creed_id", creedId)
-    .eq("section_id", sectionId);
+    } as Partial<typeof tables.creed_sections.$inferInsert>;
+    await authorizeValues(db, tables.creed_sections, "update", values);
+    return database.update(tables.creed_sections).set(values).where(and(scope, eq(tables.creed_sections.creed_id, creedId), eq(tables.creed_sections.section_id, sectionId)));
+  });
   if (error)
     return { ok: false, code: "failed", error: "Could not update the section." };
 
@@ -1270,14 +1209,7 @@ export async function reviewCompanyProposal(params: {
   if (!role)
     return { ok: false, code: "forbidden", error: "You are not a member of this Strap." };
 
-  const { data: proposal } = (await db
-    .from("creed_proposals")
-    .select(
-      "id, section_id, section_name, accent, draft, status, author_user_id, base_revision",
-    )
-    .eq("creed_id", creedId)
-    .eq("id", proposalId)
-    .maybeSingle()) as {
+  const { data: proposal } = (await query(db, tables.creed_proposals, "select", (database, scope) => database.select({ id: tables.creed_proposals.id, section_id: tables.creed_proposals.section_id, section_name: tables.creed_proposals.section_name, accent: tables.creed_proposals.accent, draft: tables.creed_proposals.draft, status: tables.creed_proposals.status, author_user_id: tables.creed_proposals.author_user_id, base_revision: tables.creed_proposals.base_revision }).from(tables.creed_proposals).where(and(scope, eq(tables.creed_proposals.creed_id, creedId), eq(tables.creed_proposals.id, proposalId)))).then(maybeOne)) as {
     data: {
       id: string;
       section_id: string;
@@ -1341,12 +1273,11 @@ export async function reviewCompanyProposal(params: {
 
   const actorName = memberName(user);
   if (params.decision === "reject" || isWithdraw) {
-    await db
-      .from("creed_proposals")
-      .update({ status: "rejected", updated_at: new Date().toISOString() })
-      .eq("id", proposalId)
-      .eq("creed_id", creedId)
-      .eq("status", "pending");
+    await query(db, tables.creed_proposals, "update", async (database, scope) => {
+    const values = { status: "rejected", updated_at: new Date().toISOString() } as Partial<typeof tables.creed_proposals.$inferInsert>;
+    await authorizeValues(db, tables.creed_proposals, "update", values);
+    return database.update(tables.creed_proposals).set(values).where(and(scope, eq(tables.creed_proposals.id, proposalId), eq(tables.creed_proposals.creed_id, creedId), eq(tables.creed_proposals.status, "pending")));
+  });
     await writeActivity({
       creedId,
       sectionId: proposal.section_id === "new-section" ? null : proposal.section_id,
@@ -1374,19 +1305,13 @@ export async function reviewCompanyProposal(params: {
     proposal.draft.kind === "rich-text" &&
     proposal.base_revision != null
   ) {
-    const { data: section } = (await db
-      .from("creed_sections")
-      .select("revision")
-      .eq("creed_id", creedId)
-      .eq("section_id", proposal.section_id)
-      .maybeSingle()) as { data: { revision: number } | null };
+    const { data: section } = (await query(db, tables.creed_sections, "select", (database, scope) => database.select({ revision: tables.creed_sections.revision }).from(tables.creed_sections).where(and(scope, eq(tables.creed_sections.creed_id, creedId), eq(tables.creed_sections.section_id, proposal.section_id)))).then(maybeOne)) as { data: { revision: number } | null };
     if (section && section.revision !== proposal.base_revision) {
-      await db
-        .from("creed_proposals")
-        .update({ status: "stale", updated_at: new Date().toISOString() })
-        .eq("id", proposalId)
-        .eq("creed_id", creedId)
-        .eq("status", "pending");
+      await query(db, tables.creed_proposals, "update", async (database, scope) => {
+    const values = { status: "stale", updated_at: new Date().toISOString() } as Partial<typeof tables.creed_proposals.$inferInsert>;
+    await authorizeValues(db, tables.creed_proposals, "update", values);
+    return database.update(tables.creed_proposals).set(values).where(and(scope, eq(tables.creed_proposals.id, proposalId), eq(tables.creed_proposals.creed_id, creedId), eq(tables.creed_proposals.status, "pending")));
+  });
       await writeActivity({
         creedId,
         sectionId: proposal.section_id,
@@ -1417,12 +1342,11 @@ export async function reviewCompanyProposal(params: {
   });
   if (!applied.ok) return applied;
 
-  await db
-    .from("creed_proposals")
-    .update({ status: "accepted", updated_at: new Date().toISOString() })
-    .eq("id", proposalId)
-    .eq("creed_id", creedId)
-    .eq("status", "pending");
+  await query(db, tables.creed_proposals, "update", async (database, scope) => {
+    const values = { status: "accepted", updated_at: new Date().toISOString() } as Partial<typeof tables.creed_proposals.$inferInsert>;
+    await authorizeValues(db, tables.creed_proposals, "update", values);
+    return database.update(tables.creed_proposals).set(values).where(and(scope, eq(tables.creed_proposals.id, proposalId), eq(tables.creed_proposals.creed_id, creedId), eq(tables.creed_proposals.status, "pending")));
+  });
   const acceptResult: SectionWriteOk = {
     ok: true,
     revision: applied.revision,
@@ -1480,12 +1404,7 @@ export async function reviewPersonalProposal(params: {
   const { creedId, user, proposalId } = params;
   const db = admin();
 
-  const { data: proposal } = (await db
-    .from("creed_proposals")
-    .select("id, section_id, draft, status")
-    .eq("creed_id", creedId)
-    .eq("id", proposalId)
-    .maybeSingle()) as {
+  const { data: proposal } = (await query(db, tables.creed_proposals, "select", (database, scope) => database.select({ id: tables.creed_proposals.id, section_id: tables.creed_proposals.section_id, draft: tables.creed_proposals.draft, status: tables.creed_proposals.status }).from(tables.creed_proposals).where(and(scope, eq(tables.creed_proposals.creed_id, creedId), eq(tables.creed_proposals.id, proposalId)))).then(maybeOne)) as {
     data: {
       id: string;
       section_id: string;
@@ -1505,11 +1424,7 @@ export async function reviewPersonalProposal(params: {
   }
 
   const removeRow = async () => {
-    await db
-      .from("creed_proposals")
-      .delete()
-      .eq("id", proposalId)
-      .eq("creed_id", creedId);
+    await query(db, tables.creed_proposals, "delete", (database, scope) => database.delete(tables.creed_proposals).where(and(scope, eq(tables.creed_proposals.id, proposalId), eq(tables.creed_proposals.creed_id, creedId))));
   };
 
   if (params.decision === "reject") {
@@ -1602,13 +1517,7 @@ export async function listSectionVersions(params: {
       error: "Only an owner or admin can view section history.",
     };
   }
-  const { data } = (await db
-    .from("creed_section_versions")
-    .select("id, revision, name, cause, actor_type, agent_name, created_at")
-    .eq("creed_id", params.creedId)
-    .eq("section_id", params.sectionId)
-    .order("id", { ascending: false })
-    .limit(100)) as {
+  const { data } = (await query(db, tables.creed_section_versions, "select", (database, scope) => database.select({ id: tables.creed_section_versions.id, revision: tables.creed_section_versions.revision, name: tables.creed_section_versions.name, cause: tables.creed_section_versions.cause, actor_type: tables.creed_section_versions.actor_type, agent_name: tables.creed_section_versions.agent_name, created_at: tables.creed_section_versions.created_at }).from(tables.creed_section_versions).where(and(scope, eq(tables.creed_section_versions.creed_id, params.creedId), eq(tables.creed_section_versions.section_id, params.sectionId))).orderBy(desc(tables.creed_section_versions.id)).limit(100))) as {
     data: Array<{
       id: number;
       revision: number;
@@ -1654,13 +1563,7 @@ export async function restoreSectionVersion(params: {
       error: "Only an owner or admin can restore a version.",
     };
   }
-  const { data: version } = (await db
-    .from("creed_section_versions")
-    .select("content, name, accent")
-    .eq("creed_id", creedId)
-    .eq("section_id", sectionId)
-    .eq("id", versionId)
-    .maybeSingle()) as {
+  const { data: version } = (await query(db, tables.creed_section_versions, "select", (database, scope) => database.select({ content: tables.creed_section_versions.content, name: tables.creed_section_versions.name, accent: tables.creed_section_versions.accent }).from(tables.creed_section_versions).where(and(scope, eq(tables.creed_section_versions.creed_id, creedId), eq(tables.creed_section_versions.section_id, sectionId), eq(tables.creed_section_versions.id, versionId)))).then(maybeOne)) as {
     data: { content: string; name: string; accent: string } | null;
   };
   if (!version) {
@@ -1715,13 +1618,7 @@ export async function deleteCompanySection(params: {
       error: "Only an owner or admin can delete sections.",
     };
   }
-  const { data: current } = (await db
-    .from("creed_sections")
-    .select("section_id, name, accent")
-    .eq("creed_id", creedId)
-    .eq("section_id", sectionId)
-    .is("deleted_at", null)
-    .maybeSingle()) as {
+  const { data: current } = (await query(db, tables.creed_sections, "select", (database, scope) => database.select({ section_id: tables.creed_sections.section_id, name: tables.creed_sections.name, accent: tables.creed_sections.accent }).from(tables.creed_sections).where(and(scope, eq(tables.creed_sections.creed_id, creedId), eq(tables.creed_sections.section_id, sectionId), isNull(tables.creed_sections.deleted_at)))).then(maybeOne)) as {
     data: { section_id: string; name: string; accent: string } | null;
   };
   if (!current) {
@@ -1780,11 +1677,11 @@ export async function reorderCompanySections(params: {
 
   const now = new Date().toISOString();
   for (let i = 0; i < sectionIds.length; i += 1) {
-    const { error } = await db
-      .from("creed_sections")
-      .update({ position: i, updated_at: now })
-      .eq("creed_id", creedId)
-      .eq("section_id", sectionIds[i]);
+    const { error } = await query(db, tables.creed_sections, "update", async (database, scope) => {
+    const values = { position: i, updated_at: now } as Partial<typeof tables.creed_sections.$inferInsert>;
+    await authorizeValues(db, tables.creed_sections, "update", values);
+    return database.update(tables.creed_sections).set(values).where(and(scope, eq(tables.creed_sections.creed_id, creedId), eq(tables.creed_sections.section_id, sectionIds[i])));
+  });
     if (error)
       return {
         ok: false,

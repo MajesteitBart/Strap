@@ -23,4 +23,4 @@
 - Read the complete local flow around changed code, including callers, persistence, authorization, and tests.
 - Verify Personal and Company behavior, human and agent permission paths, hidden-section filtering, and billing/frozen-state effects wherever they intersect.
 - Run focused checks plus `npx tsc --noEmit -p .`, `npm run lint`, and `npm run build` before claiming application changes complete.
-- Migration changes also require `npx supabase db reset`; agent-contract changes require a sample read and proposal across at least two models.
+- Migration changes also require `npm run db:migrate` and `npm run test:db`; agent-contract changes require a sample read and proposal across at least two models.
