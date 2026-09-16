@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:b0ccf5950da482bf466835894be1d77084580effa2069f33c5916e957ddda54c",
+  "claims": [
+    {
+      "id": "claim_bbfc17a8b7514bfd8727be5f1e1b4b19",
+      "statement": "Standard root verification runs `npm test` (node --test --experimental-strip-types over tests/*.test.ts and tests/db/*.test.ts, which skips DB suites without DATABASE_URL), `npx tsc --noEmit -p .`, `npm run lint`, `npm run build`, and `npm run audit:brand` (scripts/check-strap-rebrand.mts); the CLI packages are excluded from the root TS project so `packages/strap` and legacy `packages/creed-cli` must be typechecked/tested with their own package-prefix commands.",
+      "evidence": [
+        {
+          "resource": "repo://package.json#L10-L18",
+          "version": "repo-lines-v1:sha256:4670be3e9398febd87ba29a2129b7b12d630582f13455f74feb42f0fbc33e19e:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZjI5NWM5OGQzMWExNmRmODNkYzBlMmZhZTlhMDU4NTQ5ZmYxMjFlNzFhMjMzYzgwZjMwNmY1YzI3MDJmNDkyNSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNTZiYjU4NTVkOTRkZGZhNzJkZWFiYjk0ZWY1NmIzNGMzNjc2ZDNmYjI2MWI4ZGNmMmQ0Y2I5OWE2Yzc5YmVmZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTAwOGE1MTZiMjE5ZWNmN2ZkZGZmNjEzZjM2OGY5ZmIwMDZkNzZmZDg1OTNkNWI3ZjQ5ZTBmOWI0NDg5NDQ0MyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMGE0ZDEwMDgzNWVhYTY1NGQ3MDhhYTBhNTg1YzIwMDM3YjEyNzRmMDFkNTg0ZWE1OGI3ODEyNjkxMWY1ZDdlYSJ9"
+        },
+        {
+          "resource": "repo://tests/db/harness.ts#L7-L36",
+          "version": "repo-lines-v1:sha256:f70dc74ace8bc948f7967f4fa03e75e70fec78a439ce03d6313dda1573345338:eyJzZWxlY3RlZExpbmVDb3VudCI6MzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY1NzliNGExY2U4NThhNjczZWQxMGFkYzdiYTQxYmYxMWU4NjFiZDQxZDZiZjkwNTMzODliYWQ4YjhjMWE4YWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI1NGRhZjE1ZDkwYmIzZmY3ZGMxMDU2MDI3NTA3NDBiMDI0MTNjYjIyMzczZmRjZDg0ODY3Y2M2OWIwOWU3ZTgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhmODFlN2FmMTE1ODJiNjVlNzg4Y2Y1ZjNhNzIyMzNkN2VkOGRkOWUyNDE3NDgyMGU5OTNhYzJlZDVjYTA4Y2MifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_25144e72c4f54071b852095d2ad9205c",
+      "statement": "Database testing uses Drizzle/Postgres commands, not Supabase: `npm run db:up` (docker compose), `npm run db:ping`, `npm run db:migrate` (drizzle-orm/postgres-js migrator against db/migrations), `npm run test:db`, and `npm run verify:local`; schema changes run `npm run db:generate -- --name=<change>`, review the SQL, `npm run db:migrate`, then `npm run test:db`.",
+      "evidence": [
+        {
+          "resource": "repo://drizzle.config.ts",
+          "version": "repo-file-v1:sha256:a7fa015da0f2e6e571bd171baabf5d33a658f7fdc33a1c3110ce9dbf34330f31"
+        },
+        {
+          "resource": "repo://package.json#L13-L18",
+          "version": "repo-lines-v1:sha256:3b0c80cf9f1a2bf18cd5e133b585dd4df6f07fbdf8df18980c96509002e79ffd:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiY2M5ODU2MmJlZTUxZWU4NDE0MzI4M2ZkZGYwYTI5NzMzMjNjZTA0YzA1YjE1MDhiODQ3N2Y3MDkzOWI0Y2I5MSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNTZiYjU4NTVkOTRkZGZhNzJkZWFiYjk0ZWY1NmIzNGMzNjc2ZDNmYjI2MWI4ZGNmMmQ0Y2I5OWE2Yzc5YmVmZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYmI5NWU0NTk3MjJjOGYxNmJkY2ViY2M2NjM2MDA1NjY5MWFlMjdkY2RmMzFhZjgyYzdkZDY0YTQ0NWUyZGY4MSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMGE0ZDEwMDgzNWVhYTY1NGQ3MDhhYTBhNTg1YzIwMDM3YjEyNzRmMDFkNTg0ZWE1OGI3ODEyNjkxMWY1ZDdlYSJ9"
+        },
+        {
+          "resource": "repo://scripts/db-migrate.mts",
+          "version": "repo-file-v1:sha256:4875beebe08bfb27b2cc9740b4cdf898284353fc8edd2c93d7c61fbaafe3ca51"
+        }
+      ]
+    },
+    {
+      "id": "claim_aa7a450478714c2abfbfa83b749d670e",
+      "statement": "`tests/db/harness.ts` createTestDatabase() requires DATABASE_URL, rejects non-local hosts, creates a random `strap_test_<id>` database per suite, migrates it, and drops only that database with DROP DATABASE ... WITH (FORCE); existing application data is never truncated and the local role needs CREATEDB.",
+      "evidence": [
+        {
+          "resource": "repo://tests/db/harness.ts#L9-L36",
+          "version": "repo-lines-v1:sha256:759c423223b3e8950e51af9f90cab922ecd1c6a8ca388dd355f4cb534c0c54e5:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdiNGM1OTYzMDFjZDhkMDgyZDM0OWFlZjA1YzYwYmU2YTgyNTgxZTE0YjlhZWY0NjEyM2ViMjM0YzYyNzU2YjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjI2NjM5ZmJmMWIxYzM5MGMyZWM2MWExNzgwM2E4NDUzYTZlNTU3MmU3NDk5M2UxNmQxZmNkY2I0YzM1YWQ4MGYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhmODFlN2FmMTE1ODJiNjVlNzg4Y2Y1ZjNhNzIyMzNkN2VkOGRkOWUyNDE3NDgyMGU5OTNhYzJlZDVjYTA4Y2MifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e225a644e7b44f8793d1b204bc062cd0",
+      "statement": "`npm run verify:local` (scripts/verify-local-runtime.mjs) requires a running localhost app and a local DATABASE_URL, refuses non-local hostnames, drives the real app over HTTP (sign-in, state, avatar+cache, Vault create/list/reveal/delete, scoped read key, MCP read_strap, read-only tool filtering, OAuth device flow, refresh rotation with a concurrency race having exactly one winner, Company provisioning/proposals/hidden sections), and cleans up its own synthetic account in a finally block.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/verify-local-runtime.mjs#L1-L112",
+          "version": "repo-lines-v1:sha256:80869983f46fc74799e0715f744da38d34b81eb31f2e06cc71fb821aab0460b2:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEyLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJlN2JlN2QzZmNiMDdmZjg2ZDgyZWJmNDk4NzhlY2RmMDM3NWE5MTc0Y2JhMTBlOTczODFmOWY1ZDJhNjFmOWY0IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MCwicHJlY2VkaW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MCwiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_7d6e0eef140c49fd947b758609c2dc09",
+      "statement": "lib/authz/policies.ts rowScope emits SQL predicates that are the application equivalent of the baseline's 45 active RLS policies; unknown tables/actions deny by default (return false), service actors get true, anonymous get false, and member/manager/personalOwner/visible predicates gate profile-scoped tables including hidden-section filtering.",
+      "evidence": [
+        {
+          "resource": "repo://lib/authz/policies.ts#L1-L47",
+          "version": "repo-lines-v1:sha256:974f9ccaef844d4c963f0035182f3fcc85848221e9c85cb4c47803dc54a6fab9:eyJzZWxlY3RlZExpbmVDb3VudCI6NDcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMxZGYwOGRlYTFhZDU1YzMyZmYwOTE1N2ExYTU3YmIwY2Q1YzVmYWM2ZTY1MjlhOGZkZDQ5YTdhZDhhMWM3YWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFjYmVhNzZiMjQ1ODNkMWMwZTRjNjVlZDFmMDdmZjAxY2RiYjA4YjJkMjhlMjEyN2ZkNDY0ZGU0NzZjMGUwMDAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_987e0970a02842b2b85c604eecc4e16d",
+      "statement": "authorizeValues checks the NEW row on insert/update in addition to rowScope's existing-row predicate, throwing AccessDeniedError to prevent moving an owned row to another profile or cross-profile upsert theft; authorization changes must update rowScope/authorizeValues and keep TS rules equivalent to any new SQL constraints.",
+      "evidence": [
+        {
+          "resource": "repo://lib/authz/policies.ts#L49-L75",
+          "version": "repo-lines-v1:sha256:1754072059126a173a8c0a8db3e55f2a80e8e746de9697ba7868358e7599a731:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY1NDhiOTVmOTA2NzRmOTZmOTZjMzQyMTEyMThmNmIwZjJjYmNiNGI0MjM5OGJkM2NjMmZmZjQwMjU1ZGZiOGQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJmNzk5YzNmZmY0MDdmNWYzZmMyOTc4MDcwZGJmZjFmZmM0OGQxZDNiMWYyNGRlM2Q0MzJiNWE4OGExOGM1ODEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_8ada1693d5724afc9a9200f10cf43344",
+      "statement": "lib/vault-crypto.ts encryptVaultSecret/decryptVaultSecret derive a 256-bit key from SHA-256 of STRAP_VAULT_SECRET (>=32 chars), use AES-256-GCM with a 12-byte random IV, bind ciphertext to `strap:vault:v1:<profileId>:<itemId>` as AAD, and use envelope `v1.<iv>.<authTag>.<body>` with malformed envelopes rejected; ciphertext is therefore not portable across items/profiles and copying agent ciphertext requires STRAP_ENCRYPTION_SECRET to keep its existing value.",
+      "evidence": [
+        {
+          "resource": "repo://lib/vault-crypto.ts#L1-L21",
+          "version": "repo-lines-v1:sha256:887c3cbcef8e00e9be02ff79bc4afbb984af5cc263a5f0bc002d0f6de419d2f2:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUyOGQ1MTdlZmU4MjgxMjQ1NDNiNzBhYThkYzc2OTg4ZDQ4ODhlNzUzNGZlODI4NmNiZjFjN2YwMDQ0MjhmNGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a1934264549e454bbce1b3d495d8f6b0",
+      "statement": "The focused test map groups representative suites by area: Strap naming/protocol (strap-brand, strap-protocol-compatibility, strap-agent-contract, strap-compatibility-origin, strap-module-compatibility), Profile/GitHub (profile-file, github-roundtrip), OAuth/Vault (headless-access-vault, mcp-connection-status, mcp-health-filter, connection-actions), Company policy (company-permissions, company-onboarding, company-proposal-drafts), Editor (editing-system, rich-text-equivalence, section-suggestions, editor-dependencies), AI (panel-actions, panel-agent, panel-mentions, tab-completion, quality-scope, openrouter-routing), Skills (skill-bundles), Auth (auth-email), DB/migration (database-connection, migration-target, tests/db/**), and the strap/creed-cli packages separately.",
+      "evidence": [
+        {
+          "resource": "repo://tests/database-connection.test.ts",
+          "version": "repo-file-v1:sha256:081de43429785a39710ac1f57bf35525afbb0b9a26867e2e5e8197876aea6c7d"
+        },
+        {
+          "resource": "repo://tests/migration-target.test.ts",
+          "version": "repo-file-v1:sha256:b09142067733a8532a8950df144aa46bf26b0ea97b938afea0230b5509487cb4"
+        },
+        {
+          "resource": "repo://tests/strap-compatibility-origin.test.ts",
+          "version": "repo-file-v1:sha256:8bbb4e2ea17134a5ca6665a5c5f40c600625eb46b12746d18ad175a58ca64450"
+        },
+        {
+          "resource": "repo://tests/strap-module-compatibility.test.ts",
+          "version": "repo-file-v1:sha256:805127e93de65b85b81ab5aeafaa4180b00372beefb8e1670465073d46b8810c"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.2",
+    "at": "2026-09-16T08:01:49.714Z"
+  }
+}

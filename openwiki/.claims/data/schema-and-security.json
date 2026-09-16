@@ -1,0 +1,248 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:98980253c6eb09777f0ff1a6962d5084628e723bdb5fec91d65a029cbc72fb23",
+  "claims": [
+    {
+      "id": "claim_25c060c4707c4e0889062528be48d719",
+      "statement": "Strap stores all data in Postgres 17+/18 and the Next.js server connects directly; there is no database REST endpoint and no Row-Level Security, and authorization is enforced in TypeScript before data is returned.",
+      "evidence": [
+        {
+          "resource": "repo://db/README.md",
+          "version": "repo-file-v1:sha256:a5f113b41dcc90a65dc9ce779888ffd407aa99c5eae453b910017b9a5c688667"
+        },
+        {
+          "resource": "repo://lib/authz/policies.ts",
+          "version": "repo-file-v1:sha256:1a2e0361aa95e5b7e04252f28cf7a7c623aca6089bb9aa738cecaf16c194aa9c"
+        }
+      ]
+    },
+    {
+      "id": "claim_4fbf4290c64d4f7aa608250f2f0943f3",
+      "statement": "db/schema declares 44 tables across application.ts, auth.ts, and avatars.ts; db/migrations/0000_baseline.sql is the single squashed baseline whose final block contains eight retained atomic functions mirrored in db/functions/baseline.sql; forward-only migrations are generated with npm run db:generate and applied with npm run db:migrate, but Drizzle does not generate function migrations so editing a SQL function requires a new SQL migration and an update to db/functions/baseline.sql.",
+      "evidence": [
+        {
+          "resource": "repo://db/README.md",
+          "version": "repo-file-v1:sha256:a5f113b41dcc90a65dc9ce779888ffd407aa99c5eae453b910017b9a5c688667"
+        },
+        {
+          "resource": "repo://db/functions/baseline.sql",
+          "version": "repo-file-v1:sha256:bf26cf204d7eb7244260f7531bec103f3799a36fcf769f77e2c7744a65a00afb"
+        },
+        {
+          "resource": "repo://db/migrations/0000_baseline.sql",
+          "version": "repo-file-v1:sha256:e328cea7ffed45e44897d68281e31cb1ed5be38dc2ddc5836a4c5b97cf95a5d7"
+        },
+        {
+          "resource": "repo://package.json",
+          "version": "repo-file-v1:sha256:28b8f884593ece6a075b414c0e3b3fba4e5ec4301f254c5f0d8e9791b38dc1bd"
+        }
+      ]
+    },
+    {
+      "id": "claim_257c12aec9a94c8ba45324ac5663c230",
+      "statement": "Database identifiers remain Creed-named for contractual continuity and must not be renamed to match Strap branding; Stripe-era tables and columns are retained as forward-only history, so schema names do not imply live billing.",
+      "evidence": [
+        {
+          "resource": "repo://db/README.md",
+          "version": "repo-file-v1:sha256:a5f113b41dcc90a65dc9ce779888ffd407aa99c5eae453b910017b9a5c688667"
+        },
+        {
+          "resource": "repo://db/schema/application.ts",
+          "version": "repo-file-v1:sha256:2f6ee1056d389610cde660a89d77479c6f0a1e687ce08a7eb149a0e6a7252266"
+        }
+      ]
+    },
+    {
+      "id": "claim_230194ba42a24e759e246992bce32af4",
+      "statement": "creeds enforces one Personal and one Company workspace per owner through partial unique indexes and a type check, and creed_members carries role (owner/admin/member) with one-owner-per-creed and a (creed_id, user_id) primary key; most tables cascade-delete with users.id and creeds.id.",
+      "evidence": [
+        {
+          "resource": "repo://db/schema/application.ts#L650-L754",
+          "version": "repo-lines-v1:sha256:e9c7c2562f02ee0c85be396c1580b287310fb34f24be38865869d84ac689bcb5:eyJzZWxlY3RlZExpbmVDb3VudCI6MTA1LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI0MzgxNmVkNjJlNDFmMTgyMjkxZjgxOGE4NTIyYzA3ZDAyZTc2YzE5ZTUxN2MwZWU1MjNkM2VjM2RhYzE5NWViIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI1NWUyNmNkOTIzNjZmNjBkOGVkOTJkMDIzOWYwN2ZlZjc0Y2FjMTRhYTY5YWRkZjljMmNjMGQxMWViMDBhNDYzIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJkOWNmMmFiOGJmOTA0MDhjNjg1NmRjYTZmYjk0OGE3MDdjM2NkOGMxNGY1OWZjMGFiNDcyNzhkZThhNzlmZjFmIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiJhYmFhZTY4NGY5MWZiZjIxNmFkOWJmMzZmYTNlYjJlZWZhZDAwYzcwNjUxOTk1YWRlNTAwYzlhMzhiM2I4ZDhjIn0"
+        }
+      ]
+    },
+    {
+      "id": "claim_92ff02a0d03d4aca9405190b2cb8c56c",
+      "statement": "Authorization has no RLS; rowScope(context, table, operation) returns a SQL predicate equivalent to the baseline's 45 RLS policies with three actor kinds: service bypasses the predicate (requires a named purpose), anonymous is always denied, and viewer is scoped by userId; unknown tables or actions deny by default.",
+      "evidence": [
+        {
+          "resource": "repo://lib/authz/policies.ts#L11-L47",
+          "version": "repo-lines-v1:sha256:ea89642afa556515499660d3f4e904a5cb9efb53afd098b20c68b0aeed03d45a:eyJzZWxlY3RlZExpbmVDb3VudCI6MzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ0ZTQxMzg1OTUxMDI1ODhkNDU2Zjg2MDk4YmMwNDFiMzBkODIzYTQ4ZWYyZjU4MTRlNWM1YWFiOWY0YjlkNWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM4OTViZTUwM2EyODUxYTNkNWFhZTUxNmJjNGQ2Mjc2ODc4ZmUzN2Y2NDUyNTNlMDQyNWUyNjEzY2Y2ZWNhNmUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFjYmVhNzZiMjQ1ODNkMWMwZTRjNjVlZDFmMDdmZjAxY2RiYjA4YjJkMjhlMjEyN2ZkNDY0ZGU0NzZjMGUwMDAifQ"
+        },
+        {
+          "resource": "repo://lib/db/context.ts",
+          "version": "repo-file-v1:sha256:18c9a8eb7a84c883378c9e9895ccc4d85a9e15c7a0e6ee518f429c21305a567b"
+        }
+      ]
+    },
+    {
+      "id": "claim_ea757fec27d6475e97e36ce961fcd616",
+      "statement": "rowScope composes per-table rules: own-manage tables require user_id ownership, personalContent tables require personal-owner writes and membership/hidden-section visibility on reads, memberRead tables require membership for reads, company billing/AI settings and audit/entitlements are owner-or-own scoped, and any non-explicitly-allowed write returns sql false to deny.",
+      "evidence": [
+        {
+          "resource": "repo://lib/authz/policies.ts#L6-L46",
+          "version": "repo-lines-v1:sha256:bd48fd3f5e32399825cd110de7e347192d5db69635585eb4a2f9f56b6fd1e23c:eyJzZWxlY3RlZExpbmVDb3VudCI6NDEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA3YmQ2ZWIzMzRkM2RhZTk2OTFhZjZkNjQ3Y2JhNjkzNjQxNTUzODMzOWUyYWQyZWVlNGYzOGM5NDJjNzc4MjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgzNmQzMjNiYTU1OGM1MTJkMGZkNGUzYmYyNDJmNjkzN2U1Yzk5ODhkZjU2MDlkMTJmOWQ2N2QyYjkyYWE4N2YiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFmMmU1MDAyMjQ1OTA2YTY0OGIyMTgwN2VmYWJkNDkxOGU2MzU4MDE3YWEyMzJhZTFkMWMwMmRlYTI3MDAxZmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImMzMjMwYWJlZDhmM2IwYTg3MTIwMjNhMmE2YzgwMDRmNGM2NGNlMDQ5ZGUyOGQ3ZmFiMGE3OTYzYzQ4OWIxYzcifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_281f807164c041be954bfe2311a35ea3",
+      "statement": "authorizeValues checks NEW rows on insert/update in addition to rowScope's existing-row predicate, preventing moving an owned row to another workspace and cross-profile upsert theft; lib/db/query.ts's query() helper pairs authorizeValues for inserts/updates with rowScope applied to the runner.",
+      "evidence": [
+        {
+          "resource": "repo://lib/authz/policies.ts#L49-L75",
+          "version": "repo-lines-v1:sha256:1754072059126a173a8c0a8db3e55f2a80e8e746de9697ba7868358e7599a731:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY1NDhiOTVmOTA2NzRmOTZmOTZjMzQyMTEyMThmNmIwZjJjYmNiNGI0MjM5OGJkM2NjMmZmZjQwMjU1ZGZiOGQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJmNzk5YzNmZmY0MDdmNWYzZmMyOTc4MDcwZGJmZjFmZmM0OGQxZDNiMWYyNGRlM2Q0MzJiNWE4OGExOGM1ODEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://lib/db/query.ts",
+          "version": "repo-file-v1:sha256:a883f6db672704b53102a8e6189b1cb03e2519bb6236b126193cabaa43fe9f9d"
+        }
+      ]
+    },
+    {
+      "id": "claim_e54e81a261334b97a78f62eb972fb082",
+      "statement": "A client-supplied creed_id/strapId is never authorization; the caller's server-side-resolved membership/role/ownership is the authority, and Vault reveal for example authorizes from the item's database-loaded creed_id rather than a caller-selected profile.",
+      "evidence": [
+        {
+          "resource": "repo://db/README.md",
+          "version": "repo-file-v1:sha256:a5f113b41dcc90a65dc9ce779888ffd407aa99c5eae453b910017b9a5c688667"
+        },
+        {
+          "resource": "repo://lib/db/repositories/vault.ts#L50-L59",
+          "version": "repo-lines-v1:sha256:d373ed453ae778fe14fd4c444ffc307ce2195292db3d0dbd9f765daf0e00ef90:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ3MjE4MDE0M2Q3MmMxODk3MTM0NGI1ZjBlZTdhNTY1OGU3OTUzNDM1ZjVkMTIyYWY5YjVkY2RkZGVhY2YzMDIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIxODlmNGM2OTQ4OTIzZTRjZGY2NjhiMmUxN2YzZjM2NDAxMTg4Y2FkOTE2MjZmYjY4ZmUxNzdkODQzNTVjNWYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZkNzUzZGQ0NWFkNjYzMzdjZWViYTJjZGI3NGZkZjY0MDhkMTk5Yzc1ZjljYjJiYTVkOTc2MTM1NDViODBlMjMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_2703d530646c40b9a2da0426d50949c2",
+      "statement": "lib/secret-crypto.ts (key STRAP_ENCRYPTION_SECRET, CREED_ENCRYPTION_SECRET fallback) provides SHA-256 hashSecret for lookup and AES-256-GCM encryptSecret/decryptSecret for recovery; OAuth/legacy agent tokens store both hash and ciphertext, while device/user codes and headless API keys are hash-only and never recoverable.",
+      "evidence": [
+        {
+          "resource": "repo://lib/headless-access-shared.ts",
+          "version": "repo-file-v1:sha256:1ee06638738381efab6d81fa27af5cf059093b8afc85f7162fafab6234bd9868"
+        },
+        {
+          "resource": "repo://lib/secret-crypto.ts",
+          "version": "repo-file-v1:sha256:e5cf9c69773cf919d846b60a6ee762a35b65864cb01c054646f51d2d735937f0"
+        }
+      ]
+    },
+    {
+      "id": "claim_84cfe619e5824cfe82f80ba87fb5c959",
+      "statement": "New headless keys use the strap_key_ prefix (creed_key_ legacy recognized); createHeadlessKey returns plaintext, a display prefix, and a SHA-256 hash, storing only digest and prefix and showing plaintext once; each key binds one creator, one workspace, and a mode ceiling (read-only/proposal-only/direct) with optional expiry capped at 366 days.",
+      "evidence": [
+        {
+          "resource": "repo://db/schema/application.ts#L518-L545",
+          "version": "repo-lines-v1:sha256:bfe2a33ee731b6380d77575125d3f96e61121111360ca8556656b24e06b06eb8:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjczYWJhYWM3ZDUyNmM3NjgwY2ViNjJjYmI0YjY2MTAxYzVlY2Q2ZWQxYjI0ZWFlM2UwZmEyZGZmNGU4Y2FjOTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZiNWEzMjg1YjA0YzI2N2MwZGM4YjY5NzQxOGNiYWQ2MzljYTZiOTEzNTc3YWUyN2U1ZTZlZmYxYTQ1ZjNlYTkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ5Y2YyYWI4YmY5MDQwOGM2ODU2ZGNhNmZiOTQ4YTcwN2MzY2Q4YzE0ZjU5ZmMwYWI0NzI3OGRlOGE3OWZmMWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU0YTg2ZWFiYjczNDNmY2UxNjAyNTk1YzExZWI3MWJlNDEzYzMwODQ0MDk5OTRiYzRkZGI3M2YwZDI1MTQ1ZmMifQ"
+        },
+        {
+          "resource": "repo://lib/headless-access-shared.ts",
+          "version": "repo-file-v1:sha256:1ee06638738381efab6d81fa27af5cf059093b8afc85f7162fafab6234bd9868"
+        }
+      ]
+    },
+    {
+      "id": "claim_3342a019570948cd82640287a0dcccab",
+      "statement": "The in-application Vault uses lib/vault-crypto.ts keyed by a separate, independent STRAP_VAULT_SECRET (>=32 chars, distinct from STRAP_ENCRYPTION_SECRET) performing AES-256-GCM with AAD bound to strap:vault:v1:${profileId}:${itemId}; creed_vault_items stores metadata plus secret_ciphertext (not a Vault secret id) with a unique (creed_id, lower(name)) index.",
+      "evidence": [
+        {
+          "resource": "repo://db/schema/application.ts#L590-L615",
+          "version": "repo-lines-v1:sha256:11d23a132002266aa89102952b644cddebb17beabdde01602c45fa2832c80882:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI5YWQwN2Q2MjdmMWFlZjAyZmNhMGIwMWM1OTAyMWYxNTJjYjU1MGE1NjQ0MDI5NWU1ZTk5MzdkOTI2NTdkZWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1ZTI2Y2Q5MjM2NmY2MGQ4ZWQ5MmQwMjM5ZjA3ZmVmNzRjYWMxNGFhNjlhZGRmOWMyY2MwZDExZWIwMGE0NjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ5Y2YyYWI4YmY5MDQwOGM2ODU2ZGNhNmZiOTQ4YTcwN2MzY2Q4YzE0ZjU5ZmMwYWI0NzI3OGRlOGE3OWZmMWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjkyN2MzZWQzMjgzN2NkOWE2NmFiNjZkYjZmMjlkM2I1YTAzOWQ4YjY1OGFlMTdmYWE5MWE1Y2QxZDNhMWEyMGIifQ"
+        },
+        {
+          "resource": "repo://lib/vault-crypto.ts",
+          "version": "repo-file-v1:sha256:887c3cbcef8e00e9be02ff79bc4afbb984af5cc263a5f0bc002d0f6de419d2f2"
+        }
+      ]
+    },
+    {
+      "id": "claim_a97e848cc83541fdab4d2cc6408800a1",
+      "statement": "Vault access is enforced by a scope predicate requiring Personal ownership or Company owner/admin (members get 403); mutation and reveal authorize from the item's database-loaded creed_id, and creation runs in a transaction with SELECT FOR SHARE on creed+membership before inserting ciphertext.",
+      "evidence": [
+        {
+          "resource": "repo://lib/db/repositories/vault.ts#L13-L36",
+          "version": "repo-lines-v1:sha256:ecafd904aa82dfc0347f68f8a2587e74bdcfe7f612ee47136a2d9dc0a40c4e76:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU3ZGI3YmJkNWVjYmJlYzlmODYwNDc5MGNjYjczOTAxMGNhOGFlZjA3ZmNjNTE0MGZmMWVmZjgxMjQ0ZGRhN2UiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjI5OTlkNDFlNmYxMTM4NTg3MzQ4Y2QwNjAwMTE1NTE3NzBiZjk3MzExODI2NTU3YjI5MWQxMzRhODA2MWFjNTIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg3N2VkNmI1YWM3M2VmMTAxODRiZjIxODg1YTc1ZTEwMDk1NDk3MDcyMjRiNzBlOGIzODE2NTY4NDhmOWYwMDMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_c344527768b34a89aa55b99922edd013",
+      "statement": "Vault reveal is fail-closed: recordRequiredAuditEvent must persist vault.secret_revealed before decryption, else the repository returns 503 and withholds plaintext; last_accessed_at is then conditionally updated only where the ciphertext is unchanged (409 otherwise) before decrypt and return.",
+      "evidence": [
+        {
+          "resource": "repo://lib/api-key-vault.ts#L18-L21",
+          "version": "repo-lines-v1:sha256:80b6845a9ddf1dcc8d5e7677fc77e96b6c0a423a204b8bc150f0d7b38d877a3c:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZGQ3YTY2NWU2NTY1YTI2ZjgxYTdlYjY1NzQxYjdjNDY2ZjM2OGYxMDgzOGU5OTAwNmFkZTIxMGI5MGFkNzBmMSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNTAwYjRjYTFjZTU4NjNhZWQ5NWQzMDk2YjBlNTFmZmI0NmRkNjYyZGFjZGI4YjQ2NjZmZjEzNzk2NzNkMDA3MiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMzZiMjY4NWZmZjM5Zjg5MDE2NjhiMzk3YmJiYmJmM2EyNDAyOGM1Yzg3OGRlZTYwNTM3MGZhODE3ZjQ0NGE0MCJ9"
+        },
+        {
+          "resource": "repo://lib/audit-log.ts#L101-L121",
+          "version": "repo-lines-v1:sha256:95e5a8c433835082fb09b07a76306a132754a0d0934ef2b93789d11f93b17776:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZiM2VkMWJlOGNiMTdmOTZmZjBjOTk1MTJjODZmN2ExMTEwYTQyNzAyOTI3YzU1MDg2OGRmMjVmMjFjMGY5ZTIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRiYzdjYTllYTljNmNhNDI4NWU0M2Q0ODE4NGZjN2Y1MzhjNTQ3MDMyNTY5MGU4ZDVmZDdjZjViMWUzNmYyMjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://lib/db/repositories/vault.ts#L50-L59",
+          "version": "repo-lines-v1:sha256:d373ed453ae778fe14fd4c444ffc307ce2195292db3d0dbd9f765daf0e00ef90:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ3MjE4MDE0M2Q3MmMxODk3MTM0NGI1ZjBlZTdhNTY1OGU3OTUzNDM1ZjVkMTIyYWY5YjVkY2RkZGVhY2YzMDIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIxODlmNGM2OTQ4OTIzZTRjZGY2NjhiMmUxN2YzZjM2NDAxMTg4Y2FkOTE2MjZmYjY4ZmUxNzdkODQzNTVjNWYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZkNzUzZGQ0NWFkNjYzMzdjZWViYTJjZGI3NGZkZjY0MDhkMTk5Yzc1ZjljYjJiYTVkOTc2MTM1NDViODBlMjMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_2346a4db2acc4fbb9b3fed25ca574bc5",
+      "statement": "recordAuditEvent is best-effort and never throws (logs a warning on failure, called after the action succeeds), while recordRequiredAuditEvent is fail-closed and throws if the database is unconfigured or the insert errors; vault reveal is the canonical fail-closed caller.",
+      "evidence": [
+        {
+          "resource": "repo://lib/audit-log.ts#L61-L121",
+          "version": "repo-lines-v1:sha256:375fd55e9299fa6a7e8c2ce41c9f8e8b4d8e3d08ace3c4327701ebb331494bc4:eyJzZWxlY3RlZExpbmVDb3VudCI6NjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkwNzM2MzU3YjcyNjQ1OGE4ODgzZjZmODQ3ZjBlNDgyM2JmMDg0YzI5YWUwNzg3M2FhOTY1MzBiM2Y2MDlkMmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_d9e3aab5ec17440197940503f2296504",
+      "statement": "lib/db/procedures.ts exposes only reviewed SQL functions and requires a service context; each function validates its own membership, role, or opaque credential, and callProcedure maps known error codes (42501, P0002, PT409, 22023, 54000) to surfaced messages while returning a generic message for other codes.",
+      "evidence": [
+        {
+          "resource": "repo://db/functions/baseline.sql",
+          "version": "repo-file-v1:sha256:bf26cf204d7eb7244260f7531bec103f3799a36fcf769f77e2c7744a65a00afb"
+        },
+        {
+          "resource": "repo://lib/db/procedures.ts",
+          "version": "repo-file-v1:sha256:7f5c3e678f97350c62c6577d48d46e425cba384762f187a5b55c8986f5c2b868"
+        }
+      ]
+    },
+    {
+      "id": "claim_7c36afea88884dbaa8ebf9a4d5455743",
+      "statement": "POST /api/internal/maintenance requires Authorization Bearer STRAP_MAINTENANCE_SECRET; lib/authz/maintenance.ts requires the secret be >=32 chars and timing-safe-compares SHA-256 digests, then prunes creed_activity older than 90 days and expired oauth device/authorization codes, returning and logging counts only.",
+      "evidence": [
+        {
+          "resource": "repo://app/api/internal/maintenance/route.ts",
+          "version": "repo-file-v1:sha256:fcba5bcc58f6878589d844c3a599e8089d3a480a8ee9676861e5bdb6c2dffd66"
+        },
+        {
+          "resource": "repo://lib/authz/maintenance.ts",
+          "version": "repo-file-v1:sha256:7abfc3d9306be983f665b6c5ad36bf61889cf8cc8f916b9e3f7e1eb2537071f0"
+        },
+        {
+          "resource": "repo://lib/db/repositories/maintenance.ts",
+          "version": "repo-file-v1:sha256:ba57feddde68e700e8f7fd1894d13d9be0672ec472805ed95bc7302a426ff7fd"
+        }
+      ]
+    },
+    {
+      "id": "claim_b2f067e216204fe0ada9236be2a32bd5",
+      "statement": "npm run test:db creates a random strap_test_<id> database per suite (local role needs CREATEDB) and drops only that database afterward, never truncating existing application data; npm test skips database suites without DATABASE_URL.",
+      "evidence": [
+        {
+          "resource": "repo://db/README.md",
+          "version": "repo-file-v1:sha256:a5f113b41dcc90a65dc9ce779888ffd407aa99c5eae453b910017b9a5c688667"
+        },
+        {
+          "resource": "repo://package.json",
+          "version": "repo-file-v1:sha256:28b8f884593ece6a075b414c0e3b3fba4e5ec4301f254c5f0d8e9791b38dc1bd"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.2",
+    "at": "2026-09-16T08:01:49.714Z"
+  }
+}

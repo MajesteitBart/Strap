@@ -1,0 +1,490 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:4e6a5f6d9f5ddd30ee770f6d811632b30c87ab1b17295b0cfad5cba932da6e83",
+  "claims": [
+    {
+      "id": "claim_061a515b62274748b977ed8449b2de62",
+      "statement": "The /mcp endpoint accepts three bearer credential kinds: OAuth access tokens from the PKCE authorization-code flow, OAuth access tokens from RFC 8628 device authorization, and scoped API keys (strap_key_ new, creed_key_ legacy), resolved by resolveMcpCredential in app/mcp/route.ts.",
+      "evidence": [
+        {
+          "resource": "repo://app/mcp/route.ts#L772-L795",
+          "version": "repo-lines-v1:sha256:dd3ae8f11e935d1d8a5f306ac509e5941f04fcf8860d6092e6e493222588b533:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQzNmQyNzY1Yjk1N2I4YzQ4OTQ2MDU4ZDIzZmM4NDRmMWQxMTdlNmY3ODY0MWQwNTg4NzZiODkwMDYyOTkzNzkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ3MzdlMGQzZDgwZWUzMTVhOTllYTQxNmU2MDQzNDY4OTBhNjFjMGE1YmEzNWExNzk3N2I2ZTE5ZjYwZDhiMmMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjMyMDMxNTY5NTEwYjA5N2IzMTllM2NiY2JkYzM1MDUxMTZhYjM3OWU4ZWJkZGU2Y2FkMGU0NzRhN2Q1ZGU4ZjkifQ"
+        },
+        {
+          "resource": "repo://lib/headless-access.ts#L111-L132",
+          "version": "repo-lines-v1:sha256:1585915d15837f337dd57b6c2d5544535707182a80db09347c405c7e133ef50b:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBmMzBmODFlYmVjNTY2MjIyZTQxN2QwNGViN2MwNDFmMGYwNTBmYTczNWFkZjJkMTNiMzM4MTk3ZmQ2NTM3ZDAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQwMDk3MWVjMjcxMzVkN2Y1NWVmOTJjMmZkZWY4OGZkZmZiMWY0NTdlM2JmY2ExNTBiNzkwOTgxZmFlNjQzNWIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://lib/oauth.ts#L385-L417",
+          "version": "repo-lines-v1:sha256:9be18190275541c85a04b2d72cbda2d629fb1662e1d81d2af67433a2b26dcfba:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBmZWJhNzk5YzgzNTQ5ZmQwYjkxMWY3NjZmNDNkNzVkZWJhMGQyY2RmZGFmZWM2MTY5ODY4YmM5YmIyMmRlOGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJkMGYyZDNhM2FhZGEyNzU4NjQ1NzhkMGE0MzkxNTYzOGQ1NDNmZWNhMmM5NDg1OGRiOTQxMjExZTg2Y2VmMmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImFlNjA2MzA3MWZlYjE1ZDE0YzkzNzRjOTBiNTJlMzFlYmRjODczOTE3OTVlNThjZTYwYmUzZjUzZGJkZTAxMzgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_892c2a6e151a4b98a67ff4a857421204",
+      "statement": "Every modern credential binds exactly one Personal or Company Strap plus a maximum access mode (read-only, proposal-only, or direct); applyCredentialMode clamps each section's agentPermission to the lower of section policy and the credential ceiling before dispatch, blanking writeToken for read-only and directEditToken for non-direct modes.",
+      "evidence": [
+        {
+          "resource": "repo://app/mcp/route.ts#L797-L820",
+          "version": "repo-lines-v1:sha256:990ff821159b842be5aef5c81157e5134123ad17410e3ce48b5d75b914d8ef7a:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEzZmI4MDg2MWQ4OGIxZTVhYjFmMGE3MTYyZGRkZjYzMjNjMDkzMTlkNzIyZGU4ZTAwMjFmMjAwOTQwZDQ0NGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkyMDQwZTA5NWE5NGUyYWRhNzRlNDIxZjM3MTg3NTFhOTFhODEwYmZkNjZmNDhmNGU5MzljN2I3NDgwZWI2NzAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImFmMjFmYmNjMTYxYjY0YzJmMDNkMjM0NTg4ODY2ODVhNWUyMDU5ODg3Y2E3YTg4Y2VmMmQ4MDU2N2ZiNGI1MzEifQ"
+        },
+        {
+          "resource": "repo://lib/headless-access-shared.ts#L9-L10",
+          "version": "repo-lines-v1:sha256:f337c3b0252ffa6a3f35b001b9ae597cd9f209f0b66b19e44739d39ef94fe4a9:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNzcwYmUzMDE1YTk5ZmVmYmVkMDRjODhlOTdiNjMwYTAyZjNjYWZmYzgxNTcxNjU3ODVkNzhjZDVjNjNmZGI2MCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOWZlZGNhMmVkNGFlNzEzNTJjZGEyMzI1ZTcyOTExMWFiYjIxZjEyMzM5NzliNTQ5MTVkNTA1YzI5N2IwNjMyMCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMjZlZDA5YWNkNWFhZGI0MzEwNjZhNDkxM2Q2ZjA2NDc4NmRhNTJiZDdlMjYwM2I0ZTZlZThmZjg1OGRjYTc1YSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjQ3ZWZkMDU5MDE2ZmNlYjBmMzZhMDg1ZDRiNWE3YzhlODc1OTFhMTNjZjYyOTgzYzIzMDE2ZGU4NThkNDFhYiJ9"
+        },
+        {
+          "resource": "repo://lib/oauth.ts#L40-L43",
+          "version": "repo-lines-v1:sha256:c3a8bc534e8d96dc3d4757d24ca099e52f9c3bbc0ab633edccf88bc1e83344d0:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZWI1Y2I0ZWU5Njk3OGMwYmI0MmQxODVkMzA0M2QwNmEwZDg4NGFjMTgyYjkxOWU3YzEwNTBkNTY1NzI0ZTk3OCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYjBjM2JkOGY5NmQzYjU0NDBkMjEzMGJiYTk5Njc3ZWM4YzU2ZTVhZjNmMDg4ZGM5MWNkYTA5NzE3ZmNjNDY1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMDA5MTE4M2IzN2Y0OGY3MGU0OTFmOThmYzliYmNhMTYzMTJmMzZkMGQyNzZkOWUxODY4YzkwNzVkMzZiZjIzNSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTRkZWQ2NGMzNGU4ZTJjMTYzNWRmNGI4ZGQwNDYxODI1MTk2MDY3ZGNiZDY4MTBhZTczNTViMDllNTY1ODVkZiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_0d6579554b304f3b91ddef8685534e20",
+      "statement": "If an explicit grant becomes inaccessible, resolveMcpState returns an empty write-less state rather than widening to the owner's Personal Strap; only OAuth tokens positively identified as pre-explicit-grant (creed_grants_explicit false with no grants) may use the legacy personal fallback via allowLegacyPersonalFallback, and API keys never use it.",
+      "evidence": [
+        {
+          "resource": "repo://app/mcp/route.ts#L842-L896",
+          "version": "repo-lines-v1:sha256:a589b5965e75c9298c1f39e8c6a32ffe8bbdfada43425b32af10b62e41823312:eyJzZWxlY3RlZExpbmVDb3VudCI6NTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU3NWM5NmI3OTI1Y2I1OTg3ZGFjZDk2NjY4NmRlMmYxNDJhMGU3NjYyNmNkMDRjOWQ5ZTU5YmMyODAwYjlkOWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhM2U0NmY5NDI3NmI2ZjZmNGVkMWYwMmFmNzhiZWY2YTJlZTFjNDM5ZGQ1NTg0Yjk3Mzk0ODMxMzIxNGQyYjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI0ZDU2ODE3YzU2MTMzYWNlZDc0ZjgwMzFmYTliZjhiYTg5M2FmNzk5OTQyNjI5OTg1MmUxMGUwNDAxOWNkZTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImMwMzA4NmRkZThmNjYxODUwN2IwZDBmMTgxYTkyOTg0Mzk1N2I2YWJiYWQwYjcxMDljZTU4ZmZiYjkwMmJlYTgifQ"
+        },
+        {
+          "resource": "repo://lib/oauth.ts#L414-L416",
+          "version": "repo-lines-v1:sha256:944b1792f8f60497c9c0f84c06879911be6f89b71791db02e0e0a18a7c104d2b:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNjE0ZjBmNmQ4MjJmZmQzODY4MTBhNzM3NDhiZjAwNzFjMjUzNmQyYjEyY2Y2MmMwZDdkODUzMzJkZTE1MzI3OSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDJhMmNiMjVhMTIyYjQ0MjIxYTYyMzRlYzY2MGE3YjVmYjdmOWJkZTdiM2I5ZTJiM2M1NTlhMGQ5NmZhYzczOSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNWRlMjM2OTY4NTJhNWEzNDg1YzczYTY3OGNiNmU3M2YwYWJhOGM4NGY5NDM2YjliMDAzNDBhNjJhMGQwY2MwMyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYjBkMjlmZTYzY2ExY2YyODMwMGEwMzJjZmFjZjBjY2M5MDRkMTM2YmE0ZWY3ZTIyZjM1OTczYmRjNDIyM2E4YyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_a18ebb3c2f094c8c8e02bc817d7c884a",
+      "statement": "For a Company Strap target, each section's effective agent permission is the lower of the Company member/section ceiling (creed_member_section_permissions, direct for owner/admin) and the member's own agent permission; hidden sections are dropped, and a revoked membership returns the empty state instead of falling through to the Personal loader.",
+      "evidence": [
+        {
+          "resource": "repo://app/mcp/route.ts#L898-L965",
+          "version": "repo-lines-v1:sha256:b7e0ecfcc687512cf270c5e0ae2b0e583d5dcd1f6a43750548e1d2f604349205:eyJzZWxlY3RlZExpbmVDb3VudCI6NjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNkOTQwMjE0ODZjNzZmOGUxM2UxYjljOGZlNmZiMzc2M2I1NjgyNWZjZTY0YjVjYjhjOWI3YmNmMThlZWE4ZTciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQyYTJjYjI1YTEyMmI0NDIyMWE2MjM0ZWM2NjBhN2I1ZmI3ZjliZGU3YjNiOWUyYjNjNTU5YTBkOTZmYWM3MzkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQxMDRmYTVmYjVhZTliODI1NzU5ZDZjNjBhZWQwM2NjZjhmYzNlYWUwZDE2ZmQyZjE1ZGU5YmU2MjIwNzFlMjQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgyMDEzZDc1NTI0ZjcxZjRmOTQzYjhlODU3ZTQ0ZTI1NTcyYjk0YTZkYWVkOWIwNTM0ZDQ0MWQ1ZTM3NzEzODMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a5d63f38f2244be093ea379762d70bc9",
+      "statement": "The authorization-code flow is a minimal OAuth 2.1 server with opaque tokens, mandatory PKCE S256 verified in constant time, single-use 60-second codes claimed atomically by flipping used_at, public clients with no secret, and loopback redirect port tolerance per RFC 8252.",
+      "evidence": [
+        {
+          "resource": "repo://lib/oauth.ts#L217-L253",
+          "version": "repo-lines-v1:sha256:0f9a231a8990ebc00a066144c34e7ad1cdbaf8eb8434606136c839551ad5a820:eyJzZWxlY3RlZExpbmVDb3VudCI6MzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjcyNWU2MDczMDBkZjFkNDU3ZGRjOGQ0NGYzODlmMzkyODU3MmU2NTc2MzZhMzIzN2QxYmQyMDk2Zjg5YjI3MGQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFkOWI1MDIyODg5MjgxYjU1MTI1ODc5OTBiMDFmYTE5MGQ1ZjM1Y2FlMjZmZjExOTBhMDBhNmUzOGU4MGY3MjMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM0MWUwZDk5NzI4ZTVhMmFhMGVjYzYwYzk0Yzk0Mjc5ZmNiOGFiMDU5YzFlNThmZTI4NmI0OWVkOGRjOTNmNDMifQ"
+        },
+        {
+          "resource": "repo://lib/oauth.ts#L55-L57",
+          "version": "repo-lines-v1:sha256:ccbf4a393da16c5e64ab450ad019c33c5a9a23227baeb176f6c202a01bcb1c16:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZWRiZDMxZjVkMjUyM2I1ZTRjMjU3NDJlOGIyZTE1MjM1YWZkNDAxOWQ1MzYxNzkyZTgxZDdkOGI2MTQyZDllNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNzFlMjk4MTU1NzU2NmYzODU4MTUxZGY4YzM2NjEzYWE5OGMzNTBmZWViNjJkZGZhNmM0MzczNjU1YmMzODhiNyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZWQ2OTZmNDgyM2ZjOTFhZGU1MTBmMjNlMmEzMTdmN2FmNmYzZTJjZDlkZjdjYzI0MjhlYzgzOWVjYmQ5NTA3YiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOTAzNTVlNjJkMjcxOTQxNTk4ZmE2YzRjOTZjZTg0YzE4M2NmMTBiZDhhNDRhZTdmOTY0MzE2MmI3MzNlNjcxMiJ9"
+        },
+        {
+          "resource": "repo://lib/oauth.ts#L96-L145",
+          "version": "repo-lines-v1:sha256:a25b1daa5747356e56c77999f9ca35e575558f509a35b4ed3c586f3e61cb75a4:eyJzZWxlY3RlZExpbmVDb3VudCI6NTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY1OTk5ZjBiZmM4YTc0NDRjNzYwZTc5NTM5Zjk1YmY0MjU1NzcyNDdiNjcxNzZhYWRmOTQ5ZWZiNDJkMGI3NjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU0ODg5ZDYwMzk4M2I5ZTBmNDljZGJhODY0NmY3ZTY4NDBhYzgyOTMyYjUyMjVmNzAzMDNlY2EzZTFiNzVkYjYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU1ODdhOWFhNTlhNDU1NDM1MWEwNjY5MzFjZjQwYTRhNTBmZWRmMjgxZDUwNzQ5ODZkOWUyZDk4ZmUwMjAxNjIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_fa15cd3398574527b75a38c947be459b",
+      "statement": "issueTokenPair issues a 1-hour access token and a 30-day rotating refresh token, storing SHA-256 hashes for lookup plus AES-256-GCM ciphertext via lib/secret-crypto.ts keyed by STRAP_ENCRYPTION_SECRET (or legacy CREED_ENCRYPTION_SECRET), and persists per-Strap grants to oauth_token_creeds best-effort so a failed grant only narrows access.",
+      "evidence": [
+        {
+          "resource": "repo://lib/oauth.ts#L255-L331",
+          "version": "repo-lines-v1:sha256:f7606636206f6ce06b5b322656a5de1e5ed2209edf72a231638da6298223e0ab:eyJzZWxlY3RlZExpbmVDb3VudCI6NzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg4ZTQ3NTRlYzhkZTYxM2NlNWNiNGIxZTE4NjMwMTc4NTFhOWJhMjUwMjY4NDI2YjhiMmIwZmY3NjgzZTMxOTIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ4YTAzMzk2ZTUzMDEzOGFjZjkwOGMwZGE4ODNhYzAyNTEyODc3MTc4OTk2ODRlZGU0NGRhZWQ4MmU0MDYxNGYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQwNzMzMDNiMmIwNWI1ZWNmOGYwMjQ3YTQxODQzMjQzYmFhYWFlMWI4Mzc0M2E2MzcyNjEyMzliMmQyZDVhZjAifQ"
+        },
+        {
+          "resource": "repo://lib/secret-crypto.ts#L7-L32",
+          "version": "repo-lines-v1:sha256:9fb11a4eb59fbab211855b143ad6afed782febc3a54de7c895ac7b3f43387a13:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY4OTU1NDhlNWVlMWY5Mjk1Y2NiZDFkMWIwNjNiNGQ3ZTM2YTcwNzZjNGY0ZDQ4ZWQ2ODQ2Y2JkNmEzNDc3ZjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjMzZTFkOGRjYTJlNWFiOGNjYThmOGUxY2JkMzBiYTU0NjczYTkzY2U4YmYxZTY3ODhmZjk2NzA3ZTlkYTJkZjYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg3ZDgxZDljYzVmNDVjNmEzMDhkZmM3ZDM3NWU3Y2Q2OTVlYzdhZWQzNDM0NDIyMjE2ZGNlOTMxZmY5MDY3ZmYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_9172072b37ec40c591f77d7fa6c91e9d",
+      "statement": "Refresh rotation is single-use: rotateRefreshToken carries the old token's per-Strap grants onto the rotated token and claims the row in Postgres by revoking a still-live one, so concurrent refreshes and replayed refresh tokens cannot both issue replacement pairs.",
+      "evidence": [
+        {
+          "resource": "repo://lib/oauth.ts#L335-L383",
+          "version": "repo-lines-v1:sha256:28c3b95d5b4a723d7860553743cd3cb8623c0adf0f5928d2784968f624b6af30:eyJzZWxlY3RlZExpbmVDb3VudCI6NDksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg3ZWRjNmI3ZDQzNDVmZTE5NTQwZDM0MTFkOTZlZDViZDUyYmRiYTZjOTExNDQ2YWE5ZGRkYjljZGNhNTRiNzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQwNzMzMDNiMmIwNWI1ZWNmOGYwMjQ3YTQxODQzMjQzYmFhYWFlMWI4Mzc0M2E2MzcyNjEyMzliMmQyZDVhZjAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU0NTkxNWFmZGU1NDA4OWRhNWIxNzJmMzU3ZjNhYzVlOWJiYjE0ZjVjOTI4ZGQ5MTQ4MmQ4NzY4MWU4NWUxYTgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_00fcb04c68684dd694859644cdfede79",
+      "statement": "/revoke implements RFC 7009: the caller must prove the owning client_id so one client cannot revoke another's grant, both access and refresh token forms are accepted, and an unknown token still returns success so the endpoint cannot be used as a token oracle; CLI client roster rows are also deleted on revoke.",
+      "evidence": [
+        {
+          "resource": "repo://app/revoke/route.ts#L48-L59",
+          "version": "repo-lines-v1:sha256:22cc4155c5f914056b9db25c2314f1a43de8f37932472d70d95f6f4e493c4aff:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI1MDI4YWI0MGVjY2FiZTNjMWZlYzEzY2FkYTcwYjFlNzk0NGYzZjUyYTFjYWUzOWFjNjZjZTQ1MTcyZmY1YjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ0Y2I0ZmUwMWNhMmJiMmZjN2FiZmVlMDZjNjlkZTQzMjE4MDc2NDBkODVhNmM2ZDg4YzI0N2FjYmU1NmUxZmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjVmMzU2OWJiYWI2MjAwZWM5NGQzZGVjZmMyNGY3ZjYwZTE2M2IxYTI4YzZlZTg2N2UyZmI4NjI2YjU5YjdkNzAifQ"
+        },
+        {
+          "resource": "repo://lib/oauth.ts#L425-L461",
+          "version": "repo-lines-v1:sha256:14527426505884dc14f7e82a7ce4c899c3649f0fe31264bce5ec7f9dd7208635:eyJzZWxlY3RlZExpbmVDb3VudCI6MzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIzZjI4ZTVkYTdjNGY2ZjMzNzM3ZjgxNWViYzhlYmFmNmE3YTk1MTZiMDgwMjdlOGQzY2MwMDk1MDJhMzY0MTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImMyYjk5Yjc0YjU4YTljOWVlYmFhZTMyN2Y0NGQ4YTkyYWE5MzgzNmNmMDk0NTZjZmI2NTY0OTNlN2IzY2MxZmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_eacbcf71fba14388bd2013ee10db92c5",
+      "statement": "Browser consent uses a Better Auth session resolved via lib/request-auth.ts and lib/auth/server.ts (BETTER_AUTH_SECRET), not a Supabase session; /authorize and /authorize/decision re-resolve the user from the session, never a form field.",
+      "evidence": [
+        {
+          "resource": "repo://app/authorize/decision/route.ts#L57-L67",
+          "version": "repo-lines-v1:sha256:5324195fafb89ff10852b277c27a12cb487647cf9926588bd41abb5c2d29fa58:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY1MDFmODU2Nzc3OTZlMDgwMjljNzA2ZDBmNTkyYjI5NDI1ODE1ZDI4Zjc1ZWZlYjI4OThlNjc3ZWM5NjMwZTIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRhMGMzYjZhZjk3ODBiYWVkZmZiZDExNDZiNWIxYTdjNGFjODY4Y2JlMjQyNGNkNzdiODZmMjcxNGE5MzEyNDAifQ"
+        },
+        {
+          "resource": "repo://lib/auth/server.ts#L10-L48",
+          "version": "repo-lines-v1:sha256:3d59cfec228d31a2c84b532d05b8dd481ffffbbb325f5cae5448237386e58f61:eyJzZWxlY3RlZExpbmVDb3VudCI6MzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIxY2RkY2MyYzM0NTI2MjhlZDg4NDk2OGNlYzNhZDU3NmM3YmFjMDhhZDMzMzkxYWNmMjMxZDg0MzMxOTY2YzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhjNDFlNDcyYzA2MGZkODVmYTIwNTU0Yjk1OTE1NTk1ZjA2MzFhNmExOTJhZDQ3Mzc4ZmI2NjM2NzNhNDQwOTgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc5ZTRmMGM1NjUxNGMyMjIwYWJlYmMzYWQ1MzhlMzlhNDdlMzdmZTYxMWRjMTFlZGYwMDEwZDYyM2QwMTVlZDEifQ"
+        },
+        {
+          "resource": "repo://lib/request-auth.ts#L10-L21",
+          "version": "repo-lines-v1:sha256:b5be49541e5cf513f034048b616847e3a039262edbaeb0b1d22f11081de549e8:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQwMGE1MTMzY2JkYWUxYjViMTE1MzkxMGM4OTA3NjlmM2RlMzBlMjdkN2NhY2QxZGE5MGIwMGJkODA5ODI1ODgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE3NjI1NTA0MWQ1NmY0MDE4N2UzZTFjYzg3YWE2NTc2MDhjODRkMjlmMmRiOTE2ODdkNzQ4MjE5MzJkNDkxZTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_deedaf94931b43ea8c7fdeeeff22c346",
+      "statement": "The consent screen exposes no mode picker: it records a direct ceiling and relies on live per-section policy to narrow actual rights, and a solo Personal user gets no Strap picker while a user in Company Straps gets a picker scoped to exactly one Strap.",
+      "evidence": [
+        {
+          "resource": "repo://app/authorize/decision/route.ts#L90-L113",
+          "version": "repo-lines-v1:sha256:9b5e46b7f2e64474a17cb843836d31debc99dda9188c2a17cff90c376b6130ad:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY1ZTZiZGQxYmNlMmI2YjhiOTdjNTE4MzEyNWU5ODA0NTI3MDg1Mzk2NzI4NTVhMzBlZGFiYzQzZGU1YjNkN2UiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUxZWNhYzIwN2JiMGM5MTVkNDgyMzA0MThlNjE4YTJmYmIyNjVjNDE2MzhjZTI0ZWEzMWU1NDgyZTY5YzU0NzUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRmMzRmNmQ4MTVmMzM4MzI4OWQ5YTFhZTQ4MWZhYTA4YzFiOGM5NzJmYzU0MzliOGNiNzNhNGIwZTk5MjEwZTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU5OWM3ODBkOGU5NTQ4ZDk4Nzk1YTM3NTIyYzA3YjJhZmRhNDc2NGVhM2M5MDNiNDg0M2M3YjJjMmFjYTE4MjUifQ"
+        },
+        {
+          "resource": "repo://app/authorize/page.tsx#L123-L157",
+          "version": "repo-lines-v1:sha256:66072f8befa69c1818f3c08b05184fd95c8a5a041eb9f259e1dd17d143bd33e3:eyJzZWxlY3RlZExpbmVDb3VudCI6MzUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ2MzYwNzc3Mjc0N2MzYTE5YTY4OWEyZGM5MmI3NTQ0ZjVhNDhlMDg3ZDhmZjM2NTQ2MmNkYmNjODBkYjc3ODgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM1MTJhYTZkYTk2MjUzZjRhMjRlMDU1OTdkZGQ0YWVlYTVjOWY0NjNkNzg1N2NlYTkzZWM1ZGM2MWVmYzlkNDkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImMzZjBiMjgzYzliZjMxZTE5OTk2ZTc5ZDhhNzI0MWFkY2RmMzA1N2Q1MWRlYWJkNTlkNzNkOTEyNDVkZTgyZjAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUyNTJmYjc3NTg4YjQyNzM4MTczY2U0MGUzZDliYjQyOGZhMGQzMDIxMmU2YzUwNjA3ZDBmNzNkMmE2MjE5OTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_6751ee507886428cbb9cca3505b06c55",
+      "statement": "RFC 8414 authorization-server metadata advertises /authorize, /device/authorize, /token, /revoke, /register, the authorization_code/refresh_token/device_code grants, S256-only PKCE, none token auth, and scopes read/propose/direct_edit; RFC 9728 protected-resource metadata points at /mcp and is also served at the path-inserted /.well-known/oauth-protected-resource/mcp.",
+      "evidence": [
+        {
+          "resource": "repo://app/.well-known/oauth-authorization-server/route.ts#L20-L41",
+          "version": "repo-lines-v1:sha256:f8712178b7a853758714fe280bee3c3a2a022ec3aaddb8557f183e3044f7b11c:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI4NGFhYTE3YjkyYjY2ODE2Nzg3Nzk0MjBjZWMyZDVkYTdmMTE4YzZhY2I5NjE0MjAzOTZmZGVhYjBmNDE1YTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk1ZWYwMWJjMDhkYmMzYjYzZTRlNzVlYTNkMjZhNWI5NDE4OTE4NzdlMjdhZDg5MTMyOWM4NDExZDdkOGRjNGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjUxMzA1NGMzMWU3ZTVmNjA3YzMzNzNlYjQ1ODA2YjI4NmZjMDQzY2MyMGQ2MzdjZDhiYjE3MTRiZWNkZWE2OTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://app/.well-known/oauth-protected-resource/mcp/route.ts#L16-L22",
+          "version": "repo-lines-v1:sha256:1ca941f98d705be340dd474b5930cb07cf190309319799b959c36c273d20b03f:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYjQwMDFmZTRiMzQ1YmZiOTliZjIwMTk0OTE5MjhiMGNhMDgzZTc5NWEyOGI2OGEzMGM4NTc4ZmVjNzM0YWM2MyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMWEwNmNhMDIxZGQ2ZTRlNjZlYmY4YTg5Y2UyOTRhMjFhODY3ZDVmYWRhNjM0ZmVkMGFlNGYwZmQyYjc2MWYwNiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        },
+        {
+          "resource": "repo://lib/oauth-metadata.ts#L19-L29",
+          "version": "repo-lines-v1:sha256:6b17f975181a0b7cc0a9008475c86991b0bfc93afb747f3a92a4c2451a75b6d4:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI0MzQwYzk2MDU1NjRmZTNjNzI0NzZhMDI1NjIzM2M1MjdkOTIzNTgzYTIwM2MzMjJhYWFkYTM3ZmQ2YmE0YjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBlMmQ3NzhlM2ZkZGU5MGZkYjBiNzQyN2YzNTQ1MDRlNjQ0ZjlkOGM1NTg0NzE2YjM3ODBlZjhhZDkxZTNiZWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_24a9e8494f1d4aa59a7ea6c121d4a7ca",
+      "statement": "RFC 7591 dynamic registration at /register issues strap_client_ ids with no secret and allows custom app schemes per RFC 8252, blocking only javascript/data/vbscript/file schemes; up to ten redirect_uris are accepted, so consent and exact redirect matching matter more than the displayed client name.",
+      "evidence": [
+        {
+          "resource": "repo://app/register/route.ts#L26-L42",
+          "version": "repo-lines-v1:sha256:1b1a713f2db23556001c6244fbf08c4537006160e1b772014f5a588429f941dc:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVkMjhkMDI5NTZlNTljOWNjZDk0NTAwNGU3OWNkOGMwY2I3OTM4YmU3MWVjYTBlY2JmYmY4NzEwMTUwNzg5ZDciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjgzYjcxMTk3ZmU0NTYxN2U3MzE3MmQxNGYzMjdkZjc5YjFjY2Y1YTZkOTE4YTNhZGM3ZWU2Y2UyM2U2NzFmNmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjkzY2NiYThjOTJkOGE0ZWM4NTI2OWM4ZGQ3N2ViNzE1NGVjYjE0YTNjMmI0MjdkNGZjNDljMTJlZjJjYWQ4NjIifQ"
+        },
+        {
+          "resource": "repo://app/register/route.ts#L80-L94",
+          "version": "repo-lines-v1:sha256:d285a3473c7814e91823a7602d528df876254b906439aa5ea1b39bcffd8e44a7:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkwZTRlZTBmNzgyNzM4MjFkNDZhN2ZlYTYxNWUyNGZhNjBjOTc4NmE2NDZmZjI5MTE4M2FlZjQ2MGUyZmZhOTciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFkYjNlN2NkMGMzYTYyMzA0NzY2ODE2MWQxMDRlOTlkODYyMDljYTNlNzc1NGEyNWIxMTlhNDkwNzg3ODA0MjYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjAzNGU4YWUzODhiNTZkNjJmODdjNjgzYTE2ZWRiMjlkOTFhZmNmZDE0ZTY0OThhMzY4ZTBkYTI0YTVlYjZkZGMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_efaf5fe8f939461295683487f329b5f5",
+      "statement": "RFC 8628 device authorization issues a strap_dc_ device code stored as a SHA-256 digest, an eight-character user code from a 32-symbol unambiguous alphabet, the /device verification URI, a 10-minute lifetime, and an initial 5-second poll interval.",
+      "evidence": [
+        {
+          "resource": "repo://lib/oauth-device-shared.ts#L4-L19",
+          "version": "repo-lines-v1:sha256:6f76b5d227610fda38de69eecb74c8a4d4556388dd9678882509dfeda1f2298e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAyMGYwNmI4ODRhMmMzZGY0ZWY3OTMyODJhNGI1MTQ1YzFkOTAxYjBlOTBjN2RhNjIyZTJmMjg3ZDk4MDYxZDciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA2NzcyY2QxZmMwN2QzMmMwNzk2ZjIyMjQ0Njk3ZTdkMmM2YWI3Y2JjZjMwMGU3ZWJiOGNmZGRjOTgxZTU3YmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg0MTc0OGQ0ZjhkNTIzZGUzN2I3M2UyZmUzNjM0MWZjMzZiMGI5NjU5YzUxZTY4ZDUzZTliNTY1NzJkZTNlNWMifQ"
+        },
+        {
+          "resource": "repo://lib/oauth-device.ts#L22-L81",
+          "version": "repo-lines-v1:sha256:eceba656ead3fa5bbba5ea7c8e073f2553bd9c0a6ae4ace1cc6188922c49ec63:eyJzZWxlY3RlZExpbmVDb3VudCI6NjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA3OGZhNTE2ZTk5MzBhNGYyNmE2NWYwYzc1MzI1YWMzNWViNGFiNTY4MmQ4ZjNjZTgwNWIzNzZlOWE2YmNmNWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNhODI4NmIzMWI5NmNhZDA1ZmZmZWFkNzljZDUzNDdmZDkyOTQ1NjU5YjNmOGEzMjg2YWEyN2RmOWZlNmYxNzkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA1NGNkMmQ0NDAyNTlhZmJmZDg1ZWYyYTI2ZjJhNzFkMmU5NGFhY2E0ZTQ5MTlhOGQyZDM1MjE4YTRkODc1YzAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a062f2ef48c5425899ebac30744a4603",
+      "statement": "Device grant modes are capped by the requested OAuth scope via deviceGrantModesForScope: read yields read-only, propose yields up to proposal-only, direct_edit yields up to direct, and capDeviceGrantMode caps the user-chosen mode to that ceiling.",
+      "evidence": [
+        {
+          "resource": "repo://lib/oauth-device-shared.ts#L36-L54",
+          "version": "repo-lines-v1:sha256:1a499641414887e05107d87740b996c2304ba7a3923eebdcfe9e663b2628e4b2:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNkZTE0NTQ5ZDA5YjY1ODgxN2VhNGFlMzY2ZWJmODQzNmNmODA3ZGE3NmJkZGM2YmQ5ZDk5ZTA4NDc4NTZiMjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZlYjcwYmE2ZWY2MDg4MzhlYzFlNjYxYjNmYjg2Y2VmY2VkODk5YjUyNDMyM2YzMTRlNGRmZDU4YjdhYTc0MTgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://lib/oauth-device.ts#L135-L137",
+          "version": "repo-lines-v1:sha256:702cef0679cd575378c6e5e8b0a3a66d76ec3f48ec54659aaf983c139990d5f4:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYmVkYzNkYTIzYWUzZTRjMWQ2NDg4MTkzZGJlMzUxNzFlYzdlYzQzYTc1M2UzYTBjODZlNzBhMGIyYmFhODUwMSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZDY1YzI3ZGZkMGM1NTMyNWZlM2ViZmQwM2Y1ZmY5ZDJiNTBiN2Q0MzQyNDNlMGQzMGQwYWNhYmNkYzRjOTI3ZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjA2NjA1ODljZjU0YmJlNjE1ZjcwOWI2OWUyOTkzMWQ0MWNmYmI3ZDg4MzkwYTdmN2Y4NDc5NDdkYjA5MzAwMiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYTgxY2ZkNzhkMGMyZmNkMTU1ODI5ZDc5ZjAxZDBkYWZhZGVkMzk3ZDY0ZDkwZWYzNTJlMTI5M2JhMTdiNDhiNiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_02c9536bb13649b3b8a428a1120ed4db",
+      "statement": "Device polling is serialized in Postgres by the consume_oauth_device_authorization SQL function, which locks the row and returns authorization_pending, slow_down (incrementing interval by 5 up to 300), approved (one-time consumption to consumed), access_denied, expired_token, or invalid_grant (client mismatch); durable timing lives in Postgres while lib/rate-limit.ts only gates endpoint abuse.",
+      "evidence": [
+        {
+          "resource": "repo://db/functions/baseline.sql#L5-L61",
+          "version": "repo-lines-v1:sha256:155e88fdd2a8ff1bd2fbc715148547299ca23eb94630293f6f5f56279fa72a3e:eyJzZWxlY3RlZExpbmVDb3VudCI6NTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA2ZWMyMmI3OTE4ZGUzZGYwMjJkMmRhMmVjOGY2NzY3YzhiNWViOTcwODBmZWJkYzIyODU4YjhlYzlmZmYyOGEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE2ZWE1ZWNlZWEwMWNmZWI4OThjMDUyNzkwZmE3ODVjOTYwMjkwNThhZjNkZjVmMTQwYzNmNGE0ZjRjYzI2ZjIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ0M2U2NTJjYzQzZGQ5ZGFhMTkwOWZhMjQ0ODlkMTAxOWMzY2QzZWEzYmMxNTBkMmNiODVmNTJmYzk0MmVjOTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdlMDUwOTNlOWNhOWVmYTllMzhmZTYyOTE3YzAwMjdjYThjMGJiNzc0OTY1NTIxYzdiYWI5ZGUzMzQ4OTFkNDkifQ"
+        },
+        {
+          "resource": "repo://lib/oauth-device.ts#L160-L200",
+          "version": "repo-lines-v1:sha256:dc01e2a83841153555bb1cfd6b06dc71701c91274423adab2e64f2aff7cbf779:eyJzZWxlY3RlZExpbmVDb3VudCI6NDEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhZjAwYWQ3MzAxYjVjYjg3ZWRlMGE4MDhhYmJmYzgyNzQ5NjYwMTM1NDU0YTk5NjIwODI0MTFhZjVlYTJkMWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRmMGQxMzk5Mjg4YmY2ODVhZTgzOWJkNzhmYjhhNGMyYWVmZWRiM2U5MmVjMjRkNDQ1MjE3MGUyODFjODg1OWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://lib/rate-limit.ts#L1-L4",
+          "version": "repo-lines-v1:sha256:7151e29ea5d2550a92b604d97ddfc3f3b98b05e9ea360af8e83c4ceb73013455:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNDRlODY0NzZlZTM2MTkwMDU5MmYyMDc0ZTkyNzRmNmZiNjc1MTQwMDgxY2FmNGQ4MTFiOTg5NDdlMWY5MjhlOSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNzU0OGU0MjQyN2E2NTYwZDY2YjcyNjk0ZWRlMWRjNWU2ZTI2ZTRkMzQzMTNkNTZkNDlmOGU5ZDAzYjRmNjUxZSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_41a1636850d84f08b711bc40fbc2f23b",
+      "statement": "Device user-code verification via record_oauth_device_verification locks the pending row and auto-denies after 10 attempts; /device/decision re-derives approval, validates the chosen Strap belongs to the user, caps the mode, and audit-logs approve/deny.",
+      "evidence": [
+        {
+          "resource": "repo://app/device/decision/route.ts#L6-L22",
+          "version": "repo-lines-v1:sha256:905acec38ae13fbac13ce8b33616ce4583d1d7d94a118dc07ee09868a0ca4d17:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIwMzI3MTM1MDI5NzgwNjMxYzhhMWEzMDYyNjM0M2Y5YzA1NmE1YTMyNDA5ZWEyNGJmYzM3YWRjZGExNGQ5OTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFiMmYwZjM3NTM2OWZlNjAyNmMyMDZmZWVhMGVlYWUwMmFiYTRiNDdmNmRmYjllMGU3NTgxMThjNmExNDkwYmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY2NjQzMWNlOWE2MDNkYjRlYmQ1N2M3MTQ5ZTZiMWI4ZWRjNGU5MTgwODI3MGEwZWMwNWY4M2Y3NmVmOTgxYjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://db/functions/baseline.sql#L138-L168",
+          "version": "repo-lines-v1:sha256:957f94ac3bcccb6d96a4ca6a95422647215f1cf98a46095f5495c94f7bc4fb7d:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZkZmEyYmU3OWIwZTYyZDJjN2VmYzM0YjY5NjNkNGY4NTYwODhiMGRiMGM0NjUxNDg1N2IyODcwODRiM2EwZTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE2ZWE1ZWNlZWEwMWNmZWI4OThjMDUyNzkwZmE3ODVjOTYwMjkwNThhZjNkZjVmMTQwYzNmNGE0ZjRjYzI2ZjIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjEzMjBmMWY1OTZjNDUzM2EzYWU0YzdiZmI0YWZhYzcxNDdlZmNlYzg3ZjlhZmJhMjczNGU0YzdjOGY3NzhiYzkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJiYjU5ZmFlYmExM2RiYjQ3YzQyNjA0ZjMzOWUzZjFiZDA1ODAzYzI3M2Q2Mjk1MmVmZjVkYmExZDIxZGIwZDYifQ"
+        },
+        {
+          "resource": "repo://lib/oauth-device.ts#L109-L158",
+          "version": "repo-lines-v1:sha256:ff2057d9f119e4767c301d565b6e255cd0a4b6f527358d7eb7d4732245a57625:eyJzZWxlY3RlZExpbmVDb3VudCI6NTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjMjBhNjA3OWVjNGVlODllM2JhZTMzYzE0YzNmMjRkMTRlYWMwNTQzN2Y0ZmMwYTk5ZjY0MTRmZTMzZGU5OWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFlNTU4NDg0NTBjMDVhZWQ5ZjM4MmNiZWM1ZmZiNDdhNGI5MzE2NGQyMmI0NzM0NTdkYzgyYzZiYjI1MjMwMDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjI0MWE3MmU1ZDQ4ZTdjMzRjMTU2MWY4NjVkNDk3YWUxZDBjMTEzMzNmZDRiYWE2ZjExMmQ2NjcxYTdiZTJkYTkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e220495c41854ac9a6262df19f6172e1",
+      "statement": "One-time-visible API keys are created by createHeadlessKey from 32 random bytes with strap_key_ prefix; only the SHA-256 digest and a short display prefix persist, the plaintext is returned once, expiry is bounded to 366 days, and resolution checks revocation, expiry, and creator membership and records last_used_at best-effort.",
+      "evidence": [
+        {
+          "resource": "repo://lib/headless-access-shared.ts#L16-L43",
+          "version": "repo-lines-v1:sha256:0ebf2bcbae50a6351ce00159044982ec06e527822e74a43dcdb110558b17dc0f:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY1MWNjYmU2ZjdjYTU5YWJlNDJmYzI1Y2QzYTQyNDliYWY3MTNiZDIxM2Y4OWM1NmYwMGQyYjUyZjRiYTM4NzIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjUxMzE4NTcxYWVlMDQ0YWJhYmE3Njg4N2YxMmFmMzIzNzMwZTM1YmQ0YTRiMTMwMjRiMTg0ZTk5ZGRmMGY2NDYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://lib/headless-access.ts#L111-L132",
+          "version": "repo-lines-v1:sha256:1585915d15837f337dd57b6c2d5544535707182a80db09347c405c7e133ef50b:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBmMzBmODFlYmVjNTY2MjIyZTQxN2QwNGViN2MwNDFmMGYwNTBmYTczNWFkZjJkMTNiMzM4MTk3ZmQ2NTM3ZDAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQwMDk3MWVjMjcxMzVkN2Y1NWVmOTJjMmZkZWY4OGZkZmZiMWY0NTdlM2JmY2ExNTBiNzkwOTgxZmFlNjQzNWIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://lib/headless-access.ts#L73-L96",
+          "version": "repo-lines-v1:sha256:0272a76552c7524fdf26d01143836b7ee54932a1e24b30296598b0701b9ae213:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk5NjNiM2U0NzY5YjkyYzUxNTFiYjgwMzJlNzRhYmVlMzU1ZTQzNGNlOThmYjg3YzA1OTNmNzkyYjc5ZDhkMTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdlOGJmMzUwYmFkYTMxOGIwMmRlMmNlNTk3MjljNWRhMDE3NDE5Njg2YTNlZmE0Nzc4ODVjOGVlY2VkN2E4NmMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM2YjM2MjA5MTg0ZTcxNDljMzUzMzNjODBjODVhNTkwZDQ0NjNlNWQwOGFiMThjMDMzZWRhNTFjYWQwNTMwZTgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a1804f6ccf0d449b822bbd5095471a86",
+      "statement": "Headless-access APIs under app/api/app/headless-access/** require a Better Auth session (requireApiAuth) and let any current Strap member list, create (with explicit mode and optional expiry), or revoke keys for that Strap; the legacy ?token= query-string fallback was removed from the read API so tokens stay out of URLs.",
+      "evidence": [
+        {
+          "resource": "repo://app/api/app/headless-access/%5Bid%5D/route.ts#L8-L22",
+          "version": "repo-lines-v1:sha256:1c4eb473752fd6dce057c3641eb0dcd2914d586797b08f619aa4e6ae4356d7f9:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUwNmIyMDBjYjZhMDRlYzNkN2RmMTkzZTRiYWJjNTkyMWQwMDI5YjgwZDE5OGIzNGI3NzIwM2E3MWExOTI0MzEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQzOWE1NzBiOWRmYWRjNDA2OWRlOGZiNTVjOGQ2OGVlMGVmZGNiMDE4MzQxNDY5MzI1ZDA3NGE3YThkOWJlN2YiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://app/api/app/headless-access/route.ts#L16-L63",
+          "version": "repo-lines-v1:sha256:394cb23810da8be5a68f5b64fc8fbf3d22530ccf0c02bdb7858d6faf936a99b9:eyJzZWxlY3RlZExpbmVDb3VudCI6NDgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJjNGFhMjExZDg5ZTY1NDM5MThlNzkzZDIxNjFmYTA2ZjdkMzJkZWU4MDlkNzkzYzdhMDFmOTE3MjEyNjAwYzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgxZWJlOGM4MTE0Y2QwYmQxNjQ3NTNhMmYyOGM2Y2RlZjkxMjk3NzVkNzY1YzhiYTEzMmUxYjIzM2Y3OWZmZjIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImViMTE2MGZiMTAyMWU2NmU1MDliMjZiMmNhOTRkOWI3NmVmYTRmMmM5MTU2MGY5YWExNGJhODE2ZThhYjA0ZWQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://app/api/creed/route.ts#L14-L27",
+          "version": "repo-lines-v1:sha256:f3106538bd5f869413d74e8b6c2a34fbb4490e5fdb3151867847de46c740b60d:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI0MDY0YTRiNmJiMmQ1OTM3YzQzM2ZmY2ZlMzM5YTdjZGY0OTY1ZDk3NWViYWU0Y2M0MjkxYmI0YjQ1ZDU5OGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjlmYTMyZTEzNDdlNTkyYTZmOTczMDE4NGYwMzNmZWI3ZGI1N2M4Yzk5YjVjMDllODdmOTM2MTMwMDIwMzkwNzciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ4YzNiMjQyNzJkZWMzMDM1OWY3MDljZGZkNWJkMDdmNjBlNjRkNmI1YTZjMmNjMTk2NzdmMDI1NGNjYjEwOGMifQ"
+        },
+        {
+          "resource": "repo://lib/api-auth.ts#L7-L9",
+          "version": "repo-lines-v1:sha256:bdf35de0db00d1440caef8d6d412962bc8cda5b4d1d86c1e7bb7c0d57954b33c:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODVmOTIzMTk1ODQ4YmJlNDAyMDkxNjNmYzY2OTY5ZDJkMzYwYTU5YTkyYTUzM2U3OTU1NmNmODQxNDI5ZWY2NyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZGY1MGFmYjJhNzMwYWJiNmE5ODE0NDA1OGEwZWQwZDdhZmUyYTllZjg4M2ZkODc4NGVjNTY0YTYyNTA3MDU5NiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNzBlOTVmZGU5Y2EzODA4OWFkZDI5ZWI4NmY0YjEyM2MxMmE1YTk4OWRmNzJlZDZkZGQ4ZWMwMDJiYmFlYTY5MCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjEsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_1387449ffc724991b4146fde17a4e7ec",
+      "statement": "MCP supports JSON-RPC tools/resources/prompts, request batching of 1 to 64 objects with a 12 MB body cap, CORS discovery, and protocol 2025-06-18 returned by initialize along with MCP_INSTRUCTIONS; GET returns 405 because Strap pushes no SSE stream.",
+      "evidence": [
+        {
+          "resource": "repo://app/mcp/route.ts#L2228-L2246",
+          "version": "repo-lines-v1:sha256:5b33e4c7fc81a6126403c1f350f634140e5830ededaa3fb02680d25188747183:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVlNWVhYWY5ZmRjMWI5NTg0NWJjMWQ1NzE2N2ZhZDdhMjIwYWY4NjU0YjU0YTFiMzg4YWVhODA3NzdkYjZhYjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkxOGM1ZGY1NDkyZmI2MTRjY2U0MjY2ZmMxN2ZiODM0OTk5ODJkMDY0ZGVjMTU5NWI1YjIxYTM2MTA2NDlkOTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjI0YTAzNTk4NGNkMmRlOWUyMmZjNzU0NmY1MzIxNDE0ODU4MDgyOGRkNGQ1N2JhOWFjYTNkMWVkMGI3M2QyZmQifQ"
+        },
+        {
+          "resource": "repo://app/mcp/route.ts#L2364-L2375",
+          "version": "repo-lines-v1:sha256:f27c257598503d621edecf08135e155a685feafd8eb87141dfcb1c92682fb98c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI4NGFhYTE3YjkyYjY2ODE2Nzg3Nzk0MjBjZWMyZDVkYTdmMTE4YzZhY2I5NjE0MjAzOTZmZGVhYjBmNDE1YTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVjMmIyZjgyNGEzNGNiODZhNmM3YTUzZjY1NjAwOGZhNmMxNzhjMDY3MDI5ZTBlZTE3NzU5ZGZiNGY5M2RiYmYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjkzY2NiYThjOTJkOGE0ZWM4NTI2OWM4ZGQ3N2ViNzE1NGVjYjE0YTNjMmI0MjdkNGZjNDljMTJlZjJjYWQ4NjIifQ"
+        },
+        {
+          "resource": "repo://app/mcp/route.ts#L2422-L2443",
+          "version": "repo-lines-v1:sha256:602da5e36f12cb62b8fcba22cf049bd7c53b1ec15d39f9747acd193fdec68942:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA2NTk1ZjRlZTVmZjYzZDUwOTUwNDE5ZGMzNDQxNDUxMzg1MWRjOTczNmZkMTdhNGY3YmZhOTMwYjI2MWI2ZjIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY5MDlmZjZlMzI0OGJiMjQ2NjM4ZDA3NmQ2YTMwZWNlY2M0YTI0NGUxODMzZTQzNGE2ZTkxZDhmMjY0Njc1ZDkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjVkNTNkMjYzM2Q1MjQ2NDQ4NDRmNzdiYjFhMGYyMTY5MGU0ZWQwMjk1OGFlNTU3ODJiY2QyMGFiZmMwZjE1NDQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_f63756cab23b4990a899ea722e411ec0",
+      "statement": "MCP discovery is Strap-first: tools/list advertises canonical strap_-prefixed names produced by replacing creed_/Creed/creed in the internal definitions, and the 401 WWW-Authenticate header advertises scope read propose direct_edit and the protected-resource metadata URL.",
+      "evidence": [
+        {
+          "resource": "repo://app/mcp/route.ts#L2248-L2255",
+          "version": "repo-lines-v1:sha256:88345531b5a575364e9238fde07d5ac0287ce3455ea56d5f28c17abd5b8f3d8c:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODBmMDQ3YmIxOTRhN2NmNDk0OTE2ODA1MjdiNTAzYWE0MGVmNGJlM2FlODJjNjhiMTFiNGJhZWI0YTA5ZTJjYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMjdlNTc4OGQ1ZDlkNzNkMjRhODFkYmMwYTVhNzRiZmE4MmM5YzNiM2FmOTllNTJhZjc5NmU5MGI0NjhhOGEzZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYmQwMjE0ZmVmMzliYzRlMzk2Yzc5OTdmMmQ5ODEyMDVhNjk1MWNjMjdkYWFlZjJlYzQ1MjQ5MmQxMjcxZmZkYyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTYzMTM3MTZlNjY3ZjQ3NmMxYTBmZGI4MzY1NDgyODgyOWFmM2VjNmZkNTdmNWJjODFkZjgwYzYxMmQwNTM3MyJ9"
+        },
+        {
+          "resource": "repo://app/mcp/route.ts#L2340-L2357",
+          "version": "repo-lines-v1:sha256:d4e59bdc589fc744d4bac07e44d89526bb0298021b6fb752b6174605bc560bb2:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdhMGMzNWFhZjIzNDIwZWFjMDIwNGFiYTgwZTEzMDhlNTk3ODA4MTcxNmI0OGY2NDJiYzI2OGI4YjgwNzk5YjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk1ZWYwMWJjMDhkYmMzYjYzZTRlNzVlYTNkMjZhNWI5NDE4OTE4NzdlMjdhZDg5MTMyOWM4NDExZDdkOGRjNGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZlYWQ1MDgyYjlhMDViMjQ0NDViMTM4NTNmYWRjYTg0MDMzMzQzNzhmNTQ1OTQ0MmQyZmYzYmEyZjU1MTdhYjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZmOTRlMDRmZGJhMzI3NzlkM2YzODQ0OTlkODRmYTk3MjI5NjgwNjc5OGMzZjY2MmJkY2E4MTMxZmNkOTdkMDMifQ"
+        },
+        {
+          "resource": "repo://app/mcp/route.ts#L500-L507",
+          "version": "repo-lines-v1:sha256:65bb1f61fa9b63f3e401b1b49e21bd28951fd0bc49ef98bddef3576af86d79da:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODYyZTBmNzQ0ZmU0MDdiN2MyMjQ2MjFkNDQ3NjIwZTdkMWMxM2E5MmZlOGZkYzYzY2FmOWE0YTIyMTU1NzkzYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYmFjZTZkMWM5YThjNDhjNWVkNTU2NWZjNTkwY2MxYTg5NGUxMjlkNjNlNzM4Y2ZkODljMjg5ODMxYTU3MjQyZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMmQyNGVhYmRmZGM1YTBiODIwYWQxZjZhY2Y4ZTUzOGUyYWU3MjZkMzY0MjQzNzY4NTI2ZGE4OGE1OTJjMjFmZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNjgzMThjZTYwZmNhOGVjNjFjN2Q3ZDdkMTA1MWQzMzI2MjY0ZGRiMzhjZTJkNmU4MjBkYmY1ZjlkYjNmMTE1OSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_ba991760e5d34a0295b9586640aff964",
+      "statement": "The MCP compatibility surface must not be renamed: LEGACY_TOOL_NAMES maps canonical strap_ names back to creed_ aliases and the dispatcher accepts both, keeping list_creeds, read_creed, propose_creed_update, direct_edit_creed, creed_update_section, creed_create_section, creed_delete_section, creed_rename_section, creed_recolor_section, creed_append_to_section, creed_reorder_section, creed_get_section, creed_search, creed_get_recent_activity, creed_get_quality_report, the creed://profile resource, and unprefixed get_write_policy/list_sections callable.",
+      "evidence": [
+        {
+          "resource": "repo://app/mcp/route.ts#L2276-L2292",
+          "version": "repo-lines-v1:sha256:95d0297032c51643d0ee10e7ebae4f59f896e899a7cf3e1a79603d6d0827373d:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIyNjllODRkYjA4ZDZhNTI2M2IxNWY4ODllZjBmOThiMTljYTE3YmUxMDhjNzVhODU4OGY5ZDMxZDBlZmUwYzciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVlMTJiNjExODk0M2UzMGMwMDY4MzNlNzgxNjMwYTUzYjMyZjQxN2VmNWY5Nzk1YzNmMTJmMzMwODAyNGM1ZDkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQxMTMzNzE0MzBiZGRkYzgyMGI4NmU4NzMzMTViYzdkOTdjM2M4YjExODNkZTJlMTNhZDdhMDJmN2Q3OTg0ZDMifQ"
+        },
+        {
+          "resource": "repo://app/mcp/route.ts#L482-L498",
+          "version": "repo-lines-v1:sha256:2bac3a4c23c810cd2aae4b02dcabe18602de880220a0fb44e0551e900448edda:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImExZTI3ZGJkNjM0MDE3NWY0YWEzMWFjMjRjOTUzMDlmNTNiNzkzY2NkOGIxOWY5NTllOGY5MGNjNWVjNDIwMjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ5OTY3ZWMxZWQzODM2ZjhlYjE3YWZmMTcyYjViZmVmN2RlNjA0ODVhNDM5YzZjYTExYzU5MWUxNzU1NzM5YWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE4YTkxNzU5NzJmZTE1ZTJhOTY0MWFiMTMxZjU3MWU2YzdjYWJjYTA2ODM3NjJlYmE1ZjIzNTNlNDgzYzNkNTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdlNWEzNzY4NDEzNWMxYzU4OWM3NjVjMzUzMGFmNDIzOTg4NmFhOGM4Y2Q4NDUxYTRhMDIwOWViMjRhYTRkMDAifQ"
+        },
+        {
+          "resource": "repo://app/mcp/route.ts#L539-L541",
+          "version": "repo-lines-v1:sha256:55f96088daa41b26f45747c98524ea800d861aa55f57189d08dc6f8903d83e0f:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZWU2ZWIzZjllMDViNThkMjE0OTNlNDliYzI4YjNkZTE5YThjZTdmOWRlZWQ5NmUxMmU5ZDU2Y2UyMzY1Njk1ZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZjg4NjIzMTE1NDk5YWI0OWVkZjZhNWMxZGM4MGEyODRkMjkwNWY0MTY0OTg5NzhjMjc5NDRhZWM3NDdlNzA0MCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYjA5MWQ4OTQ0NWE1YmNmMDE0ZDJlMTI5OGQ0MDk5YmQ5Mzk3M2FmODE0ZmJiYWE0MTBiODgwNzk4YWZhMGQ4OCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_dda41b9dc5114ba09f437895a94d02b1",
+      "statement": "Conditional tool exposure aligns discovery with the credential ceiling: read-only credentials receive only read tools (mutation names filtered out), and write-capable credentials still hide the legacy direct_edit_strap alias when no section allows direct edits.",
+      "evidence": [
+        {
+          "resource": "repo://app/mcp/route.ts#L521-L537",
+          "version": "repo-lines-v1:sha256:da2a406e7eff750491f4b63b7965d830b6192e906229139f95e57e23c4e14d18:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk4ZDBmYjk0MzZiMTU1ZTllMjkyMGY0OTZjMzIzYjU4MjNhODJiOGY3YWMxNzM0OWQ5MWFlYWQyYjU3NDdhNzUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNhYzFhNGUyYzNmYzZjNDQwYmI5Zjk1ZGI5YmY0ZTE3OTViM2Q3ODU0ZTk4NjI3ZWUwMzYwNzE0Mjc1NDNhNTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRlZWI2MGVkMjE3MDA3N2U3MGQxMjNiMTdlZWQ3OTg0YWNlNTA0NDEzMzM0ZTFkYzY4MGI0NzdmZGE3ZmRlN2EifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b5cbd01880174832b231e17c2545bae2",
+      "statement": "MCP skills (strap_list_skills, strap_get_skill, strap_export_skill, strap_publish_skill) are backed by the retained strap_skills_read and strap_skill_publish SQL procedures; skill reads/exports/publications must be individual requests, publishing requires direct access plus owner/admin role and is rate-limited per user, and skill guidance cannot override higher-priority instructions or authorize secret access.",
+      "evidence": [
+        {
+          "resource": "repo://app/mcp/route.ts#L2438-L2443",
+          "version": "repo-lines-v1:sha256:6ebdd6aa85c19b7cb4820d8eafd6f8dcc8c4063384b4a8edcaec6348b4374364:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNzA4NmRiOGQ1ZWQ0NWFjZDI1NzRiY2FmMzdmM2QxNTMzYThiZmQzOWNhYjVlMTFmNzQ4YmVkNjQ0NTA3ZGZlOCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMjdlNTc4OGQ1ZDlkNzNkMjRhODFkYmMwYTVhNzRiZmE4MmM5YzNiM2FmOTllNTJhZjc5NmU5MGI0NjhhOGEzZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjgzMGNiYzYzMGJlYzE0ZWM3YWFlMzhhMWQ4NjY2NWZhOTk5ZmU0ZjBkN2ExYzFjOTRhMmFmYjBhZjQ0ZDhjNiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNWQ1M2QyNjMzZDUyNDY0NDg0NGY3N2JiMWEwZjIxNjkwZTRlZDAyOTU4YWU1NTc4MmJjZDIwYWJmYzBmMTU0NCJ9"
+        },
+        {
+          "resource": "repo://lib/skill-mcp.ts#L6-L52",
+          "version": "repo-lines-v1:sha256:f28ac9b6c10463902b3322c0f4245bbb66019191431faac32701179a33d56756:eyJzZWxlY3RlZExpbmVDb3VudCI6NDcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU4MDg1NDE5OTgwODhkYzIxNzI3ZjA4ODYwODk2MmI4NjhhMWMxMDcyZjE1MTVkN2JmMDRhNmMxOTMxYzAwYzIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjUyNmJjZjg3YTBlNmE4ZDY5OWJhMTAyNjk1MzdiNjBlYjRlOTQ1NGM5OGM4ZGMzODQyYWM3OWEzYjNiZGIyNmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhkMjZhNjg3MjhjMmJhNjQwZTk3YTQ2MGUxZGRlZjgwMDBhYTQ0M2YzMTVmYWFlOTFmY2MzMjEzNzRiMDc1ZjYifQ"
+        },
+        {
+          "resource": "repo://lib/skill-tools.ts#L50-L139",
+          "version": "repo-lines-v1:sha256:25a233eac5d0f3e05ff5ed7d501352e9189b469fe287594ded234b3c6dedb58b:eyJzZWxlY3RlZExpbmVDb3VudCI6OTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE3ZmVhODRlNTM5MjNiMTAwNDQ0Mjk3YjY2OTMwNDZlZjE5N2UxYWE5ZWFlZDgwYmUxNjVkMjA3ZGFhOTNiMDgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkyMDQwZTA5NWE5NGUyYWRhNzRlNDIxZjM3MTg3NTFhOTFhODEwYmZkNjZmNDhmNGU5MzljN2I3NDgwZWI2NzAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://lib/skills.ts#L68-L128",
+          "version": "repo-lines-v1:sha256:fb52b1b8bbd54e50aff31dc0a231ead09065b0d5583696f48c519d488a2ae59a:eyJzZWxlY3RlZExpbmVDb3VudCI6NjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI2ZjYyMDE4YjJiYThhYTM1MTRhODY1NGEyZmJjMThhNmQ4NWQ1ZjQyNjQ3NmEzMjA2ZWU2NmE2ODIxYzkzNmMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdlNWViYzMxMDUwN2MyNjY5OWEwMGEzYTAyNGE0MzJmMzBmMDVmZmY2NWIxYjk5ZDAyYWQxZjNiMDFlYzZlOTYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI1NDU4ZjMwNjQ4MzRmOGYzNjhmZWU4YjdhOGEzYzBjMmZjNTI2ZDZhNWZjZmM5NDIwYzBkMWIwOGUyMTY1MDMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_5638b0ed652b4d43ad3739bdd7cd168d",
+      "statement": "/api/strap, /api/strap/proposals, and /api/strap/write are the canonical direct HTTP paths while /api/creed/** is only a compatibility shim re-exporting the same handler behavior, authentication, and rate limits; lib/creed-data.ts is a deprecated re-export shim of lib/strap-data.ts.",
+      "evidence": [
+        {
+          "resource": "repo://app/api/creed/route.ts#L7-L55",
+          "version": "repo-lines-v1:sha256:e8636a56de446e6d74d0416a56792f2c97659f80b553eeeccfc46dfde8f39f1c:eyJzZWxlY3RlZExpbmVDb3VudCI6NDksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJjNGFhMjExZDg5ZTY1NDM5MThlNzkzZDIxNjFmYTA2ZjdkMzJkZWU4MDlkNzkzYzdhMDFmOTE3MjEyNjAwYzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhM2U0NmY5NDI3NmI2ZjZmNGVkMWYwMmFmNzhiZWY2YTJlZTFjNDM5ZGQ1NTg0Yjk3Mzk0ODMxMzIxNGQyYjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImEyNmM4NTBiMWVkNTU1ZjdmYTcwNWI3NGRjMDEwN2RjNDBhNmRlODUxN2ViNTAwMTg2Y2YxYjRjZDg1YmYxZTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://app/api/strap/route.ts#L1-L3",
+          "version": "repo-lines-v1:sha256:f90dd81c426611ee246ddff7e303f19cd0bb2558b1914ccf338c2d66bfae6979:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNjI1NTU5NjkwZDlkNTE1YTE3NDRmZDZiODgyZGNhYjlhODhmYjBiYTgwYTQ1Y2IwOGJmYzBiYzE2NzllNTA4OSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMGViNzk0YjU3NmM4OTg1OGJiZDIxNDU0MzUyZWFkMWViMWMzNDI4ODI5NjI2MTdkODFhOGI2ZDRiNjVmNzQ2NiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        },
+        {
+          "resource": "repo://lib/creed-data.ts#L1-L2",
+          "version": "repo-lines-v1:sha256:08d6f743b437127a5b015b711962d9b3d8fbf70b3e8222326d29b8b386ddfff7:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYmU2MzYwZTNiYzllMjI0NmY5MmMzZWFjNzlmNTRiOWU5MDg1ZTMxNjU5ZDQ4MjVhYTFlM2VkZDI0ZTBkMjFlNiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiM2NkMDEzMGZkOTA5NDA0NTgxYWM1NTFkZjUyODgzOTMzODk4MWExZGI3YzRjNDlmYzQ0YmQ4NzI4MzZiZjk3YyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_6a39a369b31d43adb9c13c5a6c7f76d9",
+      "statement": "The primary CLI @bvdm/strap (packages/strap) publishes the strap executable for Node 20+, defaults to https://strap.bvdm.ai/mcp, uses browser authorization-code PKCE via the MCP SDK, discovers tools/resources/prompts live, stores credentials per server under STRAP_CONFIG_DIR, and requires HTTPS except explicit localhost loopback; it has no device-flow or API-key login command.",
+      "evidence": [
+        {
+          "resource": "repo://packages/strap/package.json#L1-L29",
+          "version": "repo-lines-v1:sha256:ed925468652d605db487ab7f951bcb73986c3730e65382faf17063d751d51992:eyJzZWxlY3RlZExpbmVDb3VudCI6MjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE2ZmIwOGZkYTFhY2I5NTdiNjExNmJkMzc4MTFhMWZlNDFhMDE2MTFjMDYzMWVkYmY3ODZkNjg4OWEyN2E1NWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJhM2I0NjlkOWUwOTc1NzIyNDY2NjczNGM5ZWY3YjI1NGQ4ODUzNGY1ZDViYjcwOTg5NjA4MDVjNTUzZGMzMDciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY5N2ViZDllZDhhZGQ2ZDY5MjU0MzQwYWI2NzBjMTAyNTRjNzA1YTU4NjE2ZGY4YWEwZWEwOGU4MDM4ODRkOGUifQ"
+        },
+        {
+          "resource": "repo://packages/strap/src/app.ts#L54-L176",
+          "version": "repo-lines-v1:sha256:5b839a9b27cf94f096e4a698a0759cbc7552c7cfa603e7945b62cc2e177d4d58:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIzLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI0MjQ2ODI4YjQ0ZWYzZDIxNzc1MGMxZjc3MDIxYzU1YzFkOTE0YzVjMmE2MTFhYmEzMTE4MmZkYzFmNjFlOWUzIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiIzZmMwM2NjNWMxMjRlZjg0NDQ5ODU5NTMwZTEwYzY4MWVkMGY4Mjk0NDI3MGQ4OGJmMDNiYjhmODAxYzc4YTJmIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MCwiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1In0"
+        },
+        {
+          "resource": "repo://packages/strap/src/commands/options.ts#L84-L100",
+          "version": "repo-lines-v1:sha256:a23c6d7c604feb1f9f7e225986e395ca1c1dcb876b27f3b32755138444050070:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFlODI4MzVjMjU0OTI2ZjBjYmFlMWY3NmVjMWM0YmM1ZmFjODk5M2YxMjQ2MjRlZDBhNThjMGNiOGVkMjFiYzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI3YWVkYjg4M2JmZmUwYTBmNjMyMzNhOGI5MzlkM2IzYWNmNTI3YjM2N2U1YmQ5NTI2MTJiM2M3Mjc4YWMyOGYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkyMDQwZTA5NWE5NGUyYWRhNzRlNDIxZjM3MTg3NTFhOTFhODEwYmZkNjZmNDhmNGU5MzljN2I3NDgwZWI2NzAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://packages/strap/src/constants.ts#L1-L5",
+          "version": "repo-lines-v1:sha256:2815041a2170ee14aaee248c55254b6b6df453f4afdc85480192bccaafacf6c8:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNjQ5MzBlZWQyMmI5MzNiNmJmNTU1YjJmODQyZjI4ZjA1OWYxZDg0YjA1NDczZDJmYjVhMzNjNWNhOWJlYTdlOCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNGQxMjA3NDI3MzNiYTMyNTAzZmRkYzg1MWU4ZGRjNWM0ZmM1NWJlNzkwYTEwODJkMTY3NjczMDkyNWI1NzJjMSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        },
+        {
+          "resource": "repo://packages/strap/src/mcp/client.ts#L25-L70",
+          "version": "repo-lines-v1:sha256:3fbc121020d24a35727216c568003947b108cdf1844b2db63a2df0698fa5f4b8:eyJzZWxlY3RlZExpbmVDb3VudCI6NDYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA4Mjk5MDlhOWEwNmZhMWM1M2Y3ZGI0ZGM2Zjg3YzllMGFhYTIyYTgyZjNkMTc4MWY4ZjU4M2Q3ZjNjYmI0YWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZiNTgwZTk2NGY4M2E0NzNmNDNkNDQzODQ2Mjk0OWQ2OGI1NjAwZmRhNzg3ZjE2Mzc0NWQwMGRlODljYmYzNmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImYwMTE2ZTU5MjU4ZGEyMjczNWQ5ZjUxZTJhMjNiY2ZjYmUyOTcwOGM2MmNkMjU1MGU1NzI3MTg3NjU5MmYyNTQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_6fa67afad2ea4b7c8e2b8f8958a283a0",
+      "statement": "Server precedence for the primary CLI is --server, STRAP_MCP_URL, saved config, then the default URL; logout discovers the revocation endpoint from authorization-server metadata and attempts RFC 7009 refresh-token revocation, removing local credentials regardless.",
+      "evidence": [
+        {
+          "resource": "repo://packages/strap/src/app.ts#L91-L110",
+          "version": "repo-lines-v1:sha256:3856509d2db5edbffd4d05cbcb3262e08f4af3a879ed04c3ad4fb30ef17d63f2:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc2YWU3ZDc4OWFjNTkyMzdjNDg1NDFjNGM1NTEwMmUzNDkzOWMyNGViODQxZWMyN2NiOGIzNDIxMTU1M2YwOGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjUyODgxZTFhY2EzNTQyYjg1MDFlZGU2ZjBjODgxYTMyMGNkMDQ2NjE1NmFkZWJjNDIzM2IxODAxNzVkZGEyZDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjIxZjMxOGI3YjFiMGNlNDhhNzZmNzkwMDg5YzkyYzRjNzljMGQyMzg2MThkMTNkYmY2NDU0MjMwOTBlMTI2MjgifQ"
+        },
+        {
+          "resource": "repo://packages/strap/src/auth/revoke.ts#L6-L29",
+          "version": "repo-lines-v1:sha256:3f49596f3489fad55069035f863454952e1c551ce9083ad1c772126a5a467311:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkxNWYzMDJlZTIzMjc1MDhkN2QwZDNkMjg0YjAxNjVmMGEwMmY1N2UzMzI3ZDQyMmMyZjQ2NmQ3NTFhMGRhNmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUyMDQyMTRiNTJiYTg5NTQ2ZjVjN2QxOTA3MTQ2NWU2MTYyYzc2NWNlY2ZkMzIzZjA4NTZhNjIzNTQyNzgxZDkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY3NWUwMWE3ZDc0OGYyMzQ4YjkzYmUzYjA1MjBhZThjMDdmMTlhMjA2NjU1YjE3YTA2ZTZlZmQ2YjI4MDIyMDQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_76eb526241f24e3ba0de9e7d914c9c26",
+      "statement": "The legacy creed-cli (packages/creed-cli) exposes creed/creed-cli, defaults to https://creed.md/mcp, is separately configured, and neither CLI reads or migrates the other's credentials.",
+      "evidence": [
+        {
+          "resource": "repo://packages/creed-cli/package.json#L1-L18",
+          "version": "repo-lines-v1:sha256:94c14d25c1e9c52ae8439c02f0e8c7654fbb21554817a7488063ead79ae63539:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE2ZmIwOGZkYTFhY2I5NTdiNjExNmJkMzc4MTFhMWZlNDFhMDE2MTFjMDYzMWVkYmY3ODZkNjg4OWEyN2E1NWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRkNWNkMmZiNGYzZGY4ODQ1MTUyNTViMzk1MjNmMmY4YjU0NzJiZWVhOWY1NjZmZmNhMjA0ZGI4MDI1NjEwNDEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImMzZGFkNDM2NmE3NzYyNjlhODU4NzZkYzNiNjEyOTQxYzJhOGJkNTc3MjEzN2NiZjEzM2FmNzQzNDhmMTliODgifQ"
+        },
+        {
+          "resource": "repo://packages/creed-cli/src/constants.ts#L1-L5",
+          "version": "repo-lines-v1:sha256:e1b16b42417fb8c86c43ba5694425ba4dae0a94e10f9c1356edf66cd976bc66f:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzcyMTBiODUyMDNkNDg0MWY1MWIzZTRjY2UwOGVkMjUwNGVjZTY4ODJkNjFhNmJkMjdkNDgwZmUzZDc5NjBkMCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNGQxMjA3NDI3MzNiYTMyNTAzZmRkYzg1MWU4ZGRjNWM0ZmM1NWJlNzkwYTEwODJkMTY3NjczMDkyNWI1NzJjMSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_10834c42e5cf4f3f8a7f538a3228169d",
+      "statement": "Rate limiting is process-local in-memory token bucket (lib/rate-limit.ts), suitable for single-region deployments; MCP hashes the bearer value before using it as the rate-limit identifier, and endpoint limits include /register 20/min per IP, /token 60/min per client, /revoke 30/min per IP, /device/authorize 20/min per client, /device/verify 10/min per IP, /mcp 120/min per hashed bearer, and skill publish 20/min per user.",
+      "evidence": [
+        {
+          "resource": "repo://app/device/authorize/route.ts#L47-L58",
+          "version": "repo-lines-v1:sha256:b116a603b61941fc1f08194f2b1c244f4c9630225b54831c161ffb881ca6f777:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFkOTRmYjgyMGM3NTVlODRhOGMxNzBjNzAwMmUyMzYwZDVkMWJlZTU2MGY1Yjg3ODA2ODdmOTU0OGM3N2ZlZjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVkYzE4ODc4YWIzNTJmZTVlYWZkYzk2NjUxMjlhNDkzZGIxZWZkY2FlZGE5YmJiYzY5MzI3ZmZhY2UzOTViMDciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE3NGFkNDU0NTA1NTUxMjczZWJkZGMzNzJlMmQ4NTEyZmNlYTkxZmQ5OGY2NWYwYTUwYzk5M2E1NzhkM2MwZjgifQ"
+        },
+        {
+          "resource": "repo://app/device/verify/route.ts#L13-L22",
+          "version": "repo-lines-v1:sha256:82a957c23b68fab56c77ecfa0bfeea8c811a63765889d934f3d594807ff6f9b9:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMxYTllMWQwMDBhZTJiMzU3N2NiMDBlZTc2YzU2ZTU2YThmNzFhZmU3MDU3ZjA4NzZlYjEwM2JjMzcxMzNiOTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM5M2MyMjFjNjI0MTY3MTcwZGY2OTgzNGY4OGJhM2FmMzBiMzVkNmEzYzZhYmNkNTcyMWI0ZmNlNTRhOGJjMTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBkMDkwOTNiNjU0MmZjNDYxNzgxNTY0MjUxMzc3NjM3ZmU3OWE0NmViYTRlZTBlYjUyMzA5ZDkwN2I5MTNiMDEifQ"
+        },
+        {
+          "resource": "repo://app/mcp/route.ts#L2390-L2404",
+          "version": "repo-lines-v1:sha256:9b118fa29b760756e895a1ba173b41105ada3801f5218dd242b39cc88f49cf5b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFkOTRmYjgyMGM3NTVlODRhOGMxNzBjNzAwMmUyMzYwZDVkMWJlZTU2MGY1Yjg3ODA2ODdmOTU0OGM3N2ZlZjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRlNTE3ZGNlNjIzYjZhY2RhYjIxOTAzNzdmY2I4MjI4NWFiODRlM2ViOTNlZTAyYmJmMTkyMjFkODE4Yzg0NWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImViODllZGUzZGY2MDNkNWQyN2M5YjQ3YzlhOGRkZTliNjY4NzRlZGZkNmY3MTFmZTNhN2NhNmUyZjVmMjc1MTUifQ"
+        },
+        {
+          "resource": "repo://app/register/route.ts#L54-L68",
+          "version": "repo-lines-v1:sha256:e25fdd87008863bfd08599d7827ead0e322716e9ecd6ad419cd605730a6d7d1c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFkOTRmYjgyMGM3NTVlODRhOGMxNzBjNzAwMmUyMzYwZDVkMWJlZTU2MGY1Yjg3ODA2ODdmOTU0OGM3N2ZlZjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg5YTFlODExYjA4NTM5ZWM3MTEwZGI2NmM4YzI3NWNmOTlhYTQ3NzBkZjhhZDFmNDhmYjI0NWY3Zjc2NTI5M2EiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZkYzAxNTEyMTIxOGRhMGJlYmMwNjA1ZjUzMjMzNjE2N2E1NGYyNDMyYmQ4ODllOWIwMWEyM2ZlMjRiMjhkZmMifQ"
+        },
+        {
+          "resource": "repo://app/revoke/route.ts#L23-L35",
+          "version": "repo-lines-v1:sha256:e64f44dfefe15f37f21316a0176b62ee28816d85a7d3e57076afb9a34219354d:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5YmE0MzIxOTYwOTI3NzA4OGM0NGRmYWJhNjdiYTc1YjQ0ZDdkYmNlNzFjOWMzOGU0Y2FiMmZmNTE2ZTBmN2YiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ0MmE2OGQwZmFhODAzZDMzYTM1YzI2YWUzMWUwYjFlNmVhY2QwN2RlNWY1MmVjZGVmMDZiODMzYTlhMDNiMDciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJkYWIxNGU0MjIwZTllOWI5YWMyM2JiYzdjMjJmZTFiODc4MDI5YTlmOTUyNWZhYjliMmVmNjZiMWI5MjE0MDMifQ"
+        },
+        {
+          "resource": "repo://app/token/route.ts#L119-L133",
+          "version": "repo-lines-v1:sha256:236a273c64d0908a6f5468d5afe371d6652884fd48d26714273c784b50305f3b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFkOTRmYjgyMGM3NTVlODRhOGMxNzBjNzAwMmUyMzYwZDVkMWJlZTU2MGY1Yjg3ODA2ODdmOTU0OGM3N2ZlZjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY2MWU5MWU2MmIwNjk2ZDE2ZDA4NDZmNDczNDQyMWZmYTE2ZjdhNTEwNTJmYzkyNWVmN2Q5M2VhY2E2NGUzYmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjljYWQ2ZmY3NTFiMDhiNWEyYzQzNjVkYmE1YzhhZGZiNGM5YThhMTg1Y2E3OGYwMGFhNjQ3ZDRkMjEyZWFmNTMifQ"
+        },
+        {
+          "resource": "repo://lib/rate-limit.ts#L1-L73",
+          "version": "repo-lines-v1:sha256:46dbcdd1948c523ec60b93c1aa313e64d7efcc238a50571fbdbcbb2a9ebb86bb:eyJzZWxlY3RlZExpbmVDb3VudCI6NzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ0ZTg2NDc2ZWUzNjE5MDA1OTJmMjA3NGU5Mjc0ZjZmYjY3NTE0MDA4MWNhZjRkODExYjk4OTQ3ZTFmOTI4ZTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://lib/skill-mcp.ts#L35-L42",
+          "version": "repo-lines-v1:sha256:daa0cc72392b3fd1273a006bb5807e6e177f41633c454a978ab792d4d36c45e6:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNGY4OTc2MzQ0MDJmMGMyNzlkNWFhNTA4OWZkNzY3ZWRhYzczNDU1YjcxNWI1ZGZjN2FlYzY1ZDkzZGQ5MDRiYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMjVlMmM4YzU3MGE4ZDMxZWM4ZWUxZDI2NGZhYmQzODdjMDk4N2NmNjYyNTJjNmFkMTkwOWNjODZiM2VhYWViYyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYTFkZmI3MjA1OTRmNDE1YzNlODk5ZmRjZDk1MGEwOGI5ZmQwYTJlMWJjZTMzMzBkNTg4ODQ1MDRjN2YxZmE3YiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTA5MmM4YmQ5NGFlY2NjMzk3ZDE0MGNhMzZhMjU2NDdiNDMzODNlYzhhMjdlNThlYTM4YjNkOTM4NWNmNmY4NSJ9"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.2",
+    "at": "2026-09-16T08:01:49.714Z"
+  }
+}

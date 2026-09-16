@@ -1,0 +1,250 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:79e336db32169943bef81777445bc6aa5226a6454121681c091971b788228ff1",
+  "claims": [
+    {
+      "id": "claim_9c68f025aa3f4d13ae8907bd9b974c8f",
+      "statement": "Browser APIs under app/api/app/** are gated by requireApiAuth(), which resolves a Better Auth session and returns a viewer DatabaseContext or a 401; there is no database REST endpoint or RLS dependency.",
+      "evidence": [
+        {
+          "resource": "repo://db/README.md#L1-L4",
+          "version": "repo-lines-v1:sha256:0cde82155000ea272df783a3ce183a9ff551543ba7de4bd19372afcee412f710:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNGViN2UwZGQxZDRjZjczNDJlMGMzNGMxYjE2ZGU5ZTMyMjZhM2M4YzhiOTEwMDk5ZTczZDUxZTNjNThiOGZlMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMzJmY2Y2NjQ5NzI2NTBjOTJhZjAyOGUzYzNiMGMxNjhkNmFiYWY2Y2VlYmE2ODg2YTg1M2FjOTc4ZmIxZDU1MSJ9"
+        },
+        {
+          "resource": "repo://lib/api-auth.ts",
+          "version": "repo-file-v1:sha256:0852b56aa70883b7f0872fc57485f6f13eff2cf58e28335217c4f1445187eb22"
+        }
+      ]
+    },
+    {
+      "id": "claim_2fe90d7510754ac988bc7aa6f75aa1ca",
+      "statement": "Agent-facing routes /api/strap/*, /api/creed/*, and /mcp authenticate a hashed bearer token sent only via Authorization: Bearer; the legacy ?token= query-string fallback was removed, and /api/strap re-exports the /api/creed handler behavior during the compatibility window.",
+      "evidence": [
+        {
+          "resource": "repo://app/api/creed/route.ts#L7-L47",
+          "version": "repo-lines-v1:sha256:5f2b79d04d799fa0fcfda1e8b0df73c8bebf85c1ec39a8182c2a2beafda5b15e:eyJzZWxlY3RlZExpbmVDb3VudCI6NDEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJjNGFhMjExZDg5ZTY1NDM5MThlNzkzZDIxNjFmYTA2ZjdkMzJkZWU4MDlkNzkzYzdhMDFmOTE3MjEyNjAwYzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImEyNmM4NTBiMWVkNTU1ZjdmYTcwNWI3NGRjMDEwN2RjNDBhNmRlODUxN2ViNTAwMTg2Y2YxYjRjZDg1YmYxZTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM4Yjg1ZjQwYjNkYzM2N2YxOTliYTAyOWM3Y2Q5OTRkODVhZTE4N2RiOWMxZWE4M2ZkMTBiODE0MjRhNDFlOGIifQ"
+        },
+        {
+          "resource": "repo://app/api/strap/route.ts#L1-L3",
+          "version": "repo-lines-v1:sha256:f90dd81c426611ee246ddff7e303f19cd0bb2558b1914ccf338c2d66bfae6979:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNjI1NTU5NjkwZDlkNTE1YTE3NDRmZDZiODgyZGNhYjlhODhmYjBiYTgwYTQ1Y2IwOGJmYzBiYzE2NzllNTA4OSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMGViNzk0YjU3NmM4OTg1OGJiZDIxNDU0MzUyZWFkMWViMWMzNDI4ODI5NjI2MTdkODFhOGI2ZDRiNjVmNzQ2NiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        },
+        {
+          "resource": "repo://app/mcp/route.ts#L577-L577",
+          "version": "repo-lines-v1:sha256:6c1593da808fe2a282505f3684fc94e7a5b6834dbb9a04c83364619735187793:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNmMxNTkzZGE4MDhmZTJhMjgyNTA1ZjM2ODRmYzk0ZTdhNWI2ODM0ZGJiOWEwNGM4MzM2NDYxOTczNTE4Nzc5MyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNmMxNTkzZGE4MDhmZTJhMjgyNTA1ZjM2ODRmYzk0ZTdhNWI2ODM0ZGJiOWEwNGM4MzM2NDYxOTczNTE4Nzc5MyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiN2MyYzc5OWEzYjhkZDcxODE2YjM3ZWU4YTRmODlkNDVlODg1MmNiMWY5ZjM5ZDk1MzJkMTU0ZjI3N2IzYmM2NCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNWJjMTJjMTBkZGE0MTUzOWNmYjNiNWJhNmUyYjY3YzE1Mzg0NDdhMGY2M2NhMTg3MmJhODFjNWM4M2ZmMGMxMyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_3646999206444f69aa9d9aa9e454f694",
+      "statement": "DatabaseContext actors are viewer (session/resolved agent), service (named purpose, server-only), or anonymous; viewerContext enforces app-level row scope while serviceContext bypasses row scope and requires a non-empty purpose, and anonymous denies.",
+      "evidence": [
+        {
+          "resource": "repo://lib/authz/policies.ts#L13-L16",
+          "version": "repo-lines-v1:sha256:802a821bbb53554ddca2f525227fee900137fb64e2b4f3e8e12161c50d5fa65b:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYzc3ZGY0ZWJkYWJiY2JjOTBlZTA2MTY0ZmQzZGVkZjAxYjg3MTc4YThmNmRmZWVhYzZmOGNhOWE4NmJlOWU2MyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMTJiYzZjNTVkY2RiYTI1YWQ5ZGJiNzlkYWYwZjVhZGU0MmJmMjI0YmQzNWNhODEwNjcyNTc3MDYxNjMyOTZjZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTA4YWRiNjNlZGVmZDY1YjJkMjA3ZWJjMDNlNTc2MDAzMjk5OGU2MGYzMmNkZDAzZGQ3NTc0ODY4NmMyYWNjNiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOTM5YWRmNjEwN2I1NTVkZGIzNDhmOTdiNjE4ZGViZWJkMGIyNWU0ZTNlNjUxMTU3MTEwZjkxNGFhMjk1ZWE3MCJ9"
+        },
+        {
+          "resource": "repo://lib/db/context.ts",
+          "version": "repo-file-v1:sha256:18c9a8eb7a84c883378c9e9895ccc4d85a9e15c7a0e6ee518f429c21305a567b"
+        },
+        {
+          "resource": "repo://lib/db/service.ts",
+          "version": "repo-file-v1:sha256:ea22ff17a2bc03f91bed2282b3c3f05f9f5be3c0fce9622a50a5dc585a7f1165"
+        }
+      ]
+    },
+    {
+      "id": "claim_19c8aa4be23843f4b8c0c022898c70e8",
+      "statement": "lib/authz/policies.rowScope is the application equivalent of the former 45 active RLS policies and denies unknown tables/actions by default; authorizeValues additionally checks new-row values to prevent cross-profile upsert theft and moving owned rows to another profile.",
+      "evidence": [
+        {
+          "resource": "repo://lib/authz/policies.ts#L11-L75",
+          "version": "repo-lines-v1:sha256:b5c31dfe09de010f532e2665795d23d8ed8772d08c146b48f0592456031586c2:eyJzZWxlY3RlZExpbmVDb3VudCI6NjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ0ZTQxMzg1OTUxMDI1ODhkNDU2Zjg2MDk4YmMwNDFiMzBkODIzYTQ4ZWYyZjU4MTRlNWM1YWFiOWY0YjlkNWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM4OTViZTUwM2EyODUxYTNkNWFhZTUxNmJjNGQ2Mjc2ODc4ZmUzN2Y2NDUyNTNlMDQyNWUyNjEzY2Y2ZWNhNmUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_909cc1f07674408c935aef4b0ded79b7",
+      "statement": "The local backend is Postgres 17 in Docker bound to 127.0.0.1:55433 with DATABASE_URL postgresql://strap:strap-local-only@127.0.0.1:55433/strap; Railway hosts Postgres 18 and the driver uses one connection, disables prepared statements, and verifies TLS (DATABASE_SSL_CA for a private CA).",
+      "evidence": [
+        {
+          "resource": "repo://db/README.md#L18-L30",
+          "version": "repo-lines-v1:sha256:642b9fe2563e9143215d1a4c2e1d0fe71475f637e6c3e08ce8907c7e6a4aa709:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJjNmRlM2I0YjQxNmI4NDVjYzYwZjM3MWRmYWJjOTFlYzliY2RhYjlhOTFkNmFiYzk0Njk2NGRiNTNmMDBjOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEwZDE0ZTUxM2NmYmEwZDMyZTkxNzBkMTE1NmFlMGIyOGJkZWMxZDA1ZjBlOTdhMjMxZWIzZWNjMTJhODJlNTQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImMxZjU0MjQ3ZTcyMTMzMjM3N2EyZjViMDkwMWIwMDI4ZjFlMWU5ZTAwNzc2MTg3YTcxY2QyOGI0Y2EyNDFkNzMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQxMWE2NDM3ZDczNTEzYjM5MDgxMzRmYzRjYzQ0YTgxOTlhMTFjMjlkNDA3N2IxYWEwZDhjNzY3YjEwMGY1MzcifQ"
+        },
+        {
+          "resource": "repo://docker-compose.yml",
+          "version": "repo-file-v1:sha256:137636c57b628ea1d07f19cef13bf80c43568efc39cb6bbb162449e46f58f54c"
+        },
+        {
+          "resource": "repo://lib/db/connection.ts",
+          "version": "repo-file-v1:sha256:7f342294ed4cba202e71b0f53e070f67bfb40f651f0b2cd37cf7a04982f602a2"
+        }
+      ]
+    },
+    {
+      "id": "claim_0ff4a18e1119461aa1899498a8f6b9dd",
+      "statement": "Local setup is npm ci, cp .env.example .env.local, generate independent secrets for BETTER_AUTH_SECRET, STRAP_ENCRYPTION_SECRET, STRAP_VAULT_SECRET, and STRAP_MAINTENANCE_SECRET, then npm run db:up, npm run db:migrate, npm run db:ping, and npm run dev.",
+      "evidence": [
+        {
+          "resource": "repo://README.md#L49-L74",
+          "version": "repo-lines-v1:sha256:e7b4e1902f6acf911e68c47ab5f28da9824d36fef2fbd8c9abe236b034e4dfc7:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhYjRmODE0ZjU1YjUwOWY0M2I4ZDBjYzg0OWRlZDk5OTcxMTE0NzMxMzRjZmUyYzg2YjE2ZmYxZjc3ZTVlNmMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ3YzA2YzU2MWQ1YzMyNzM0MzY4NTI2OGE0NmIzMzkxZjM5OThlZWU4OTBkMmJlNTFmMGQyMWNjNGE1M2FlNmQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjI0NzNlNzY0YzEyY2IyOTJkMTU3OGNlOGM2NjJjM2Q4YzE2YjY4MTljMWQzODIzZTRhOTYwZjQ0YTk0NzNiMDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjMxYzZjNTJhYWQ0OTRlZjM1NDM5ZWJjNWQzODhhZWM3Nzc3YzQ4ZDRhNWRhZDE0NzJkMzNiODJmNmM2OWRlNzcifQ"
+        },
+        {
+          "resource": "repo://db/README.md#L5-L18",
+          "version": "repo-lines-v1:sha256:97425d6b550aeb044dd5a5453d2d1a2b24691d8bd7188ac996dc30a992ee782e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUxN2ZkZDFhYTMwY2M0ZGFjNDk2MzcwZmQ1NmViZWIyMTI5MWE2Zjk4MGZjMDU3MzFiYTg2MTM3MWIyNWM2NDMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJjNmRlM2I0YjQxNmI4NDVjYzYwZjM3MWRmYWJjOTFlYzliY2RhYjlhOTFkNmFiYzk0Njk2NGRiNTNmMDBjOTQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQwZDgxMDFjMjhmOGU2ZmFlOWQzMWFiNWEyYTgyMzYzNWM5YzQ5NjFmOGFhN2RlOTdjOTczOGVkNzk2M2M3NjgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY0MDIzNDhjNzUyMGMzZmE3Zjk2MzY0NmU5YzA3NzRkNDI3YjFlZjg5NzYxNzhkNjQ2ZDgxZjgxODI3YjgxMTQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_186e4598f86545fbb81911a2f5486d7a",
+      "statement": "isDatabaseConfigured() requires both DATABASE_URL and BETTER_AUTH_SECRET, and getSiteUrl() falls back to http://localhost:3000 only in development, throwing if NEXT_PUBLIC_SITE_URL is unset in production.",
+      "evidence": [
+        {
+          "resource": "repo://lib/env.ts",
+          "version": "repo-file-v1:sha256:4e6ef1b7ec7a70a02585941ba1c7153ec35ef1a48787947469fc6694655d8e14"
+        }
+      ]
+    },
+    {
+      "id": "claim_a4b5d706c9f946da8d9fe4eae31e20b0",
+      "statement": "Schema changes use the forward-only Drizzle workflow: npm run db:generate -- --name=<change>, review generated SQL, npm run db:migrate, then npm run test:db; 0000_baseline.sql is the squashed baseline, historical Creed/Stripe names are preserved, and function edits require a SQL migration plus a reference-file update.",
+      "evidence": [
+        {
+          "resource": "repo://db/README.md#L27-L28",
+          "version": "repo-lines-v1:sha256:5ce18de89235cba87d4700acb0ca751533a9699e611288c0fb9d86d84e054f1b:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMmRhMmY5OTJlYjkwMDQ1Yjg0ZThmM2Y5YzczN2ViMTI3ZWFhMzAxMWQyOGQ5ZTU5ODNkMWMyMTdlNTgzNzc5MyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiM2YyMGM1YzFiNTQ2Y2RiYzgwOGNjMTZmOTA0NTU3ZjgwZTYzMjI5ODNlZjc0NDQ5M2Q4ZmIzNzYyYjAxYWUyZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiN2RiZmE1MjBjNjUwZTZiNjU1YzYzOWUyYTY0ZjYxOWQyN2U3ZWFjNjRkNDZjYjI0OWMxNDkwNTM4MDhlNDg4MCJ9"
+        },
+        {
+          "resource": "repo://package.json#L15-L17",
+          "version": "repo-lines-v1:sha256:48c17cc93df6d1bec2dcc8f6d4e68c40cdf1493e4ca3a1fdbb00a57790d92a46:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNWQ5OWI0MTljNTE1ZDY1MjViOGVlNzEwMDM4M2QzOTY2NDgyZjY4MjAyYzk4YzhiZjVhYjJmZDNhNDBiNDYzMyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNzE1MWZmYzIwNzgxZTA1NTk2M2YxMzJlMGUxYjE4ZjU5YzhkMjQ3NDMyNTkwYWQ1MDYxOTk4M2JhYzBjNTczNyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMWQxM2ZkZmQ2MGE5NzUxNDRjYmVmMmU2NjMxYWFkNjI5ZjY4ZTExYWRkMjMyMDVmM2QyYTY4Mzk0YmZhZmUyNCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMTI2ODRkZWM0YmU3MGI3ZmM1MGFiZTg3OTk0NmI3ODRlNzhkZDM3MDJkMjYyNWNhNmUwYWUzODFmM2M3ZGQ1MSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_15364e1d46274923af548b3e32bbaee6",
+      "statement": "The Supabase-to-Postgres import (scripts/migrate-from-supabase.mts with STRAP_SOURCE_DATABASE_URL) is a one-time cutover rehearsal that prints counts by default and imports in one transaction with --apply, re-encrypting Vault plaintext in memory, preserving IDs/hashes/encrypted credentials, and offering no force/overwrite flag; it is not a normal setup step.",
+      "evidence": [
+        {
+          "resource": "repo://db/README.md#L40-L50",
+          "version": "repo-lines-v1:sha256:a3c0baed78e21690e579fd85b29f7e50f36e408f86c8303eb9e1afa91e6bd160:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYzM2VkZjc0YzdhYmE3OGQ0MjQ1NTJjMDM4YTc5MjA0ZmE1YjRhYjMzY2IyY2JkZGI4ZTYzNTA0NDMwNTI2Y2IiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRmNjk1NzFkMWE2MDUwMDE0Nzc3NmI4NDliZWU5M2ZlNDIxNDRhMGMyZWM5OTE1OGI5YTkxOThlMDhiYTkyYzkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBhOGJkNTc3YzY5MmJkMDI2M2JlMDYzNjFjYzZmYTQ1OWRiNjY2NjU1NDU2OGNmMjI3ZjA2ODQ5ODg4NWZmOWIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b1121323cb0c4972b9f0ee843b3fe5c1",
+      "statement": "proxy.ts sets x-request-id and x-pathname on every non-asset route; the root layout stays static and the dynamic user-specific boundary lives in app/(strap-app)/layout.tsx and AuthedProviders, so marketing routes do not load account state and / redirects signed-out visitors to /home without auth round-trips.",
+      "evidence": [
+        {
+          "resource": "repo://app/page.tsx#L13-L49",
+          "version": "repo-lines-v1:sha256:88b71b106917f17122b63461c4de4d50cc4ce89a01fa3bb96c56b7cce8075619:eyJzZWxlY3RlZExpbmVDb3VudCI6MzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZkMmE5ZmM0NDkyNWVkMjNjMjdkMGIxYmFmMDFiOWUwYjg1ODEwYWU2MmZhMTI5Yzg5NmE5NzRjMGFkMTE0ZjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU5ZTZhZTk3Y2ZjMzM2ZjU2MDk5OTQ2ODYwZWI4YzZhOTRiMDcwZTAzZjZhMzlmYzM3MjA1YTFlOTU1YjI3NzgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY1YWJhNTcyOGUyYjkwOTdmYWVjNTBiZjJkY2IzODQyNzA0ODQ0MDA3MmM2ZjcwODYwNWMwMzE1NGQ0NjdkMTIifQ"
+        },
+        {
+          "resource": "repo://components/strap/authed-providers.tsx#L11-L41",
+          "version": "repo-lines-v1:sha256:d3cde65022e2c1940f4ea3891ca057986c4acd3203eeb5c61130fe175f506e34:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE4NDZiMDdhMmZjYThkNmM0ZWU5YmEzMTAzZmMxNTc4OGNiYmE5N2E2MDdlZTUzNjEzZTU5NjFjYzBkMTJmNzEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjAyMDUxY2NmOGU5NzVjZDRlNGM2YThjODcwYzU5MGFkNjQ2YjMwYTljNmE3NDYxZTgxMDA2YzE5ODBmZTVkY2UiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc4M2Y5ZDhmYWFlYmZmNWQxMTUxMGU4OWM5Y2I4ZGQ4MGUxZTU5YThmYjBkY2I4YTRmYjNjYWZlN2FiYTI5NjYifQ"
+        },
+        {
+          "resource": "repo://proxy.ts",
+          "version": "repo-file-v1:sha256:6bc5698dfeae3add8ef7f98819b7491c93c6d9d9a8f69c59ef642abf1a1e8198"
+        }
+      ]
+    },
+    {
+      "id": "claim_290ebda3d2e8450bb349c0442a4c5ec5",
+      "statement": "Modern credentials bind exactly one Personal or Company grant plus a mode ceiling (read-only, proposal-only, or direct) that can only narrow live membership and per-section permissions, never elevate them; hidden sections are omitted server-side.",
+      "evidence": [
+        {
+          "resource": "repo://AGENTS.md#L152-L156",
+          "version": "repo-lines-v1:sha256:3c33bf7be5299c0294246861ebe0002ceeed0714f69d8b4a382100924956691a:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOWE3NzUyN2FmY2JjZjJjZDIwMzMwNTE5YTNkNDJiMDc3ZjhkNWRlOWFjYTNlNzRjNjIxZDY3OGQ1MjJlMmFmNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTE5NzVjNDMyZjJmMzFjNTcwMzk2ZTdhNDdjN2I0NTgxMDExOGFkMWNkYjQzMTZjOTAzYWI5NTk4MDZjYTJhMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMjM2NGJlYTk5ZDg5NzA1NDQwODEzOTg3OGIzNGYxMWE5MGQ4Y2E0N2I2NzE3M2RmOWIwZGU2NWU3Nzk5ZWVlYiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOGEzNzQ2MmI4ZTM0ZTk1OGMxNTczMTgyNDUzODZjZmRlYzhhYzZjODY2ODIwYTZhNDJiMjI2OWRmNjhlZTI5YSJ9"
+        },
+        {
+          "resource": "repo://README.md#L40-L44",
+          "version": "repo-lines-v1:sha256:7df37d1df3091f08def03aade6dfe2675addb1d997e3da358bab77de1db4fb56:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYTQ2ZmIwNjJhNjk1YTY2ZWRkZDk3YzJmZmVhMmI4MDEzNWRmOTUzMTg4NDMxNDJiODlmMDljNWQ0ZTEzY2M4OSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMjJiNDc0OTc1M2U3YWExNWRlYzY4ZDZiNzQ3MmJjZDc2NDIwOTU1NzY4NmM5MGVmYTJmZmVjNjU2ZjA1YjJjZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjg0NGFiZDAwMTZiMWQzZGNjMWY5YWQ0MDM4ZWViNDJmZmU4Y2M5YjllOWE3NzNhOTI3MzQ4OTBkYTg5MDAxMCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_1e8eb571175f4da488da9f96697f42e5",
+      "statement": "Vault secrets are encrypted at rest in Postgres with AES-256-GCM bound to the item/profile using STRAP_VAULT_SECRET (independent of STRAP_ENCRYPTION_SECRET); lists, logs, audits, and ordinary MCP responses expose only metadata or secret:// references, with plaintext crossing memory only during explicit create, rotation, or audited reveal.",
+      "evidence": [
+        {
+          "resource": "repo://AGENTS.md#L173-L175",
+          "version": "repo-lines-v1:sha256:4985d5cb2660a0592821734abc5e9f69c9bc92ec664b9ff006d4e89312af8ff5:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNTFhMWQyNjQyYWFiNjZkYWI0MTNkYjkzNjA2MzMyZjI1NmYxNTk4ZGZkNjE3ZjdkMzYxOWNhZjVkNjI2ODk3MyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYjc5NWYxMmRmZGIxZDAxNjQ1YmMzYjY5MTU0ZDFiNDI1YTM4YWZlZTZmNjgyNjViMjEyZjY2NWNmNTNmMGRlNyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZWU3YTA2ZjQxNDg5OTU2OGQ4ODdlM2RhYzA0NTY4NGIyY2FhNGMxMTM2YzZmZWNjZTFmMGEzMzA2YzhkNzBiMiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMDAxZjJlYzE3NTkzYzEwNTRlYjQ2MzY3ZDg0NTNlZjI0YTE3M2NlOTZiNzExN2Q5MWY5YTY4ZDQ0ZmVmOGIwMSJ9"
+        },
+        {
+          "resource": "repo://README.md#L43-L43",
+          "version": "repo-lines-v1:sha256:b2e9025b2173301a17c9aaa7e7179afe7c6cd58537886bdea4f5c085ad34a7c3:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYjJlOTAyNWIyMTczMzAxYTE3YzlhYWE3ZTcxNzlhZmU3YzZjZDU4NTM3ODg2YmRlYTRmNWMwODVhZDM0YTdjMyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYjJlOTAyNWIyMTczMzAxYTE3YzlhYWE3ZTcxNzlhZmU3YzZjZDU4NTM3ODg2YmRlYTRmNWMwODVhZDM0YTdjMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMjdkMzUzMmUwMjVhNzNhYjIzNWY3ZWZjYjdmODE4NDBiNzU2NjIyZDkzMDFiMDY5NjZkOWYyNTVhNzgxZTlkZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMWVjNmEzNGVmZDI0Y2UxMWE0N2I0NzNiZjcwMGJlZTljY2E1MWRkNDUzNGY3NWVkMzE5OTU2ZjcyMmNmNjM4OCJ9"
+        },
+        {
+          "resource": "repo://db/README.md#L24-L25",
+          "version": "repo-lines-v1:sha256:d7c20716a1935780f12ac0ede595afed77ad5177853118515ac87b18b66e0e40:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYTM3YjJmZjc2NzZiZWEyYmJjN2JmODdhYTgwNTA4Mzg1NTEwYWJmNTQzYzE1ZTM2MjZlZWFkNmVhZTY0YzRlYyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMGZmMzdlMmZkNjg5ZGEyNDkwNWFhYzBhMDQxODZiZWNmNmFlMTQwNjM1ZjMzOTVjOGFiM2ZkYWQ3ZTdkNDllZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNzk4MGMyOGYyZmM0ZWIyN2ZlMjRkYTA5MDczOGZjNWFiYzgzOGNiZDM0MTlkOTFjNDEzYzE3OWQwZWQ0YjM5MyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_2851716fbc334a0e94bd9f8a5394d4bd",
+      "statement": "Root checks are npm test, npx tsc --noEmit -p ., npm run lint, npm run build, and npm run audit:brand; CLI packages are excluded from the root TS project and checked separately via npm --prefix packages/strap run typecheck and test. Node.js 22+ is required for root dev and tests while CLI packages declare Node 20+.",
+      "evidence": [
+        {
+          "resource": "repo://AGENTS.md#L263-L269",
+          "version": "repo-lines-v1:sha256:29a21a2eccc2c14e73b9fbc44284e0bb6118b1aa01c2f2cdc3d9788cd1ebcf43:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNWRlMmY1MzI4ZWU2ZTgwNTBlOGFhZmQ4ZGM4NjlhMDY5Y2Q5NTg0ZWRhYWY1NGZlNTg5ZDczYzNiN2RjZDc5OSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMzA0NmJhYmJiOWFjMzU3MzY2Zjk0M2M5OWRhMDAzNTk1ZmQyMzRmY2NkNTNjNDE3NWNhMWJiYzc0NWRlMWQwMSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYmNjOGMxYTEwNjc4N2M4YmExZGRlZGZhN2EwNzhjYjFkMGE5OGViM2MzMzg3MGQ2Y2Y5ZTU3Nzk0YWE0ODNkNSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTkxMzI3MzUyMGE5N2VmYWYwODJjY2M1MzFhODQzMjk2MGIxMDVkZDM1OTBmMTNmODI2ZjhjNmQxNGFlMWE0OCJ9"
+        },
+        {
+          "resource": "repo://README.md#L141-L151",
+          "version": "repo-lines-v1:sha256:cf7fffaac42bd74d8fc90139b3b980296f59713bbdb3e8362ea83df480c46b80:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVkZTJmNTMyOGVlNmU4MDUwZThhYWZkOGRjODY5YTA2OWNkOTU4NGVkYWFmNTRmZTU4OWQ3M2MzYjdkY2Q3OTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ3YzA2YzU2MWQ1YzMyNzM0MzY4NTI2OGE0NmIzMzkxZjM5OThlZWU4OTBkMmJlNTFmMGQyMWNjNGE1M2FlNmQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRjZGNkN2VkMjVjOGFkOWI0NzA4ODE3MzE5N2NmNjhlNzNiOGU2NWNkN2E3YzZmYzA2MTg2MjYwMWZiYjNiZGEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ4ZTlhNjc2MjAzZWY4MGI1Y2Q1M2U0OGYzZTVlM2I4YzE1NGY3N2E0ODE3OGU0NGJkYTlkNWMwNTBkM2IyYTMifQ"
+        },
+        {
+          "resource": "repo://package.json#L5-L18",
+          "version": "repo-lines-v1:sha256:fce17022425df6b3a468a531d710e2a9f3ffb142fb1368e84d2cd76a5dcb0675:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM0ODMzZDU5NDljMDNhNDBjYTk1MjQ5MTYxMGE2NjU5NjQ0YjNhYTQ2NjM2MmY3OTkwMjBkYmYxOTgxNTQ3ZGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU2YmI1ODU1ZDk0ZGRmYTcyZGVhYmI5NGVmNTZiMzRjMzY3NmQzZmIyNjFiOGRjZjJkNGNiOTlhNmM3OWJlZmQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ5YTE5OTQ2YTIzYTQ0OWQ3NmU1ZTE3ODk0YTBhZTc5ZjkzY2NlM2M0Y2I2NWFhZDk2YzZlYmY5ZmU0MzNkMzciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBhNGQxMDA4MzVlYWE2NTRkNzA4YWEwYTU4NWMyMDAzN2IxMjc0ZjAxZDU4NGVhNThiNzgxMjY5MTFmNWQ3ZWEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_012dd8685f9645aca6ccc6cc20d69660",
+      "statement": "npm test skips database suites without DATABASE_URL; npm run test:db creates a random strap_test_<id> database per suite and drops only that database afterward, requiring the local role to have CREATEDB and never truncating existing application data.",
+      "evidence": [
+        {
+          "resource": "repo://db/README.md#L32-L32",
+          "version": "repo-lines-v1:sha256:9e3fc760cdd7ab91c21759cd4d3ff8875991dd1a83c2c0322114e659608ca959:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOWUzZmM3NjBjZGQ3YWI5MWMyMTc1OWNkNGQzZmY4ODc1OTkxZGQxYTgzYzJjMDMyMjExNGU2NTk2MDhjYTk1OSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOWUzZmM3NjBjZGQ3YWI5MWMyMTc1OWNkNGQzZmY4ODc1OTkxZGQxYTgzYzJjMDMyMjExNGU2NTk2MDhjYTk1OSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiN2RiZmE1MjBjNjUwZTZiNjU1YzYzOWUyYTY0ZjYxOWQyN2U3ZWFjNjRkNDZjYjI0OWMxNDkwNTM4MDhlNDg4MCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiM2EwYmE0ODAwNGIwN2I2YTA1ZjJjZTQyMTkzNGMxNGQ5ZWUyMzQwMWI0NWI3NDVmOWQ1ZWY2MTMxZmYzZDFlZiJ9"
+        },
+        {
+          "resource": "repo://package.json#L10-L17",
+          "version": "repo-lines-v1:sha256:83cb4228fa490574258ca00c0793b387419f19c0f5c9088f050ef6d2778b6b8c:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZjI5NWM5OGQzMWExNmRmODNkYzBlMmZhZTlhMDU4NTQ5ZmYxMjFlNzFhMjMzYzgwZjMwNmY1YzI3MDJmNDkyNSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNzE1MWZmYzIwNzgxZTA1NTk2M2YxMzJlMGUxYjE4ZjU5YzhkMjQ3NDMyNTkwYWQ1MDYxOTk4M2JhYzBjNTczNyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTAwOGE1MTZiMjE5ZWNmN2ZkZGZmNjEzZjM2OGY5ZmIwMDZkNzZmZDg1OTNkNWI3ZjQ5ZTBmOWI0NDg5NDQ0MyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMTI2ODRkZWM0YmU3MGI3ZmM1MGFiZTg3OTk0NmI3ODRlNzhkZDM3MDJkMjYyNWNhNmUwYWUzODFmM2M3ZGQ1MSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_93e032bec6d74f39be8d996df9ffac23",
+      "statement": "Stripe is retired from active billing; a configured STRIPE_SECRET_KEY is owner-only legacy offboarding so existing subscribers can schedule cancellation from Settings, while checkout and billing webhooks remain retired and account/company deletion requires confirmation that any legacy subscription has ended or is scheduled to cancel.",
+      "evidence": [
+        {
+          "resource": "repo://.env.example#L56-L61",
+          "version": "repo-lines-v1:sha256:9cac2c0c25ef238912e057bb96a9f3c4d1b2de9261b9064b251683e48f4fb364:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiY2Y0NzhhZTAzNTNhMDY0MGZmMGNlYzM4MmQ5YjAyMzM2ODFiMjUxODc2ZWM4NDVkMmIwYTNlMzBiNzY5NWU3NiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYzkyNTYxMDQxMzQ1M2RkMDEwMjJmYjgwYjM1OGNjMGYxZDA4Mzg2NmJiYjRjNzk3NzQwYjE5NjEwYjc3Mzk0NSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYTgxZDE1ZGJjZDcxYTk1Yzg5ZmE1M2ZmMjFjNjMxYmZhYTQ5NDlhYTcwZjFiMjEzNWQ2NWYyNDdiYTMzZTgwMCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTg1ZmQ5ZDYwMmYyZDg2NmNmYTU2YmUwZWU0NTlkOTAyOWQ0ZDliODY1NDk3MGUxOGQxODJmNzViNWQ0YzAyYSJ9"
+        },
+        {
+          "resource": "repo://README.md#L83-L85",
+          "version": "repo-lines-v1:sha256:30a29ad8dcd16c9096d7024c5321de44ff6b684d092a974d01040aeaff5ba745:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiN2U0YThkZjYwMTczZjkzMzEwZjY2NGQ3MTQxMTljMDBkYWVjZWUxMDRjOGIxYWMxNGMyMTNjZGUzMGM2M2U2MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMTcxMzJkOGNkZDkzNjgzYzlhODNhMjFjZDU4ZDQ4NjEwZGZlODUzNmFlNTBkNDcwMjM1ODBiOWE0MmM1MTE2OCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZWVlOTAxZjRmZTdiOTgwZTZhMmY0ZGY2ZGE5ZWFmNTdhMzI3YmZkMGUwZjE0NDE1M2NkZGE1NTY5YzdkZDVhMyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_d0e789f15e5f46ce82099e7a6a535677",
+      "statement": "MCP discovery is Strap-first (Strap tools, prompts, strap://profile) while exact Creed compatibility aliases (creed_* tools, creed:// resources, /api/creed routes, creed_key_ credentials, and Creed-named database/internal identifiers) remain supported contracts.",
+      "evidence": [
+        {
+          "resource": "repo://AGENTS.md#L319-L327",
+          "version": "repo-lines-v1:sha256:79a39676d21c5ae64e16282292cd43c449a458e313d0533a87fed518534d7a21:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMjEyYWIxZmI1NzNkZjE2MDUzOWM3NjI3NWI1YjI4NzBhNjNhMzU3ZmI5MDNlNmQ1YmFhMmY1YjY3NTljNjlhYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZDgzYzZiOTgyOTdmNWJiNGE1YmI3YzQyZDExY2EwY2JlYmUzYWE3NmY4MzIxODUxZjJhZmUzYzhiNDk1YmRlYSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNzE3ZDY0NjFmOWE0OTMyOTkyMGViZjBlODFjYTRlOGJkZGM3ODlmNTg1MDg4NTkyYjQ4ODliNThiODI2NmRjNiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMDAxZjJlYzE3NTkzYzEwNTRlYjQ2MzY3ZDg0NTNlZjI0YTE3M2NlOTZiNzExN2Q5MWY5YTY4ZDQ0ZmVmOGIwMSJ9"
+        },
+        {
+          "resource": "repo://README.md#L78-L78",
+          "version": "repo-lines-v1:sha256:fddba9272101f75062fc4be5ff552a5f209925e0a4385d80e48350cde277edf1:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZmRkYmE5MjcyMTAxZjc1MDYyZmM0YmU1ZmY1NTJhNWYyMDk5MjVlMGE0Mzg1ZDgwZTQ4MzUwY2RlMjc3ZWRmMSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZmRkYmE5MjcyMTAxZjc1MDYyZmM0YmU1ZmY1NTJhNWYyMDk5MjVlMGE0Mzg1ZDgwZTQ4MzUwY2RlMjc3ZWRmMSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMzFjNmM1MmFhZDQ5NGVmMzU0MzllYmM1ZDM4OGFlYzc3NzdjNDhkNGE1ZGFkMTQ3MmQzM2I4MmY2YzY5ZGU3NyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOTI4NDQ1ZTIzNTU3YTk0OGJlZmE3NzdkMGNlYTFjZGZkODgzNGI5MTBkNmU0YjJhM2U3MDA5YmRmNmM2YWQyYSJ9"
+        },
+        {
+          "resource": "repo://app/api/strap/route.ts#L1-L3",
+          "version": "repo-lines-v1:sha256:f90dd81c426611ee246ddff7e303f19cd0bb2558b1914ccf338c2d66bfae6979:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNjI1NTU5NjkwZDlkNTE1YTE3NDRmZDZiODgyZGNhYjlhODhmYjBiYTgwYTQ1Y2IwOGJmYzBiYzE2NzllNTA4OSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMGViNzk0YjU3NmM4OTg1OGJiZDIxNDU0MzUyZWFkMWViMWMzNDI4ODI5NjI2MTdkODFhOGI2ZDRiNjVmNzQ2NiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.2",
+    "at": "2026-09-16T08:01:49.714Z"
+  }
+}

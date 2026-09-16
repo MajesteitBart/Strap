@@ -1,0 +1,160 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:3fbfa57bcf6ef5c31c501223c7fee135e208512d720f0aab73d053a6b2f81d3f",
+  "claims": [
+    {
+      "id": "claim_67a4e8c9969046d69321d4e35bfb8c33",
+      "statement": "lib/strap-permissions.ts is the pure TypeScript permission source shared byte-identically by payload builders, Company write guards, and UI; it must stay equivalent to the app-level authorization predicates in lib/authz/policies.ts (rowScope/authorizeValues), not to RLS. lib/creed-permissions.ts is only a deprecated re-export shim.",
+      "evidence": [
+        {
+          "resource": "repo://lib/authz/policies.ts#L13-L47",
+          "version": "repo-lines-v1:sha256:5c3953be9f195d24bced4232cf11c2ec71a77536a07f8577a03a8aaf2f76ee61:eyJzZWxlY3RlZExpbmVDb3VudCI6MzUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM3N2RmNGViZGFiYmNiYzkwZWUwNjE2NGZkM2RlZGYwMWI4NzE3OGE4ZjZkZmVlYWM2ZjhjYTlhODZiZTllNjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUwOGFkYjYzZWRlZmQ2NWIyZDIwN2ViYzAzZTU3NjAwMzI5OThlNjBmMzJjZGQwM2RkNzU3NDg2ODZjMmFjYzYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFjYmVhNzZiMjQ1ODNkMWMwZTRjNjVlZDFmMDdmZjAxY2RiYjA4YjJkMjhlMjEyN2ZkNDY0ZGU0NzZjMGUwMDAifQ"
+        },
+        {
+          "resource": "repo://lib/strap-permissions.ts#L43-L151",
+          "version": "repo-lines-v1:sha256:dc887e106c93a7e3fac707ee6731442b418f3b65bb54ff583166e49bb04f3663:eyJzZWxlY3RlZExpbmVDb3VudCI6MTA5LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiIyZWRmYTc0M2FlYmM4NmYyYzAzYjM1YmU1YmJmNTgzMDNjODMyOGNjZDNlYzAxMGU3MjNlNDhjMDM5YTNlNjUxIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJmNDZlNjJjNDE1NzgxZGZmNTA4ZTBmMzdmMTA0YWZhNjk2MzQ1M2JjZjgzZjA2YzJjYmZjYzliMjAwMWRmMThhIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MCwiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_c38f53547a484d4f9a6429ae1db05dfe",
+      "statement": "The permission lattice hidden < read-only < propose < direct is the shared vocabulary for both the member ceiling and the agent ceiling. Owner/admin human access resolves to direct; a member uses the per-section override defaulting to direct; agent access is min(member section permission, member agent ceiling, credential grant mode) and every ceiling operation only narrows.",
+      "evidence": [
+        {
+          "resource": "repo://lib/strap-permissions.ts#L63-L151",
+          "version": "repo-lines-v1:sha256:35ae87bea8880612d5eb93812c8f3defa56a1922183735067f6a6de1d3b4450f:eyJzZWxlY3RlZExpbmVDb3VudCI6ODksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAyNzk3Y2IyNjk3MmVhZGNmODc0OTczYmIyNWZiMDQ5NGJkMjA4ZGFhNjUxMGIxNWRkM2QyNTE1NDc4ZWU4OTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY4OWZlODI5ZTAwZTdlNTk0YjdlNGIwMWM2YmJhMmU3NGQyMzZjZDM1MTcxY2Q3YjljMzM0ZjYwYTEzNDE3NWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_3ff8dd1fd4bb4de69f2769b1af080cfb",
+      "statement": "A Company Strap change is one CompanyDraft (rich-text, new-section, delete-section, reorder-section). Direct edits and accepted proposals both flow through one applyDraft so they mutate section rows identically; applyDraft records a creed_section_versions row (lazy-pruned to newest 200) and the caller writes the activity row with the cause-appropriate summary.",
+      "evidence": [
+        {
+          "resource": "repo://lib/company-sections.ts#L1200-L1376",
+          "version": "repo-lines-v1:sha256:93815b1cb88c818e40fe82787e9c58b626d8eea61ec9d9afdcaa44d4b00a68b9:eyJzZWxlY3RlZExpbmVDb3VudCI6MTc3LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJlYjRhZjI1OTBiY2NkNGM5YWVkMzZkZWYxYzMxNDllZTAwMjk0ZGFhNTVkY2RkOTgzYzI5NzY5NzdkYzY0Y2NkIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJlMTNmMGIyMzFhMmJjYzU0NDNiODA0ODgxNTA0OTkyNjEwNDUzNzI1M2Y0Yzk0MmY3ODA4ZTkwZGY0ZDNmM2MyIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI3ZGIwMjVkNjg1NjBjNWJhNGJmYjE2ZjM3OWY5YzZmNTY3YjBkMzA5Yjk3MTJhMjQ5MjQwZjg2MmZhZDk0MjcyIn0"
+        },
+        {
+          "resource": "repo://lib/company-sections.ts#L263-L539",
+          "version": "repo-lines-v1:sha256:531537eb3cc3fb546e23fb01ec9aebe1c771e62793fa27ec4669997d7ea1cce0:eyJzZWxlY3RlZExpbmVDb3VudCI6Mjc3LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiIxNDlkZTY4YWZlMTI0NjI4NmUzMGRmZDJmMmUzYmNhOWNmNzdjYWJhNjEyYzQyNTM4ZDUwNzFiYmY2Y2Q1ZTBmIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiIyOWZkYzE4ZmNiNTZlMmQ4YjFkMjI0YjczNzdjZDZlMjc2MDZmMzhmZDU4M2ExNjhjZDQ1MWIxYzIwN2JmMGEzIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI1ZjBiNjg5ZDJkYzBiMjcxOWNlZDE1MmExMTcyMzFjMWE2MzU3ZTI0ZjkxMjczZDlmM2UxYzc2YzhkZWMzN2M4In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_269509469c9e4a6595550e9ea4b66cfb",
+      "statement": "Company proposal review requires owner/admin (or a member with direct on the section); authors may withdraw but authorship is not approval; new-section proposals require owner/admin; only pending proposals are reviewable; a rich-text accept whose base_revision no longer matches the current section revision is marked stale rather than applied, and direct edits require baseRevision (409 on mismatch).",
+      "evidence": [
+        {
+          "resource": "repo://lib/company-sections.ts#L1227-L1333",
+          "version": "repo-lines-v1:sha256:5b8770465913c82298381efddc880b010b65526e02de09a1ad2d34de70bed610:eyJzZWxlY3RlZExpbmVDb3VudCI6MTA3LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI4YTZhMTFhZTQ5ZTY0MTdiNTIxYmVjZWRkNjNhOGNhNzhkNjJiYWU2MjA0MGVhYjFlNjVkYmFlZWE3YzE1MjJhIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiIyN2U1Nzg4ZDVkOWQ3M2QyNGE4MWRiYzBhNWE3NGJmYTgyYzljM2IzYWY5OWU1MmFmNzk2ZTkwYjQ2OGE4YTNkIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJjNDI5OGIwZjg4MTA2ZWI1N2QwNjg2ZGZhNTAzZGI3Yjg1ZTUzNDUzYzUxNDVmZGM1MDUzNjI2ZGZhNTM5NzJiIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlYTRiMTExN2Q4YWRjMDY2OGUxNWIyZjc0MjEzZjE0NjcyYTE3YTgxNDE5MTNmN2YzNTk3YjgwM2RiMDhlMjg3In0"
+        },
+        {
+          "resource": "repo://lib/company-sections.ts#L783-L881",
+          "version": "repo-lines-v1:sha256:c591290a0aee6982a40728b1529b55486f300e4c21279cb6f7dd01fe70096312:eyJzZWxlY3RlZExpbmVDb3VudCI6OTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdhYWUxYjllNzIwNTc4OGFmYzViODIzNzdmNjI1MjJmNjg3N2Q4ZmQxMTNlZjZhMGQyNWEzZTBhMzE4YzE5NWIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ5NGYyMGIyYzNmYmUyMjQ2Y2JlY2U4NjFkMWZhZGY2NmE4NTY1MmM4MzhjMWY2YzkzYTJjYjhiNzkzNTdkZDQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjkzYTMxYWNmNTE0ZmE1NDczZGViODlhZGYyNmQ2OTg2YzRmYzc5MjM3ZTU2NzMxNGE3ODQ5M2ZlNDExMjNiYTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_783e4eee04f747a6821b15ca8ef46c64",
+      "statement": "Personal proposal review (reviewPersonalProposal) is client-oriented and must not be interchanged with Company paths: reject deletes the row; a content accept applies server-side then deletes the row; a structural accept deletes the row only and lets the client's full-state PUT land the structure. The server accept does not re-check baseRevision (single writer, client already ran the guard), and some structural outcomes rely on the next full-state persistence cycle.",
+      "evidence": [
+        {
+          "resource": "repo://lib/company-sections.ts#L1378-L1491",
+          "version": "repo-lines-v1:sha256:a574291ea71495956f06c40b32855366d8fdac20f426becc2218ad7f4ae1cd3b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTE0LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJlNmY5NWJhN2E2MDQ3ZWNiOTRiMWU4MWFkZDhlYjFlNjQzY2MwN2FiZWZkMDAwMDU4NzAxNjAxYzA1OTMxMTIzIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJmNjk1YmEyZWVhOGQ4YmQyZmEwZTJiNGNkY2ViNjNjOTZiZjcwMTUwNmNhODE2NmQzYWU4MjBlNmFjYmU0N2RkIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI0ZWE2MmRkNDUzZjYxM2VmNWYwYTI2YjEyODU2MDEwYjNiZDAwYjIwODc0YzcxNTA2ZjY1MzI2YmJkYjA1N2M5In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_868ba7a6ae2f41e3aef640efdc4089b4",
+      "statement": "Company client collaboration prevents older fetches overwriting optimistic changes: a sync can only replace sections when mutationTick equals lastPersistedTickRef; pendingCreatedSectionIdsRef preserves optimistic local creates; lastCompanyMutationAtRef plus COMPANY_MUTATION_QUIET_MS (8s) freezes local sections after any mutation; SYNC_MIN_GAP_MS (1.5s) collapses burst polls; and a BroadcastChannel announces cross-tab saves for trailing-debounced resync.",
+      "evidence": [
+        {
+          "resource": "repo://components/strap/strap-provider.tsx#L1042-L1057",
+          "version": "repo-lines-v1:sha256:b2aead1536d9ce408c4ab594d3dde60330eb7eff2f08d696db172daed238af9e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM2ZjQ5Y2ZiMjg0MTU4NzQ1MWJhNmVjZDZlNDI1MjhiMWIyYTFhOTM4MWI2ZTY1OGYxODExZDYwYzViZDdkNmEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZlZjY5MDA3YTdlNzVjY2RiMmMxOWVmYTlkOTVjNDNiZjc4N2YzM2EyYjljODI2NWM0YTVjZTY0MmZlNmRiZWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRlMjYwMzVlOWQyNzgzYjMyOTgyMWRhNzZlZGQ2OTljMzFjNzY0ZDA5M2Y1ODE0ODExNGVmOTllMzA2NDNkNDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI4OTBhOGVkNGViYjRkYWJlYmZiNGZjZmY0ZmNiZTViN2I5OWQ1NjM1NzRhMjY1NzM5Y2E4MWUyNTUwZTM1ODAifQ"
+        },
+        {
+          "resource": "repo://components/strap/strap-provider.tsx#L121-L130",
+          "version": "repo-lines-v1:sha256:9b8bf2398f15d6edcff337f6e643df13d18945a8f579f22b6612a2c03cb60080:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI5OGZiZDI5MzUxY2NjZGNjZWE3ODBmZjI3NjkxMjg2ZTNlMzBlOTlhZWFkYTYwYjBmNDk0ZWE1OWM3MGY4MTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjViMjk3ZDVkZTJjMmZkZDFlMmRhN2Y0ZDU3MzE4ZDA5ZmI0MmVhYzdjNTFmOTYxNGY4MGFlOGRkMzNlZDdmMWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE1MjZlZTg4MWEzMWRhMWMxMjY3M2U2NjAwNzU1Yzc2YjdhOWJlM2MxOTY1Yjg1YmU2NjRmMzBlOTdhOTAyMmUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_61d2a03cafce4f9b85ae0545776f0a7c",
+      "statement": "lib/profile-file.ts path behavior: absent/blank or configured strap.md reads strap.md then creed.md fallback; any other explicit path (including creed.md) reads exactly that path; push refuses to create strap.md beside a fallback-resolved creed.md without explicit migration (hasProfilePathConflict returns the 409 in the push route). Personal has pull preview/apply; Company supports push only.",
+      "evidence": [
+        {
+          "resource": "repo://app/api/app/github/push/route.ts#L21-L32",
+          "version": "repo-lines-v1:sha256:36e5c0f7f8e3f9282d521234b8993109155f0215fb3d829ac6f9ede4c8317c83:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIwNzFhY2YyYWZkNTZmODQ2Y2UwNTliMDA1ZmU2N2ZjY2VhNDc2MjM2YjU5YWMwOTQzNDA0YTQyMzQzNjlhOWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ2N2I5Yzk3M2ExNDI2NThlZmZmYzgyN2Y4YTIxZmI1NDQ4NjAwZjA0ZTI1ODkxOWIyNjNjZDczODRmMTMxYmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhhN2ZiY2FmZTc3YTIyOGY4MWNmZDQ4ZTE2MWFiYTE1ZGJmNjdkZjhkNWViNTgxNDQzMDAyMjg4MjM5NmM1NjgifQ"
+        },
+        {
+          "resource": "repo://lib/profile-file.ts#L1-L27",
+          "version": "repo-lines-v1:sha256:2f88f8720accb32ce0c79a71b33255081af1774fc37a59f82b529571458d9584:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYzZmU5NGQxNDE0MWE5ZmM3YmY1Y2Y5NWU0M2Y0MjVkYWI1ZDc1OTMzMTM4ZTNjMWNlMDE5NmE3ZWRmMWRjOWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e8211d356000448795630c5e5db75854",
+      "statement": "GitHub serialization: new integrations default to strap.md; ## is the section boundary; nested headings shift down one level on export and the shift is reversed on import before markdownToRichHtml; accent is preserved in <!-- creed:accent=... --> (a retained format identifier) injected by buildVisibleStrapMarkdown and stripped on read; the round trip targets supported editor markup, not arbitrary byte preservation. Pulled sections default to propose permission.",
+      "evidence": [
+        {
+          "resource": "repo://lib/strap-data.ts#L1268-L1330",
+          "version": "repo-lines-v1:sha256:14c9cc4580cf11ee276a402be721a3230f18355864a1de497d41e2ed0013c314:eyJzZWxlY3RlZExpbmVDb3VudCI6NjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUyMDVmMjllZmUzMzQxNDE1OTUyZDQzZTU4OGQzZTg5MDFhOWUyMTk3MzVkYjM1YzI1OTA5NTljOWRhMjZiOTIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQyMjI4YzMwM2E1OTExYmE0ZmE0MmFhNzExMmQxNjM2Zjc1OGE5Y2E0NzU1ODllNTIwMTQ0OTM3YjA5NjdkMjUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQwMzJmMzQ0MDJlMjZiY2Y0ZGQ2YTc2NDY1ZTdjNjg1NWZmNGY1NTU5NTc3YTc3ZTk3NWQxYjdjYTRhM2Q1OWQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhmZjdkZTIwYTg4NGE2YjFkYWRmZGE3ZWExYTVmODc5YWZlNzU3MjY0MjY3MzBiMTEwZTA5ZjBkMTUwNDI1Y2EifQ"
+        },
+        {
+          "resource": "repo://lib/strap-data.ts#L1358-L1378",
+          "version": "repo-lines-v1:sha256:499f929a217e36f48fbca57be5e7b898f21b146df2a8f82d5e24c6c1c00ce9dc:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVhNmMwZjQ0NWRhMWIyYjM1YWI5ZmE1MGVlMzczZWE4NjFkYjEyYTI2N2ZkNTdiYTIwYmY1ZDQzMzlkNDg2ZWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRhZmQ3YzA5Mzc4MjdhYjlkOTMxMDk1M2E2NGU5NGE1MzEwZWZjNDkwYTRhOTE5ZTQyZGJjODI1MWEzMDAzM2YiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBlODM3MTAxYmEwY2U1ZDc4MWNjOGU4ZWNlYzA0NjYxNmRlNGRiYzBhMjY2NTY0ZTc1YmJlNzZiNWRjZDQ5NWIifQ"
+        },
+        {
+          "resource": "repo://lib/strap-markdown.ts#L99-L165",
+          "version": "repo-lines-v1:sha256:ef4b9185d7764205f96258646febf2291d622546583064883374d7cf6888dabe:eyJzZWxlY3RlZExpbmVDb3VudCI6NjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ3MmFjMTVhOTJhOTA0MGZhZjVkZTU5YmI5MThmZGEyMzU2YjcyZGU2NWM0MDRiOWZhYThkNGY3OGFkNTgzNzAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ2ZTQ1NmM1ZWFmYjVmNDBkMjY3ZTk4Nzc4ZDVkNTFhMzU2YTg3NTVjMjU0ZWZjZjZiYzZiZjg1NTZjNzVjMmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE4Y2Y5MjAwNTA5NTIxMTg0MzEyMTQ2NDFjN2FkMWI0MTg1MTYxMGNiZjY2MzZlY2IxYmQxMGZjY2RiYzRmOWUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_d93f438b284e41ea80cd185a82db2bff",
+      "statement": "Company onboarding: POST /api/app/company idempotently provisions the owner shell+membership via provision_company_creed and activates it; compile-company builds 8 deterministic sections (Company, Ethos, Operating Rules, People, Projects, Clients, Tools, Agent Rules); seed persists namespaced ids and onboarding_stage, compose maps pasted Markdown by heading, complete clears onboarding_stage and activates. The app layout scans owned companies for unfinished setup so a stale personal cookie cannot hide a resume.",
+      "evidence": [
+        {
+          "resource": "repo://app/api/app/company/onboarding/route.ts#L67-L95",
+          "version": "repo-lines-v1:sha256:1464349999c7aea6f4bdce323693b1295567b84a135de61c46686900eb07037e:eyJzZWxlY3RlZExpbmVDb3VudCI6MjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk4NDc5OTFlOWJiYmI3M2YzYzdlYmJhMDljNjAzODcwYmY1ZmY2ZGYzNjdhMGU4MTkwYjA5NGM3YTRhYjljZmMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM2MWE4MjZkNTc5YzVjNTlmYzM2MTMxMDU4N2Y1NmFiMzdkMDQyNGM1YzQ1ZDNkMDFiNjQxNTlmZTk2MThkYjYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgxNDVkNzQ1YmRkMDkzNTdmMTEyNTA1ZmZjN2UzYzE3ZTNmMDRiZTEzODJlZWYzNWExOGFlNzVhMTRjODA4YTMifQ"
+        },
+        {
+          "resource": "repo://app/api/app/company/route.ts#L9-L32",
+          "version": "repo-lines-v1:sha256:5f5be71b4c7f840e636e431ed084202a9ee6211cf7d59049111f7bec0abfe628:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRlZGM0NTg5MThkMmNiNjM3YmFiYWFkMDlkYmY0OWNjY2M2M2ZkN2RhOWE2MTg2MmFmMTY5ODZjYTlmMDFlYzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRjNjNhNWU1NDkyMTlhMmRmOGU3MDQ5ZDkwYWE2YzU1NTBkZTgyODhjOGVkNmFmZTgwMzAwZTk0MTU3NzYzZGQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRmOGM2N2RhOTU4MWZlYTc3NWMyOTM0MzlhNzcyMTVkYjQ3N2UxN2RhYzQ2ZDEzOTJjODk0NzNlYWEyMGNjZTYifQ"
+        },
+        {
+          "resource": "repo://lib/onboarding/compile-company.ts#L162-L198",
+          "version": "repo-lines-v1:sha256:31bfa3f1775e0da4a044715eba1bec67897a44d3601a73f04754c3bf0aefc1c6:eyJzZWxlY3RlZExpbmVDb3VudCI6MzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI0ZmY4Yjk5N2FkNDYwNDIxNDhiNTZlYmU3N2VmOGY0ZGVmMjBmMWEyYjQyN2I4YWRjNmFjNDg4YmI5ZGEyYzUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZmNDMyYjRmYzgyNDkwNTM1MmMwYzU1MmRlODFjMTY5YTU1MGNkMDc3ZmNhMDI4NDc4MzM0ZDBmNGI2NGZjZTUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkyMDQwZTA5NWE5NGUyYWRhNzRlNDIxZjM3MTg3NTFhOTFhODEwYmZkNjZmNDhmNGU5MzljN2I3NDgwZWI2NzAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFmOWI0Y2QwODVhYzRhOGU5Nzk3MWNmMDY2N2E0MjA2NWYyZjBkOWNmNDFkYmFiZjZiN2QzNmE0NDIzYWNkMDYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b5f2450258be43a2a0f88b7f6577b414",
+      "statement": "Personal onboarding: compile.ts deterministically produces a five-section skeleton (Identity, Goals, Work, Preferences, Routines) from questionnaire answers, with Work/Routines as stubs and Identity/Goals/Preferences carrying the user's words; every starter section is agent-writable at propose. Returned Markdown is previewed, parsed, and claimed; there is no paid-plan gate.",
+      "evidence": [
+        {
+          "resource": "repo://lib/onboarding/compile.ts#L87-L198",
+          "version": "repo-lines-v1:sha256:c740a09405e44b421a0463ff8ae6f348429ad822103af182e7d870b2230f99aa:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEyLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI4MmJlMjk4ZWI3M2M3YzFhMzYwZDZmYzU0ZDYyOTFiOTgzYTRmZmNmZjRhOWY2NWM2YzZiZjk3MGM4OGE5ODNjIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI3ZjdlNGM2MWY3MzhmOGVmMzhmMjQ5YTk0NzVkYWQyYzJjZTI0Y2U0MmNhMzE0MTE0OThlNDdkOWQyMWIzMDZkIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MCwiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_5e0d79f83cdb4aafb8cb8f48721913dd",
+      "statement": "A StrapSection has a stable id, name, position, accent, normalized Tiptap HTML content, revision, attribution, archive state, and agentPermission. lib/rich-text.ts owns normalization (normalizeHtmlWhitespace), whitespace-equivalence (richTextContentEquivalent), and Markdown conversion (markdownToRichHtml); archived and hidden sections are excluded from the agent read payload and the markdown export.",
+      "evidence": [
+        {
+          "resource": "repo://lib/rich-text.ts#L260-L280",
+          "version": "repo-lines-v1:sha256:4f30c073258c7d80a45d79f9eda6604a34615814843fdfcc42b8c13d3f109601:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJiZTIwODFlY2I0MDU4Mzc5ZjM1Y2U1NWNjZTU2YWQzYzNmZTM2ZGNkNmVkMTA1YjM1MTI3MzE5YTYyN2ZkZjciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://lib/strap-data.ts#L88-L104",
+          "version": "repo-lines-v1:sha256:9991800df983cff2de21d7756d5734ece9cc8882ed0e5891ed5c4362681dbac8:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIyNjRiMTUxZGJkYjQ5MTY5YmQ0ZmE5OTgwNzJmZjU1YTMzYWMwYjZkOWRmYzZiNWEzZjQ1NDMwYTU0ZTVjZWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFhMWQxYTYzMzkwMjI5Yzc5ODM0N2U4M2EwNDA1NDQxYzk0MDAwMzUyODRhZDE2OGMxYmY2Y2RmMWQ3MGEzNzAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkxMTBjN2QxY2Q4MzhjYmU0MjU5NGM3NTcyNjhmZmExNzYyYjUyNWU1NTNkNWMzODQyMjM0MmVkYzM2YTkwZjMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImFkOWY3ZjhkNDIyNzcxM2YwZDdiZGJiZjJkM2NkNmI0ODhmMjcyODQ3ZWFiMTg0MTBmNTlhNWQ4Nzc2OTdjNTgifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.2",
+    "at": "2026-09-16T08:01:49.714Z"
+  }
+}
