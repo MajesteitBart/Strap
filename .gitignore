@@ -46,20 +46,10 @@ yarn-error.log*
 *.tsbuildinfo
 
 # private workspace artifacts (Codex / Claude / Cursor / etc.)
-# Track only Delano's safe repository hooks and compatibility wrapper.
-.codex/*
-!.codex/hooks.json
-.claude/*
-!.claude/common/
-.claude/common/*
-!.claude/common/log-safety.js
+.codex/
+.claude/
 .cursor/
 .aider*
-
-# local Delano runtime evidence and viewer state
-/.agents/logs/*.jsonl
-/.agents/logs/remove-supabase/
-/.project/viewer/
 
 # launch video workspace (Remotion) - local only, never pushed
 /video/
