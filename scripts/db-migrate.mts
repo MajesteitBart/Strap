@@ -3,7 +3,7 @@ import { migrate } from "drizzle-orm/postgres-js/migrator";
 import { databaseUrl } from "./db-env.mts";
 import { createConnection } from "../lib/db/connection.ts";
 
-const connection = createConnection(databaseUrl());
+const connection = createConnection(databaseUrl(), { sslCa: process.env.DATABASE_SSL_CA });
 try {
   await migrate(drizzle(connection), { migrationsFolder: "db/migrations" });
   process.stdout.write("Database migrations applied.\n");

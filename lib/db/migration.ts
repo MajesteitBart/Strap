@@ -89,7 +89,9 @@ async function insertRows(tx: TransactionSql, table: string, rows: Row[]) {
   if (rows.some(row => Object.keys(row).some(key => !known.has(key)))) throw new Error(`Source columns changed: ${table}.`);
   const supplied = columns.filter(c => c.is_generated === "NEVER").map(c=>c.column_name).filter(column=>rows.some(row=>column in row));
   const names = supplied.map(identifier).join(", ");
-  await tx.unsafe(`insert into public.${identifier(table)} (${names}) overriding system value select ${names} from jsonb_populate_recordset(null::public.${identifier(table)}, $1::jsonb)`, [JSON.stringify(rows)]);
+  // Bind serialized JSON as text so pooled connections cannot infer jsonb and
+  // serialize the string a second time after describing the statement.
+  await tx.unsafe(`insert into public.${identifier(table)} (${names}) overriding system value select ${names} from jsonb_populate_recordset(null::public.${identifier(table)}, $1::text::jsonb)`, [JSON.stringify(rows)]);
 }
 
 export async function importSnapshot(target: Sql, snapshot: MigrationSnapshot): Promise<Record<string, number>> {

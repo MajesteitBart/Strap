@@ -27,7 +27,7 @@ Write `scripts/migrate-from-supabase.mts`. It exports every public table, `auth.
 - [x] Reconciliation shows equal counts for every table.
 - [ ] Both users sign in on the rehearsal deployment with their existing method.
 - [ ] An MCP read with an existing OAuth token succeeds against the rehearsal deployment.
-- [x] The script refuses populated and nonlocal targets; no force/overwrite flag exists.
+- [x] The script refuses populated targets and hosted targets without an exact --target confirmation; no force/overwrite flag exists.
 
 ## Traceability
 - Story: US-001, US-003, US-004
@@ -46,3 +46,5 @@ Passwords carry over as bcrypt hashes; the T-005 verify handles them. Google ide
 
 - 2026-09-13T21:48:27Z: Script and local import rehearsal pass. Live providers, delivered emails and hosted rehearsal remain open.
 - 2026-09-13: Planned from the Supabase surface inventory.
+
+- 2026-09-16: Railway Postgres 18 / transaction-pooler rehearsal imported the read-only source snapshot: 2 users, 3 profiles and 37 application tables reconciled. Verified TLS uses a separate trusted CA for each connection. Live sign-in and deployed MCP checks remain open.

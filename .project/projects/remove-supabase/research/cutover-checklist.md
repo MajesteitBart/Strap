@@ -1,9 +1,9 @@
 # Production cutover checklist
 
-This is prepared work for T-016 through T-018. No production actions have been executed on this branch.
+This is prepared work for T-016 through T-018. Railway hosting and an isolated rehearsal copy are provisioned. Production application traffic and Supabase remain unchanged.
 
 1. Choose the production Postgres host and maintenance window. Complete the independent authorization review. Preserve the current source project, deployment revision and environment configuration as the rollback set.
-2. Provision an isolated rehearsal database with verified TLS and transaction pooling. Run the baseline once, verify the catalog, and use a reviewed hosted extension of the import command. The current command deliberately refuses remote destinations and overwriting data.
+2. Provision an isolated rehearsal database with verified TLS and transaction pooling. Run the baseline once, verify the catalog, and use a reviewed hosted extension of the import command. The command requires --target host:port/database for hosted destinations and refuses populated targets. Railway rehearsal import and verified pooler TLS passed on 2026-09-16.
 3. Reuse the existing Google app. Add the new callback alongside the existing callback, configure credentials through the environment, and rehearse a real existing-user sign-in. Configure and rehearse X separately. Verify a custom display name and provider subject still identify the original user. Verify confirmation and reset emails through Resend without logging their links.
 4. Point the read-only source connection at the intended project. Confirm its table/migration inventory and storage count again. Preserve the current token encryption key; back up the new auth and Vault keys independently. Reconcile all tables after import, then verify an existing OAuth/MCP token, a legacy key, section access and an audited Vault reveal. Sessions intentionally require sign-in again.
 5. Test rollback on the rehearsal deployment by restoring its prior application/environment target. Confirm the source is still readable. Production rollback after new writes requires an explicit reconciliation decision; do not silently discard target-only writes.

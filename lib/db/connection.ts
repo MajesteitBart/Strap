@@ -1,7 +1,7 @@
 // Shared by the server client, migration commands, and database tests.
 import postgres from "postgres";
 
-export function createConnection(connectionString: string) {
+export function createConnection(connectionString: string, options: { sslCa?: string } = {}) {
   const url = new URL(connectionString);
   if (!["postgres:", "postgresql:"].includes(url.protocol)) {
     throw new Error("DATABASE_URL must be a Postgres connection string.");
@@ -13,7 +13,7 @@ export function createConnection(connectionString: string) {
   return postgres(url.toString(), {
     max: 1,
     prepare: false,
-    ssl: local ? false : { rejectUnauthorized: true },
+    ssl: local ? false : { rejectUnauthorized: true, ...(options.sslCa ? { ca: options.sslCa } : {}) },
     idle_timeout: 20,
     connect_timeout: 10,
     onnotice: () => {},

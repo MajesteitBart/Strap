@@ -32,7 +32,7 @@
       "file": ".env.example",
       "kind": "content",
       "occurrences": 6,
-      "fingerprint": "ea930bb05d66f9b2606aba486709f9c272271391e77081104da541c2607bc2ef",
+      "fingerprint": "23a56196878cf25ea1c1a1d96c69195fcd21213d44794e1cec45b94337474da6",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -3047,7 +3047,7 @@
       "file": "lib/db/migration.ts",
       "kind": "content",
       "occurrences": 35,
-      "fingerprint": "33094fe4423ebe6e9d5888d59d01e07f46247411758c7d0a7cb7f44912c52c09",
+      "fingerprint": "b10ab6463418b684abd601497150c29d1f3ec122dd4cb25e0f2e9dcd3e78cca1",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."

@@ -28,3 +28,7 @@
 - Application AES-256-GCM encryption stores Vault values in Postgres behind signed-in, authorized, audited reveal operations; lists and ordinary context expose metadata or references only.
 - Delano uses `.project/` as delivery truth, `.agents/` as its canonical runtime, and `.codex/hooks.json` as an opt-in session hook.
 - Hosted migration history alone does not prove effective database privileges. A 2026-09-13 audit found older service-only RPC grants had drifted; the existing migration-defined grants were restored and verified with `has_function_privilege`. Check effective client and service execution rights after hosted schema changes.
+
+## Hosted migration rehearsal (2026-09-16)
+
+Railway hosts Postgres 18 with a transaction-mode PgBouncer service. The PR preview uses an isolated source-copy rehearsal database. Production Netlify still runs the Supabase release. Verified TLS uses DATABASE_SSL_CA for the stable pooler certificate (renew before September 2027); source imports use a separate STRAP_SOURCE_DATABASE_SSL_CA. BWS stores the database credentials and encryption keys. See db/README.md and the remove-supabase cutover checklist before changing production.
