@@ -32,3 +32,7 @@
 ## Hosted migration rehearsal (2026-09-16)
 
 Railway hosts Postgres 18 with a transaction-mode PgBouncer service. The PR preview uses an isolated source-copy rehearsal database. Production Netlify still runs the Supabase release. Verified TLS uses DATABASE_SSL_CA for the stable pooler certificate (renew before September 2027); source imports use a separate STRAP_SOURCE_DATABASE_SSL_CA. BWS stores the database credentials and encryption keys. See db/README.md and the remove-supabase cutover checklist before changing production.
+
+## Production recovery (2026-09-16)
+
+PR 16 is merged. Production now uses Railway after recovery from missing production-only settings. Deployment 6aaa5b6404a1115f9c4953e9 has healthy DB/auth, existing password login, legacy bearer reads and audited Vault reveal. Supabase is retained for rollback. Live Google/X and delivered-email checks remain open. See `.project/projects/remove-supabase/updates/2026-09-16-production-recovery.md`. Earlier rehearsal-only notes describe the pre-cutover state.

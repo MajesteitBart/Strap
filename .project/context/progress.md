@@ -52,3 +52,7 @@
 - The old production origin must continue serving MCP/OAuth endpoints directly during the migration window.
 - The inherited dependency advisories were resolved in runtime security PR 12; its recorded release audit reports zero vulnerabilities.
 - Computer Use loaded its safety and confirmation guidance, but runtime bootstrap failed because the native Windows helper pipe was unavailable. T3 Preview supplied production public-route evidence; the operator accepted the missing Computer Use authenticated-route pass as a known coverage gap when closing T-009.
+
+## Production recovery (2026-09-16)
+
+PR 16 is merged. Production now uses Railway after recovery from missing production-only settings. Deployment 6aaa5b6404a1115f9c4953e9 has healthy DB/auth, existing password login, legacy bearer reads and audited Vault reveal. Supabase is retained for rollback. Live Google/X and delivered-email checks remain open. See `.project/projects/remove-supabase/updates/2026-09-16-production-recovery.md`. Earlier rehearsal-only notes describe the pre-cutover state.
