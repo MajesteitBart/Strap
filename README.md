@@ -49,7 +49,7 @@ Live product and protocol guidance is available in [Docs](https://strap.bvdm.ai/
 
 ## Quickstart
 
-Prerequisites: Node.js 22+ and Docker. OpenRouter is optional and only required for AI features. Full setup and import rehearsal instructions are in [db/README.md](db/README.md).
+Prerequisites: Node.js 22+ and Docker. Full setup and import rehearsal instructions are in [db/README.md](db/README.md).
 
 ```bash
 git clone https://github.com/MajesteitBart/Strap.git strap
@@ -76,7 +76,7 @@ STRAP_MAINTENANCE_SECRET=<independent-32-byte-base64-secret>
 
 Configure Resend for verification/reset emails. Google and X use their own optional OAuth credentials. Never copy the example placeholders as real secrets.
 
-New configuration uses `STRAP_ENCRYPTION_SECRET` and `STRAP_AGENT_MODEL`; existing `CREED_ENCRYPTION_SECRET` and `CREED_AGENT_MODEL` values remain lower-priority fallbacks. Canonical direct APIs live under `/api/strap/**`, and MCP discovery uses Strap tools, prompts, and `strap://profile`. `/api/creed/**`, `creed_*`, `creed://profile`, and other lower-level Creed identifiers remain compatibility contracts.
+New configuration uses `STRAP_ENCRYPTION_SECRET`; existing `CREED_ENCRYPTION_SECRET` remains a lower-priority fallback. Canonical direct APIs live under `/api/strap/**`, and MCP discovery uses Strap tools, prompts, and `strap://profile`. `/api/creed/**`, `creed_*`, `creed://profile`, and other lower-level Creed identifiers remain compatibility contracts.
 
 Every optional variable is documented in [`.env.example`](./.env.example). Never commit `.env.local`.
 
@@ -115,7 +115,7 @@ The CLI discovers tools, resources, and prompts from the live MCP server. Its co
 | Framework | Next.js 16 App Router, React 19, strict TypeScript |
 | UI | Tailwind CSS v4, shadcn/ui, Tiptap, Motion |
 | Backend | Postgres 17, Drizzle, Better Auth, explicit authorization and encrypted Vault |
-| AI | OpenRouter with included and BYOK modes |
+| Feedback | Connected agents propose updates for user review; no in-app LLM calls |
 | Sync | GitHub push/pull with lossless Markdown round trips |
 | Agent access | OAuth 2.1, MCP, scoped API keys, and `@bvdm/strap` |
 
@@ -126,14 +126,13 @@ Full tour: [strap.bvdm.ai/stack](https://strap.bvdm.ai/stack).
 ```text
 app/                    public, authenticated, OAuth, API, and MCP routes
 components/             product, marketing, auth, and shared UI
-lib/                    domain, persistence, authorization, AI, and integrations
+lib/                    domain, persistence, authorization and integrations
 packages/strap/         @bvdm/strap CLI package
 packages/varlock-strap-plugin/  Varlock provider for explicitly granted Vault secrets
 packages/creed-cli/     legacy CLI compatibility package
 db/schema/              Drizzle application and auth schema
 db/migrations/          squashed baseline and future forward-only migrations
 tests/                  Node contract and logic tests
-.project/               Delano delivery contracts and durable context
 ```
 
 Canonical implementation paths use `components/strap`, `app/(strap-app)`, and `lib/strap-*`. Narrow `lib/creed-*` re-export shims and the `/api/creed` alias routes remain where source or protocol compatibility requires them.

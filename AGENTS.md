@@ -7,43 +7,16 @@ If a human is reading this, the document you want is [`README.md`](./README.md).
 
 ---
 
-## Start Here
+## Start here
 
-Before making changes, read current repository truth in this order:
+1. Inspect git status and preserve unrelated worktree changes.
+2. Read README.md, CONTRIBUTING.md, SECURITY.md, and the complete code path relevant to the task, including callers and tests.
+3. Use a concise plan when the work needs one. Make the smallest coherent change and verify it.
+4. Report what changed, what was actually verified, and any remaining gaps. Update the relevant source documentation when durable facts change.
 
-1. `README.md`
-2. `BOOTSTRAP.md`
-3. `.project/context/README.md` and the task-relevant context files
-4. The active contract under `.project/projects/`
-5. `openwiki/quickstart.md` and its task-relevant references
-6. The complete code path you intend to change
+Source code, migrations, and package scripts are canonical. Generated openwiki/ pages provide architecture references but can lag behind implementation; current database guidance is in db/README.md. The .agents/skills/ directory contains repository, UI, and Postgres guidance.
 
-First-turn workflow:
-
-1. Inspect `git status` and preserve unrelated worktree changes.
-2. Retrieve the relevant product, architecture, security, and delivery context.
-3. Select or create the narrowest Delano task that represents the requested work.
-4. Implement the smallest coherent change while preserving the invariants below.
-5. Run focused checks, then the repository-wide checks required by the changed surface.
-6. Record evidence in `.project/projects/<slug>/` and update `.project/context/` when durable truth changed.
-
-## Project Mission
-
-Keep one compact, curated personal context profile useful and safe across every connected AI agent. Product quality is measured by whether the profile stays current, specific, permission-aware, and worth reading before substantive work.
-
-## Current Implementation Goal
-
-Keep the completed rename-first Strap release and its compatibility contracts intact without turning `.project` into product data. Additional visual redesign is separately planned under `.project/projects/strap-visual-redesign/` and starts only with explicit approval.
-
-## Source Of Truth
-
-- `README.md`: product purpose, confirmed setup, commands, and repository map.
-- `BOOTSTRAP.md`: repeatable Delano setup and retrofit decisions for this repository.
-- `.project/context/`: distilled product, technical, testing, and delivery context.
-- `.project/projects/`: Delano specs, plans, decisions, workstreams, tasks, research, and updates.
-- `openwiki/`: generated architecture and workflow reference; regenerate it rather than hand-editing generated pages.
-- `app/`, `components/`, `lib/`, `db/`, `packages/strap/`, `packages/creed-cli/`, and `tests/`: implemented behavior and canonical executable truth. `packages/creed-cli/` is a preserved compatibility package.
-- `.agents/`: canonical Delano runtime and repo-local skills. `.claude/` is compatibility only.
+Do not spawn subagents unless the user explicitly requests them. External tracker writes require explicit authorization. Visual redesign needs an explicit request.
 
 ---
 
@@ -64,7 +37,7 @@ wrong change.
 ```
 Next.js 16 (App Router, Turbopack)   React 19   TypeScript (strict)
 Tailwind v4   shadcn/ui   Tiptap   Framer Motion / motion
-Postgres 17 + Drizzle + Better Auth   OpenRouter (included key + BYOK)
+Postgres 17 + Drizzle + Better Auth
 ```
 
 ---
@@ -99,10 +72,8 @@ lib/
 ├── strap-backend.ts          Drizzle domain reads/writes
 ├── strap-markdown.ts         Markdown ↔ section parser
 ├── rich-text.ts              Tiptap content normalization
-├── ai/quality{,-runner,-rubric}.ts   quality analysis
-├── ai/openrouter.ts          OpenRouter call helper (included key + BYOK)
-├── ai/model-catalog.ts       OpenRouter model list + tier scoring
-├── onboarding/{compile,refine,validate}.ts   synthesizer pipeline
+├── quality-report.ts         read-only historical report compatibility
+├── onboarding/                 deterministic setup and external-assistant prompts
 ├── db/                      database contexts and scoped repositories
 ├── auth/                    Better Auth server and client
 ├── authz/                   explicit row and mutation guards
@@ -129,19 +100,6 @@ The four "god" files to be careful in:
 - `lib/strap-backend.ts` — state loading and persistence
 - `lib/strap-data.ts` — types + agent contract + seed
 - `components/strap/settings-screen.tsx` — settings tabs
-
----
-
-## Reading order before edits
-
-1. `project-context/index.md` (gitignored — exists locally for the maintainer
-   and any agent working in the repo)
-2. The other files in `project-context/` listed by `index.md`
-3. The exact code path you're about to change
-
-If `project-context/` is missing (you cloned a public copy without it),
-read `README.md` + `CONTRIBUTING.md` + `SECURITY.md` and then this file
-end-to-end.
 
 ---
 
@@ -178,46 +136,6 @@ These are non-negotiable. Don't cross them without asking.
 
 ## Working defaults
 
-### Delano workflow
-
-- Use `.project/context/` for durable repository context and `.project/projects/` for bounded delivery contracts.
-- Prefer Delano CLI lifecycle commands over hand-editing contract frontmatter so rollups remain consistent.
-- Use the full discovery, planning, breakdown, execution, quality, and closeout flow for features or material contract changes.
-- For small local fixes, inspect current state, make the smallest coherent change, verify narrowly, and report `done`, `partial`, or `blocked`.
-- Do not mark work complete without concrete evidence. External tracker synchronization requires explicit approval before writes.
-
-Common commands:
-
-```bash
-delano help
-delano status --open --brief
-delano validate
-delano next -- --all
-delano viewer
-delano project show <project-slug> --json
-delano workstream show <project-slug> <workstream-id> --json
-delano task open|start|close|block|defer|update <project-slug> <task-id> --reason "<text>"
-delano update add <project-slug> --message "<text>" --task <task-id> --stream <workstream-id>
-```
-
-### Model selection for workflows and subagents
-
-Rankings are higher = better. Cost reflects what the project owner pays; intelligence is unsupervised problem capacity; taste covers UI/UX, code quality, API design, and copy.
-
-| model | cost | intelligence | taste |
-| --- | --- | --- | --- |
-| gpt-5.5 | 9 | 8 | 5 |
-| sonnet-5 | 5 | 5 | 7 |
-| opus-4.8 | 4 | 7 | 8 |
-| fable-5 | 2 | 9 | 9 |
-
-- These are defaults, not limits. Escalate when output does not meet the quality bar.
-- For anything that ships, use intelligence, then taste, then cost as tie-breakers.
-- Use `gpt-5.5` for bulk or mechanical work. Anything user-facing needs taste >= 7.
-- Use `fable-5` or `opus-4.8` for plan or implementation review, optionally with `gpt-5.5` as an independent perspective.
-- Never use Haiku.
-- Do not spawn subagents unless the user explicitly requests them.
-
 ### Style + motion
 - Easing: `cubic-bezier(0.22, 1, 0.36, 1)`.
 - Durations: 160ms (popovers, dropdowns), 200ms (chevrons), 220-280ms (accordions).
@@ -227,7 +145,7 @@ Rankings are higher = better. Cost reflects what the project owner pays; intelli
 
 ### Fetches
 - Server fetches in route handlers / server components.
-- Client fetches go through `lib/ai/quality-runner.ts`-style module
+- Client fetches go through `components/strap/settings-preload.ts`-style module
   singletons when state must survive navigation.
 - No `next/dynamic({ ssr: false })` for heavy public-route components
   — known to hang in Next 16 dev.
@@ -237,7 +155,7 @@ Rankings are higher = better. Cost reflects what the project owner pays; intelli
 - Use npm run db:up, npm run db:migrate and npm run test:db for local Postgres. See db/README.md.
 - Keep viewer contexts and explicit authorization on session reads/writes. Service contexts are server-only, require a named purpose and retain domain role/credential guards.
 - Preserve the existing token encryption key during data copies. Better Auth, Vault and maintenance have separate keys.
-- Production provisioning, import and decommissioning require the planned cutover decision; local implementation does not authorize those operations.
+- Production provisioning, import and decommissioning require explicit authorization; local implementation does not authorize those operations. See db/README.md for cutover checks and rollback requirements.
 
 ### Animations
 - `framer-motion` (older imports) and `motion/react` (newer) are the
@@ -261,10 +179,15 @@ Rankings are higher = better. Cost reflects what the project owner pays; intelli
 ## Verification before claiming "done"
 
 ```bash
+npm test
 npx tsc --noEmit -p .   # zero new type errors
 npm run lint            # zero new ESLint errors
 npm run build           # production build must succeed
 ```
+
+For CLI changes, run the affected package typecheck, tests, and package dry run; the root TypeScript project excludes CLI packages. For compatibility classification changes, review affected occurrences and run `npm run audit:brand`.
+
+Report failed or unavailable checks accurately.
 
 If you changed the schema, run `npm run db:migrate` and `npm run test:db` against local Postgres. Review the generated migration before deploying.
 
@@ -282,30 +205,6 @@ a sample update.
 - Quote file paths and identifiers in backticks.
 - No emoji unless the user asked for them.
 - No filler ("I hope this helps!", "Let me know if you need anything else").
-
----
-
-## When you finish a task
-
-Decide:
-- Did I learn something durable about the product, architecture, or
-  repo conventions? → update the relevant file in `project-context/`.
-- Did I leave the code worse in some small way (a `TODO`, a duplicated
-  helper, a missing edge case)? → fix it now or call it out.
-- Did I create a new file or pattern? → make sure it's discoverable
-  (sensible name, top-of-file comment, exported from where it should
-  be).
-
-If all three are "no", just stop. Don't add a postscript.
-
----
-
-## What "done" looks like
-
-- TypeScript clean.
-- No new ESLint errors (warnings on pre-existing patterns are fine).
-- The user's intent is met.
-- The codebase is no worse than before — and ideally a little better.
 
 ---
 

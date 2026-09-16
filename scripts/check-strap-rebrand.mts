@@ -38,9 +38,6 @@ type Allowlist = {
 const ALLOWLIST_PATH = "scripts/strap-rebrand-allowlist.json";
 const TERM = /creed/gi;
 const HISTORY_PREFIXES = [
-  ".project/projects/delano-bootstrap/",
-  ".project/projects/strap-rebrand/",
-  ".project/projects/strap-rename-completion/",
   "db/migrations/",
 ] as const;
 
@@ -107,8 +104,8 @@ function defaultClassification(finding: Finding): Pick<AllowEntry, "decision" | 
   if (HISTORY_PREFIXES.some((prefix) => finding.file.startsWith(prefix))) {
     return {
       decision: "history",
-      category: "historical-delivery-or-schema",
-      rationale: "Preserved historical delivery evidence or forward-only schema history; rewriting would falsify repository history.",
+      category: "historical-schema",
+      rationale: "Preserved forward-only schema history; rewriting would falsify repository history.",
     };
   }
 

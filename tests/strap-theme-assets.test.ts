@@ -19,7 +19,7 @@ test("shared theme uses Strap namespaces with explicit rich-text compatibility",
   assert.match(css, /--strap-background:/);
   assert.match(css, /\.strap-scrollbar/);
   assert.match(css, /@keyframes strap-copy-cycle/);
-  assert.match(css, /@keyframes strap-tab-spin/);
+  assert.doesNotMatch(css, /@keyframes strap-tab-spin/);
   assert.doesNotMatch(css, /--creed-/);
   assert.doesNotMatch(css, /\.creed-(?:copy-cycle|diff-|invert-on-dark|scrollbar|tab-|theme-switching)/);
 

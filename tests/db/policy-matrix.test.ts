@@ -9,7 +9,7 @@ import { viewerContext } from "../../lib/db/context.ts";
 import { createTestDatabase, databaseTestsEnabled } from "./harness.ts";
 
 type Policy = { id: string; name: string; table: keyof typeof tables; operation: Operation | "all" };
-const policies: Policy[] = JSON.parse(readFileSync(new URL("../../.project/projects/remove-supabase/research/authorization/policies.json", import.meta.url), "utf8"));
+const policies: Policy[] = JSON.parse(readFileSync(new URL("../../db/authorization/policies.json", import.meta.url), "utf8"));
 
 test("all 45 source policies reject a foreign user's row", { skip: !databaseTestsEnabled }, async t => {
   const { db, connection, close } = await createTestDatabase(); t.after(close);

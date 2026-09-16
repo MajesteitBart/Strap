@@ -6,7 +6,7 @@ export function PricingReference() {
   return (
     <FaqSection
       heading="Pricing questions"
-      lede="Straight answers on what free means, what runs on the included key, and what stays yours."
+      lede="Straight answers on what free means, how connected agents help, and what stays yours."
       items={pricingFaqItems}
       tone="environments"
     />

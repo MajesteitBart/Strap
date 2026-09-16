@@ -2,9 +2,17 @@
 
 `@bvdm/varlock-strap-plugin` resolves selected Strap Vault items into your application's environment. Secret values stay out of `.env.schema`; Varlock fetches them when you run your application.
 
-Requires Node.js 22+, Varlock 1.19.x, and a Strap deployment with the `db/migrations/0001_headless_vault_item_grants.sql` migration and reveal endpoint. Apply it with `npm run db:migrate` before deploying the application. This package is implemented here but has not yet been published to npm.
+Requires Node.js 22+, Varlock 1.19.x, and a Strap deployment with the `db/migrations/0001_headless_vault_item_grants.sql` migration and reveal endpoint. Apply it with `npm run db:migrate` before deploying the application.
 
-## Install from this branch
+## Install
+
+In the application that will consume secrets:
+
+```sh
+npm install varlock@^1.19.0 @bvdm/varlock-strap-plugin
+```
+
+## Build a local package
 
 From the Strap checkout:
 

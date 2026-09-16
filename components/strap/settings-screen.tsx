@@ -9,37 +9,19 @@ import { CompanySettings } from "@/components/strap/company-settings";
 import { LegacySubscriptionNotice } from "@/components/strap/legacy-subscription-notice";
 import { EditableProfileAvatar } from "@/components/strap/profile-avatar";
 import { RichTextEditor } from "@/components/strap/rich-text-editor";
-import { StackTopBar } from "@/components/strap/rounded-bar";
 import { SearchableSelect } from "@/components/strap/searchable-select";
 import {
-  clearSettingsOpenRouterBalanceCache,
   clearSettingsRepoCache,
-  clearSettingsUsageCache,
   hashSettingsMarkdown,
-  loadSettingsAiSettings,
   loadSettingsBranches,
-  loadSettingsOpenRouterBalance,
   loadSettingsRepos,
-  loadSettingsUsage,
   loadSettingsVersionStatus,
-  setCachedSettingsAiSettings,
-  type AiMode,
-  type AiUsageRange,
-  type AiUsageSummary,
   type BranchOption,
-  type OpenRouterBalance,
-  type PublicAiSettings,
   type RepoOption,
   type VersionControlStatus,
 } from "@/components/strap/settings-preload";
 import { useStrap } from "@/components/strap/strap-provider";
 import { Button } from "@/components/ui/button";
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
-} from "@/components/ui/chart";
 import {
   Dialog,
   DialogContent,
@@ -49,12 +31,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { DownloadIcon } from "@/components/ui/download";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { EyeIcon } from "@/components/ui/eye";
 import { EyeOffIcon } from "@/components/ui/eye-off";
 import { Input } from "@/components/ui/input";
@@ -62,11 +38,6 @@ import { PenToolIcon } from "@/components/ui/pen-tool";
 import { Separator } from "@/components/ui/separator";
 import { ShieldCheckIcon } from "@/components/ui/shield-check";
 import { SimpleTooltip } from "@/components/ui/tooltip";
-import { AI_FEATURES, featureMeta } from "@/lib/ai/features";
-import {
-  consumeSettingsPanelIntent,
-  SETTINGS_PANEL_INTENT_EVENT,
-} from "@/lib/panel/settings-intent";
 import { STRAP_FILE_NAME } from "@/lib/profile-file";
 import {
   accentColorMap,
@@ -77,7 +48,6 @@ import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   AlertTriangle,
-  Check,
   ChevronDown,
   ChevronRight,
   LoaderCircle,
@@ -87,21 +57,15 @@ import {
 import {
   useEffect,
   useMemo,
-  useRef,
   useState,
   type ComponentType,
   type ReactNode,
   type Ref,
 } from "react";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { toast } from "sonner";
 
-const GITHUB_AUTHORIZED_APPS_URL = "https://github.com/settings/connections/applications";
-
-function looksLikeApiKey(value: string) {
-  const trimmed = value.trim();
-  return trimmed.length >= 20 && /^[A-Za-z0-9._-]+$/.test(trimmed);
-}
+const GITHUB_AUTHORIZED_APPS_URL =
+  "https://github.com/settings/connections/applications";
 
 function formatGitHubAccessError(message: string) {
   if (/GitHub is not connected/i.test(message)) {
@@ -115,7 +79,10 @@ function formatGitHubAccessError(message: string) {
   return message;
 }
 
-function formatGitHubAccessErrorForState(message: string, githubConnected: boolean) {
+function formatGitHubAccessErrorForState(
+  message: string,
+  githubConnected: boolean,
+) {
   if (githubConnected && /GitHub is not connected/i.test(message)) {
     return "GitHub access expired";
   }
@@ -169,21 +136,9 @@ function PersonalSettingsScreen() {
   const [branchesLoading, setBranchesLoading] = useState(false);
   const [repos, setRepos] = useState<RepoOption[]>([]);
   const [branches, setBranches] = useState<BranchOption[]>([]);
-  const [versionStatus, setVersionStatus] = useState<VersionControlStatus | null>(null);
+  const [versionStatus, setVersionStatus] =
+    useState<VersionControlStatus | null>(null);
   const [githubRefreshTick, setGitHubRefreshTick] = useState(0);
-  const [aiSettings, setAiSettings] = useState<PublicAiSettings>({
-    provider: "openrouter",
-    keyStatus: "missing",
-    aiMode: "credits",
-  });
-  const [aiKeyDraft, setAiKeyDraft] = useState("");
-  const [aiSaving, setAiSaving] = useState(false);
-  // aiNotice was an inline error string under the API key field. Replaced
-  // by toast notifications - see toast.error/.success calls in the handlers.
-  const [usageRange, setUsageRange] = useState<AiUsageRange>("90d");
-  const [usage, setUsage] = useState<AiUsageSummary | null>(null);
-  const [openRouterBalance, setOpenRouterBalance] = useState<OpenRouterBalance | null>(null);
-  const canSaveAiKey = looksLikeApiKey(aiKeyDraft) && !aiSaving;
 
   // The global control reflects the shared level of all non-hidden sections,
   // or nothing when they differ (mixed). Hidden sections are ignored here.
@@ -191,7 +146,9 @@ function PersonalSettingsScreen() {
     const perms = state.sections
       .filter((section) => section.agentPermission !== "hidden")
       .map((section) => section.agentPermission);
-    return perms.length > 0 && perms.every((perm) => perm === perms[0]) ? perms[0] : null;
+    return perms.length > 0 && perms.every((perm) => perm === perms[0])
+      ? perms[0]
+      : null;
   })();
 
   // Stats for the Data card: gives the export buttons a sense of weight
@@ -199,7 +156,10 @@ function PersonalSettingsScreen() {
   // as small mono chips.
   const dataStats = useMemo(() => {
     const sectionCount = state.sections.length;
-    const wordCount = exportMarkdown().trim().split(/\s+/).filter(Boolean).length;
+    const wordCount = exportMarkdown()
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean).length;
     return { sectionCount, wordCount };
   }, [state.sections, exportMarkdown]);
 
@@ -255,7 +215,8 @@ function PersonalSettingsScreen() {
   const githubConnected = effectiveGitHubStatus === "connected";
   const githubDisconnected = effectiveGitHubStatus === "disconnected";
   const selectedRepoFullName =
-    state.settings.versionControl.repoOwner && state.settings.versionControl.repoName
+    state.settings.versionControl.repoOwner &&
+    state.settings.versionControl.repoName
       ? `${state.settings.versionControl.repoOwner}/${state.settings.versionControl.repoName}`
       : "";
   const latestCommitUrl =
@@ -279,7 +240,10 @@ function PersonalSettingsScreen() {
         text: "GitHub isn't available on this deployment yet.",
       },
       invalid: { ok: false, text: "Could not start the GitHub connection." },
-      forbidden: { ok: false, text: "You can't manage this GitHub connection." },
+      forbidden: {
+        ok: false,
+        text: "You can't manage this GitHub connection.",
+      },
     };
     const message = messages[status];
     if (message) (message.ok ? toast.success : toast.error)(message.text);
@@ -322,9 +286,11 @@ function PersonalSettingsScreen() {
         if (!cancelled) {
           toast.error(
             formatGitHubAccessErrorForState(
-              error instanceof Error ? error.message : "Could not load GitHub repos",
-              githubConnected
-            )
+              error instanceof Error
+                ? error.message
+                : "Could not load GitHub repos",
+              githubConnected,
+            ),
           );
         }
       } finally {
@@ -342,7 +308,11 @@ function PersonalSettingsScreen() {
   }, [githubConnected, githubRefreshTick]);
 
   useEffect(() => {
-    if (!githubConnected || !state.settings.versionControl.repoOwner || !state.settings.versionControl.repoName) {
+    if (
+      !githubConnected ||
+      !state.settings.versionControl.repoOwner ||
+      !state.settings.versionControl.repoName
+    ) {
       setBranches([]);
       return;
     }
@@ -354,7 +324,7 @@ function PersonalSettingsScreen() {
         setBranchesLoading(true);
         const loadedBranches = await loadSettingsBranches(
           state.settings.versionControl.repoOwner,
-          state.settings.versionControl.repoName
+          state.settings.versionControl.repoName,
         );
 
         if (!cancelled) {
@@ -364,9 +334,11 @@ function PersonalSettingsScreen() {
         if (!cancelled) {
           toast.error(
             formatGitHubAccessErrorForState(
-              error instanceof Error ? error.message : "Could not load GitHub branches",
-              githubConnected
-            )
+              error instanceof Error
+                ? error.message
+                : "Could not load GitHub branches",
+              githubConnected,
+            ),
           );
         }
       } finally {
@@ -391,143 +363,6 @@ function PersonalSettingsScreen() {
   useEffect(() => {
     let cancelled = false;
 
-    async function loadAiSettings() {
-      try {
-        const settings = await loadSettingsAiSettings();
-        if (!cancelled && settings) {
-          setAiSettings(settings);
-        }
-      } catch {
-        return;
-      }
-    }
-
-    void loadAiSettings();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadUsage() {
-      try {
-        const loadedUsage = await loadSettingsUsage(usageRange, aiSettings.aiMode);
-        if (!cancelled) {
-          setUsage(loadedUsage);
-        }
-      } catch {
-        return;
-      }
-    }
-
-    void loadUsage();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [usageRange, aiSettings.aiMode, aiSettings.keyStatus]);
-
-  // The Panel intent consumer below runs in a mount-once effect, so it reads
-  // the mode-change handler through a ref that tracks the latest render (the
-  // handler closes over aiSettings and would otherwise be stale).
-  const panelModeChangeRef = useRef<(mode: "credits" | "byok") => void>(() => {});
-  useEffect(() => {
-    panelModeChangeRef.current = (mode: "credits" | "byok") => void handleModeChange(mode);
-  });
-
-  // Panel → Settings intents: scroll to a section, set the usage range or
-  // payment mode, open a dialog. Consumed once on mount (arriving via
-  // navigation) and again on the intent event (already on /settings, so no
-  // remount happens). Mirrors the file screen's nav-intent retry loop: the
-  // section list renders in one pass, but the rAF retry keeps this robust if
-  // that ever changes.
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    let cancelled = false;
-    let frameId = 0;
-
-    const consume = () => {
-      const intent = consumeSettingsPanelIntent();
-      if (!intent || cancelled) {
-        return;
-      }
-      if (intent.aiMode) {
-        panelModeChangeRef.current(intent.aiMode);
-      }
-      if (intent.usageRange) {
-        setUsageRange(intent.usageRange);
-      }
-      const key = intent.scrollTo;
-      if (!key) {
-        return;
-      }
-
-      let attempts = 0;
-      const tryScroll = () => {
-        if (cancelled) {
-          return;
-        }
-        const element = document.getElementById(`settings-${key}`);
-        if (element) {
-          element.scrollIntoView({ behavior: "smooth", block: "start" });
-          // A soft pulse so the eye lands on the right section after the jump.
-          element.animate(
-            [
-              { backgroundColor: "var(--strap-surface-raised)", borderRadius: "4px", offset: 0.15 },
-              { backgroundColor: "transparent", borderRadius: "4px" },
-            ],
-            { duration: 1100, easing: "ease-out" }
-          );
-          return;
-        }
-        attempts += 1;
-        if (attempts < 24) {
-          frameId = window.requestAnimationFrame(tryScroll);
-        }
-      };
-      frameId = window.requestAnimationFrame(tryScroll);
-    };
-
-    const timeoutId = window.setTimeout(consume, 120);
-    window.addEventListener(SETTINGS_PANEL_INTENT_EVENT, consume);
-
-    return () => {
-      cancelled = true;
-      window.clearTimeout(timeoutId);
-      window.cancelAnimationFrame(frameId);
-      window.removeEventListener(SETTINGS_PANEL_INTENT_EVENT, consume);
-    };
-  }, []);
-
-  // The BYOK card shows the user's live OpenRouter balance, but only when a
-  // valid key is saved. Clears in credits mode or when the key is gone.
-  useEffect(() => {
-    if (aiSettings.aiMode !== "byok" || aiSettings.keyStatus !== "valid") {
-      setOpenRouterBalance(null);
-      return;
-    }
-    let cancelled = false;
-    void loadSettingsOpenRouterBalance()
-      .then((balance) => {
-        if (!cancelled) setOpenRouterBalance(balance);
-      })
-      .catch(() => {
-        if (!cancelled) setOpenRouterBalance(null);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [aiSettings.aiMode, aiSettings.keyStatus]);
-
-  useEffect(() => {
-    let cancelled = false;
-
     async function updateStatus() {
       if (!githubConnected) {
         return;
@@ -544,9 +379,11 @@ function PersonalSettingsScreen() {
         if (!cancelled) {
           toast.error(
             formatGitHubAccessErrorForState(
-              error instanceof Error ? error.message : "Could not load GitHub sync status",
-              githubConnected
-            )
+              error instanceof Error
+                ? error.message
+                : "Could not load GitHub sync status",
+              githubConnected,
+            ),
           );
         }
       }
@@ -582,12 +419,13 @@ function PersonalSettingsScreen() {
       setDeleting(true);
       await deleteAccount();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not delete account.");
+      toast.error(
+        error instanceof Error ? error.message : "Could not delete account.",
+      );
     } finally {
       setDeleting(false);
     }
   }
-
 
   // GitHub is connected through the standalone "Creed" OAuth App (not sign-in
   // identity linking): a full-page redirect to /api/app/github/authorize, which
@@ -617,7 +455,9 @@ function PersonalSettingsScreen() {
       void refreshState();
       toast.success("GitHub disconnected");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not disconnect GitHub");
+      toast.error(
+        error instanceof Error ? error.message : "Could not disconnect GitHub",
+      );
     } finally {
       setDisconnectingGitHub(false);
     }
@@ -660,112 +500,6 @@ function PersonalSettingsScreen() {
       branch: value,
       syncStatus: value ? "unknown" : "not-configured",
     });
-  }
-
-  async function handleSaveAiSettings() {
-    if (!looksLikeApiKey(aiKeyDraft)) {
-      return;
-    }
-
-    try {
-      setAiSaving(true);
-      const response = await fetch("/api/app/ai/settings", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          apiKey: aiKeyDraft.trim() || undefined,
-        }),
-      });
-      const payload = (await response.json()) as {
-        settings?: PublicAiSettings;
-        error?: string;
-      };
-
-      if (!response.ok) {
-        throw new Error(payload.error || "Could not save AI settings.");
-      }
-
-      if (payload.settings) {
-        setAiSettings(payload.settings);
-        setCachedSettingsAiSettings(payload.settings);
-        clearSettingsUsageCache();
-      }
-      setAiKeyDraft("");
-      // A freshly saved key has a new OpenRouter balance to show.
-      clearSettingsOpenRouterBalanceCache();
-      void loadSettingsOpenRouterBalance()
-        .then(setOpenRouterBalance)
-        .catch(() => setOpenRouterBalance(null));
-      toast.success("API key saved");
-    } catch {
-      toast.error("Couldn't save API key");
-    } finally {
-      setAiSaving(false);
-    }
-  }
-
-  async function handleClearAiKey() {
-    try {
-      setAiSaving(true);
-      const response = await fetch("/api/app/ai/settings", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          clearApiKey: true,
-        }),
-      });
-      const payload = (await response.json()) as {
-        settings?: PublicAiSettings;
-        error?: string;
-      };
-      if (!response.ok) {
-        throw new Error(payload.error || "Could not clear API key.");
-      }
-      if (payload.settings) {
-        setAiSettings(payload.settings);
-        setCachedSettingsAiSettings(payload.settings);
-        clearSettingsUsageCache();
-      }
-      setAiKeyDraft("");
-      clearSettingsOpenRouterBalanceCache();
-      setOpenRouterBalance(null);
-      toast.success("API key cleared");
-    } catch {
-      toast.error("Couldn't clear API key");
-    } finally {
-      setAiSaving(false);
-    }
-  }
-
-  async function handleModeChange(mode: AiMode) {
-    if (aiSettings.aiMode === mode) {
-      return;
-    }
-    const previous = aiSettings.aiMode;
-    setAiSettings((current) => ({ ...current, aiMode: mode }));
-    try {
-      const response = await fetch("/api/app/ai/settings", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ aiMode: mode }),
-      });
-      const payload = (await response.json()) as {
-        settings?: PublicAiSettings;
-        error?: string;
-      };
-      if (!response.ok) {
-        throw new Error(payload.error || "Could not switch mode.");
-      }
-      if (payload.settings) {
-        setAiSettings(payload.settings);
-        setCachedSettingsAiSettings(payload.settings);
-      }
-    } catch {
-      setAiSettings((current) => ({ ...current, aiMode: previous }));
-      toast.error("Couldn't switch mode");
-    }
   }
 
   return (
@@ -862,7 +596,7 @@ function PersonalSettingsScreen() {
                       // Match the other dropdown chevrons: tertiary by default,
                       // primary (white in dark) on hover.
                       "h-4 w-4 shrink-0 text-[var(--strap-text-tertiary)] transition-all duration-200 group-hover:text-[var(--strap-text-primary)]",
-                      permsOpen && "rotate-180"
+                      permsOpen && "rotate-180",
                     )}
                   />
                 </button>
@@ -884,7 +618,10 @@ function PersonalSettingsScreen() {
                             <div className="flex min-w-0 items-center gap-2.5">
                               <span
                                 className="h-2.5 w-2.5 shrink-0 rounded-[3px]"
-                                style={{ backgroundColor: accentColorMap[section.accent] }}
+                                style={{
+                                  backgroundColor:
+                                    accentColorMap[section.accent],
+                                }}
                               />
                               <span className="truncate text-[14px] text-[var(--strap-text-primary)]">
                                 {section.name}
@@ -892,7 +629,9 @@ function PersonalSettingsScreen() {
                             </div>
                             <SectionPermissionControl
                               value={section.agentPermission}
-                              onChange={(permission) => setSectionPermission(section.id, permission)}
+                              onChange={(permission) =>
+                                setSectionPermission(section.id, permission)
+                              }
                               layoutGroup={section.id}
                             />
                           </div>
@@ -914,7 +653,9 @@ function PersonalSettingsScreen() {
             <div className="mt-4 divide-y divide-[var(--strap-border)] overflow-hidden rounded-[var(--radius-xl)] border border-[var(--strap-border)] bg-[var(--strap-surface)]">
               <IntegrationRow
                 title="GitHub"
-                icon={<GitHubMark className="h-7 w-7 text-[#24292F] dark:text-[var(--strap-text-primary)]" />}
+                icon={
+                  <GitHubMark className="h-7 w-7 text-[#24292F] dark:text-[var(--strap-text-primary)]" />
+                }
                 status={effectiveGitHubStatus}
                 statusLabel={
                   githubConnected
@@ -924,7 +665,9 @@ function PersonalSettingsScreen() {
                       : "Not connected"
                 }
                 secondaryLabel={
-                  githubConnected ? state.settings.integrations.github.accountLabel : undefined
+                  githubConnected
+                    ? state.settings.integrations.github.accountLabel
+                    : undefined
                 }
                 action={
                   githubConnected ? (
@@ -949,123 +692,6 @@ function PersonalSettingsScreen() {
           </section>
 
           <Separator className="my-10 bg-[var(--strap-border)]" />
-
-          <section id="settings-model-usage" className="scroll-mt-6">
-            <div className="flex items-center justify-between gap-4">
-              <h2 className="text-[16px] font-medium text-[var(--strap-text-primary)]">
-                Model usage
-              </h2>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    type="button"
-                    className="inline-flex h-8 items-center gap-2 rounded-md border border-[var(--strap-border)] bg-[var(--strap-surface)] px-3 text-sm text-[var(--strap-text-primary)] transition-colors duration-150 hover:bg-[var(--strap-surface-raised)]"
-                  >
-                    {aiSettings.aiMode === "credits" ? "Included" : "BYOK"}
-                    <ChevronDown className="h-3.5 w-3.5 text-[var(--strap-text-secondary)]" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  align="end"
-                  className="min-w-32 space-y-1 border-[var(--strap-frame)] bg-[var(--strap-surface)] p-1.5"
-                >
-                  {(["credits", "byok"] as AiMode[]).map((mode) => (
-                    <DropdownMenuItem
-                      key={mode}
-                      onSelect={() => void handleModeChange(mode)}
-                      className={cn(
-                        "flex items-center justify-between gap-5 rounded-lg px-3 py-2 text-sm",
-                        aiSettings.aiMode === mode && "bg-[var(--strap-surface-selected)] font-medium"
-                      )}
-                    >
-                      <span>{mode === "credits" ? "Included" : "BYOK"}</span>
-                      {aiSettings.aiMode === mode ? (
-                        <Check className="h-3.5 w-3.5 shrink-0 text-[var(--strap-text-primary)]" />
-                      ) : null}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-            <div className="mt-4 rounded-[var(--radius-xl)] border border-[var(--strap-border)] bg-[var(--strap-surface)] p-5">
-              <div className="grid gap-5 md:grid-cols-[1.1fr_0.9fr] md:items-stretch">
-                <div className="flex flex-col gap-4">
-                  {aiSettings.aiMode === "credits" ? (
-                    <p className="text-[14px] leading-7 text-[var(--strap-text-secondary)]">
-                      AI features run on this deployment&apos;s shared
-                      OpenRouter key. Switch to BYOK to run them on your own
-                      key instead.
-                    </p>
-                  ) : (
-                    <div>
-                      {openRouterBalance ? (
-                        <div className="mb-4 rounded-[var(--radius-lg)] border border-[var(--strap-border)] px-4 py-3">
-                          <div className="text-[13px] font-medium text-[var(--strap-text-secondary)]">
-                            OpenRouter balance
-                          </div>
-                          <div className="mt-0.5 text-[30px] font-medium tracking-[-0.03em] text-[var(--strap-text-primary)]">
-                            {openRouterBalance.remainingUsd != null
-                              ? `$${openRouterBalance.remainingUsd.toFixed(2)}`
-                              : "Unlimited"}
-                          </div>
-                        </div>
-                      ) : null}
-                      <label className="mb-2 block text-[13px] font-medium text-[var(--strap-text-secondary)]">
-                        OpenRouter API key
-                      </label>
-                      <Input
-                        type="password"
-                        value={aiKeyDraft}
-                        onChange={(event) => {
-                          setAiKeyDraft(event.target.value);
-                        }}
-                        placeholder={
-                          aiSettings.keyLastFour
-                            ? `Saved key ending in ${aiSettings.keyLastFour}`
-                            : "sk-or-..."
-                        }
-                        className="h-11 rounded-xl border-[var(--strap-border)] bg-[var(--strap-surface)] px-4 text-[14px]"
-                      />
-                    </div>
-                  )}
-
-                  {aiSettings.aiMode === "byok" ? (
-                    <div className="mt-auto flex items-center justify-between gap-2 pt-1">
-                      <Button
-                        variant="ghost"
-                        className="rounded-md px-3 text-[var(--strap-text-secondary)] hover:bg-[var(--strap-surface-raised)] hover:text-[var(--strap-text-primary)]"
-                        onClick={() => {
-                          if (aiSettings.keyLastFour) {
-                            void handleClearAiKey();
-                          } else {
-                            setAiKeyDraft("");
-                          }
-                        }}
-                        disabled={aiSaving || (!aiKeyDraft && !aiSettings.keyLastFour)}
-                      >
-                        Clear
-                      </Button>
-                      <Button
-                        className="rounded-md bg-[var(--strap-text-primary)] px-4 text-[var(--strap-button-primary-fg)] hover:bg-[var(--strap-button-primary-hover)]"
-                        onClick={() => void handleSaveAiSettings()}
-                        disabled={!canSaveAiKey}
-                      >
-                        Save API key
-                        {aiSaving ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
-                      </Button>
-                    </div>
-                  ) : null}
-                </div>
-
-                <UsageCard
-                  usage={usage}
-                  range={usageRange}
-                  onRangeChange={setUsageRange}
-                  mode={aiSettings.aiMode}
-                />
-              </div>
-            </div>
-          </section>
 
           <Separator className="my-10 bg-[var(--strap-border)]" />
 
@@ -1097,14 +723,18 @@ function PersonalSettingsScreen() {
                             : "Select a repo"
                       }
                       searchPlaceholder="Search repos..."
-                      disabled={!githubConnected || reposLoading || repos.length === 0}
+                      disabled={
+                        !githubConnected || reposLoading || repos.length === 0
+                      }
                       options={
                         repos.length > 0
                           ? repos.map((repo) => ({
                               key: String(repo.id),
                               value: repo.fullName,
                               label: repo.fullName,
-                              description: repo.private ? "Private repo" : "Public repo",
+                              description: repo.private
+                                ? "Private repo"
+                                : "Public repo",
                               search: `${repo.fullName} ${repo.defaultBranch}`,
                             }))
                           : selectedRepoFullName
@@ -1130,7 +760,8 @@ function PersonalSettingsScreen() {
                       onChange={handleBranchChange}
                       placeholder={
                         !githubConnected
-                          ? state.settings.versionControl.branch || "Select a branch"
+                          ? state.settings.versionControl.branch ||
+                            "Select a branch"
                           : branchesLoading
                             ? "Loading branches..."
                             : "Select a branch"
@@ -1170,7 +801,10 @@ function PersonalSettingsScreen() {
                   <span className="font-medium text-[var(--strap-text-secondary)]">
                     Last commit
                   </span>
-                  <span aria-hidden className="shrink-0 text-[var(--strap-text-tertiary)]">
+                  <span
+                    aria-hidden
+                    className="shrink-0 text-[var(--strap-text-tertiary)]"
+                  >
                     ·
                   </span>
                   {versionStatus?.remoteMessage ? (
@@ -1210,7 +844,8 @@ function PersonalSettingsScreen() {
             <div className="mt-4 rounded-[var(--radius-xl)] border border-[var(--strap-border)] bg-[var(--strap-surface)] p-5">
               {archivedSections.length === 0 ? (
                 <p className="text-[14px] leading-7 text-[var(--strap-text-secondary)]">
-                  Nothing archived. Archived sections show up here, ready to restore.
+                  Nothing archived. Archived sections show up here, ready to
+                  restore.
                 </p>
               ) : (
                 <div className="space-y-2.5">
@@ -1227,14 +862,16 @@ function PersonalSettingsScreen() {
                             aria-expanded={expanded}
                             onClick={() =>
                               setExpandedArchived((current) =>
-                                current === section.id ? null : section.id
+                                current === section.id ? null : section.id,
                               )
                             }
                             className="group flex min-w-0 flex-1 items-center gap-2.5 text-left"
                           >
                             <span
                               className="h-2 w-2 shrink-0 rounded-[3px]"
-                              style={{ backgroundColor: accentColorMap[section.accent] }}
+                              style={{
+                                backgroundColor: accentColorMap[section.accent],
+                              }}
                             />
                             <span className="truncate text-[14px] font-medium text-[var(--strap-text-primary)]">
                               {section.name}
@@ -1242,7 +879,7 @@ function PersonalSettingsScreen() {
                             <ChevronRight
                               className={cn(
                                 "h-4 w-4 shrink-0 text-[var(--strap-text-tertiary)] transition duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:text-[var(--strap-text-primary)]",
-                                expanded && "rotate-90"
+                                expanded && "rotate-90",
                               )}
                             />
                           </button>
@@ -1260,7 +897,10 @@ function PersonalSettingsScreen() {
                             <Button
                               className="rounded-md bg-[var(--strap-danger-fill)] text-white hover:bg-[var(--strap-danger-fill-hover)] hover:text-white"
                               onClick={() =>
-                                setArchivedDeleteTarget({ id: section.id, name: section.name })
+                                setArchivedDeleteTarget({
+                                  id: section.id,
+                                  name: section.name,
+                                })
                               }
                             >
                               Delete
@@ -1273,7 +913,10 @@ function PersonalSettingsScreen() {
                               initial={{ height: 0, opacity: 0 }}
                               animate={{ height: "auto", opacity: 1 }}
                               exit={{ height: 0, opacity: 0 }}
-                              transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+                              transition={{
+                                duration: 0.24,
+                                ease: [0.22, 1, 0.36, 1],
+                              }}
                               className="overflow-hidden"
                             >
                               <div className="border-t border-[var(--strap-border)] px-4 py-4">
@@ -1330,7 +973,11 @@ function PersonalSettingsScreen() {
                   variant="outline"
                   className="rounded-md border-[var(--strap-border)]"
                   onClick={() =>
-                    downloadFile(STRAP_FILE_NAME, exportMarkdown(), "text/markdown;charset=utf-8")
+                    downloadFile(
+                      STRAP_FILE_NAME,
+                      exportMarkdown(),
+                      "text/markdown;charset=utf-8",
+                    )
                   }
                 >
                   Export Strap as markdown
@@ -1343,7 +990,7 @@ function PersonalSettingsScreen() {
                     downloadFile(
                       "strap-activity.json",
                       exportActivityJson(),
-                      "application/json;charset=utf-8"
+                      "application/json;charset=utf-8",
                     )
                   }
                 >
@@ -1357,7 +1004,7 @@ function PersonalSettingsScreen() {
                     downloadFile(
                       "strap-data.json",
                       exportAllDataJson(),
-                      "application/json;charset=utf-8"
+                      "application/json;charset=utf-8",
                     )
                   }
                 >
@@ -1378,9 +1025,12 @@ function PersonalSettingsScreen() {
             <div className="mt-4 rounded-[var(--radius-xl)] border border-[var(--strap-danger)] bg-[var(--strap-warning-tint)] p-5">
               <div className="flex items-center justify-between gap-5">
                 <div className="min-w-0">
-                  <div className="text-[15px] font-medium text-[var(--strap-danger)]">Account Deletion</div>
+                  <div className="text-[15px] font-medium text-[var(--strap-danger)]">
+                    Account Deletion
+                  </div>
                   <div className="mt-2 hidden text-[14px] leading-7 text-[var(--strap-danger)] md:block">
-                    This permanently deletes your Strap, tokens, proposals, activity, and account.
+                    This permanently deletes your Strap, tokens, proposals,
+                    activity, and account.
                   </div>
                 </div>
                 <Button
@@ -1404,10 +1054,15 @@ function PersonalSettingsScreen() {
             </DialogTitle>
           </DialogHeader>
           <p className="text-[14px] leading-7 text-[var(--strap-text-secondary)]">
-            This deletes your account and everything linked to it. This cannot be undone.
+            This deletes your account and everything linked to it. This cannot
+            be undone.
           </p>
           <div className="mt-2 flex items-center justify-between gap-3">
-            <Button variant="ghost" className="rounded-md" onClick={() => setDeleteOpen(false)}>
+            <Button
+              variant="ghost"
+              className="rounded-md"
+              onClick={() => setDeleteOpen(false)}
+            >
               Cancel
             </Button>
             <Button
@@ -1438,8 +1093,8 @@ function PersonalSettingsScreen() {
           <DialogHeader>
             <DialogTitle>Delete archived section</DialogTitle>
             <DialogDescription>
-              This permanently deletes &ldquo;{archivedDeleteTarget?.name}&rdquo; and its history.
-              This can&apos;t be undone.
+              This permanently deletes &ldquo;{archivedDeleteTarget?.name}
+              &rdquo; and its history. This can&apos;t be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex-row items-center justify-between border-t-[var(--strap-border)] bg-[var(--strap-surface)] sm:justify-between">
@@ -1453,7 +1108,8 @@ function PersonalSettingsScreen() {
             <Button
               className="rounded-md bg-[var(--strap-danger-fill)] px-4 text-white hover:bg-[var(--strap-danger-fill-hover)] hover:text-white"
               onClick={() => {
-                if (archivedDeleteTarget) deleteSection(archivedDeleteTarget.id);
+                if (archivedDeleteTarget)
+                  deleteSection(archivedDeleteTarget.id);
                 setArchivedDeleteTarget(null);
               }}
             >
@@ -1576,7 +1232,7 @@ export function IntegrationRow({
                     ? "bg-[var(--strap-environments-tint)] text-[var(--strap-success)]"
                     : isDisconnected
                       ? "bg-[var(--strap-warning-tint)] text-[var(--strap-danger)]"
-                      : "bg-[var(--strap-surface-raised)] text-[var(--strap-text-secondary)]"
+                      : "bg-[var(--strap-surface-raised)] text-[var(--strap-text-secondary)]",
                 )}
               >
                 {statusLabel}
@@ -1595,174 +1251,14 @@ export function IntegrationRow({
   );
 }
 
-export function UsageCard({
-  usage,
-  range,
-  onRangeChange,
-  mode,
-}: {
-  usage: AiUsageSummary | null;
-  range: AiUsageRange;
-  onRangeChange: (range: AiUsageRange) => void;
-  mode: AiMode;
-}) {
-  const total = usage?.totalCostUsd ?? 0;
-
-  // Features present in the range, known features first. Each day's spend is
-  // stacked by feature - same recharts pattern as the /connections charts.
-  const featureOrder: readonly string[] = AI_FEATURES;
-  const present = Array.from(
-    new Set(
-      (usage?.days ?? []).flatMap((day) =>
-        day.segments.filter((s) => s.costUsd > 0).map((s) => s.feature)
-      )
-    )
-  ).sort((a, b) => {
-    const ai = featureOrder.indexOf(a);
-    const bi = featureOrder.indexOf(b);
-    return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
-  });
-  const chartData = (usage?.days ?? [])
-    .map((day) => {
-      const row: Record<string, number | string> = { date: day.date };
-      for (const feature of present) row[feature] = 0;
-      for (const segment of day.segments) {
-        if (present.includes(segment.feature)) {
-          row[segment.feature] = (Number(row[segment.feature]) || 0) + segment.costUsd;
-        }
-      }
-      return row;
-    })
-    // Only plot days that actually have spend.
-    .filter((row) => present.reduce((sum, feature) => sum + Number(row[feature] ?? 0), 0) > 0);
-  const chartConfig: ChartConfig = {};
-  present.forEach((feature) => {
-    const meta = featureMeta(feature);
-    chartConfig[feature] = { label: meta.label, color: meta.color };
-  });
-
-  return (
-    <div className="rounded-[var(--radius-lg)] border border-[var(--strap-border)] bg-[var(--strap-surface)] p-4">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <div className="text-[13px] font-medium text-[var(--strap-text-secondary)]">
-            {mode === "credits" ? "Included spend" : "BYOK spend"}
-          </div>
-          <div className="mt-2 text-[30px] font-medium tracking-[-0.04em] text-[var(--strap-text-primary)]">
-            ${total.toFixed(total < 10 ? 2 : 0)}
-          </div>
-        </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button
-              type="button"
-              className="inline-flex h-8 items-center gap-2 rounded-md border border-[var(--strap-border)] bg-[var(--strap-surface)] px-3 text-sm text-[var(--strap-text-primary)] transition-colors duration-150 hover:bg-[var(--strap-surface-raised)]"
-            >
-              {range}
-              <ChevronDown className="h-3.5 w-3.5 text-[var(--strap-text-secondary)]" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="end"
-            className="min-w-24 space-y-1 border-[var(--strap-frame)] bg-[var(--strap-surface)] p-1.5"
-          >
-            {(["7d", "30d", "90d"] as AiUsageRange[]).map((item) => (
-              <DropdownMenuItem
-                key={item}
-                onSelect={() => onRangeChange(item)}
-                className={cn(
-                  "flex items-center justify-between gap-5 rounded-lg px-3 py-2 text-sm",
-                  range === item && "bg-[var(--strap-surface-selected)] font-medium"
-                )}
-              >
-                <span>{item}</span>
-                {range === item ? (
-                  <Check className="h-3.5 w-3.5 shrink-0 text-[var(--strap-text-primary)]" />
-                ) : null}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-
-      <div className="relative mt-5 h-[120px] w-full">
-        <AnimatePresence initial={false}>
-          <motion.div
-            // Cross-fade between states on timeframe change. The populated
-            // chart keeps a stable key so recharts morphs its bars across
-            // ranges; the empty state is keyed per-range so it re-animates
-            // (and updates its caption) when you switch the timeframe.
-            key={chartData.length > 0 ? "chart" : `empty-${range}`}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-            className="absolute inset-0"
-          >
-            {chartData.length > 0 ? (
-              <ChartContainer config={chartConfig} className="aspect-auto h-full w-full">
-                <BarChart data={chartData} margin={{ left: 4, right: 4, top: 8, bottom: 0 }}>
-                  <CartesianGrid vertical={false} strokeDasharray="3 3" />
-                  <XAxis dataKey="date" hide />
-                  <YAxis hide />
-                  <ChartTooltip
-                    content={
-                      <ChartTooltipContent
-                        labelFormatter={(value) => formatUsageDate(String(value))}
-                        formatter={(value, name, item) => (
-                          <div className="flex w-full items-center justify-between gap-3">
-                            <span className="flex items-center gap-1.5 text-[var(--strap-text-secondary)]">
-                              <span
-                                className="h-2.5 w-2.5 rounded-[2px]"
-                                style={{ backgroundColor: item.color ?? item.payload?.fill }}
-                              />
-                              {chartConfig[String(name)]?.label ?? name}
-                            </span>
-                            <span className="font-mono text-[var(--strap-text-primary)]">
-                              ${Number(value).toFixed(2)}
-                            </span>
-                          </div>
-                        )}
-                      />
-                    }
-                  />
-                  {present.map((feature) => (
-                    <Bar
-                      key={feature}
-                      dataKey={feature}
-                      stackId="cost"
-                      fill={`var(--color-${feature})`}
-                      shape={<StackTopBar orderedKeys={present} dataKey={feature} />}
-                    />
-                  ))}
-                </BarChart>
-              </ChartContainer>
-            ) : (
-              <div className="relative flex h-full items-center justify-center">
-                {/* Faint zero baseline echoing the chart grid, so the empty
-                    state reads as a chart at $0 rather than a bare message. */}
-                <div className="absolute inset-x-0 bottom-0 border-t border-dashed border-[var(--strap-border)]" />
-                <span className="text-[12px] text-[var(--strap-text-tertiary)]">
-                  No spend in the last {range.replace("d", " days")}
-                </span>
-              </div>
-            )}
-          </motion.div>
-        </AnimatePresence>
-      </div>
-    </div>
-  );
-}
-
-function formatUsageDate(value: string) {
-  const date = new Date(`${value}T00:00:00Z`);
-  if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleDateString(undefined, { month: "short", day: "numeric", timeZone: "UTC" });
-}
-
 function GitHubMark({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="currentColor">
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      className={className}
+      fill="currentColor"
+    >
       <path d="M12 .5C5.65.5.5 5.66.5 12.02c0 5.09 3.29 9.4 7.86 10.93.58.11.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.2.7-3.88-1.54-3.88-1.54-.52-1.34-1.28-1.69-1.28-1.69-1.04-.71.08-.69.08-.69 1.15.08 1.75 1.18 1.75 1.18 1.02 1.76 2.68 1.25 3.34.96.1-.74.4-1.25.72-1.53-2.55-.29-5.24-1.28-5.24-5.68 0-1.25.45-2.27 1.18-3.07-.12-.29-.51-1.46.11-3.04 0 0 .97-.31 3.17 1.17a11 11 0 0 1 5.78 0c2.2-1.48 3.16-1.17 3.16-1.17.63 1.58.24 2.75.12 3.04.74.8 1.18 1.82 1.18 3.07 0 4.41-2.69 5.39-5.26 5.67.41.36.77 1.06.77 2.14 0 1.55-.01 2.79-.01 3.17 0 .31.21.68.8.56A11.53 11.53 0 0 0 23.5 12C23.5 5.66 18.35.5 12 .5Z" />
     </svg>
   );
@@ -1780,14 +1276,36 @@ const PERMISSION_OPTIONS: Array<{
   icon: AnimatedIconComponent;
   color: string;
 }> = [
-  { value: "hidden", label: "Hidden from agent", icon: EyeOffIcon, color: "var(--strap-danger-fill)" },
-  { value: "read-only", label: "Read-only", icon: EyeIcon, color: "var(--strap-caution-fill)" },
-  { value: "propose", label: "Propose (needs approval)", icon: ShieldCheckIcon, color: "var(--strap-success-fill)" },
-  { value: "direct", label: "Direct edit", icon: PenToolIcon, color: "var(--strap-accent)" },
+  {
+    value: "hidden",
+    label: "Hidden from agent",
+    icon: EyeOffIcon,
+    color: "var(--strap-danger-fill)",
+  },
+  {
+    value: "read-only",
+    label: "Read-only",
+    icon: EyeIcon,
+    color: "var(--strap-caution-fill)",
+  },
+  {
+    value: "propose",
+    label: "Propose (needs approval)",
+    icon: ShieldCheckIcon,
+    color: "var(--strap-success-fill)",
+  },
+  {
+    value: "direct",
+    label: "Direct edit",
+    icon: PenToolIcon,
+    color: "var(--strap-accent)",
+  },
 ];
 
 // The global control reuses the same control without the "hidden" option.
-const GLOBAL_PERMISSION_OPTIONS = PERMISSION_OPTIONS.filter((option) => option.value !== "hidden");
+const GLOBAL_PERMISSION_OPTIONS = PERMISSION_OPTIONS.filter(
+  (option) => option.value !== "hidden",
+);
 
 // One segment. Hover plays the icon's animation through the shared controls
 // hook, exactly like AnimatedIconButton elsewhere on the site.
@@ -1840,7 +1358,7 @@ function PermissionSegment({
               ? "text-white"
               : muted
                 ? "text-[var(--strap-text-tertiary)]"
-                : "text-[var(--strap-text-tertiary)] group-hover:text-[var(--strap-text-primary)]"
+                : "text-[var(--strap-text-tertiary)] group-hover:text-[var(--strap-text-primary)]",
           )}
         />
       </button>
@@ -1869,7 +1387,7 @@ function SectionPermissionControl({
         "inline-flex shrink-0 items-center gap-0.5 rounded-sm border border-[var(--strap-border)] bg-[var(--strap-surface)] p-0.5 transition-opacity duration-150",
         // No shared level (sections differ): grey the control to read as
         // "mixed / not applied", but it stays clickable to set one level.
-        value === null && "opacity-45"
+        value === null && "opacity-45",
       )}
     >
       {options.map((option) => (
