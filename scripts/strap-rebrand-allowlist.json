@@ -2381,7 +2381,7 @@
       "file": "components/marketing/pricing-page-view.tsx",
       "kind": "content",
       "occurrences": 2,
-      "fingerprint": "6299d6a150ccf80939451a3200a8d500015802c0fc352b39b6ab8f7ee49d7485",
+      "fingerprint": "bff3db1f854f2061dfe0bf1f1a3492c18c0ece44a289b9f2f8c894c3d7795239",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -2579,7 +2579,7 @@
       "file": "components/strap/panel.tsx",
       "kind": "content",
       "occurrences": 6,
-      "fingerprint": "a03f17e5eb8b5e70bb777f5495e94ae6c0b70ce85ee1dc0cf82b7ebd9e3d4f9f",
+      "fingerprint": "8d253633ac5c2776b2cd20bc599bac10c5be7375b6e4990c78d66329f544c666",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."

@@ -17,6 +17,7 @@ import { PlusIcon } from "@/components/ui/plus";
 import { SearchIcon } from "@/components/ui/search";
 import { SettingsIcon } from "@/components/ui/settings";
 import { fuzzyScore } from "@/lib/panel/fuzzy";
+import { SETTINGS_SEARCH_COMMANDS } from "@/lib/panel/settings-search";
 import { STRAP_FILE_NAME } from "@/lib/profile-file";
 import { accentColorMap } from "@/lib/strap-data";
 import { cn } from "@/lib/utils";
@@ -197,19 +198,11 @@ export function StrapPanel({
         run: () => onFileProposal(proposal.id),
       })),
       ...(state.creedType !== "company"
-        ? [
-            ["profile", "Profile"],
-            ["agent-edits", "Agent edit behaviour"],
-            ["integrations", "Integrations"],
-            ["version-control", "Version control"],
-            ["archived", "Archived sections"],
-            ["data", "Export data"],
-            ["danger", "Delete account"],
-          ].map<Command>(([key, label]) => ({
+        ? SETTINGS_SEARCH_COMMANDS.map<Command>(({ key, label, keywords }) => ({
             id: `settings:${key}`,
             label,
             group: "Settings",
-            keywords: ["settings"],
+            keywords: ["settings", ...keywords],
             icon: SettingsIcon as AnimatedIconComponent,
             run: () => router.push(`/settings#settings-${key}`),
           }))

@@ -18,7 +18,7 @@ type Feature = { label: string; included: boolean; star?: boolean };
 const SHARED_FEATURES: Feature[] = [
   { label: "Full Strap editor with rich components", included: true },
   { label: "MCP with OAuth, device flow, or scoped keys", included: true },
-  { label: "Quality scoring and inline diff review", included: true },
+  { label: "Agent proposals and inline diff review", included: true },
 ];
 
 const FREE_EXTRAS: Feature[] = [
@@ -29,7 +29,6 @@ const FREE_EXTRAS: Feature[] = [
 
 const PERSONAL_FEATURES: Feature[] = [
   ...SHARED_FEATURES,
-  { label: "Agent proposals and review", included: true },
   { label: "Cross-device sync and backups", included: true },
   { label: "Managed backend, auth and storage", included: true },
   { label: "Profile-scoped API-key Vault", included: true },
