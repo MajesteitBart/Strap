@@ -5,6 +5,8 @@ import {
   listHeadlessKeys,
 } from "@/lib/headless-access";
 import { isHeadlessKeyMode, parseOptionalExpiry } from "@/lib/headless-access-shared";
+import { VaultAccessError } from "@/lib/api-key-vault";
+import { parseVaultItemGrants } from "@/lib/vault-grants";
 import { getCreedRole } from "@/lib/strap-membership";
 import { NextResponse } from "next/server";
 
@@ -32,33 +34,46 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const auth = await requireApiAuth();
   if (auth instanceof NextResponse) return auth;
-  const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
+  const payload: unknown = await request.json().catch(() => null);
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+    return NextResponse.json({ error: "Expected an object." }, { status: 400, headers: NO_STORE });
+  }
+  const body = payload as Record<string, unknown>;
   const rawStrapId =
     typeof body.strapId === "string" ? body.strapId : body.creedId;
   const creedId = typeof rawStrapId === "string" ? rawStrapId.trim() : "";
   const name = typeof body.name === "string" ? body.name.trim() : "";
   const expiresAt = parseOptionalExpiry(body.expiresAt ?? null);
-  if (!creedId || !name || name.length > 120 || !isHeadlessKeyMode(body.mode) || expiresAt === undefined) {
+  const vaultItemIds = parseVaultItemGrants(body.vaultItemIds);
+  if (!creedId || !name || name.length > 120 || !isHeadlessKeyMode(body.mode) || expiresAt === undefined || !vaultItemIds) {
     return NextResponse.json(
-      { error: "Valid strapId, name, mode, and optional future expiresAt are required." },
+      { error: "Valid strapId, name, mode, optional future expiresAt, and up to 100 Vault item IDs are required." },
       { status: 400 },
     );
   }
   if (!(await getCreedRole(auth.context, auth.user.id, creedId))) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
-  const created = await createHeadlessAccessKey({
-    userId: auth.user.id,
-    creedId,
-    name,
-    mode: body.mode,
-    expiresAt,
-  });
-  void recordAuditEvent({
-    userId: auth.user.id,
-    action: "headless.key_created",
-    metadata: { keyId: created.metadata.id, creedId, mode: created.metadata.mode },
-    request,
-  });
-  return NextResponse.json(created, { status: 201, headers: NO_STORE });
+  try {
+    const created = await createHeadlessAccessKey({
+      userId: auth.user.id,
+      creedId,
+      name,
+      mode: body.mode,
+      expiresAt,
+      vaultItemIds,
+    });
+    void recordAuditEvent({
+      userId: auth.user.id,
+      action: "headless.key_created",
+      metadata: { keyId: created.metadata.id, creedId, mode: created.metadata.mode, vaultItemIds },
+      request,
+    });
+    return NextResponse.json(created, { status: 201, headers: NO_STORE });
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof VaultAccessError ? error.message : "Could not create API key." },
+      { status: error instanceof VaultAccessError ? error.status : 500, headers: NO_STORE },
+    );
+  }
 }

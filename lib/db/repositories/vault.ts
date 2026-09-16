@@ -9,6 +9,7 @@ export class VaultRepositoryError extends Error {
   readonly status: number;
   constructor(message: string, status: number) { super(message); this.status = status; }
 }
+export type VaultCredential = { keyId: string; creedId: string; vaultItemIds: readonly string[] };
 const metadata = { id: items.id, creed_id: items.creed_id, name: items.name, description: items.description, created_by: items.created_by, created_at: items.created_at, updated_at: items.updated_at, last_accessed_at: items.last_accessed_at };
 function scope(viewer: Viewer, profile: SQLWrapper) {
   return sql`exists (select 1 from public.creed_members member join public.creeds profile on profile.id = member.creed_id where member.creed_id = ${profile} and member.user_id = ${viewer.userId} and ((profile.type = 'personal' and profile.owner_user_id = ${viewer.userId} and member.role = 'owner') or (profile.type = 'company' and member.role in ('owner', 'admin'))))`;
@@ -47,13 +48,17 @@ export async function vaultDelete(db: PostgresJsDatabase, viewer: Viewer, id: st
   if (!row) throw new VaultRepositoryError("Forbidden", 403);
   return row;
 }
-export async function vaultReveal(db: PostgresJsDatabase, viewer: Viewer, id: string, audit: (profileId: string) => Promise<void>) {
-  const [row] = await db.select({ ...metadata, ciphertext: items.secret_ciphertext }).from(items).where(and(eq(items.id, id), scope(viewer, items.creed_id))).limit(1);
+export async function vaultReveal(db: PostgresJsDatabase, viewer: Viewer, id: string, audit: (profileId: string) => Promise<void>, credential?: VaultCredential) {
+  if (credential && !credential.vaultItemIds.includes(id)) {
+    throw new VaultRepositoryError("Secret access was not granted to this key.", 403);
+  }
+  const credentialScope = credential ? eq(items.creed_id, credential.creedId) : undefined;
+  const [row] = await db.select({ ...metadata, ciphertext: items.secret_ciphertext }).from(items).where(and(eq(items.id, id), credentialScope, scope(viewer, items.creed_id))).limit(1);
   if (!row) throw new VaultRepositoryError("Forbidden", 403);
   // Do not decrypt or return plaintext if the required audit cannot persist.
   try { await audit(row.creed_id); } catch { throw new VaultRepositoryError("Vault reveal audit is unavailable.", 503); }
   const accessedAt = new Date().toISOString();
-  const [stillAuthorized] = await db.update(items).set({ last_accessed_at: accessedAt }).where(and(eq(items.id, id), eq(items.secret_ciphertext, row.ciphertext), scope(viewer, items.creed_id))).returning({ id: items.id });
+  const [stillAuthorized] = await db.update(items).set({ last_accessed_at: accessedAt }).where(and(eq(items.id, id), credentialScope, eq(items.secret_ciphertext, row.ciphertext), scope(viewer, items.creed_id))).returning({ id: items.id });
   if (!stillAuthorized) throw new VaultRepositoryError("Vault item changed or access was removed. Try again.", 409);
   const { ciphertext, ...item } = row;
   return { item: { ...item, last_accessed_at: accessedAt }, secret: decryptVaultSecret(ciphertext, item.id, item.creed_id) };

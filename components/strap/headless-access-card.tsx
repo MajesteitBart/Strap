@@ -17,6 +17,7 @@ type KeyMetadata = {
   revokedAt: string | null;
   lastUsedAt: string | null;
   createdAt: string;
+  vaultItemIds: string[];
 };
 
 const MODE_LABEL: Record<HeadlessKeyMode, string> = {
@@ -27,7 +28,14 @@ const MODE_LABEL: Record<HeadlessKeyMode, string> = {
 
 export function HeadlessAccessCard() {
   const { state } = useStrap();
-  const creedId = state.creedId;
+  return <HeadlessAccessForm
+    key={state.creedId}
+    creedId={state.creedId}
+    canUseVault={state.creedType !== "company" || state.company?.myRole === "owner" || state.company?.myRole === "admin"}
+  />;
+}
+
+function HeadlessAccessForm({ creedId, canUseVault }: { creedId: string | undefined; canUseVault: boolean }) {
   const [keys, setKeys] = useState<KeyMetadata[]>([]);
   const [name, setName] = useState("");
   const [mode, setMode] = useState<HeadlessKeyMode>("proposal-only");
@@ -35,6 +43,27 @@ export function HeadlessAccessCard() {
   const [createdKey, setCreatedKey] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [vaultItems, setVaultItems] = useState<Array<{ id: string; name: string }>>([]);
+  const [vaultItemIds, setVaultItemIds] = useState<string[]>([]);
+  const [vaultError, setVaultError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!creedId || !canUseVault) return;
+    const controller = new AbortController();
+    void (async () => {
+      try {
+        const response = await fetch(`/api/app/vault?strapId=${encodeURIComponent(creedId)}`, {
+          cache: "no-store", signal: controller.signal,
+        });
+        if (!response.ok) throw new Error();
+        const payload = await response.json() as { items: Array<{ id: string; name: string }> };
+        if (!controller.signal.aborted) setVaultItems(payload.items);
+      } catch {
+        if (!controller.signal.aborted) setVaultError("Could not load Vault items. Reload to select secrets.");
+      }
+    })();
+    return () => controller.abort();
+  }, [creedId, canUseVault]);
 
   const loadKeys = useCallback(async () => {
     if (!creedId) return;
@@ -61,12 +90,13 @@ export function HeadlessAccessCard() {
       const response = await fetch("/api/app/headless-access", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ creedId, name: name.trim(), mode, expiresAt }),
+        body: JSON.stringify({ creedId, name: name.trim(), mode, expiresAt, vaultItemIds: canUseVault ? vaultItemIds : [] }),
       });
       const payload = (await response.json().catch(() => ({}))) as { key?: string; error?: string };
       if (!response.ok || !payload.key) throw new Error(payload.error || "Could not create API key.");
       setCreatedKey(payload.key);
       setName("");
+      setVaultItemIds([]);
       await loadKeys();
     } catch (createError) {
       setError(createError instanceof Error ? createError.message : "Could not create API key.");
@@ -119,6 +149,24 @@ export function HeadlessAccessCard() {
               </select>
             </div>
             <p className="text-xs leading-5 text-[var(--strap-text-secondary)]">All modes can read shared skills. Direct access also permits skill publication for profile owners and Company admins.</p>
+            {canUseVault ? (
+              <fieldset disabled={busy} className="flex flex-col gap-2">
+                <legend className="mb-2 text-sm font-medium">Secret access for Varlock (optional)</legend>
+                <p className="text-xs leading-5 text-[var(--strap-text-secondary)]">This key can reveal the secrets you select, in any context access mode. Leave all unchecked for no secret access.</p>
+                {vaultError ? <p role="alert" className="text-xs text-[var(--strap-danger)]">{vaultError}</p> : null}
+                <div className="flex max-h-48 flex-col gap-2 overflow-y-auto">
+                  {vaultItems.map((item) => (
+                    <label key={item.id} className="flex items-center gap-2 text-sm">
+                      <input type="checkbox" checked={vaultItemIds.includes(item.id)}
+                        disabled={!vaultItemIds.includes(item.id) && vaultItemIds.length >= 100}
+                        onChange={(event) => setVaultItemIds((ids) => event.target.checked ? [...ids, item.id] : ids.filter((id) => id !== item.id))} />
+                      {item.name}
+                    </label>
+                  ))}
+                </div>
+                <Link href="/vault" className="text-xs underline underline-offset-4">Manage secrets and copy references</Link>
+              </fieldset>
+            ) : null}
             <Button onClick={() => void createKey()} disabled={busy || !name.trim()}>{busy ? "Creating…" : "Create API key"}</Button>
           </div>
         </div>
@@ -156,6 +204,7 @@ export function HeadlessAccessCard() {
                 <div className="mt-1 text-[12px] text-[var(--strap-text-tertiary)]">
                   <span className="font-mono">{key.prefix}…</span> · {MODE_LABEL[key.mode]} · {key.revokedAt ? "Revoked" : key.expiresAt ? `Expires ${new Date(key.expiresAt).toLocaleDateString()}` : "No expiry"}
                 </div>
+                <p className="mt-1 text-xs text-[var(--strap-text-secondary)]">{key.vaultItemIds?.length ? `${key.vaultItemIds.length} selected secret${key.vaultItemIds.length === 1 ? "" : "s"}` : "No secret access"}</p>
               </div>
               {!key.revokedAt ? <Button size="icon" variant="ghost" aria-label={`Revoke ${key.name}`} onClick={() => void revokeKey(key.id)}><Trash2 className="h-4 w-4" /></Button> : null}
             </div>

@@ -41,6 +41,7 @@ Strap is built on [Creed](https://creed.md), the foundation for its curated pers
 - `/file` keeps Personal and Company profiles compact, reviewable, permission-aware, and exportable as Markdown.
 - `/connections` supports browser OAuth and device authorization. Headless workflows can create a scoped `strap_key_` key whose plaintext is shown once; each key is bound to one Personal or Company profile and a maximum access mode. Existing `creed_key_` credentials remain accepted.
 - `/vault` stores secret values encrypted in Postgres. Ordinary lists, logs, and agent context expose metadata or `secret://` references only; plaintext is returned solely through an explicit, audited reveal.
+- The [Varlock provider](packages/varlock-strap-plugin/README.md) resolves selected Vault items into an application's environment. New API keys can opt into individual secret grants; existing keys have no secret access.
 - `@bvdm/strap` is the primary terminal client. It discovers the live MCP contract and supports interactive browser login, device login, and scoped API-key authentication.
 - The current product has no paid plans. Self-hosted operation still requires Postgres and Better Auth and any optional provider credentials used by enabled integrations.
 
@@ -127,6 +128,7 @@ app/                    public, authenticated, OAuth, API, and MCP routes
 components/             product, marketing, auth, and shared UI
 lib/                    domain, persistence, authorization and integrations
 packages/strap/         @bvdm/strap CLI package
+packages/varlock-strap-plugin/  Varlock provider for explicitly granted Vault secrets
 packages/creed-cli/     legacy CLI compatibility package
 db/schema/              Drizzle application and auth schema
 db/migrations/          squashed baseline and future forward-only migrations

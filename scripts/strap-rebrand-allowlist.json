@@ -41,7 +41,7 @@
       "file": ".github/workflows/verify.yml",
       "kind": "content",
       "occurrences": 1,
-      "fingerprint": "bc4c9ef2f5682628c5355ef15438138b05fbeedf317ea77247de43025c8d0879",
+      "fingerprint": "7859e614c9055fe823ad63b43bc1748c95ed0b9b0f23ea7f9ec345f03e628c23",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -77,7 +77,7 @@
       "file": "README.md",
       "kind": "content",
       "occurrences": 15,
-      "fingerprint": "bc852d9672dfe6cfa9221a69c6388226e11f5a19e8f5d869eadc90c06cb4957f",
+      "fingerprint": "ac9f282b14ac5dccd4c8261e6a9a6bc3467680c263cad325c4cfee6959c3307b",
       "decision": "compatibility",
       "category": "project-origins-and-compatibility",
       "rationale": "User-requested acknowledgment of Creed as Strap's foundation, alongside documented legacy protocol, configuration, package, and file compatibility."
@@ -311,7 +311,7 @@
       "file": "app/api/app/headless-access/route.ts",
       "kind": "content",
       "occurrences": 14,
-      "fingerprint": "9a06cd6f3b210e6be434d7b598f5d86d864a64a212db4d92c2411df6ef391140",
+      "fingerprint": "52f5bec551a18392acc8ad46be3b54c2b4007f2b66429cae3437e56c8e0d7ed4",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -886,8 +886,8 @@
     {
       "file": "components/strap/headless-access-card.tsx",
       "kind": "content",
-      "occurrences": 8,
-      "fingerprint": "c273372d0fba8c20bd2d8acbf3895bb954c7d9ba8fa81ff9b01362a33d4934fb",
+      "occurrences": 15,
+      "fingerprint": "04dbb04c538cc5f73eef48b1dd83e6dc7440571037c5f5996ae1d5f0cf47364b",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -1064,6 +1064,15 @@
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
     },
     {
+      "file": "db/migrations/0001_headless_vault_item_grants.sql",
+      "kind": "content",
+      "occurrences": 5,
+      "fingerprint": "054b86b7053c2b01409667f4060721e4cc6152b4e2efc1e19dd534a438643b3d",
+      "decision": "history",
+      "category": "historical-schema",
+      "rationale": "Preserved forward-only schema history; rewriting would falsify repository history."
+    },
+    {
       "file": "db/migrations/meta/0000_snapshot.json",
       "kind": "content",
       "occurrences": 632,
@@ -1073,10 +1082,19 @@
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
     },
     {
+      "file": "db/migrations/meta/0001_snapshot.json",
+      "kind": "content",
+      "occurrences": 636,
+      "fingerprint": "20faa0b90e6d99f0736d7ab585a7854928d48db7ac5624de507524f2423ed16f",
+      "decision": "history",
+      "category": "historical-schema",
+      "rationale": "Preserved forward-only schema history; rewriting would falsify repository history."
+    },
+    {
       "file": "db/schema/application.ts",
       "kind": "content",
-      "occurrences": 355,
-      "fingerprint": "bae77ed9137d926775caa48b0282c56d5e15268b5473d6bbce33e261798101ce",
+      "occurrences": 356,
+      "fingerprint": "eed7cc1550486fbfdc1bf08ff43fc4f095ffc8e8e283d8e44fc0b969556befaa",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -1103,7 +1121,7 @@
       "file": "lib/api-key-vault.ts",
       "kind": "content",
       "occurrences": 14,
-      "fingerprint": "cf3dc1bc48e88583b98bd1bc680f8f434ab2a3439791117442f3245a504f6dea",
+      "fingerprint": "d3cada09fcb76ced5cbd25846422a1621f15ba885f0cb39418a6dfac6932647e",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -1345,8 +1363,8 @@
     {
       "file": "lib/db/repositories/vault.ts",
       "kind": "content",
-      "occurrences": 37,
-      "fingerprint": "f25c5dc9569d29db9ac74979d549a965d8e0f503c3ae556da089b0093f2371d5",
+      "occurrences": 40,
+      "fingerprint": "e99bdd9d29087ddbd18e5fe43088315646da8f329b1154e0977b331933088ad9",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -1381,8 +1399,8 @@
     {
       "file": "lib/headless-access.ts",
       "kind": "content",
-      "occurrences": 73,
-      "fingerprint": "92e083b9085ba5edbaf9cd7457c0a09732090f20a307e3ed4aff817a1b1f05c7",
+      "occurrences": 77,
+      "fingerprint": "e84cb5876fd097724e382027da0cf3c3b0c19f0b81ab5e923b17f3a918249e89",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -2198,6 +2216,15 @@
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
     },
     {
+      "file": "packages/varlock-strap-plugin/src/client.ts",
+      "kind": "content",
+      "occurrences": 1,
+      "fingerprint": "49082105876b4a6837b4e09e8816e86cc2aecd1151b96ac8682f8fe969eabe27",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
       "file": "scripts/check-strap-rebrand.mts",
       "kind": "content",
       "occurrences": 5,
@@ -2227,8 +2254,8 @@
     {
       "file": "scripts/verify-local-runtime.mjs",
       "kind": "content",
-      "occurrences": 21,
-      "fingerprint": "13866515870823136fa191f850656babb6cd985054f7edddc38aedf43cbed674",
+      "occurrences": 23,
+      "fingerprint": "80501e0b000237f70c32c51b79a1182337703237cee55fccbfaab4a6bf762443",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -2281,8 +2308,8 @@
     {
       "file": "tests/db/migration.test.ts",
       "kind": "content",
-      "occurrences": 10,
-      "fingerprint": "1c278349d045d2fb6823f9ce9fd42b2c725d88ab80e6085ec9cc53acae79595d",
+      "occurrences": 13,
+      "fingerprint": "47b598427c69ed3b547180c67b02e8325286f710af61b75d5d6985e36b2d7ef3",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -2319,6 +2346,15 @@
       "kind": "content",
       "occurrences": 7,
       "fingerprint": "36b872f509dfc9ed7982296d214ec136b6c085c95bd415a1829905d91f6cf0c1",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "tests/db/vault-headless.test.ts",
+      "kind": "content",
+      "occurrences": 39,
+      "fingerprint": "4b67d30d8ac5d56fc1c01fe56e1d06a0c21363d841ac5e620b014f0ba5d5d9eb",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."

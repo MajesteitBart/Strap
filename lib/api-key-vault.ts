@@ -1,6 +1,6 @@
 import { recordAuditEvent, recordRequiredAuditEvent } from "@/lib/audit-log";
 import { getDatabase } from "@/lib/db/client";
-import { vaultCreate, vaultDelete, vaultList, vaultReveal, vaultUpdate } from "@/lib/db/repositories/vault";
+import { vaultCreate, vaultDelete, vaultList, vaultReveal, vaultUpdate, type VaultCredential } from "@/lib/db/repositories/vault";
 import "server-only";
 export { VaultRepositoryError as VaultAccessError } from "@/lib/db/repositories/vault";
 export type VaultItem = { id: string; creedId: string; name: string; description: string; createdBy: string; createdAt: string; updatedAt: string; lastAccessedAt: string | null };
@@ -15,8 +15,19 @@ export async function createVaultItem(input: { userId: string; creedId: string; 
   await recordAuditEvent({ userId: input.userId, action: "vault.secret_created", metadata: { itemId: row.id, creedId: row.creed_id }, request: input.request });
   return toItem(row);
 }
-export async function revealVaultItem(input: { userId: string; itemId: string; request: Request }): Promise<{ item: VaultItem; secret: string }> {
-  const result = await vaultReveal(getDatabase(), { userId: input.userId }, input.itemId, creedId => recordRequiredAuditEvent({ userId: input.userId, action: "vault.secret_revealed", metadata: { itemId: input.itemId, creedId }, request: input.request }));
+export async function revealVaultItem(input: {
+  userId: string;
+  itemId: string;
+  request: Request;
+  /** Headless reveals must supply the resolved key's explicit item grants. */
+  credential?: VaultCredential;
+}): Promise<{ item: VaultItem; secret: string }> {
+  const result = await vaultReveal(getDatabase(), { userId: input.userId }, input.itemId, creedId => recordRequiredAuditEvent({
+    userId: input.userId,
+    action: "vault.secret_revealed",
+    metadata: { itemId: input.itemId, creedId, ...(input.credential ? { keyId: input.credential.keyId, source: "headless" } : {}) },
+    request: input.request,
+  }), input.credential);
   return { item: toItem(result.item), secret: result.secret };
 }
 export async function updateVaultItem(input: { userId: string; itemId: string; name: string; description: string; secret: string | null; request: Request }): Promise<VaultItem> {
