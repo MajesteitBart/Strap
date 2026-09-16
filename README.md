@@ -131,7 +131,6 @@ packages/creed-cli/     legacy CLI compatibility package
 db/schema/              Drizzle application and auth schema
 db/migrations/          squashed baseline and future forward-only migrations
 tests/                  Node contract and logic tests
-.project/               Delano delivery contracts and durable context
 ```
 
 Canonical implementation paths use `components/strap`, `app/(strap-app)`, and `lib/strap-*`. Narrow `lib/creed-*` re-export shims and the `/api/creed` alias routes remain where source or protocol compatibility requires them.
