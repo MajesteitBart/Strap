@@ -24,7 +24,7 @@ npm pack ./packages/varlock-strap-plugin
 In the application that will consume secrets:
 
 ```sh
-npm install varlock@^1.19.0 /path/to/bvdm-varlock-strap-plugin-0.1.0.tgz
+npm install varlock@^1.19.0 /path/to/bvdm-varlock-strap-plugin-0.1.1.tgz
 ```
 
 You can also build the package and copy `dist/plugin.cjs` into your application, then use `# @plugin(./plugin.cjs)` in the schema. The bundle has no runtime dependencies beyond Varlock's plugin API.
