@@ -4010,7 +4010,7 @@
       "file": "scripts/check-strap-rebrand.mts",
       "kind": "content",
       "occurrences": 5,
-      "fingerprint": "0178bee1ce454afe5374c87ca46a309423fedee90965ad71f1f9e923c712ae30",
+      "fingerprint": "2394343f4aba4cb3908e1058c9012c59685cdf705ea2979e8280cecba86b1cbc",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -4128,6 +4128,15 @@
       "kind": "content",
       "occurrences": 7,
       "fingerprint": "36b872f509dfc9ed7982296d214ec136b6c085c95bd415a1829905d91f6cf0c1",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "tests/generated-wiki-brand.test.ts",
+      "kind": "content",
+      "occurrences": 5,
+      "fingerprint": "35e5f687507c772d94a0aa060357ee2dddc13f90265cf43d5ae9bf6b812f9bb0",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."

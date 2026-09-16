@@ -193,19 +193,30 @@ const allowlistPath = resolve(root, ALLOWLIST_PATH);
 const parsed = JSON.parse(readFileSync(allowlistPath, "utf8")) as unknown;
 validateAllowlist(parsed);
 
-if (process.argv.includes("--update-allowlist")) {
+const updateGeneratedWiki = process.argv.includes("--update-generated-wiki");
+if (process.argv.includes("--update-allowlist") || updateGeneratedWiki) {
   const previous = new Map(parsed.entries.map((entry) => [findingKey(entry), entry]));
-  const entries = findings.map((finding): AllowEntry => {
+  const refreshed = findings
+    .filter((finding) => !updateGeneratedWiki || finding.file.startsWith("openwiki/"))
+    .map((finding): AllowEntry => {
     const old = previous.get(findingKey(finding));
     const classification = old
       ? { decision: old.decision, category: old.category, rationale: old.rationale }
       : defaultClassification(finding);
     return { ...finding, ...classification };
   });
+  // Generated pages still receive explicit classifications in their reviewable
+  // PR. Never renew source classifications as a side effect of a wiki update.
+  const entries = updateGeneratedWiki
+    ? [...parsed.entries.filter((entry) => !entry.file.startsWith("openwiki/")), ...refreshed]
+      .sort((a, b) => a.file.localeCompare(b.file) || a.kind.localeCompare(b.kind))
+    : refreshed;
   const next: Allowlist = { version: 2, entries, assertions: parsed.assertions };
   writeFileSync(allowlistPath, `${JSON.stringify(next, null, 2)}\n`);
   process.stdout.write(`Updated ${ALLOWLIST_PATH} with ${entries.length} exact tracked-file classifications.\n`);
-  process.exit(0);
+  if (!updateGeneratedWiki) process.exit(0);
+  // Continue through every normal gate, including source drift and assertions.
+  parsed.entries = entries;
 }
 
 const actual = new Map(findings.map((finding) => [findingKey(finding), finding]));
