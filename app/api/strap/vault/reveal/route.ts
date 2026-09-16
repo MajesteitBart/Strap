@@ -1,7 +1,7 @@
 import { resolveHeadlessAccessKey } from "@/lib/headless-access";
 import { digestCredential, isHeadlessKey } from "@/lib/headless-access-shared";
 import { revealVaultItem, VaultAccessError } from "@/lib/api-key-vault";
-import { parseVaultReference } from "@/lib/vault-grants";
+import { MAX_VAULT_ITEM_GRANTS, parseVaultReference } from "@/lib/vault-grants";
 import { checkRateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
@@ -18,7 +18,8 @@ export async function POST(request: Request) {
     return respond({ error: "A scoped Strap API key is required." }, 401);
   }
   const limit = checkRateLimit({
-    scope: "vault-reveal", identifier: digestCredential(token), limit: 60, windowMs: 60_000,
+    // Allow one full schema load followed by a run, even at the grant limit.
+    scope: "vault-reveal", identifier: digestCredential(token), limit: MAX_VAULT_ITEM_GRANTS * 2, windowMs: 60_000,
   });
   if (!limit.ok) return respond({ error: "Too many requests." }, 429, { "Retry-After": String(limit.retryAfterSeconds) });
 

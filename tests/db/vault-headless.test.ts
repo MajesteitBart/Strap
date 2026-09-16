@@ -198,10 +198,30 @@ test("scoped Vault reveals enforce live Postgres permissions and audit before de
     await expectDenied("oauth-token", 401);
     for (const body of ["null", "[]", "{}", "{"]) assert.equal((await request(created.key, item.id, body)).status, 400);
     assert.equal((await request(created.key, item.id, " ".repeat(1025))).status, 413);
-    for (let i = 0; i < 60; i++) await request(created.key, "invalid");
+    for (let i = 0; i < 200; i++) await request(created.key, "invalid");
     const response = await request(created.key);
     assert.equal(response.status, 429);
     assert.ok(response.headers.get("retry-after"));
     assert.equal((await response.text()).includes(secret), false);
+  });
+
+  await t.test("a 100-secret load followed by a run succeeds before throttling", async () => {
+    const items = [];
+    for (let index = 0; index < 100; index++) {
+      items.push(await repository.vaultCreate(db, { userId: owner }, {
+        creedId: personal, name: `Full schema ${index}`, description: "", secret,
+      }));
+    }
+    const created = await create(items.map(item => item.id));
+    for (let load = 0; load < 2; load++) {
+      for (const item of items) {
+        const response = await request(created.key, item.id);
+        assert.equal(response.status, 200);
+        assert.deepEqual(await response.json(), { secret });
+      }
+    }
+    const throttled = await request(created.key, items[0].id);
+    assert.equal(throttled.status, 429);
+    assert.ok(throttled.headers.get("retry-after"));
   });
 });

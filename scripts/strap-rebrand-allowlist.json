@@ -2353,8 +2353,8 @@
     {
       "file": "tests/db/vault-headless.test.ts",
       "kind": "content",
-      "occurrences": 38,
-      "fingerprint": "8e8c3e7a26f60c3923cb4858407e26f5290974949770c060088e2646896937ad",
+      "occurrences": 39,
+      "fingerprint": "4b67d30d8ac5d56fc1c01fe56e1d06a0c21363d841ac5e620b014f0ba5d5d9eb",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."

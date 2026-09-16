@@ -99,7 +99,7 @@ The plugin does not cache, log, retry, or write fetched values to disk. Each res
 | 401 | Invalid, expired, revoked, or inaccessible key |
 | 403 | Item not selected, deleted, wrong profile, or current Vault permission denied |
 | 409 | Item changed or access was removed during reveal |
-| 429 | More than 60 requests per minute for this key on this server process |
+| 429 | More than 200 requests per minute for this key on this server process |
 | 503 | Reveal or required audit unavailable |
 
 HTTP error bodies and network exception details are never included in plugin diagnostics. Ordinary MCP and OAuth flows still do not expose secret plaintext.
