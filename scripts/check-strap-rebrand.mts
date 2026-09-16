@@ -41,7 +41,7 @@ const HISTORY_PREFIXES = [
   ".project/projects/delano-bootstrap/",
   ".project/projects/strap-rebrand/",
   ".project/projects/strap-rename-completion/",
-  "supabase/migrations/",
+  "db/migrations/",
 ] as const;
 
 function normalizePath(value: string): string {

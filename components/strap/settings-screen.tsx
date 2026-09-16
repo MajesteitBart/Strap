@@ -1,69 +1,16 @@
 "use client";
 
-import {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ComponentType,
-  type ReactNode,
-  type Ref,
-} from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
-import {
-  AlertTriangle,
-  Check,
-  ChevronDown,
-  ChevronRight,
-  LoaderCircle,
-  Plug,
-  Unplug,
-} from "lucide-react";
-import { DownloadIcon } from "@/components/ui/download";
-import { EyeIcon } from "@/components/ui/eye";
-import { EyeOffIcon } from "@/components/ui/eye-off";
-import { PenToolIcon } from "@/components/ui/pen-tool";
-import { ShieldCheckIcon } from "@/components/ui/shield-check";
+import { AnimatedIconButton } from "@/components/strap/animated-icon-action";
 import {
   useAnimatedIconControls,
   type AnimatedIconHandle,
 } from "@/components/strap/animated-icon-controls";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
-import {
-  consumeSettingsPanelIntent,
-  SETTINGS_PANEL_INTENT_EVENT,
-} from "@/lib/panel/settings-intent";
-import { SimpleTooltip } from "@/components/ui/tooltip";
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
-} from "@/components/ui/chart";
-import { StackTopBar } from "@/components/strap/rounded-bar";
-import { AnimatedIconButton } from "@/components/strap/animated-icon-action";
-import { toast } from "sonner";
-import { SearchableSelect } from "@/components/strap/searchable-select";
-import { useStrap } from "@/components/strap/strap-provider";
 import { CompanySettings } from "@/components/strap/company-settings";
 import { LegacySubscriptionNotice } from "@/components/strap/legacy-subscription-notice";
+import { EditableProfileAvatar } from "@/components/strap/profile-avatar";
+import { RichTextEditor } from "@/components/strap/rich-text-editor";
+import { StackTopBar } from "@/components/strap/rounded-bar";
+import { SearchableSelect } from "@/components/strap/searchable-select";
 import {
   clearSettingsOpenRouterBalanceCache,
   clearSettingsRepoCache,
@@ -85,16 +32,69 @@ import {
   type RepoOption,
   type VersionControlStatus,
 } from "@/components/strap/settings-preload";
+import { useStrap } from "@/components/strap/strap-provider";
+import { Button } from "@/components/ui/button";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from "@/components/ui/chart";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { DownloadIcon } from "@/components/ui/download";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { EyeIcon } from "@/components/ui/eye";
+import { EyeOffIcon } from "@/components/ui/eye-off";
+import { Input } from "@/components/ui/input";
+import { PenToolIcon } from "@/components/ui/pen-tool";
+import { Separator } from "@/components/ui/separator";
+import { ShieldCheckIcon } from "@/components/ui/shield-check";
+import { SimpleTooltip } from "@/components/ui/tooltip";
 import { AI_FEATURES, featureMeta } from "@/lib/ai/features";
+import {
+  consumeSettingsPanelIntent,
+  SETTINGS_PANEL_INTENT_EVENT,
+} from "@/lib/panel/settings-intent";
+import { STRAP_FILE_NAME } from "@/lib/profile-file";
 import {
   accentColorMap,
   type AgentPermission,
   type IntegrationConnectionStatus,
 } from "@/lib/strap-data";
 import { cn } from "@/lib/utils";
-import { STRAP_FILE_NAME } from "@/lib/profile-file";
-import { RichTextEditor } from "@/components/strap/rich-text-editor";
-import { EditableProfileAvatar } from "@/components/strap/profile-avatar";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  AlertTriangle,
+  Check,
+  ChevronDown,
+  ChevronRight,
+  LoaderCircle,
+  Plug,
+  Unplug,
+} from "lucide-react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ComponentType,
+  type ReactNode,
+  type Ref,
+} from "react";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { toast } from "sonner";
 
 const GITHUB_AUTHORIZED_APPS_URL = "https://github.com/settings/connections/applications";
 
@@ -589,7 +589,7 @@ function PersonalSettingsScreen() {
   }
 
 
-  // GitHub is connected through the standalone "Creed" OAuth App (not Supabase
+  // GitHub is connected through the standalone "Creed" OAuth App (not sign-in
   // identity linking): a full-page redirect to /api/app/github/authorize, which
   // bounces through GitHub and back to /settings?github=<status> (handled above).
   function handleConnectGitHub() {

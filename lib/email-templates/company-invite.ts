@@ -1,11 +1,5 @@
 import { escapeHtml } from "@/lib/rich-text";
 
-// Branded HTML for the Company invite email. Matches
-// supabase/email-templates/confirm-signup.html in structure: a 480px column on
-// warm paper, one white sheet with a one-pixel ink frame and a monospace chip
-// row, a Bricolage heading, Inter body, a Context-blue framed button, an
-// ignore note, and the monospace footer with Privacy/Terms links. Light-mode
-// only (email clients), no em dashes.
 
 export type CompanyInviteEmailInput = {
   companyName: string;

@@ -22,7 +22,7 @@ The provider registers `@initStrap`, `strapAccessKey`, and `strap()`, with one u
 - T-002 depends on T-001: Authorization and transport tests, real Varlock smoke, schema/privilege checks, root quality gates, docs and evidence.
 
 ## Test Strategy
-Focused tests execute real server modules with isolated persistence. Run all root tests, TypeScript, lint, brand audit, and production build. Independently typecheck/test/pack the provider. Run local Supabase reset and pgTAP in an isolated instance; exercise actual HTTP reveals with synthetic users and secrets.
+Focused tests execute real server modules against disposable Postgres databases. Run all root tests, TypeScript, lint, brand audit, and production build. Independently typecheck/test/pack the provider. Apply the forward Drizzle migration and run database authorization, import, and upgrade tests; exercise actual HTTP reveals with synthetic users and secrets.
 
 ## Rollout and Rollback
 Handoff is a local feature branch. A later release applies the migration, deploys the route/UI, then publishes the package. Existing keys remain ungranted. Rollback application/provider code and revoke new keys; retain the additive column to preserve forward-only history.
@@ -37,7 +37,7 @@ Handoff is a local feature branch. A later release applies the migration, deploy
 The actual loader test selected CommonJS to support a relocated bundle.
 
 ## Technical Context
-Next.js and strict TypeScript server routes; Supabase Vault; independent Node 22 provider package.
+Next.js and strict TypeScript server routes; Postgres with application-encrypted Vault; independent Node 22 provider package.
 
 ## Architecture Decisions
 See decisions.md for per-item grants, dedicated reveal, sensitivity, no-cache and bundle decisions.

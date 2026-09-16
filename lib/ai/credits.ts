@@ -1,16 +1,19 @@
+import * as tables from "@/db/schema/application";
+import type { DatabaseContext } from "@/lib/db/context";
+import { maybeOne, query } from "@/lib/db/query";
+import { and, eq, gte } from "drizzle-orm";
 import "server-only";
 // Credential resolution for AI calls. Two modes per Strap: the deployment's
 // platform OpenRouter key (stored ai_mode "credits", surfaced as "Included" in
 // the UI), or an encrypted BYOK key belonging to the user or company. Billing
 // was removed from the product, so nothing meters or gates platform usage here
 // anymore; creed_ai_usage still records every call for visibility.
-import { getSupabaseAdminClient } from "@/lib/supabase/admin";
-import type { SupabaseLikeClient } from "@/lib/supabase/types";
-import { getFeatureModelId } from "@/lib/ai/model-catalog";
 import type { AiFeature } from "@/lib/ai/features";
+import { getFeatureModelId } from "@/lib/ai/model-catalog";
 import { readAiSettings, type AiMode } from "@/lib/ai/persistence";
-import { decryptSecret } from "@/lib/secret-crypto";
+import { serviceContext } from "@/lib/db/service";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { decryptSecret } from "@/lib/secret-crypto";
 
 const INCLUDED_AI_BURST_LIMIT = 20;
 const INCLUDED_AI_BURST_WINDOW_MS = 60_000;
@@ -49,14 +52,9 @@ async function assertIncludedAiQuota(userId: string) {
     throw new Error("Included AI is busy. Try again in a minute or use your OpenRouter key.");
   }
 
-  const admin = getSupabaseAdminClient() as unknown as SupabaseLikeClient;
+  const admin = serviceContext("lib/ai/credits.ts");
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-  const { data, error } = (await admin
-    .from("creed_ai_usage")
-    .select("estimated_cost_usd")
-    .eq("user_id", userId)
-    .eq("ai_mode", "credits")
-    .gte("created_at", since)) as {
+  const { data, error } = (await query(admin, tables.creed_ai_usage, "select", (database, scope) => database.select({ estimated_cost_usd: tables.creed_ai_usage.estimated_cost_usd }).from(tables.creed_ai_usage).where(and(scope, eq(tables.creed_ai_usage.user_id, userId), eq(tables.creed_ai_usage.ai_mode, "credits"), gte(tables.creed_ai_usage.created_at, since))))) as {
     data: Array<{ estimated_cost_usd: number | string }> | null;
     error: { message: string } | null;
   };
@@ -79,7 +77,7 @@ async function assertIncludedAiQuota(userId: string) {
 // BYOK resolves through the BYOK model table because bring-your-own keys are
 // often provider-restricted and can't route to the platform defaults.
 export async function resolveAiCredential(
-  client: unknown,
+  client: DatabaseContext,
   userId: string,
   feature: AiFeature
 ): Promise<ResolvedAiCredential> {
@@ -121,12 +119,8 @@ export async function resolveCompanyAiCredential(
   feature: AiFeature,
   userId: string,
 ): Promise<ResolvedAiCredential> {
-  const admin = getSupabaseAdminClient() as unknown as SupabaseLikeClient;
-  const { data } = await admin
-    .from("creed_company_ai_settings")
-    .select("ai_mode, encrypted_openrouter_key, key_status")
-    .eq("creed_id", creedId)
-    .maybeSingle();
+  const admin = serviceContext("lib/ai/credits.ts");
+  const { data } = await query(admin, tables.creed_company_ai_settings, "select", (database, scope) => database.select({ ai_mode: tables.creed_company_ai_settings.ai_mode, encrypted_openrouter_key: tables.creed_company_ai_settings.encrypted_openrouter_key, key_status: tables.creed_company_ai_settings.key_status }).from(tables.creed_company_ai_settings).where(and(scope, eq(tables.creed_company_ai_settings.creed_id, creedId)))).then(maybeOne);
   const settings = data as CompanyAiSettingsRow | null;
 
   if (settings?.ai_mode === "byok") {

@@ -16,7 +16,7 @@
 ## Constraints
 - Strap is not a notes app, journal, chat-memory store, or generic AI wrapper.
 - Marketing routes never load user state.
-- Browser APIs require a Supabase session; agent APIs require hashed token or OAuth authentication.
+- Browser APIs require a Better Auth session; agent APIs require hashed token or OAuth authentication.
 - Hidden sections are filtered server-side. Secret plaintext leaves only through explicit browser or scoped headless reveal; Varlock can load individually granted items at runtime. Company access never exceeds the user's effective permissions.
 - Personal and Company persistence paths remain distinct. Billing and frozen-state gates remain effective.
 - Agent-contract changes affect every connected agent and require focused multi-model validation.

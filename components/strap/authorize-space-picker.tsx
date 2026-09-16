@@ -1,21 +1,15 @@
 "use client";
 
-import { useId, useState } from "react";
-import { Check, ChevronDown } from "lucide-react";
+import { ProfileAvatar } from "@/components/strap/profile-avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ProfileAvatar } from "@/components/strap/profile-avatar";
+import { Check, ChevronDown } from "lucide-react";
+import { useId, useState } from "react";
 
-// The spaces a connecting agent can be granted, shown on the OAuth consent
-// screen. One connection reaches exactly one Strap - personal OR a single
-// company - the way Supabase scopes an access token to one project. To reach a
-// second Strap the user connects the agent again and picks that one. Keeping it
-// to one space removes any per-call ambiguity: the agent always acts on the
-// Strap it was connected to.
 export type SpaceOption = {
   id: string;
   label: string;

@@ -1,8 +1,8 @@
-import type { Metadata } from "next";
 import { ExamplesPageView } from "@/components/marketing/examples-page-view";
 import { JsonLd } from "@/components/marketing/json-ld";
-import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { isDatabaseConfigured } from "@/lib/env";
 import { breadcrumbSchema, graph, webPageSchema } from "@/lib/seo/structured-data";
+import type { Metadata } from "next";
 
 const PATH = "/examples";
 const TITLE = "Examples";
@@ -33,7 +33,7 @@ export default function ExamplesPage() {
           ])
         )}
       />
-      <ExamplesPageView configured={isSupabaseConfigured()} />
+      <ExamplesPageView configured={isDatabaseConfigured()} />
     </>
   );
 }

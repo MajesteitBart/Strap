@@ -9,8 +9,8 @@
 //   2. the company write-route guards (reject writes the caller may not make),
 //   3. the client UI (grey out / lock what the member cannot do).
 //
-// The DB helpers creed_role() and creed_section_permission() encode the same
-// rules in SQL for RLS; this module is their TypeScript twin. Keep them in sync.
+// lib/authz/policies.ts applies visibility predicates before database rows leave
+// the server; role and agent ceilings remain defined here.
 
 import type { AgentPermission } from "@/lib/strap-data";
 

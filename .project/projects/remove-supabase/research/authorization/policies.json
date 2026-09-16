@@ -1,0 +1,272 @@
+[
+  {
+    "id": "P-001",
+    "name": "Read own entitlement",
+    "table": "creed_entitlements",
+    "operation": "select"
+  },
+  {
+    "id": "P-002",
+    "name": "Users insert own getting started",
+    "table": "creed_getting_started",
+    "operation": "insert"
+  },
+  {
+    "id": "P-003",
+    "name": "Users read own getting started",
+    "table": "creed_getting_started",
+    "operation": "select"
+  },
+  {
+    "id": "P-004",
+    "name": "Users update own getting started",
+    "table": "creed_getting_started",
+    "operation": "update"
+  },
+  {
+    "id": "P-005",
+    "name": "creed_audit_log_select_own",
+    "table": "creed_audit_log",
+    "operation": "select"
+  },
+  {
+    "id": "P-006",
+    "name": "deny client access to company github integration",
+    "table": "creed_company_github_integration",
+    "operation": "all"
+  },
+  {
+    "id": "P-007",
+    "name": "deny client access to oauth authorization codes",
+    "table": "oauth_authorization_codes",
+    "operation": "all"
+  },
+  {
+    "id": "P-008",
+    "name": "deny client access to oauth clients",
+    "table": "oauth_clients",
+    "operation": "all"
+  },
+  {
+    "id": "P-009",
+    "name": "deny client access to seat purchases",
+    "table": "creed_seat_purchases",
+    "operation": "all"
+  },
+  {
+    "id": "P-010",
+    "name": "deny client writes to company version control",
+    "table": "creed_company_version_control",
+    "operation": "all"
+  },
+  {
+    "id": "P-011",
+    "name": "members read connections",
+    "table": "creed_connections",
+    "operation": "select"
+  },
+  {
+    "id": "P-012",
+    "name": "members read credit transactions",
+    "table": "creed_credit_transactions",
+    "operation": "select"
+  },
+  {
+    "id": "P-013",
+    "name": "members read credits",
+    "table": "creed_credits",
+    "operation": "select"
+  },
+  {
+    "id": "P-014",
+    "name": "members read mcp clients",
+    "table": "creed_mcp_clients",
+    "operation": "select"
+  },
+  {
+    "id": "P-015",
+    "name": "members read mcp read events",
+    "table": "creed_mcp_read_events",
+    "operation": "select"
+  },
+  {
+    "id": "P-016",
+    "name": "members read own agent permissions",
+    "table": "creed_member_agent_permissions",
+    "operation": "select"
+  },
+  {
+    "id": "P-017",
+    "name": "members read quality reports",
+    "table": "creed_quality_reports",
+    "operation": "select"
+  },
+  {
+    "id": "P-018",
+    "name": "members read their creed roster",
+    "table": "creed_members",
+    "operation": "select"
+  },
+  {
+    "id": "P-019",
+    "name": "members read their creeds",
+    "table": "creeds",
+    "operation": "select"
+  },
+  {
+    "id": "P-020",
+    "name": "members read visible activity",
+    "table": "creed_activity",
+    "operation": "select"
+  },
+  {
+    "id": "P-021",
+    "name": "members read visible proposals",
+    "table": "creed_proposals",
+    "operation": "select"
+  },
+  {
+    "id": "P-022",
+    "name": "members read visible section versions",
+    "table": "creed_section_versions",
+    "operation": "select"
+  },
+  {
+    "id": "P-023",
+    "name": "members read visible sections",
+    "table": "creed_sections",
+    "operation": "select"
+  },
+  {
+    "id": "P-024",
+    "name": "oauth_tokens_delete_own",
+    "table": "oauth_tokens",
+    "operation": "delete"
+  },
+  {
+    "id": "P-025",
+    "name": "oauth_tokens_select_own",
+    "table": "oauth_tokens",
+    "operation": "select"
+  },
+  {
+    "id": "P-026",
+    "name": "owner reads company ai settings",
+    "table": "creed_company_ai_settings",
+    "operation": "select"
+  },
+  {
+    "id": "P-027",
+    "name": "owner reads company billing",
+    "table": "creed_company_billing",
+    "operation": "select"
+  },
+  {
+    "id": "P-028",
+    "name": "owners and admins read invites",
+    "table": "creed_invites",
+    "operation": "select"
+  },
+  {
+    "id": "P-029",
+    "name": "personal owner deletes activity",
+    "table": "creed_activity",
+    "operation": "delete"
+  },
+  {
+    "id": "P-030",
+    "name": "personal owner deletes proposals",
+    "table": "creed_proposals",
+    "operation": "delete"
+  },
+  {
+    "id": "P-031",
+    "name": "personal owner deletes sections",
+    "table": "creed_sections",
+    "operation": "delete"
+  },
+  {
+    "id": "P-032",
+    "name": "personal owner inserts activity",
+    "table": "creed_activity",
+    "operation": "insert"
+  },
+  {
+    "id": "P-033",
+    "name": "personal owner inserts proposals",
+    "table": "creed_proposals",
+    "operation": "insert"
+  },
+  {
+    "id": "P-034",
+    "name": "personal owner inserts sections",
+    "table": "creed_sections",
+    "operation": "insert"
+  },
+  {
+    "id": "P-035",
+    "name": "personal owner updates activity",
+    "table": "creed_activity",
+    "operation": "update"
+  },
+  {
+    "id": "P-036",
+    "name": "personal owner updates proposals",
+    "table": "creed_proposals",
+    "operation": "update"
+  },
+  {
+    "id": "P-037",
+    "name": "personal owner updates sections",
+    "table": "creed_sections",
+    "operation": "update"
+  },
+  {
+    "id": "P-038",
+    "name": "read member section permissions",
+    "table": "creed_member_section_permissions",
+    "operation": "select"
+  },
+  {
+    "id": "P-039",
+    "name": "users and managers can read creed ai usage",
+    "table": "creed_ai_usage",
+    "operation": "select"
+  },
+  {
+    "id": "P-040",
+    "name": "users can insert their creed ai usage",
+    "table": "creed_ai_usage",
+    "operation": "insert"
+  },
+  {
+    "id": "P-041",
+    "name": "users can manage their creed ai settings",
+    "table": "creed_ai_settings",
+    "operation": "all"
+  },
+  {
+    "id": "P-042",
+    "name": "users can manage their creed integrations",
+    "table": "creed_integrations",
+    "operation": "all"
+  },
+  {
+    "id": "P-043",
+    "name": "users can manage their creed tokens",
+    "table": "creed_tokens",
+    "operation": "all"
+  },
+  {
+    "id": "P-044",
+    "name": "users can manage their creed version control",
+    "table": "creed_version_control",
+    "operation": "all"
+  },
+  {
+    "id": "P-045",
+    "name": "users read own token grants",
+    "table": "oauth_token_creeds",
+    "operation": "select"
+  }
+]

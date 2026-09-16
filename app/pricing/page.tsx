@@ -1,8 +1,7 @@
-import type { Metadata } from "next";
+import { JsonLd } from "@/components/marketing/json-ld";
 import { PricingPageView } from "@/components/marketing/pricing-page-view";
 import { PricingReference } from "@/components/marketing/pricing-reference";
-import { JsonLd } from "@/components/marketing/json-ld";
-import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { isDatabaseConfigured } from "@/lib/env";
 import { pricingFaqItems } from "@/lib/marketing/faq";
 import {
   breadcrumbSchema,
@@ -11,6 +10,7 @@ import {
   softwareApplicationSchema,
   webPageSchema,
 } from "@/lib/seo/structured-data";
+import type { Metadata } from "next";
 
 const PATH = "/pricing";
 const TITLE = "Pricing";
@@ -44,7 +44,7 @@ export default function PricingPage() {
           faqPageSchema(pricingFaqItems)
         )}
       />
-      <PricingPageView configured={isSupabaseConfigured()} reference={<PricingReference />} />
+      <PricingPageView configured={isDatabaseConfigured()} reference={<PricingReference />} />
     </>
   );
 }

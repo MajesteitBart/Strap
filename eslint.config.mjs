@@ -9,11 +9,12 @@ const eslintConfig = defineConfig([
   globalIgnores([
     // Default ignores of eslint-config-next:
     ".next/**",
-    ".next-runtime/**",
+    ".next-runtime*/**",
     // Isolated dist dir for the local preview launch config (gitignored as
     // `.next-preview*`); ignore it here too so linting after a preview run
     // doesn't drown in generated-file errors.
-    ".next-preview/**",
+    ".next-preview*/**",
+    ".next-legacy-verification/**",
     // Generated deployment and delivery runtimes are validated by their own
     // tools. They include bundled and CommonJS JavaScript that is not part of
     // Strap's TypeScript application lint surface.
@@ -56,7 +57,7 @@ const eslintConfig = defineConfig([
       // - `react-hooks/set-state-in-effect` flags effects that call
       //   `setState` synchronously, but that's exactly the right shape
       //   when an effect's job is to synchronise external state (a
-      //   Supabase session, a sessionStorage cache hit, etc.) into
+      //   auth session, a sessionStorage cache hit, etc.) into
       //   React. The flagged sites do so intentionally.
       //
       // The stable rules-of-hooks (`react-hooks/rules-of-hooks`,

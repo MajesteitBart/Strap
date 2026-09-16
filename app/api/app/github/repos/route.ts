@@ -1,18 +1,20 @@
-import { NextResponse } from "next/server";
+import { requireApiAuth } from "@/lib/api-auth";
+import { withCompanyGitHubAccess } from "@/lib/company-github";
 import { listGitHubRepos } from "@/lib/github";
 import {
-  requireAuthenticatedUser,
-  withAuthenticatedGitHubAccess,
+  withAuthenticatedGitHubAccess
 } from "@/lib/github-version-control";
 import { resolveManagedCompanyCreedId } from "@/lib/strap-context";
-import { withCompanyGitHubAccess } from "@/lib/company-github";
+import { NextResponse } from "next/server";
 
 export async function GET() {
+  const auth = await requireApiAuth();
+  if (auth instanceof NextResponse) return auth;
   try {
-    const { supabase, user } = await requireAuthenticatedUser();
+    const { context, user } = auth;
     // Company managers list repos on the TEAM's GitHub connection (so they see
     // the org repos the team can push to); everyone else lists their own.
-    const companyId = await resolveManagedCompanyCreedId(supabase, user);
+    const companyId = await resolveManagedCompanyCreedId(context, user);
     const repos = companyId
       ? await withCompanyGitHubAccess(companyId, (token) => listGitHubRepos(token))
       : await withAuthenticatedGitHubAccess(({ integration }) =>

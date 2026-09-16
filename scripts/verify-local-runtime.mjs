@@ -1,0 +1,125 @@
+import './db-env.mts';
+import { randomUUID } from 'node:crypto';
+import assert from 'node:assert/strict';
+import { hashPassword } from 'better-auth/crypto';
+import { createConnection } from '../lib/db/connection.ts';
+const origin=new URL(process.argv[2] || 'http://localhost:3000').origin;
+if (!['localhost','127.0.0.1'].includes(new URL(origin).hostname) || !['localhost','127.0.0.1'].includes(new URL(process.env.DATABASE_URL).hostname)) throw Error('Local app and database required.');
+const connection=createConnection(process.env.DATABASE_URL);
+const userId=randomUUID(), memberId=randomUUID();
+let clientId;
+const email=`rehearsal-${userId}@example.test`, password=randomUUID()+'aA9!';
+function createSession() {
+let cookie=''; const jar=new Map();
+return async function request(path,method='GET',body,headers={}) {
+ const form=body instanceof URLSearchParams;
+ const multipart=body instanceof FormData;
+ const response=await fetch(origin+path,{method,headers:{Origin:origin,...(cookie?{Cookie:cookie}:{}),...(body&&!multipart?{'Content-Type':form?'application/x-www-form-urlencoded':'application/json'}:{}),...headers},body:body?(multipart?body:form?body.toString():JSON.stringify(body)):undefined,redirect:'manual'});
+ for(const item of response.headers.getSetCookie()){const pair=item.split(';')[0], split=pair.indexOf('=');const name=pair.slice(0,split),value=pair.slice(split+1);if(!value)jar.delete(name);else jar.set(name,value);}cookie=[...jar].map(([name,value])=>name+'='+value).join('; ');
+ const text=await response.text(); let data;try{data=JSON.parse(text);}catch{data=text;}
+ return {response,data};
+};
+}
+const request=createSession();
+function ok(result,status,label){if(result.response.status!==status)throw Error(`${label}: HTTP ${result.response.status} (expected ${status})`);process.stdout.write(`PASS ${label}\n`);}
+async function verifyAvatar(scope,creedId) {
+ const bytes=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aE1cAAAAASUVORK5CYII=','base64');
+ const form=new FormData();form.set('scope',scope);if(creedId)form.set('creedId',creedId);form.set('file',new Blob([bytes],{type:'image/png'}),'fixture.png');
+ const upload=await request('/api/app/profile/avatar','POST',form);ok(upload,200,scope+' avatar upload');
+ const image=await fetch(origin+upload.data.avatarUrl);assert.equal(image.status,200);assert.deepEqual(Buffer.from(await image.arrayBuffer()),bytes);
+ const cached=await fetch(origin+upload.data.avatarUrl,{headers:{'If-None-Match':image.headers.get('etag')}});assert.equal(cached.status,304);process.stdout.write('PASS '+scope+' avatar bytes and cache validation\n');
+}
+try {
+ await connection`insert into users(id,email,name,email_verified) values (${userId},${email},'Local rehearsal',true) on conflict (email) do nothing`;
+ await connection`insert into accounts(id,user_id,provider_id,account_id,password) values (${randomUUID()},${userId},'credential',${userId},${await hashPassword(password)}) on conflict (provider_id,account_id) do update set password=excluded.password`;
+ const owned=await connection`select id from creeds where owner_user_id=${userId} and type='personal'`;
+ const profileId=owned[0]?.id??randomUUID();
+ await connection`insert into creeds(id,type,name,owner_user_id) values (${profileId},'personal','Local rehearsal',${userId}) on conflict (id) do nothing`;
+ await connection`insert into creed_members(creed_id,user_id,role) values (${profileId},${userId},'owner') on conflict (creed_id,user_id) do nothing`;
+ await connection`insert into creed_sections(creed_id,user_id,section_id,kind,name,accent,payload,last_edited_by,last_edited_type,agent_permission) values (${profileId},${userId},'section-0123456789abcdef','rich-text','Local context','blue','{"content":"<p>Local rehearsal context.</p>"}'::jsonb,'Local rehearsal','user','propose') on conflict (creed_id,section_id) do nothing`;
+ ok(await request('/api/app/state'),401,'anonymous app request denied');
+ for(const [path,method] of [['branches','GET'],['repos','GET'],['status','GET'],['integration','POST'],['integration','DELETE'],['push','POST'],['pull/apply','POST'],['pull/preview','POST']]) ok(await request('/api/app/github/'+path,method),401,'anonymous GitHub '+path+' denied');
+ ok(await request('/api/auth/sign-in/email','POST',{email,password}),200,'email sign-in');
+ const loaded=await request('/api/app/state');ok(loaded,200,'load personal state');assert.equal(loaded.data.hasPersistedCreed,true);
+ const state=loaded.data.state;const section=state.sections.find(s=>s.id==='section-0123456789abcdef');assert.ok(section);section.content='<p>Local migration edit persisted.</p>';
+ ok(await request('/api/app/state','PUT',{state}),200,'save personal state');
+ const reloaded=await request('/api/app/state');assert.ok(reloaded.data.state.sections.find(s=>s.id===section.id).content.includes('Local migration edit persisted'));process.stdout.write('PASS saved content survives reload\n');
+ ok(await request('/api/app/profile','PATCH',{name:'Local custom name'}),200,'profile display-name update');
+ await verifyAvatar('personal');
+ await connection`delete from creed_vault_items where creed_id=${profileId} and name='Rehearsal key'`;
+ const vault=await request('/api/app/vault','POST',{strapId:profileId,name:'Rehearsal key',description:'Local synthetic fixture',secret:'local-vault-fixture'});ok(vault,201,'Vault create');
+ const listed=await request('/api/app/vault?strapId='+profileId);ok(listed,200,'Vault metadata list');assert.equal(JSON.stringify(listed.data).includes('local-vault-fixture'),false);
+ const reveal=await request('/api/app/vault/'+vault.data.item.id);ok(reveal,200,'Vault audited reveal');assert.equal(reveal.data.secret,'local-vault-fixture');
+ const created=await request('/api/app/headless-access','POST',{strapId:profileId,name:'Local read rehearsal',mode:'read-only'});ok(created,201,'create scoped read key');
+ const key=created.data.key;
+ const revealHeadless=async credential=>{
+   const response=await fetch(origin+'/api/strap/vault/reveal',{method:'POST',headers:{Authorization:'Bearer '+credential,'Content-Type':'application/json'},body:JSON.stringify({reference:'secret://'+vault.data.item.id})});
+   assert.match(response.headers.get('cache-control')??'',/no-store/);
+   return {response,data:await response.json()};
+ };
+ ok(await revealHeadless(key),403,'ordinary scoped key has no secret grants');
+ const secretKey=await request('/api/app/headless-access','POST',{strapId:profileId,name:'Local Varlock rehearsal',mode:'read-only',vaultItemIds:[vault.data.item.id]});ok(secretKey,201,'create individually granted secret key');
+ assert.deepEqual(secretKey.data.metadata.vaultItemIds,[vault.data.item.id]);
+ const headlessReveal=await revealHeadless(secretKey.data.key);ok(headlessReveal,200,'headless secret reveal without session cookies');assert.deepEqual(headlessReveal.data,{secret:'local-vault-fixture'});
+ const [audit]=await connection`select metadata from creed_audit_log where action='vault.secret_revealed' and metadata->>'keyId'=${secretKey.data.metadata.id}`;
+ assert.deepEqual(audit.metadata,{itemId:vault.data.item.id,creedId:profileId,keyId:secretKey.data.metadata.id,source:'headless'});
+ ok(await request('/api/app/headless-access/'+secretKey.data.metadata.id,'DELETE'),200,'revoke secret key');
+ ok(await revealHeadless(secretKey.data.key),401,'revoked secret key cannot reveal');
+ ok(await request('/api/app/vault/'+vault.data.item.id,'DELETE'),200,'Vault delete');
+ const mcpHeaders={Authorization:'Bearer '+key,Accept:'application/json, text/event-stream'};
+ const read=await request('/mcp','POST',{jsonrpc:'2.0',id:1,method:'tools/call',params:{name:'read_strap',arguments:{}}},mcpHeaders);ok(read,200,'MCP read through scoped key');assert.equal(Boolean(read.data.error),false);assert.equal(Boolean(read.data.result?.isError),false);assert.ok(JSON.stringify(read.data).includes('Local migration edit persisted'));
+ const tools=await request('/mcp','POST',{jsonrpc:'2.0',id:2,method:'tools/list'},mcpHeaders);ok(tools,200,'MCP read-only tool list');assert.equal(tools.data.result.tools.some(tool=>/propose|direct_edit|publish|update_section|create_section/.test(tool.name)),false);
+ const denied=await request('/mcp','POST',{jsonrpc:'2.0',id:3,method:'tools/call',params:{name:'strap_update_section',arguments:{sectionId:section.id,contentMarkdown:'forbidden'}}},mcpHeaders);assert.ok(denied.data.error || denied.data.result?.isError);process.stdout.write('PASS read-only key cannot mutate\n');
+ ok(await request('/api/internal/maintenance','POST'),401,'maintenance rejects missing secret');
+ const registered=await request('/register','POST',{client_name:'Local device fixture',redirect_uris:['http://localhost:3000/fixture-callback']});ok(registered,201,'OAuth client registration');clientId=registered.data.client_id;
+ const device=await request('/device/authorize','POST',{client_id:clientId,scope:'read'});ok(device,200,'OAuth device authorization');
+ const verified=await request('/device/verify','POST',new URLSearchParams({user_code:device.data.user_code}));ok(verified,303,'device code verified in signed-in session');
+ const requestId=new URL(verified.response.headers.get('location')).searchParams.get('request');assert.ok(requestId);
+ const approved=await request('/device/decision','POST',new URLSearchParams({request_id:requestId,decision:'allow',strap_id:profileId,mode:'direct'}));ok(approved,303,'device approval');assert.ok(approved.response.headers.get('location').includes('result=approved'));
+ const exchanged=await request('/token','POST',{client_id:clientId,grant_type:'urn:ietf:params:oauth:grant-type:device_code',device_code:device.data.device_code});ok(exchanged,200,'approved device exchanges for token');
+ const tokenTools=await request('/mcp','POST',{jsonrpc:'2.0',id:4,method:'tools/list'},{...mcpHeaders,Authorization:'Bearer '+exchanged.data.access_token});ok(tokenTools,200,'OAuth token resolves scoped MCP grant');assert.equal(tokenTools.data.result.tools.some(tool=>/propose|direct_edit|publish|update_section|create_section/.test(tool.name)),false);
+ const rotated=await request('/token','POST',{client_id:clientId,grant_type:'refresh_token',refresh_token:exchanged.data.refresh_token});ok(rotated,200,'OAuth refresh rotation');
+ ok(await request('/token','POST',{client_id:clientId,grant_type:'refresh_token',refresh_token:exchanged.data.refresh_token}),400,'spent refresh token rejected');
+ const concurrentRotations=await Promise.all(Array.from({length:4},()=>request('/token','POST',{client_id:clientId,grant_type:'refresh_token',refresh_token:rotated.data.refresh_token})));
+ assert.deepEqual(concurrentRotations.map(result=>result.response.status).sort(),[200,400,400,400]);
+ process.stdout.write('PASS concurrent refresh has exactly one winner\n');
+ const health=await request('/api/health');ok(health,200,'health endpoint');assert.equal(health.data.components.db.ok,true);assert.equal(health.data.components.auth.ok,true);
+ const company=await request('/api/app/company','POST',{});ok(company,200,'Company provisioning');
+ const companyId=company.data.strapId;
+ await verifyAvatar('company',companyId);
+ ok(await request('/api/app/company/onboarding','POST',{strapId:companyId,action:'seed',answers:{}}),200,'Company starter sections');
+ const companyState=await request('/api/app/state');ok(companyState,200,'Company state contract');assert.ok(companyState.data.state.sections.length>0);
+ const companySection=companyState.data.state.sections[0];
+ const [{revision:baseRevision}]=await connection`select revision from creed_sections where creed_id=${companyId} and section_id=${companySection.id}`;
+ const edited=await request('/api/app/sections/'+companySection.id,'PUT',{strapId:companyId,baseRevision,content:'<p>Company direct edit.</p>'});ok(edited,200,'Company direct edit');
+ ok(await request('/api/app/sections/'+companySection.id,'PUT',{strapId:companyId,baseRevision,content:'stale'}),409,'stale Company edit rejected');
+ const memberEmail='member-'+memberId+'@example.test';
+ await connection`insert into users(id,email,name,email_verified) values (${memberId},${memberEmail},'Member',true)`;
+ await connection`insert into accounts(user_id,provider_id,account_id,password) values (${memberId},'credential',${memberId},${await hashPassword(password)})`;
+ await connection`insert into creed_members(creed_id,user_id,role) values (${companyId},${memberId},'member')`;
+ const memberRequest=createSession();
+ ok(await memberRequest('/api/auth/sign-in/email','POST',{email:memberEmail,password}),200,'second session signs in');
+ ok(await memberRequest('/api/app/straps/activate','POST',{strapId:companyId}),200,'member switches to Company');
+ const polled=await memberRequest('/api/app/state');assert.ok(polled.data.state.sections.find(s=>s.id===companySection.id).content.includes('Company direct edit'));process.stdout.write('PASS second session poll sees Company edit\n');
+ ok(await request('/api/app/company/permissions','POST',{strapId:companyId,userId:memberId,sectionId:companySection.id,permission:'propose'}),200,'owner sets proposal permission');
+ const proposed=await memberRequest('/api/app/sections/'+companySection.id,'PUT',{strapId:companyId,baseRevision:edited.data.revision,content:'<p>Member proposed edit.</p>'});ok(proposed,200,'member files proposal');assert.equal(proposed.data.filedProposal,true);
+ ok(await request('/api/app/proposals/'+proposed.data.proposalId,'POST',{strapId:companyId,decision:'accept'}),200,'owner accepts Company proposal');
+ const history=await request('/api/app/sections/'+companySection.id+'/versions?strapId='+companyId);ok(history,200,'Company version history');assert.ok(history.data.versions.length>=2);
+ ok(await request('/api/app/sections/'+companySection.id+'/restore','POST',{strapId:companyId,versionId:history.data.versions.at(-1).id}),200,'restore section as a new revision');
+ const reversed=companyState.data.state.sections.map(section=>section.id).reverse();
+ ok(await request('/api/app/sections/reorder','POST',{strapId:companyId,sectionIds:reversed}),200,'Company section reorder');
+ assert.deepEqual((await request('/api/app/state')).data.state.sections.map(section=>section.id),reversed);
+ ok(await request('/api/app/company/permissions','POST',{strapId:companyId,userId:memberId,sectionId:companySection.id,permission:'hidden'}),200,'owner hides section from member');
+ const hidden=await memberRequest('/api/app/state');assert.equal(hidden.data.state.sections.some(s=>s.id===companySection.id),false);process.stdout.write('PASS hidden section omitted from second session\n');
+ ok(await memberRequest('/api/app/vault?strapId='+companyId),403,'Company member cannot read Vault');
+ await connection`delete from creed_members where creed_id=${companyId} and user_id=${memberId}`;
+ ok(await memberRequest('/api/app/straps/activate','POST',{strapId:companyId}),403,'removed member cannot reactivate Company');
+ ok(await request('/api/app/straps/activate','POST',{strapId:profileId}),200,'owner switches back to Personal');
+ ok(await request('/api/auth/signout','POST'),200,'sign-out');
+ ok(await request('/api/app/state'),401,'signed-out session denied');
+ process.stdout.write('Local HTTP rehearsal passed.\n');
+} finally {
+  await connection`delete from users where id in (${userId},${memberId})`;
+  if (clientId) await connection`delete from oauth_clients where client_id=${clientId}`;
+  await connection.end();
+}

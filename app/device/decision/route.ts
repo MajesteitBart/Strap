@@ -1,11 +1,10 @@
-import { NextResponse } from "next/server";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { decideDeviceAuthorization } from "@/lib/oauth-device";
 import { isHeadlessKeyMode } from "@/lib/headless-access-shared";
+import { decideDeviceAuthorization } from "@/lib/oauth-device";
+import { getRequestAuth } from "@/lib/request-auth";
+import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
-  const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await getRequestAuth().then(({ user }) => ({ data: { user } }));
   if (!user) return NextResponse.redirect(new URL("/login?next=/device", request.url), 303);
   const form = await request.formData();
   const requestId = String(form.get("request_id") ?? "");

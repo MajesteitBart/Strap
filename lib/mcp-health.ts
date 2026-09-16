@@ -1,12 +1,15 @@
+import * as tables from "@/db/schema/application";
+import { query } from "@/lib/db/query";
+import { and, eq, gte } from "drizzle-orm";
 import "server-only";
 // MCP health aggregation for the /connections dashboard. Reads three sources -
 // the per-agent daily read rollup (creed_mcp_read_events), the connected-agent
 // roster (creed_mcp_clients), and agent-authored activity (creed_activity) -
 // and folds them into one summary the client renders with recharts. All of this
 // lives off the hot loadStrapState path: it's fetched on demand by the route.
-import type { AgentIconKind } from "@/lib/strap-data";
-import { accentColorMap, normalizeLegacySectionId, isAccentKey } from "@/lib/strap-data";
 import { inferAgentIconKind, normalizeMcpClientId } from "@/lib/strap-backend";
+import type { AgentIconKind } from "@/lib/strap-data";
+import { accentColorMap, isAccentKey, normalizeLegacySectionId } from "@/lib/strap-data";
 
 export type McpHealthRange = "7d" | "30d" | "90d";
 
@@ -74,16 +77,11 @@ export type McpHealthSummary = {
   sections: McpHealthSection[];
 };
 
-type QueryResult = { data: unknown; error: { message: string } | null };
 
-type QueryFilter = Promise<QueryResult> & {
-  eq: (column: string, value: unknown) => QueryFilter;
-  gte: (column: string, value: unknown) => QueryFilter;
-};
 
-type SupabaseLike = {
-  from: (table: string) => { select: (columns: string) => QueryFilter };
-};
+
+
+type DatabaseContext = import("./db/context").DatabaseContext;
 
 type ReadEventRow = { client_id: string; day: string; read_count: number };
 type ClientRow = { client_id: string; client_name: string; last_seen_at: string | null; created_at: string | null };
@@ -136,7 +134,7 @@ export async function loadMcpHealth(
   scope: McpHealthScope,
   range: McpHealthRange
 ): Promise<McpHealthSummary> {
-  const db = client as unknown as SupabaseLike;
+  const db = client as unknown as DatabaseContext;
   const window = buildDayWindow(range);
   const windowStart = window[0];
   const windowStartIso = `${windowStart}T00:00:00.000Z`;
@@ -145,9 +143,9 @@ export async function loadMcpHealth(
     scope.kind === "creed" ? (["creed_id", scope.creedId] as const) : (["user_id", scope.userId] as const);
 
   const [readEvents, clients, activity] = await Promise.all([
-    db.from("creed_mcp_read_events").select("client_id, day, read_count").eq(scopeColumn, scopeValue).gte("day", windowStart),
-    db.from("creed_mcp_clients").select("client_id, client_name, last_seen_at, created_at").eq(scopeColumn, scopeValue).gte("created_at", "1970-01-01"),
-    db.from("creed_activity").select("actor, actor_type, section_id, section_name, accent, status, created_at").eq(scopeColumn, scopeValue).gte("created_at", windowStartIso),
+    query(db, tables.creed_mcp_read_events, "select", (database, scope) => database.select({ client_id: tables.creed_mcp_read_events.client_id, day: tables.creed_mcp_read_events.day, read_count: tables.creed_mcp_read_events.read_count }).from(tables.creed_mcp_read_events).where(and(scope, eq(tables.creed_mcp_read_events[scopeColumn], scopeValue), gte(tables.creed_mcp_read_events.day, windowStart)))),
+    query(db, tables.creed_mcp_clients, "select", (database, scope) => database.select({ client_id: tables.creed_mcp_clients.client_id, client_name: tables.creed_mcp_clients.client_name, last_seen_at: tables.creed_mcp_clients.last_seen_at, created_at: tables.creed_mcp_clients.created_at }).from(tables.creed_mcp_clients).where(and(scope, eq(tables.creed_mcp_clients[scopeColumn], scopeValue), gte(tables.creed_mcp_clients.created_at, "1970-01-01")))),
+    query(db, tables.creed_activity, "select", (database, scope) => database.select({ actor: tables.creed_activity.actor, actor_type: tables.creed_activity.actor_type, section_id: tables.creed_activity.section_id, section_name: tables.creed_activity.section_name, accent: tables.creed_activity.accent, status: tables.creed_activity.status, created_at: tables.creed_activity.created_at }).from(tables.creed_activity).where(and(scope, eq(tables.creed_activity[scopeColumn], scopeValue), gte(tables.creed_activity.created_at, windowStartIso)))),
   ]);
 
   const readRows = (readEvents.data as ReadEventRow[] | null) ?? [];

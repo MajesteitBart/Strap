@@ -59,7 +59,7 @@ FR-001: Create bounded per-item key grants. FR-002: Recheck live authorization a
 No new application runtime dependencies, no plaintext logs or upstream diagnostics, HTTPS outside loopback, no persistent provider cache.
 
 ## Assumptions
-The target deployment supports Supabase Vault and applies migrations before deploying consumers.
+The target deployment runs the Postgres/Drizzle backend from main and applies migrations before deploying consumers.
 
 ## Needs Clarification
 None for the bounded local implementation requested.
@@ -68,7 +68,7 @@ None for the bounded local implementation requested.
 Varlock plugin portability and sensitivity were verified with the actual CLI and relocated bundle.
 
 ## Touchpoints to Exercise
-Connections, Vault, key creation/revocation, dedicated reveal route, provider load/run, database privileges.
+Connections, Vault, key creation/revocation, dedicated reveal route, provider load/run, database authorization.
 
 ## Probe Findings
 Official providers register plugin-lib decorators and resolvers. A CommonJS bundle supports relocation through Varlock.
@@ -80,7 +80,7 @@ Context access must not imply secret access. Wrong-profile UUIDs must fail befor
 No unresolved implementation unknowns; publication and production rollout are outside scope.
 
 ## Dependencies
-Existing Vault RPCs, scoped credentials, live membership, required audit and Varlock 1.19.
+Existing encrypted Vault repositories, scoped credentials, live membership, required audit and Varlock 1.19.
 
 ## Approval Notes
 User explicitly requested implementation on a feature branch; no separate publication or deployment authorization.

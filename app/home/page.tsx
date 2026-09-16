@@ -1,7 +1,6 @@
-import type { Metadata } from "next";
-import { StrapHome } from "@/components/marketing/strap-home";
 import { JsonLd } from "@/components/marketing/json-ld";
-import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { StrapHome } from "@/components/marketing/strap-home";
+import { isDatabaseConfigured } from "@/lib/env";
 import { homeFaqItems } from "@/lib/marketing/faq";
 import {
   faqPageSchema,
@@ -10,6 +9,7 @@ import {
   softwareApplicationSchema,
   websiteSchema,
 } from "@/lib/seo/structured-data";
+import type { Metadata } from "next";
 
 // /home is the canonical public landing (the root `/` redirects here for
 // signed-out visitors). It inherits the brand title.default and the full
@@ -32,7 +32,7 @@ export default function HomeLandingPage() {
           faqPageSchema(homeFaqItems)
         )}
       />
-      <StrapHome configured={isSupabaseConfigured()} />
+      <StrapHome configured={isDatabaseConfigured()} />
     </>
   );
 }

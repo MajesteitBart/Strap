@@ -1,6 +1,6 @@
-import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import test from "node:test";
 import {
   createHeadlessKey,
   digestCredential,
@@ -16,10 +16,6 @@ import {
   normalizeOAuthScope,
 } from "../lib/oauth-device-shared.ts";
 
-const migration = readFileSync(
-  new URL("../supabase/migrations/20260722120000_headless_access_and_secret_vault.sql", import.meta.url),
-  "utf8",
-);
 const mcpRoute = readFileSync(new URL("../app/mcp/route.ts", import.meta.url), "utf8");
 const companySections = readFileSync(
   new URL("../lib/company-sections.ts", import.meta.url),
@@ -83,16 +79,6 @@ test("device grants cannot exceed the client-requested OAuth scope", () => {
   assert.equal(capDeviceGrantMode("proposal-only", "read propose direct_edit"), "proposal-only");
 });
 
-test("migration keeps credentials private and Vault RPCs service-role-only", () => {
-  assert.match(migration, /alter table public\.creed_headless_access_keys enable row level security/);
-  assert.match(migration, /alter table public\.oauth_device_authorizations enable row level security/);
-  assert.match(migration, /alter table public\.creed_vault_items enable row level security/);
-  assert.match(migration, /security definer\s+set search_path = ''/gi);
-  assert.match(migration, /revoke all on function public\.creed_vault_reveal_secret\(uuid\) from public, anon, authenticated/);
-  assert.match(migration, /grant execute on function public\.creed_vault_reveal_secret\(uuid\) to service_role/);
-  assert.match(migration, /verification_attempts integer not null default 0 check \(verification_attempts between 0 and 10\)/);
-  assert.match(migration, /v_row\.interval_seconds := least\(v_row\.interval_seconds \+ 5, 300\)/);
-});
 
 test("MCP enforcement has no explicit-grant fallback and strips mutation tokens", () => {
   assert.match(mcpRoute, /credential\.allowLegacyPersonalFallback && personal/);

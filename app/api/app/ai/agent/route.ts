@@ -1,9 +1,8 @@
-import { NextResponse } from "next/server";
-import { requireApiAuth } from "@/lib/api-auth";
 import { resolveAiCredential, resolveCompanyAiCredential } from "@/lib/ai/credits";
-import { callOpenRouter, streamOpenRouter, parseJsonObject } from "@/lib/ai/openrouter";
 import { getAgentModelId } from "@/lib/ai/model-catalog";
+import { callOpenRouter, parseJsonObject, streamOpenRouter } from "@/lib/ai/openrouter";
 import { recordAiUsage } from "@/lib/ai/persistence";
+import { requireApiAuth } from "@/lib/api-auth";
 import {
   buildAgentResponseFormat,
   buildAgentSystemPrompt,
@@ -17,6 +16,7 @@ import { executeAgentActions, executeCompanyAgentActions } from "@/lib/panel/age
 import { loadActiveStrapState } from "@/lib/strap-backend";
 import { resolveActiveStrap } from "@/lib/strap-context";
 import { sectionBodyMarkdown } from "@/lib/strap-data";
+import { NextResponse } from "next/server";
 
 export const maxDuration = 300;
 
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
   // Strap it behaves identically, attributed to the acting member as "[member]'s
   // Strap", and every edit is enforced per section by companyMcpWrite (Direct
   // applies immediately, otherwise a proposal) - see executeCompanyAgentActions.
-  const activeCreed = await resolveActiveStrap(auth.supabase, auth.user);
+  const activeCreed = await resolveActiveStrap(auth.context, auth.user);
   const companyEntry = activeCreed?.creeds.find(
     (c) => c.id === activeCreed.creedId && c.type === "company"
   );
@@ -56,7 +56,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing or oversized request." }, { status: 400 });
     }
 
-    const { state } = await loadActiveStrapState(auth.supabase, auth.user, activeCreed);
+    const { state } = await loadActiveStrapState(auth.context, auth.user, activeCreed);
     // The in-app agent is the user's own tool, so it works over every live
     // section it can see (personal: all, including hidden; company: the member's
     // visible sections). How each edit lands (direct vs proposal) is decided
@@ -79,7 +79,7 @@ export async function POST(request: Request) {
 
     const credential = companyId
       ? await resolveCompanyAiCredential(companyId, "panel", auth.user.id)
-      : await resolveAiCredential(auth.supabase, auth.user.id, "panel");
+      : await resolveAiCredential(auth.context, auth.user.id, "panel");
     payloadForStream = {
       query,
       mentioned,
@@ -189,7 +189,7 @@ export async function POST(request: Request) {
         // Record the real usage regardless of what the plan turns out to be.
         try {
           await recordAiUsage({
-            client: auth.supabase,
+            client: auth.context,
             userId: auth.user.id,
             creedId: p.companyId,
             feature: "panel",

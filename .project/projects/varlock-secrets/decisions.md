@@ -15,3 +15,4 @@ updated: 2026-09-16T01:51:56Z
 - Use `impliesSensitive` and an internal `strapAccessKey` type; fetch fresh without disk cache or automatic retries.
 - CommonJS follows the official provider pattern. A relocation test found Node native ESM could not resolve plugin-lib from an unrelated directory; Varlock intercepts CommonJS imports correctly.
 - Varlock is a peer/development dependency; esbuild and TypeScript are development-only. The application gains no dependencies.
+- Integration with main `e2df9f5` ports the grant column to a forward Drizzle migration. The existing encrypted Vault repository checks credential profile/item scope and live user permissions, then persists the audit before decrypting. Postgres authorization and import/upgrade tests replace Supabase-specific tests.

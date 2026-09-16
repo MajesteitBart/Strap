@@ -1,17 +1,14 @@
 "use client";
 
-// Final step of the forgot-password flow, rendered at /reset-password. The
-// recovery link is exchanged for a session by /auth/callback before landing
-// here, so we just confirm a session exists, take the new password, and call
-// updateUser. No session -> the link was invalid or already used.
+// Better Auth consumes the one-time reset token and revokes existing sessions.
 
-import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import { LoaderCircle } from "lucide-react";
-import { toast } from "sonner";
-import { AuthShell } from "@/components/auth/auth-shell";
 import { AuthSubmitButton, PasswordField } from "@/components/auth/auth-fields";
-import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { AuthShell } from "@/components/auth/auth-shell";
+import { authClient } from "@/lib/auth/client";
+import { LoaderCircle } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 type Status = "checking" | "ready" | "invalid";
 
@@ -22,6 +19,7 @@ export function ResetPasswordScreen({ configured = true }: { configured?: boolea
   const [errors, setErrors] = useState<{ password?: string; confirm?: string }>({});
   const [submitting, setSubmitting] = useState(false);
 
+  const resetToken = useRef<string | null>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const mounted = useRef(true);
   useEffect(() => {
@@ -35,15 +33,9 @@ export function ResetPasswordScreen({ configured = true }: { configured?: boolea
 
   useEffect(() => {
     if (!configured) return;
-    const supabase = getSupabaseBrowserClient();
-    let active = true;
-    void supabase.auth.getUser().then((result: { data: { user: unknown } }) => {
-      if (!active) return;
-      setStatus(result.data.user ? "ready" : "invalid");
-    });
-    return () => {
-      active = false;
-    };
+    const params = new URLSearchParams(window.location.search);
+    resetToken.current = params.get("token");
+    setStatus(resetToken.current && !params.has("error") ? "ready" : "invalid");
   }, [configured]);
 
   async function handleSubmit(event: React.FormEvent) {
@@ -68,15 +60,15 @@ export function ResetPasswordScreen({ configured = true }: { configured?: boolea
 
     setSubmitting(true);
     try {
-      const supabase = getSupabaseBrowserClient();
-      const { error } = await supabase.auth.updateUser({ password });
+
+      const { error } = await authClient.resetPassword({ newPassword: password, token: resetToken.current ?? "" });
       if (error) {
         toast.error(error.message || "Couldn't update your password. Try again.");
         return;
       }
       toast.success("Password updated.");
       // Full navigation so the app routes the now-signed-in user correctly.
-      window.location.assign("/");
+      window.location.assign("/login");
     } finally {
       if (mounted.current) setSubmitting(false);
     }
@@ -112,7 +104,7 @@ export function ResetPasswordScreen({ configured = true }: { configured?: boolea
         <>
           <span className="strap-kicker strap-kicker-secrets">Reset password</span>
           <h1>Set a new password</h1>
-          <p>Choose at least 8 characters. You will be signed in once it is saved.</p>
+          <p>Choose at least 8 characters. Sign in with your new password once it is saved.</p>
           <form onSubmit={handleSubmit} noValidate className="strap-form" style={{ marginTop: "1.75rem" }}>
             <PasswordField
               inputRef={passwordRef}

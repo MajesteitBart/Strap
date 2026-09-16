@@ -1,13 +1,13 @@
-import type { Metadata } from "next";
-import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { JsonLd } from "@/components/marketing/json-ld";
 import {
   StrapPageHero,
   StrapSiteFooter,
   StrapSiteHeader,
 } from "@/components/marketing/strap-site-shell";
-import { JsonLd } from "@/components/marketing/json-ld";
-import { breadcrumbSchema, graph, webPageSchema } from "@/lib/seo/structured-data";
+import { isDatabaseConfigured } from "@/lib/env";
 import { changelog } from "@/lib/marketing/changelog";
+import { breadcrumbSchema, graph, webPageSchema } from "@/lib/seo/structured-data";
+import type { Metadata } from "next";
 
 const PATH = "/changelog";
 const TITLE = "Changelog";
@@ -53,7 +53,7 @@ export default function ChangelogPage() {
         )}
       />
       <div className="strap-site">
-        <StrapSiteHeader configured={isSupabaseConfigured()} current="changelog" />
+        <StrapSiteHeader configured={isDatabaseConfigured()} current="changelog" />
 
         <main>
           <StrapPageHero

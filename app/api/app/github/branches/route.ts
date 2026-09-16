@@ -1,13 +1,15 @@
-import { NextResponse } from "next/server";
+import { requireApiAuth } from "@/lib/api-auth";
+import { withCompanyGitHubAccess } from "@/lib/company-github";
 import { listGitHubBranches } from "@/lib/github";
 import {
-  requireAuthenticatedUser,
-  withAuthenticatedGitHubAccess,
+  withAuthenticatedGitHubAccess
 } from "@/lib/github-version-control";
 import { resolveManagedCompanyCreedId } from "@/lib/strap-context";
-import { withCompanyGitHubAccess } from "@/lib/company-github";
+import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
+  const auth = await requireApiAuth();
+  if (auth instanceof NextResponse) return auth;
   try {
     const { searchParams } = new URL(request.url);
     const owner = searchParams.get("owner")?.trim();
@@ -17,10 +19,10 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Missing repo owner or repo name." }, { status: 400 });
     }
 
-    const { supabase, user } = await requireAuthenticatedUser();
+    const { context, user } = auth;
     // Company managers resolve branches on the TEAM token; everyone else on
     // their own connection.
-    const companyId = await resolveManagedCompanyCreedId(supabase, user);
+    const companyId = await resolveManagedCompanyCreedId(context, user);
     const branches = companyId
       ? await withCompanyGitHubAccess(companyId, (token) =>
           listGitHubBranches(token, owner, repo)

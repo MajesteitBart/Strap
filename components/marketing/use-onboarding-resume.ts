@@ -1,70 +1,18 @@
 "use client";
-
-import { useCallback, useEffect, useState } from "react";
-import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
-
-// True when the signed-in user has already started onboarding (a profile exists
-// server-side: seed claimed or composed), so marketing CTAs can offer "Resume"
-// instead of "Get Started". Server-backed via /api/app/onboarding-status, so
-// it's correct on any device. Mirrors useLandingAuthState / usePaidStatus: a
-// tiny inline auth listener + fetch.
-
-// Last resolved value, kept at module scope so the CTA label seeds from it on
-// every client-side navigation instead of flipping "Resume" -> "Get Started"
-// and reflowing the button. Background revalidation still runs on each mount.
-let cachedCanResume = false;
-
-export function useOnboardingResume(configured: boolean = true): boolean {
-  const [canResume, setCanResume] = useState(cachedCanResume);
-
-  const commit = useCallback((next: boolean) => {
-    cachedCanResume = next;
-    setCanResume(next);
-  }, []);
-
+import { authClient } from "@/lib/auth/client";
+import { useEffect, useState } from "react";
+export function useOnboardingResume(configured = true): boolean {
+  const { data } = authClient.useSession();
+  const userId = data?.user.id;
+  const [canResume, setCanResume] = useState(false);
   useEffect(() => {
-    if (!configured) return;
-    let active = true;
-    const supabase = getSupabaseBrowserClient();
-
-    async function refresh(userId: string | null) {
-      if (!userId) {
-        if (active) commit(false);
-        return;
-      }
-      try {
-        const res = await fetch("/api/app/onboarding-status", {
-          method: "GET",
-          cache: "no-store",
-        });
-        if (!res.ok) {
-          if (active) commit(false);
-          return;
-        }
-        const data = (await res.json()) as { started?: boolean };
-        if (active) commit(Boolean(data.started));
-      } catch {
-        if (active) commit(false);
-      }
-    }
-
-    supabase.auth.getUser().then((result: { data: { user: unknown } }) => {
-      const user = result.data.user as { id?: string } | null;
-      void refresh(user?.id ?? null);
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event: unknown, session: unknown) => {
-      const s = session as { user?: { id?: string } } | null;
-      void refresh(s?.user?.id ?? null);
-    });
-
-    return () => {
-      active = false;
-      subscription.unsubscribe();
-    };
-  }, [configured, commit]);
-
-  return canResume;
+    if (!configured || !userId) return;
+    const controller = new AbortController();
+    void fetch("/api/app/onboarding-status", { cache: "no-store", signal: controller.signal })
+      .then(async response => response.ok ? response.json() as Promise<{ started?: boolean }> : null)
+      .then(value => { if (!controller.signal.aborted) setCanResume(Boolean(value?.started)); })
+      .catch(() => { if (!controller.signal.aborted) setCanResume(false); });
+    return () => controller.abort();
+  }, [configured, userId]);
+  return Boolean(configured && userId && canResume);
 }

@@ -1,11 +1,16 @@
-import "server-only";
-import { randomBytes } from "node:crypto";
-import type { User } from "@supabase/supabase-js";
-import { getSupabaseAdminClient } from "@/lib/supabase/admin";
-import type { SupabaseLikeClient } from "@/lib/supabase/types";
+import * as tables from "@/db/schema/application";
+import type { User } from "@/lib/auth/user";
+import { authorizeValues } from "@/lib/authz/policies";
+import type { DatabaseContext } from "@/lib/db/context";
+import { exactlyOne, maybeOne, query } from "@/lib/db/query";
+import { findUser } from "@/lib/db/repositories/users";
+import { serviceContext } from "@/lib/db/service";
 import { hashSecret } from "@/lib/secret-crypto";
+import { getAvatarInitials, getAvatarUrl, getUserName } from "@/lib/strap-backend";
 import { getStrapRole } from "@/lib/strap-membership";
-import { getUserName, getAvatarUrl, getAvatarInitials } from "@/lib/strap-backend";
+import { and, eq, lt } from "drizzle-orm";
+import { randomBytes } from "node:crypto";
+import "server-only";
 
 export type InviterProfile = { name: string; avatarUrl?: string; initials: string };
 
@@ -30,16 +35,12 @@ export type AcceptResult =
   | { ok: true; creedId: string }
   | { ok: false; error: string; code: "invalid" | "expired" | "email_mismatch" | "failed" };
 
-function admin(): SupabaseLikeClient {
-  return getSupabaseAdminClient() as unknown as SupabaseLikeClient;
+function admin(): DatabaseContext {
+  return serviceContext("lib/company-invites.ts");
 }
 
-async function isCompanyCreed(db: SupabaseLikeClient, creedId: string): Promise<boolean> {
-  const { data, error } = (await db
-    .from("creeds")
-    .select("type")
-    .eq("id", creedId)
-    .maybeSingle()) as { data: { type: string } | null; error: unknown };
+async function isCompanyCreed(db: DatabaseContext, creedId: string): Promise<boolean> {
+  const { data, error } = (await query(db, tables.creeds, "select", (database, scope) => database.select({ type: tables.creeds.type }).from(tables.creeds).where(and(scope, eq(tables.creeds.id, creedId)))).then(maybeOne)) as { data: { type: string } | null; error: unknown };
   return !error && data?.type === "company";
 }
 
@@ -51,12 +52,11 @@ async function isCompanyCreed(db: SupabaseLikeClient, creedId: string): Promise<
  */
 export async function sweepExpiredInvites(creedId: string): Promise<void> {
   const db = admin();
-  await db
-    .from("creed_invites")
-    .update({ status: "expired", updated_at: new Date().toISOString() })
-    .eq("creed_id", creedId)
-    .eq("status", "pending")
-    .lt("expires_at", new Date().toISOString());
+  await query(db, tables.creed_invites, "update", async (database, scope) => {
+    const values = { status: "expired", updated_at: new Date().toISOString() } as Partial<typeof tables.creed_invites.$inferInsert>;
+    await authorizeValues(db, tables.creed_invites, "update", values);
+    return database.update(tables.creed_invites).set(values).where(and(scope, eq(tables.creed_invites.creed_id, creedId), eq(tables.creed_invites.status, "pending"), lt(tables.creed_invites.expires_at, new Date().toISOString())));
+  });
 }
 
 /**
@@ -68,16 +68,13 @@ export async function sweepExpiredInvites(creedId: string): Promise<void> {
  */
 async function emailBelongsToMember(creedId: string, normalizedEmail: string): Promise<boolean> {
   const db = admin();
-  const { data: members } = (await db
-    .from("creed_members")
-    .select("user_id")
-    .eq("creed_id", creedId)) as { data: Array<{ user_id: string }> | null };
+  const { data: members } = (await query(db, tables.creed_members, "select", (database, scope) => database.select({ user_id: tables.creed_members.user_id }).from(tables.creed_members).where(and(scope, eq(tables.creed_members.creed_id, creedId))))) as { data: Array<{ user_id: string }> | null };
   if (!members || members.length === 0) return false;
-  const authAdmin = getSupabaseAdminClient();
+  const authAdmin = serviceContext("lib/company-invites.ts");
   // No per-call catch: a thrown or returned error propagates so the caller fails
   // closed instead of treating an unknown member as "not a match".
   const users = await Promise.all(
-    members.map((m) => authAdmin.auth.admin.getUserById(m.user_id))
+    members.map((m) => findUser(authAdmin, m.user_id))
   );
   if (users.some((r) => r.error)) {
     throw new Error("Could not verify existing members.");
@@ -134,9 +131,8 @@ export async function createInvite(params: {
   const tokenHash = hashSecret(token);
   const expiresAt = new Date(Date.now() + INVITE_TTL_MS).toISOString();
 
-  const { data, error } = (await db
-    .from("creed_invites")
-    .insert({
+  const { data, error } = (await query(db, tables.creed_invites, "insert", async (database, _scope) => {
+    const values = {
       creed_id: creedId,
       email: normalizedEmail,
       role,
@@ -144,9 +140,10 @@ export async function createInvite(params: {
       invited_by: actorUserId,
       status: "pending",
       expires_at: expiresAt,
-    })
-    .select("id")
-    .single()) as { data: { id: string } | null; error: { message?: string; code?: string } | null };
+    } as typeof tables.creed_invites.$inferInsert;
+    await authorizeValues(db, tables.creed_invites, "insert", values);
+    return database.insert(tables.creed_invites).values(values).returning({ id: tables.creed_invites.id });
+  }).then(exactlyOne)) as { data: { id: string } | null; error: { message?: string; code?: string } | null };
 
   if (error || !data) {
     // Unique violation on the partial index = a pending invite already exists.
@@ -170,12 +167,11 @@ export async function revokeInvite(params: {
   if (actorRole !== "owner" && actorRole !== "admin") {
     return { ok: false, error: "Only an owner or admin can revoke invites." };
   }
-  const { error } = await db
-    .from("creed_invites")
-    .update({ status: "revoked", updated_at: new Date().toISOString() })
-    .eq("id", params.inviteId)
-    .eq("creed_id", params.creedId)
-    .eq("status", "pending");
+  const { error } = await query(db, tables.creed_invites, "update", async (database, scope) => {
+    const values = { status: "revoked", updated_at: new Date().toISOString() } as Partial<typeof tables.creed_invites.$inferInsert>;
+    await authorizeValues(db, tables.creed_invites, "update", values);
+    return database.update(tables.creed_invites).set(values).where(and(scope, eq(tables.creed_invites.id, params.inviteId), eq(tables.creed_invites.creed_id, params.creedId), eq(tables.creed_invites.status, "pending")));
+  });
   return error ? { ok: false, error: "Could not revoke the invite." } : { ok: true };
 }
 
@@ -194,18 +190,15 @@ export async function rotateInviteToken(params: {
     return { ok: false, error: "Only an owner or admin can resend invites." };
   }
   const token = randomBytes(32).toString("base64url");
-  const { data, error } = (await db
-    .from("creed_invites")
-    .update({
+  const { data, error } = (await query(db, tables.creed_invites, "update", async (database, scope) => {
+    const values = {
       token_hash: hashSecret(token),
       expires_at: new Date(Date.now() + INVITE_TTL_MS).toISOString(),
       updated_at: new Date().toISOString(),
-    })
-    .eq("id", params.inviteId)
-    .eq("creed_id", params.creedId)
-    .eq("status", "pending")
-    .select("email, role")
-    .single()) as { data: { email: string; role: "admin" | "member" } | null; error: unknown };
+    } as Partial<typeof tables.creed_invites.$inferInsert>;
+    await authorizeValues(db, tables.creed_invites, "update", values);
+    return database.update(tables.creed_invites).set(values).where(and(scope, eq(tables.creed_invites.id, params.inviteId), eq(tables.creed_invites.creed_id, params.creedId), eq(tables.creed_invites.status, "pending"))).returning({ email: tables.creed_invites.email, role: tables.creed_invites.role });
+  }).then(exactlyOne)) as { data: { email: string; role: "admin" | "member" } | null; error: unknown };
   if (error || !data) return { ok: false, error: "Could not resend the invite." };
   return { ok: true, token, email: data.email, role: data.role };
 }
@@ -223,8 +216,8 @@ type InviteRow = {
 /** Display profile for the invite's sender, for the accept screen's avatars. */
 async function resolveInviterProfile(userId: string | null): Promise<InviterProfile | null> {
   if (!userId) return null;
-  const { data } = await getSupabaseAdminClient()
-    .auth.admin.getUserById(userId)
+  const { data } = await findUser(serviceContext("resolve invite sender")
+    , userId)
     .catch(() => ({ data: { user: null } }));
   const user = data?.user ?? null;
   if (!user) return null;
@@ -241,14 +234,10 @@ export async function resolveInviteByToken(
   token: string
 ): Promise<{ invite: InviteRow; companyName: string; expired: boolean; inviter: InviterProfile | null } | null> {
   const db = admin();
-  const { data } = (await db
-    .from("creed_invites")
-    .select("id, creed_id, email, role, status, expires_at, invited_by")
-    .eq("token_hash", hashSecret(token))
-    .maybeSingle()) as { data: InviteRow | null };
+  const { data } = (await query(db, tables.creed_invites, "select", (database, scope) => database.select({ id: tables.creed_invites.id, creed_id: tables.creed_invites.creed_id, email: tables.creed_invites.email, role: tables.creed_invites.role, status: tables.creed_invites.status, expires_at: tables.creed_invites.expires_at, invited_by: tables.creed_invites.invited_by }).from(tables.creed_invites).where(and(scope, eq(tables.creed_invites.token_hash, hashSecret(token))))).then(maybeOne)) as { data: InviteRow | null };
   if (!data) return null;
   const [{ data: creed }, inviter] = await Promise.all([
-    db.from("creeds").select("name, type").eq("id", data.creed_id).maybeSingle() as Promise<{
+    query(db, tables.creeds, "select", (database, scope) => database.select({ name: tables.creeds.name, type: tables.creeds.type }).from(tables.creeds).where(and(scope, eq(tables.creeds.id, data.creed_id)))).then(maybeOne) as Promise<{
       data: { name: string; type: string } | null;
     }>,
     resolveInviterProfile(data.invited_by),
@@ -280,7 +269,11 @@ export async function acceptInvite(token: string, user: User): Promise<AcceptRes
     return { ok: false, error: "This invite is no longer active.", code: "invalid" };
   }
   if (Date.parse(invite.expires_at) < Date.now()) {
-    await db.from("creed_invites").update({ status: "expired" }).eq("id", invite.id);
+    await query(db, tables.creed_invites, "update", async (database, scope) => {
+    const values = { status: "expired" } as Partial<typeof tables.creed_invites.$inferInsert>;
+    await authorizeValues(db, tables.creed_invites, "update", values);
+    return database.update(tables.creed_invites).set(values).where(and(scope, eq(tables.creed_invites.id, invite.id)));
+  });
     return { ok: false, error: "This invite has expired. Ask for a new one.", code: "expired" };
   }
   const userEmail = user.email?.trim().toLowerCase() ?? "";
@@ -295,23 +288,32 @@ export async function acceptInvite(token: string, user: User): Promise<AcceptRes
   // Already a member? Accept idempotently.
   const existingRole = await getStrapRole(db, user.id, invite.creed_id);
   if (existingRole) {
-    await db.from("creed_invites").update({ status: "accepted", updated_at: new Date().toISOString() }).eq("id", invite.id);
+    await query(db, tables.creed_invites, "update", async (database, scope) => {
+    const values = { status: "accepted", updated_at: new Date().toISOString() } as Partial<typeof tables.creed_invites.$inferInsert>;
+    await authorizeValues(db, tables.creed_invites, "update", values);
+    return database.update(tables.creed_invites).set(values).where(and(scope, eq(tables.creed_invites.id, invite.id)));
+  });
     return { ok: true, creedId: invite.creed_id };
   }
 
-  const { error: memberError } = await db.from("creed_members").insert({
+  const { error: memberError } = await query(db, tables.creed_members, "insert", async (database, _scope) => {
+    const values = {
     creed_id: invite.creed_id,
     user_id: user.id,
     role: invite.role,
+  } as typeof tables.creed_members.$inferInsert;
+    await authorizeValues(db, tables.creed_members, "insert", values);
+    return database.insert(tables.creed_members).values(values);
   });
   if (memberError) {
     return { ok: false, error: "Could not join the company.", code: "failed" };
   }
 
-  await db
-    .from("creed_invites")
-    .update({ status: "accepted", updated_at: new Date().toISOString() })
-    .eq("id", invite.id);
+  await query(db, tables.creed_invites, "update", async (database, scope) => {
+    const values = { status: "accepted", updated_at: new Date().toISOString() } as Partial<typeof tables.creed_invites.$inferInsert>;
+    await authorizeValues(db, tables.creed_invites, "update", values);
+    return database.update(tables.creed_invites).set(values).where(and(scope, eq(tables.creed_invites.id, invite.id)));
+  });
 
   return { ok: true, creedId: invite.creed_id };
 }
@@ -335,11 +337,11 @@ export async function declineInvite(token: string, user: User): Promise<{ ok: bo
   }
   if (invite.status !== "pending") return { ok: true };
 
-  const { error } = await db
-    .from("creed_invites")
-    .update({ status: "declined", updated_at: new Date().toISOString() })
-    .eq("id", invite.id)
-    .eq("status", "pending");
+  const { error } = await query(db, tables.creed_invites, "update", async (database, scope) => {
+    const values = { status: "declined", updated_at: new Date().toISOString() } as Partial<typeof tables.creed_invites.$inferInsert>;
+    await authorizeValues(db, tables.creed_invites, "update", values);
+    return database.update(tables.creed_invites).set(values).where(and(scope, eq(tables.creed_invites.id, invite.id), eq(tables.creed_invites.status, "pending")));
+  });
   return error ? { ok: false, error: "Could not decline the invite." } : { ok: true };
 }
 

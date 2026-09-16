@@ -71,7 +71,7 @@ The bootstrap created one bounded project:
 
 That historical project is complete. Current work is represented by later explicit contracts:
 
-- `.project/projects/headless-access-secret-vault/`: scoped headless MCP access, OAuth device authorization, and Supabase Vault-backed secrets.
+- `.project/projects/headless-access-secret-vault/`: scoped headless MCP access, OAuth device authorization, and the original Vault-backed secrets (now app-encrypted Postgres).
 - `.project/projects/strap-rebrand/`: completed canonical Strap product, site, filename, connection, CLI, and compatibility baseline.
 - `.project/projects/strap-rename-completion/`: completed rename-first follow-up from the tracked Creed-remnant inventory.
 - `.project/projects/strap-visual-redesign/`: planned visual follow-up that starts only after direction and rollout priority are approved.

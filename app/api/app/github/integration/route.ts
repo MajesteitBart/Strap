@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server";
-import { clearGitHubIntegration, upsertGitHubIntegration } from "@/lib/strap-backend";
-import { getGitHubViewer } from "@/lib/github";
-import { requireAuthenticatedUser } from "@/lib/github-version-control";
+import { requireApiAuth } from "@/lib/api-auth";
 import { recordAuditEvent } from "@/lib/audit-log";
+import { getGitHubViewer } from "@/lib/github";
+import { clearGitHubIntegration, upsertGitHubIntegration } from "@/lib/strap-backend";
+import { NextResponse } from "next/server";
 
 type PersistBody = {
   providerToken?: string;
@@ -11,8 +11,10 @@ type PersistBody = {
 };
 
 export async function POST(request: Request) {
+  const auth = await requireApiAuth();
+  if (auth instanceof NextResponse) return auth;
   try {
-    const { supabase, user } = await requireAuthenticatedUser();
+    const { context, user } = auth;
     const body = (await request.json()) as PersistBody;
     const providerToken = body.providerToken?.trim();
 
@@ -26,7 +28,7 @@ export async function POST(request: Request) {
     }
 
     // Identity is derived from the verified token only - never from the request body.
-    await upsertGitHubIntegration(supabase, user.id, {
+    await upsertGitHubIntegration(context, user.id, {
       status: "connected",
       providerAccountId: String(viewer.id),
       providerLogin: viewer.login,
@@ -53,9 +55,11 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  const auth = await requireApiAuth();
+  if (auth instanceof NextResponse) return auth;
   try {
-    const { supabase, user } = await requireAuthenticatedUser();
-    await clearGitHubIntegration(supabase, user.id);
+    const { context, user } = auth;
+    await clearGitHubIntegration(context, user.id);
     void recordAuditEvent({
       userId: user.id,
       action: "github.disconnected",

@@ -1,11 +1,13 @@
-import { NextResponse } from "next/server";
+import * as tables from "@/db/schema/application";
 import { requireApiAuth } from "@/lib/api-auth";
 import { setSectionPermission } from "@/lib/company-admin";
-import { getCreedRole } from "@/lib/strap-membership";
-import { getSupabaseAdminClient } from "@/lib/supabase/admin";
-import type { SupabaseLikeClient } from "@/lib/supabase/types";
-import { normalizeAgentPermission } from "@/lib/strap-data";
+import { query } from "@/lib/db/query";
+import { serviceContext } from "@/lib/db/service";
 import { readStrapId } from "@/lib/strap-api";
+import { normalizeAgentPermission } from "@/lib/strap-data";
+import { getCreedRole } from "@/lib/strap-membership";
+import { and, eq } from "drizzle-orm";
+import { NextResponse } from "next/server";
 
 // GET /api/app/company/permissions?creedId=&userId= - a member's per-section
 // permission overrides (owner/admin only), for the Permissions editor.
@@ -19,16 +21,12 @@ export async function GET(request: Request) {
   if (!creedId || !userId) {
     return NextResponse.json({ error: "strapId and userId are required." }, { status: 400 });
   }
-  const role = await getCreedRole(auth.supabase, auth.user.id, creedId);
+  const role = await getCreedRole(auth.context, auth.user.id, creedId);
   if (role !== "owner" && role !== "admin") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
-  const admin = getSupabaseAdminClient() as unknown as SupabaseLikeClient;
-  const { data } = (await admin
-    .from("creed_member_section_permissions")
-    .select("section_id, permission")
-    .eq("creed_id", creedId)
-    .eq("user_id", userId)) as { data: Array<{ section_id: string; permission: string }> | null };
+  const admin = serviceContext("app/api/app/company/permissions/route.ts");
+  const { data } = (await query(admin, tables.creed_member_section_permissions, "select", (database, scope) => database.select({ section_id: tables.creed_member_section_permissions.section_id, permission: tables.creed_member_section_permissions.permission }).from(tables.creed_member_section_permissions).where(and(scope, eq(tables.creed_member_section_permissions.creed_id, creedId), eq(tables.creed_member_section_permissions.user_id, userId))))) as { data: Array<{ section_id: string; permission: string }> | null };
   const overrides: Record<string, string> = {};
   for (const row of data ?? []) overrides[row.section_id] = row.permission;
   return NextResponse.json({ overrides });

@@ -1,24 +1,18 @@
-// Pure-function tests for the Company permission lattice + attribution.
-//
-//   node --test --experimental-strip-types tests/company-permissions.test.ts
-//
-// on Node 22+, or `npx tsx --test tests/company-permissions.test.ts` on Node 20.
-// Scoped to pure functions: no Supabase, no fetch, no running server.
 
 import { strict as assert } from "node:assert";
 import { test } from "node:test";
+import { actorLabel, possessive } from "../lib/strap-attribution.ts";
 import {
-  resolveSectionPermission,
-  canViewSection,
-  canDirectEditSection,
-  canProposeToSection,
   canApproveProposal,
+  canDirectEditSection,
   canManageMembers,
+  canProposeToSection,
   canRunAnalysis,
+  canViewSection,
   effectiveAgentPermission,
   minPermission,
+  resolveSectionPermission,
 } from "../lib/strap-permissions.ts";
-import { possessive, actorLabel } from "../lib/strap-attribution.ts";
 
 test("resolveSectionPermission: owner/admin are always direct", () => {
   assert.equal(resolveSectionPermission("owner", "hidden"), "direct");

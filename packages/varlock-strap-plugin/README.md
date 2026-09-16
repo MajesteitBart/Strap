@@ -2,7 +2,7 @@
 
 `@bvdm/varlock-strap-plugin` resolves selected Strap Vault items into your application's environment. Secret values stay out of `.env.schema`; Varlock fetches them when you run your application.
 
-Requires Node.js 22+, Varlock 1.19.x, and a Strap deployment with the `headless_vault_item_grants` migration and reveal endpoint. This package is implemented here but has not yet been published to npm.
+Requires Node.js 22+, Varlock 1.19.x, and a Strap deployment with the `db/migrations/0001_headless_vault_item_grants.sql` migration and reveal endpoint. Apply it with `npm run db:migrate` before deploying the application. This package is implemented here but has not yet been published to npm.
 
 ## Install from this branch
 
@@ -89,8 +89,8 @@ The plugin does not cache, log, retry, or write fetched values to disk. Each res
 | Status | Meaning |
 | --- | --- |
 | 401 | Invalid, expired, revoked, or inaccessible key |
-| 403 | Item not selected, wrong profile, or current Vault permission denied |
-| 404 | Selected item deleted |
+| 403 | Item not selected, deleted, wrong profile, or current Vault permission denied |
+| 409 | Item changed or access was removed during reveal |
 | 429 | More than 60 requests per minute for this key on this server process |
 | 503 | Reveal or required audit unavailable |
 

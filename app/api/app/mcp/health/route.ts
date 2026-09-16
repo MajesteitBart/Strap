@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server";
 import { requireApiAuth } from "@/lib/api-auth";
+import { serviceContext } from "@/lib/db/service";
 import { isMcpHealthRange, loadMcpHealth } from "@/lib/mcp-health";
 import { resolveActiveCreed } from "@/lib/strap-context";
-import { getSupabaseAdminClient } from "@/lib/supabase/admin";
+import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
   const auth = await requireApiAuth();
@@ -15,13 +15,13 @@ export async function GET(request: Request) {
   // telemetry (creed_id-scoped) through the admin client after resolveActiveCreed
   // has confirmed membership; Personal Straps keep the original user-scoped read
   // on the session client, so personal behaviour is unchanged.
-  const active = await resolveActiveCreed(auth.supabase, auth.user);
+  const active = await resolveActiveCreed(auth.context, auth.user);
   const activeType = active?.creeds.find((c) => c.id === active.creedId)?.type;
 
   const health =
     active && activeType === "company"
-      ? await loadMcpHealth(getSupabaseAdminClient(), { kind: "creed", creedId: active.creedId }, range)
-      : await loadMcpHealth(auth.supabase, { kind: "user", userId: auth.user.id }, range);
+      ? await loadMcpHealth(serviceContext("app/api/app/mcp/health/route.ts"), { kind: "creed", creedId: active.creedId }, range)
+      : await loadMcpHealth(auth.context, { kind: "user", userId: auth.user.id }, range);
 
   return NextResponse.json({ health });
 }

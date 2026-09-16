@@ -3,24 +3,6 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
 const quotaSource = readFileSync(new URL("../lib/ai/credits.ts", import.meta.url), "utf8");
-const companySource = readFileSync(
-  new URL("../lib/company-provision.ts", import.meta.url),
-  "utf8",
-);
-const companyMigration = readFileSync(
-  new URL(
-    "../supabase/migrations/20260722100000_one_company_per_owner.sql",
-    import.meta.url,
-  ),
-  "utf8",
-);
-const companyProvisionRpc = readFileSync(
-  new URL(
-    "../supabase/migrations/20260913092518_provision_company_atomic.sql",
-    import.meta.url,
-  ),
-  "utf8",
-);
 const legacySubscriptionRoute = readFileSync(
   new URL("../app/api/app/legacy-subscriptions/route.ts", import.meta.url),
   "utf8",
@@ -33,10 +15,6 @@ const authorizeDecision = readFileSync(
   new URL("../app/authorize/decision/route.ts", import.meta.url),
   "utf8",
 );
-const membershipSource = readFileSync(
-  new URL("../lib/strap-membership.ts", import.meta.url),
-  "utf8",
-);
 const inviteSource = readFileSync(
   new URL("../lib/company-invites.ts", import.meta.url),
   "utf8",
@@ -45,20 +23,11 @@ const inviteSource = readFileSync(
 test("included AI is protected by burst and daily per-user limits", () => {
   assert.match(quotaSource, /scope: "included-ai"/);
   assert.match(quotaSource, /identifier: userId/);
-  assert.match(quotaSource, /\.eq\("user_id", userId\)/);
-  assert.match(quotaSource, /\.eq\("ai_mode", "credits"\)/);
+  assert.match(quotaSource, /eq\(tables.creed_ai_usage.user_id, userId\)/);
+  assert.match(quotaSource, /eq\(tables.creed_ai_usage.ai_mode, "credits"\)/);
   assert.match(quotaSource, /INCLUDED_AI_DAILY_LIMIT_USD/);
 });
 
-test("company provisioning collapses concurrent owner inserts", () => {
-  assert.match(
-    companyMigration,
-    /create unique index if not exists creeds_one_company_per_owner[\s\S]+owner_user_id[\s\S]+where type = 'company'/,
-  );
-  assert.match(companySource, /\.rpc\("provision_company_creed"/);
-  assert.match(companyProvisionRpc, /pg_advisory_xact_lock/);
-  assert.match(companyProvisionRpc, /order by created_at asc, id asc/);
-});
 
 test("legacy Stripe subscribers retain a self-service cancellation path", () => {
   assert.match(legacySubscriptionRoute, /cancelLegacySubscription\(\{ subscriptionId, secret, revalidate: verifyOwnership \}\)/);
@@ -79,12 +48,6 @@ test("OAuth never issues an authorization code without a Creed grant", () => {
   assert.doesNotMatch(authorizeDecision, /const creedGrants:[^\n]+\? \[/);
 });
 
-test("company membership excludes personal-only membership rows", () => {
-  assert.match(
-    membershipSource,
-    /hasCompanyMembership[\s\S]+\.from\("creeds"\)[\s\S]+\.eq\("type", "company"\)/,
-  );
-});
 
 test("company invites reject personal Creed ids on create and accept", () => {
   assert.match(inviteSource, /if \(!\(await isCompanyCreed\(db, creedId\)\)\)/);

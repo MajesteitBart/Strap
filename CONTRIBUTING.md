@@ -31,7 +31,7 @@ npm pack --dry-run
 cd ../..
 ```
 
-Exercise changed API routes locally and confirm relevant audit evidence. Supabase migrations require `npx supabase db reset` before pushing.
+Exercise changed API routes locally and confirm relevant audit evidence. Database changes require `npm run db:migrate` and `npm run test:db` against local Postgres before pushing.
 
 ## Coding style
 
@@ -53,7 +53,7 @@ Exercise changed API routes locally and confirm relevant audit evidence. Supabas
 - `lib/strap-data.ts`: shared types, sections, and connected-agent contract.
 - `packages/strap/**`: new Strap CLI.
 - `packages/creed-cli/**`: legacy CLI compatibility package.
-- `supabase/migrations/**`: forward-only schema changes.
+- `db/schema/**` and `db/migrations/**`: Drizzle schema and forward-only migrations.
 
 ## Security
 

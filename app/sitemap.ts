@@ -1,6 +1,6 @@
-import type { MetadataRoute } from "next";
-import { getSiteUrl } from "@/lib/supabase/env";
+import { getSiteUrl } from "@/lib/env";
 import { learnArticles } from "@/lib/marketing/learn";
+import type { MetadataRoute } from "next";
 
 // Only marketing routes go in the sitemap - anything behind the
 // entitlement gate (/file, /onboarding, /connections, /settings) would
