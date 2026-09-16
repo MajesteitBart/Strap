@@ -6,9 +6,10 @@
 - Repository maintainers and coding agents need compact, current delivery truth without personal information or credentials entering source.
 
 ## Core Flows
+- The file screen uses the standard section editor only. Nexus visualization is retired; section-reference chips still provide related context to connected agents.
 - Personal and Company profiles have independent shared skill libraries at `/skills`. Owners and Company admins publish standard SKILL.md bundles; members can read, download, and sync them. Skills are workflows, separate from profile sections and Vault credentials.
 - The CLI supports explicit skill push, pull, sync, and dry-run for Codex, Claude Code, or a chosen directory. Connected agents discover metadata and read relevant instructions through MCP. Sync never runs bundled scripts.
-- Onboarding produces the first compact Strap profile; the editor and quality analysis help keep it useful.
+- Onboarding produces the first compact Strap profile; the editor and connected-agent proposals keep it useful.
 - Agents connect through OAuth/MCP or bearer-token APIs, read only allowed sections, and propose or directly apply updates according to permission.
 - Users review proposals, inspect activity and health, configure connections, billing, integrations, and optional Company behavior.
 - New GitHub synchronization defaults to `strap.md`; existing stored paths, including `creed.md`, remain authoritative and lossless. The first-party `@bvdm/strap` CLI discovers the live MCP surface.

@@ -26,7 +26,7 @@ The highest-risk surfaces are:
 
 Access to another user's context or secrets, privilege escalation across Personal or Company boundaries, plaintext credential disclosure, and bypasses of approval or section permission are in scope.
 
-Third-party service vulnerabilities in Better Auth, Postgres, OpenRouter, GitHub, Stripe, or Resend should be reported upstream unless Strap's integration creates the issue.
+Third-party service vulnerabilities in Better Auth, Postgres, GitHub, Stripe, or Resend should be reported upstream unless Strap's integration creates the issue.
 
 ## Self-hosting hardening
 

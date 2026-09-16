@@ -8,7 +8,7 @@
 
 ## Runtime Constraints
 - `.env.local` is the canonical configuration for this checkout and must never be printed or committed.
-- New deployments use `STRAP_ENCRYPTION_SECRET` and `STRAP_AGENT_MODEL`; existing `CREED_ENCRYPTION_SECRET` and `CREED_AGENT_MODEL` values remain lower-priority compatibility fallbacks.
+- New deployments use `STRAP_ENCRYPTION_SECRET`; existing `CREED_ENCRYPTION_SECRET` remains a lower-priority compatibility fallback.
 - The root web-app TypeScript project excludes `packages/strap/` and `packages/creed-cli/`; each independent CLI package owns its dependency install, build, tests, and type-check.
 - Use `npm run db:migrate` and `npm run test:db` against local Postgres. Hosted operations remain a separate cutover step.
 - Default to server components. Client components require a hook, browser API, or interactive event.
@@ -19,7 +19,7 @@
 - Shared skills use retained SECURITY INVOKER database functions that check live profile membership and publish revision-checked bundles atomically. Only server operations dispatch these functions; browser requests never receive a direct database connection.
 - `packages/strap/src/skills/bundle.ts` is the shared app/CLI validator, using pinned yaml 2.9.1 with alias expansion disabled. Libraries retain 100 skills and up to 20 complete versions per skill; each bundle is limited to 128 files and 2 MiB. The follow-up `20260913153559_bound_skill_storage.sql` caches metadata outside full file payloads and serializes a 64 MiB encoded-data quota across current bundles and history, pruning oldest historical copies while preserving every current revision. Importing the validator intentionally brings it into the app type-check despite the broader CLI exclusion.
 - Better Auth for sessions, Postgres/Drizzle for persistence, lib/authz for guards, polling for Company updates and a secured maintenance route for retention.
-- OpenRouter for AI synthesis and quality features, including encrypted BYOK and platform-credit paths.
+- No in-app LLM provider calls. Connected agents provide feedback through existing MCP/API proposals; users review in the editor. Historical quality reports remain readable through MCP. Retired AI database tables are retained without runtime credential consumers.
 - Stripe is optional legacy offboarding only. Checkout, new paid plans, top-ups, and webhooks are retired. Owner-authenticated status and period-end cancellation use `STRIPE_SECRET_KEY`; without it the UI directs existing subscribers to support. Responses and audit records never expose provider identifiers or credentials.
 - Company provisioning creates the profile and owner membership in one transaction through a service-role-only RPC. Apply the additive `20260913092518_provision_company_atomic.sql` migration before deploying its caller; historic migration files remain immutable.
 - GitHub OAuth and repository APIs for `strap.md` synchronization with stored-path authority and a non-divergent `creed.md` fallback.

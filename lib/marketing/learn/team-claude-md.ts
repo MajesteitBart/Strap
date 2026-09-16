@@ -69,7 +69,7 @@ export const teamClaudeMd: Article = {
     { type: "h2", text: "What it costs" },
     {
       type: "p",
-      text: "Nothing. Strap's Company Strap is free, with roles, an activity view, and admin controls for as many members as you need. AI features run on the deployment's included key or on the company's own OpenRouter key (BYOK).",
+      text: "Nothing. Strap's Company Strap is free, with roles, an activity view, and admin controls for as many members as you need. Use the agents you already connect. Strap runs no in-app LLM calls and needs no model API key.",
     },
     {
       type: "p",
@@ -100,7 +100,7 @@ export const teamClaudeMd: Article = {
     {
       question: "How much does a Company Strap cost?",
       answer:
-        "Nothing. It is free, with as many members as you need. AI features run on the deployment's included key or on the company's own OpenRouter key (BYOK).",
+        "Nothing. It is free, with as many members as you need. Use the agents you already connect. Strap runs no in-app LLM calls and needs no model API key.",
     },
   ],
   related: [

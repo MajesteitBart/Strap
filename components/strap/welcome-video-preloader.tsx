@@ -11,12 +11,12 @@
 // variant adds the members slide and pulls from the company folder.
 
 import {
-  WELCOME_MEDIA_VERSION,
-  type WelcomeVariant,
+WELCOME_MEDIA_VERSION,
+type WelcomeVariant,
 } from "@/lib/welcome-preview";
 
-const PERSONAL_KEYS = ["file", "connect", "analysis", "panel", "tab", "discord"];
-const COMPANY_KEYS = ["file", "members", "connect", "analysis", "panel", "tab", "discord"];
+const PERSONAL_KEYS = ["file", "connect", "discord"];
+const COMPANY_KEYS = ["file", "members", "connect", "discord"];
 
 export function WelcomeVideoPreloader({
   variant = "personal",

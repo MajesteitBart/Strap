@@ -1,6 +1,42 @@
 "use client";
 
+import { AnimatedMenuIconItem } from "@/components/strap/animated-icon-action";
+import { useAnimatedIconControls } from "@/components/strap/animated-icon-controls";
+import { StrapMark, StrapWordmark } from "@/components/strap/brand";
+import { FeedbackMenuItem } from "@/components/strap/feedback-menu";
+import { preloadMcpHealth } from "@/components/strap/mcp-health-preload";
+import { PANEL_OPEN_EVENT, StrapPanel } from "@/components/strap/panel";
+import { preloadSettingsData } from "@/components/strap/settings-preload";
+import { ShortcutKey } from "@/components/strap/shortcut-key";
+import { useStrap } from "@/components/strap/strap-provider";
+import { useTheme } from "@/components/strap/theme-provider";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { BookTextIcon } from "@/components/ui/book-text";
+import { Button } from "@/components/ui/button";
+import { ConnectIcon } from "@/components/ui/connect";
+import {
+  ContrastIcon,
+  type ContrastIconHandle,
+} from "@/components/ui/contrast";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { FileTextIcon } from "@/components/ui/file-text";
+import { KeyIcon } from "@/components/ui/key";
+import { LinkIcon } from "@/components/ui/link";
+import { LogoutIcon } from "@/components/ui/logout";
+import { SearchIcon, type SearchIconHandle } from "@/components/ui/search";
+import { Separator } from "@/components/ui/separator";
+import { SettingsIcon } from "@/components/ui/settings";
+import { accentColorMap, type StrapSection } from "@/lib/strap-data";
+import { cn } from "@/lib/utils";
+import { Plus } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import {
   createContext,
   useCallback,
@@ -9,48 +45,8 @@ import {
   useMemo,
   useRef,
   useState,
-  useSyncExternalStore,
   type ReactNode,
 } from "react";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { Check, Plus, X } from "lucide-react";
-import { AnimatedMenuIconItem } from "@/components/strap/animated-icon-action";
-import { FeedbackMenuItem } from "@/components/strap/feedback-menu";
-import { BookTextIcon } from "@/components/ui/book-text";
-import { ConnectIcon } from "@/components/ui/connect";
-import { ContrastIcon, type ContrastIconHandle } from "@/components/ui/contrast";
-import { CpuIcon } from "@/components/ui/cpu";
-import { FileTextIcon } from "@/components/ui/file-text";
-import { LinkIcon } from "@/components/ui/link";
-import { KeyIcon } from "@/components/ui/key";
-import { LogoutIcon } from "@/components/ui/logout";
-import { SettingsIcon } from "@/components/ui/settings";
-import { useAnimatedIconControls } from "@/components/strap/animated-icon-controls";
-import { useTheme } from "@/components/strap/theme-provider";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Separator } from "@/components/ui/separator";
-import { accentColorMap, type StrapSection } from "@/lib/strap-data";
-import { cn } from "@/lib/utils";
-import { StrapMark, StrapWordmark } from "@/components/strap/brand";
-import { StrapPanel, PANEL_OPEN_EVENT } from "@/components/strap/panel";
-import {
-  getAgentRunnerServerSnapshot,
-  getAgentRunnerSnapshot,
-  subscribeAgentRunner,
-} from "@/lib/panel/agent-runner";
-import { SearchIcon, type SearchIconHandle } from "@/components/ui/search";
-import { useStrap } from "@/components/strap/strap-provider";
-import { preloadSettingsData } from "@/components/strap/settings-preload";
-import { preloadMcpHealth } from "@/components/strap/mcp-health-preload";
-import { ShortcutKey } from "@/components/strap/shortcut-key";
 
 const FILE_NAV_INTENT_KEY = "creed:file-nav-intent";
 const SIDEBAR_COLLAPSED_KEY = "creed:sidebar-collapsed";
@@ -77,7 +73,9 @@ type ShellActionsContextValue = {
   setActiveSectionId: (sectionId: string | null) => void;
 };
 
-const ShellActionsContext = createContext<ShellActionsContextValue | null>(null);
+const ShellActionsContext = createContext<ShellActionsContextValue | null>(
+  null,
+);
 
 const navItems = [
   { href: "/file", label: "File", icon: FileTextIcon },
@@ -114,7 +112,7 @@ function ShellNavLink({
         !collapsed &&
           "lg:h-auto lg:w-auto lg:mx-0 lg:min-h-0 lg:justify-start lg:gap-3 lg:px-2 lg:py-2",
         active &&
-          "border-[var(--strap-context)] bg-[var(--strap-context-tint)] text-[var(--strap-text-primary)] hover:bg-[var(--strap-context-tint)]"
+          "border-[var(--strap-context)] bg-[var(--strap-context-tint)] text-[var(--strap-text-primary)] hover:bg-[var(--strap-context-tint)]",
       )}
       aria-label={item.label}
       onMouseEnter={() => {
@@ -129,7 +127,9 @@ function ShellNavLink({
         initialState={initialState}
         className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center leading-none"
       />
-      <span className={cn("hidden", !collapsed && "lg:inline")}>{item.label}</span>
+      <span className={cn("hidden", !collapsed && "lg:inline")}>
+        {item.label}
+      </span>
     </Link>
   );
 }
@@ -147,18 +147,6 @@ export function StrapShell({
   const { signOut, state, exportMarkdown } = useStrap();
   const [failedAvatarUrl, setFailedAvatarUrl] = useState<string | null>(null);
   const searchIconRef = useRef<SearchIconHandle | null>(null);
-  const agentRun = useSyncExternalStore(subscribeAgentRunner, getAgentRunnerSnapshot, getAgentRunnerServerSnapshot);
-  const agentBusy = agentRun.status === "working" || agentRun.status === "applying";
-  // The launcher badge doubles as the agent's background status light: blue
-  // while working, green when the last run succeeded, red when it failed, and
-  // back to the plain "K" badge when idle.
-  const agentTile = agentBusy
-    ? { bg: "var(--strap-accent)", label: "Strap is working" }
-    : agentRun.status === "result"
-      ? { bg: "var(--strap-success)", label: "Strap finished" }
-      : agentRun.status === "error"
-        ? { bg: "var(--strap-danger)", label: "Strap hit an error" }
-        : null;
   // Desktop sidebar collapse (S key). Collapsed drops every lg: sidebar style
   // so desktop renders the same 48px icon rail as mobile. Persisted so the
   // choice survives reloads; read in an effect to keep SSR markup stable.
@@ -170,9 +158,21 @@ export function StrapShell({
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if ((event.key !== "s" && event.key !== "S") || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
+      if (
+        (event.key !== "s" && event.key !== "S") ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.altKey ||
+        event.shiftKey
+      )
+        return;
       const target = event.target as HTMLElement | null;
-      if (!target || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName) || target.isContentEditable) return;
+      if (
+        !target ||
+        /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName) ||
+        target.isContentEditable
+      )
+        return;
       if (event.isComposing || event.repeat || event.defaultPrevented) return;
       event.preventDefault();
       setCollapsed((current) => {
@@ -202,7 +202,7 @@ export function StrapShell({
       registerFileActions,
       setActiveSectionId,
     }),
-    [registerFileActions]
+    [registerFileActions],
   );
   const showAvatarImage = Boolean(avatarUrl) && failedAvatarUrl !== avatarUrl;
   const pendingProposalCountBySection = useMemo(() => {
@@ -254,12 +254,13 @@ export function StrapShell({
 
   useEffect(() => {
     // The settings preload warms the PERSONAL settings screen's shared caches
-    // (AI settings, credits, usage, GitHub). It only runs for personal Straps:
+    // (GitHub repos, branches and sync status). It only runs for personal Straps:
     // company mode renders its own settings screen that fetches per-Strap data
     // directly, and warming these creed-agnostic caches with company data would
     // leak it back to the personal screen after a Strap switch.
     if (state.creedType !== "company") {
-      const githubConnected = state.settings.integrations.github.status === "connected";
+      const githubConnected =
+        state.settings.integrations.github.status === "connected";
       preloadSettingsData({
         scope: state.user.email || state.user.handle,
         githubConnected,
@@ -267,7 +268,10 @@ export function StrapShell({
         repoName: state.settings.versionControl.repoName,
         // The markdown only feeds the GitHub version-status preload, so skip the
         // full export rebuild entirely when GitHub isn't connected.
-        markdown: githubConnected && state.sections.length ? exportMarkdown() : undefined,
+        markdown:
+          githubConnected && state.sections.length
+            ? exportMarkdown()
+            : undefined,
       });
     }
     if (state.sections.length) {
@@ -291,7 +295,7 @@ export function StrapShell({
       | { type: "compose" }
       | { type: "proposal"; proposalId: string }
       | { type: "push" }
-      | { type: "activity"; open: boolean }
+      | { type: "activity"; open: boolean },
   ) {
     if (typeof window === "undefined") {
       return;
@@ -355,13 +359,13 @@ export function StrapShell({
       <div
         className={cn(
           "grid h-screen grid-cols-[48px_minmax(0,1fr)] overflow-hidden bg-[var(--strap-background)] transition-[grid-template-columns] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]",
-          !collapsed && "lg:grid-cols-[220px_minmax(0,1fr)]"
+          !collapsed && "lg:grid-cols-[220px_minmax(0,1fr)]",
         )}
       >
         <aside
           className={cn(
             "h-screen overflow-hidden border-r border-[var(--strap-frame)] bg-[var(--strap-background)] px-1.5 py-3",
-            !collapsed && "lg:px-5 lg:py-5"
+            !collapsed && "lg:px-5 lg:py-5",
           )}
         >
           <div className="flex h-full flex-col">
@@ -370,13 +374,19 @@ export function StrapShell({
               aria-label="Strap home"
               className={cn(
                 "mx-auto flex h-8 w-8 items-center justify-center rounded-sm transition-opacity duration-200 hover:opacity-60",
-                !collapsed && "lg:hidden"
+                !collapsed && "lg:hidden",
               )}
             >
               <StrapMark />
             </Link>
 
-            <div className={cn("hidden", !collapsed && "lg:flex lg:items-center lg:justify-between lg:gap-3 lg:pr-2")}>
+            <div
+              className={cn(
+                "hidden",
+                !collapsed &&
+                  "lg:flex lg:items-center lg:justify-between lg:gap-3 lg:pr-2",
+              )}
+            >
               <Link
                 href="/home"
                 aria-label="Strap home"
@@ -387,19 +397,27 @@ export function StrapShell({
               <ShortcutKey className="hidden lg:inline-flex">S</ShortcutKey>
             </div>
 
-            <div className={cn("hidden justify-center pt-4", collapsed && "lg:flex")}>
+            <div
+              className={cn(
+                "hidden justify-center pt-4",
+                collapsed && "lg:flex",
+              )}
+            >
               <ShortcutKey>S</ShortcutKey>
             </div>
 
             <nav className={cn("mt-5 space-y-1", !collapsed && "lg:mt-8")}>
               <button
                 type="button"
-                onClick={() => window.dispatchEvent(new Event(PANEL_OPEN_EVENT))}
+                onClick={() =>
+                  window.dispatchEvent(new Event(PANEL_OPEN_EVENT))
+                }
                 onMouseEnter={() => searchIconRef.current?.startAnimation()}
                 onMouseLeave={() => searchIconRef.current?.stopAnimation()}
                 className={cn(
                   "flex h-8 w-8 mx-auto items-center justify-center rounded-sm text-[14px] font-medium text-[var(--strap-text-secondary)] transition-colors duration-150 hover:bg-[var(--strap-surface-raised)] hover:text-[var(--strap-text-primary)]",
-                  !collapsed && "lg:h-auto lg:w-full lg:mx-0 lg:min-h-0 lg:justify-start lg:gap-3 lg:px-2 lg:py-2"
+                  !collapsed &&
+                    "lg:h-auto lg:w-full lg:mx-0 lg:min-h-0 lg:justify-start lg:gap-3 lg:px-2 lg:py-2",
                 )}
                 aria-label="Search"
               >
@@ -409,62 +427,47 @@ export function StrapShell({
                     size={14}
                     className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center leading-none"
                   />
-                  {/* Agent background status: a small dot on the icon, coloured
-                      like the tile below. Hidden on
-                      the expanded row, where the tile takes over. */}
-                  {agentTile ? (
-                    <span
-                      className={cn("absolute -right-1 -top-1 h-1.5 w-1.5 rounded-full", !collapsed && "lg:hidden")}
-                      style={{ backgroundColor: agentTile.bg }}
-                    />
-                  ) : null}
                 </span>
-                <span className={cn("hidden min-w-0 flex-1 text-left", !collapsed && "lg:inline")}>Search</span>
-                {agentTile ? (
-                  // Sits exactly where the K badge would: same size and slot,
-                  // but a solid status tile with a white glyph. Blue + agent
-                  // icon while working, green tick on success, red cross on
-                  // failure. Only the agent runs in the background.
-                  <span
-                    className={cn(
-                      "hidden h-5 w-5 items-center justify-center rounded text-white",
-                      !collapsed && "lg:inline-flex"
-                    )}
-                    style={{ backgroundColor: agentTile.bg }}
-                    aria-label={agentTile.label}
-                  >
-                    {agentBusy ? (
-                      <CpuIcon size={12} className="inline-flex h-3 w-3 items-center justify-center leading-none" />
-                    ) : agentRun.status === "result" ? (
-                      <Check className="h-3 w-3" strokeWidth={2.5} />
-                    ) : (
-                      <X className="h-3 w-3" strokeWidth={2.5} />
-                    )}
-                  </span>
-                ) : (
-                  <ShortcutKey
-                    className={cn(
-                      "hidden",
-                      !collapsed && "lg:inline-flex"
-                    )}
-                  >
-                    K
-                  </ShortcutKey>
-                )}
+                <span
+                  className={cn(
+                    "hidden min-w-0 flex-1 text-left",
+                    !collapsed && "lg:inline",
+                  )}
+                >
+                  Search
+                </span>
+
+                <ShortcutKey
+                  className={cn("hidden", !collapsed && "lg:inline-flex")}
+                >
+                  K
+                </ShortcutKey>
               </button>
               {navItems.map((item) => {
                 const active = pathname === item.href;
 
-                return <ShellNavLink key={item.href} item={item} active={active} collapsed={collapsed} />;
+                return (
+                  <ShellNavLink
+                    key={item.href}
+                    item={item}
+                    active={active}
+                    collapsed={collapsed}
+                  />
+                );
               })}
             </nav>
 
-            <Separator className={cn("my-4 bg-[var(--strap-border)]", !collapsed && "lg:my-6")} />
+            <Separator
+              className={cn(
+                "my-4 bg-[var(--strap-border)]",
+                !collapsed && "lg:my-6",
+              )}
+            />
 
             <div
               className={cn(
                 "hidden font-mono text-[10px] font-medium uppercase tracking-[0.05em] text-[var(--strap-text-tertiary)]",
-                !collapsed && "lg:block"
+                !collapsed && "lg:block",
               )}
             >
               Sections
@@ -472,113 +475,127 @@ export function StrapShell({
             <div
               className={cn(
                 "mt-2 min-h-0 flex-1 space-y-1 overflow-y-auto strap-scrollbar",
-                !collapsed && "lg:mt-4 lg:pr-1"
+                !collapsed && "lg:mt-4 lg:pr-1",
               )}
             >
-              {sections.filter((section) => !section.archived).map((section) => {
-                const pendingCount = pendingProposalCountBySection.get(section.id) ?? 0;
-                const isActive = activeSectionId === section.id && pathname === "/file";
-                const pendingDelete = pendingDeleteSectionIds.has(section.id);
-                const content = (
-                  <>
-                    <span
-                      className={cn(
-                        "h-2.5 w-2.5 shrink-0 border border-[var(--strap-frame)]",
-                        !collapsed && "lg:h-2 lg:w-2"
-                      )}
-                      style={{
-                        // Pending-delete swatch turns red so the row reads as
-                        // a coherent "this is being removed" signal rather
-                        // than the original accent next to a red wash.
-                        backgroundColor: pendingDelete
-                          ? "var(--strap-danger)"
-                          : accentColorMap[section.accent],
-                      }}
-                    />
-                    <span
-                      className={cn(
-                        "hidden truncate",
-                        !collapsed && "lg:inline",
-                        pendingDelete && "line-through"
-                      )}
-                    >
-                      {section.name}
-                    </span>
-                    {pendingCount > 0 ? (
+              {sections
+                .filter((section) => !section.archived)
+                .map((section) => {
+                  const pendingCount =
+                    pendingProposalCountBySection.get(section.id) ?? 0;
+                  const isActive =
+                    activeSectionId === section.id && pathname === "/file";
+                  const pendingDelete = pendingDeleteSectionIds.has(section.id);
+                  const content = (
+                    <>
                       <span
                         className={cn(
-                          "ml-auto hidden h-[18px] min-w-[18px] items-center justify-center rounded-[5px] bg-[var(--strap-accent)] px-1.5 text-[10px] font-medium leading-none text-white tabular-nums",
-                          !collapsed && "lg:inline-flex"
+                          "h-2.5 w-2.5 shrink-0 border border-[var(--strap-frame)]",
+                          !collapsed && "lg:h-2 lg:w-2",
                         )}
-                        aria-label={`${pendingCount} pending proposal${pendingCount === 1 ? "" : "s"}`}
+                        style={{
+                          // Pending-delete swatch turns red so the row reads as
+                          // a coherent "this is being removed" signal rather
+                          // than the original accent next to a red wash.
+                          backgroundColor: pendingDelete
+                            ? "var(--strap-danger)"
+                            : accentColorMap[section.accent],
+                        }}
+                      />
+                      <span
+                        className={cn(
+                          "hidden truncate",
+                          !collapsed && "lg:inline",
+                          pendingDelete && "line-through",
+                        )}
                       >
-                        {pendingCount}
+                        {section.name}
                       </span>
-                    ) : null}
-                  </>
-                );
+                      {pendingCount > 0 ? (
+                        <span
+                          className={cn(
+                            "ml-auto hidden h-[18px] min-w-[18px] items-center justify-center rounded-[5px] bg-[var(--strap-accent)] px-1.5 text-[10px] font-medium leading-none text-white tabular-nums",
+                            !collapsed && "lg:inline-flex",
+                          )}
+                          aria-label={`${pendingCount} pending proposal${pendingCount === 1 ? "" : "s"}`}
+                        >
+                          {pendingCount}
+                        </span>
+                      ) : null}
+                    </>
+                  );
 
-                return (
-                  <button
-                    key={section.id}
-                    type="button"
-                    onClick={() => handleSectionClick(section.id)}
-                    className={cn(
-                      "flex h-8 w-8 mx-auto items-center justify-center rounded-sm border-l-2 border-transparent text-left text-[14px] font-medium text-[var(--strap-text-secondary)] outline-none transition-colors duration-150 hover:bg-[var(--strap-surface-raised)] hover:text-[var(--strap-text-primary)] focus-visible:ring-2 focus-visible:ring-[var(--ring)]",
-                      !collapsed &&
-                        "lg:h-auto lg:w-full lg:mx-0 lg:min-h-0 lg:justify-start lg:gap-3 lg:px-2 lg:py-2",
-                      isActive &&
-                        "border-[var(--strap-context)] bg-[var(--strap-context-tint)] text-[var(--strap-text-primary)] hover:bg-[var(--strap-context-tint)]",
-                      // Pending delete: subtle red wash and red text so the
-                      // row reads as "this section is on its way out" but
-                      // still navigable until the user accepts/rejects.
-                      pendingDelete &&
-                        "bg-[var(--strap-warning-tint)] text-[var(--strap-danger)] hover:bg-[var(--strap-warning-tint)] hover:text-[var(--strap-danger)]",
-                      // When the user is currently viewing a pending-delete
-                      // section, lock in the hover variant so the active
-                      // state reads the same way it does on every other
-                      // tab in this sidebar.
-                      pendingDelete && isActive &&
-                        "border-[var(--strap-danger)] bg-[var(--strap-warning-tint)] text-[var(--strap-danger)]"
-                    )}
-                    aria-label={section.name}
-                  >
-                    {content}
-                  </button>
-                );
-              })}
+                  return (
+                    <button
+                      key={section.id}
+                      type="button"
+                      onClick={() => handleSectionClick(section.id)}
+                      className={cn(
+                        "flex h-8 w-8 mx-auto items-center justify-center rounded-sm border-l-2 border-transparent text-left text-[14px] font-medium text-[var(--strap-text-secondary)] outline-none transition-colors duration-150 hover:bg-[var(--strap-surface-raised)] hover:text-[var(--strap-text-primary)] focus-visible:ring-2 focus-visible:ring-[var(--ring)]",
+                        !collapsed &&
+                          "lg:h-auto lg:w-full lg:mx-0 lg:min-h-0 lg:justify-start lg:gap-3 lg:px-2 lg:py-2",
+                        isActive &&
+                          "border-[var(--strap-context)] bg-[var(--strap-context-tint)] text-[var(--strap-text-primary)] hover:bg-[var(--strap-context-tint)]",
+                        // Pending delete: subtle red wash and red text so the
+                        // row reads as "this section is on its way out" but
+                        // still navigable until the user accepts/rejects.
+                        pendingDelete &&
+                          "bg-[var(--strap-warning-tint)] text-[var(--strap-danger)] hover:bg-[var(--strap-warning-tint)] hover:text-[var(--strap-danger)]",
+                        // When the user is currently viewing a pending-delete
+                        // section, lock in the hover variant so the active
+                        // state reads the same way it does on every other
+                        // tab in this sidebar.
+                        pendingDelete &&
+                          isActive &&
+                          "border-[var(--strap-danger)] bg-[var(--strap-warning-tint)] text-[var(--strap-danger)]",
+                      )}
+                      aria-label={section.name}
+                    >
+                      {content}
+                    </button>
+                  );
+                })}
 
               {/* Phantom rows for pending new-section proposals. Visually a
                   preview of what the sidebar would look like if the user
                   accepts the proposal. Clicking jumps to /file so the user
                   can review the proposal in context. */}
               {pendingNewSections.map((row) => {
-                const isActive = activeSectionId === row.id && pathname === "/file";
+                const isActive =
+                  activeSectionId === row.id && pathname === "/file";
                 return (
-                <button
-                  key={row.id}
-                  type="button"
-                  onClick={() => handleProposalClick(row.id)}
-                  className={cn(
-                    "flex h-8 w-8 mx-auto items-center justify-center rounded-sm border-l-2 border-transparent bg-[var(--strap-environments-tint)] text-left text-[14px] font-medium text-[var(--strap-success)] transition-colors duration-150 hover:bg-[var(--strap-environments-tint)] hover:text-[var(--strap-success)]",
-                    !collapsed &&
-                      "lg:h-auto lg:w-full lg:mx-0 lg:min-h-0 lg:justify-start lg:gap-3 lg:px-2 lg:py-2",
-                    // Same active-equals-hover rule as the pending-delete
-                    // rows above: once the user has scrolled into the
-                    // proposal preview, lock the row into its hover tone.
-                    isActive && "border-[var(--strap-environments)] bg-[var(--strap-environments-tint)] text-[var(--strap-success)]"
-                  )}
-                  aria-label={`Proposed: ${row.name}`}
-                >
-                  <span
+                  <button
+                    key={row.id}
+                    type="button"
+                    onClick={() => handleProposalClick(row.id)}
                     className={cn(
-                      "h-2.5 w-2.5 shrink-0 border border-[var(--strap-frame)]",
-                      !collapsed && "lg:h-2 lg:w-2"
+                      "flex h-8 w-8 mx-auto items-center justify-center rounded-sm border-l-2 border-transparent bg-[var(--strap-environments-tint)] text-left text-[14px] font-medium text-[var(--strap-success)] transition-colors duration-150 hover:bg-[var(--strap-environments-tint)] hover:text-[var(--strap-success)]",
+                      !collapsed &&
+                        "lg:h-auto lg:w-full lg:mx-0 lg:min-h-0 lg:justify-start lg:gap-3 lg:px-2 lg:py-2",
+                      // Same active-equals-hover rule as the pending-delete
+                      // rows above: once the user has scrolled into the
+                      // proposal preview, lock the row into its hover tone.
+                      isActive &&
+                        "border-[var(--strap-environments)] bg-[var(--strap-environments-tint)] text-[var(--strap-success)]",
                     )}
-                    style={{ backgroundColor: "var(--strap-environments)" }}
-                  />
-                  <span className={cn("hidden truncate", !collapsed && "lg:inline")}>{row.name}</span>
-                </button>
+                    aria-label={`Proposed: ${row.name}`}
+                  >
+                    <span
+                      className={cn(
+                        "h-2.5 w-2.5 shrink-0 border border-[var(--strap-frame)]",
+                        !collapsed && "lg:h-2 lg:w-2",
+                      )}
+                      style={{ backgroundColor: "var(--strap-environments)" }}
+                    />
+                    <span
+                      className={cn(
+                        "hidden truncate",
+                        !collapsed && "lg:inline",
+                      )}
+                    >
+                      {row.name}
+                    </span>
+                  </button>
                 );
               })}
 
@@ -587,30 +604,40 @@ export function StrapShell({
                 onClick={handleAddSectionClick}
                 className={cn(
                   "flex h-8 w-8 mx-auto items-center justify-center rounded-sm text-left text-[14px] text-[var(--strap-text-tertiary)] transition-colors duration-150 hover:bg-[var(--strap-surface-raised)] hover:text-[var(--strap-text-primary)]",
-                  !collapsed && "lg:h-auto lg:w-full lg:mx-0 lg:min-h-0 lg:justify-start lg:gap-2 lg:px-2 lg:py-2"
+                  !collapsed &&
+                    "lg:h-auto lg:w-full lg:mx-0 lg:min-h-0 lg:justify-start lg:gap-2 lg:px-2 lg:py-2",
                 )}
                 aria-label="Add section"
               >
                 <Plus className="h-3.5 w-3.5" strokeWidth={1.8} />
-                <span className={cn("hidden", !collapsed && "lg:inline")}> Add section</span>
+                <span className={cn("hidden", !collapsed && "lg:inline")}>
+                  {" "}
+                  Add section
+                </span>
               </button>
             </div>
 
             <div className="mt-auto">
-              <Separator className={cn("my-4 bg-[var(--strap-border)]", !collapsed && "lg:my-6")} />
+              <Separator
+                className={cn(
+                  "my-4 bg-[var(--strap-border)]",
+                  !collapsed && "lg:my-6",
+                )}
+              />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
                     className={cn(
                       "h-auto w-full min-w-0 justify-center rounded-sm border-0 bg-transparent px-1 py-1 transition-colors hover:bg-[var(--strap-surface-raised)] aria-expanded:bg-[var(--strap-surface-raised)] dark:hover:bg-[var(--strap-surface-raised)]",
-                      !collapsed && "lg:justify-between lg:bg-transparent lg:pl-[7px] lg:pr-2.5 lg:py-1.5"
+                      !collapsed &&
+                        "lg:justify-between lg:bg-transparent lg:pl-[7px] lg:pr-2.5 lg:py-1.5",
                     )}
                   >
                     <span
                       className={cn(
                         "flex min-w-0 w-full items-center justify-center gap-2.5",
-                        !collapsed && "lg:justify-start"
+                        !collapsed && "lg:justify-start",
                       )}
                     >
                       <Avatar className="h-6 w-6 overflow-hidden rounded-[var(--radius-lg)] border border-[var(--strap-border)] bg-[var(--strap-surface-raised)] after:rounded-[var(--radius-lg)]">
@@ -634,7 +661,7 @@ export function StrapShell({
                       <span
                         className={cn(
                           "hidden min-w-0 flex-1 truncate text-left text-sm font-medium text-[var(--strap-text-primary)]",
-                          !collapsed && "lg:inline"
+                          !collapsed && "lg:inline",
                         )}
                       >
                         {userName}
@@ -648,7 +675,9 @@ export function StrapShell({
                     "border-[var(--strap-frame)] bg-[var(--strap-surface)]",
                     // Collapsed rail: the trigger is a 40px square, so the
                     // trigger-width menu would be unusably narrow.
-                    collapsed ? "w-48" : "w-(--radix-dropdown-menu-trigger-width)"
+                    collapsed
+                      ? "w-48"
+                      : "w-(--radix-dropdown-menu-trigger-width)",
                   )}
                 >
                   <AnimatedMenuIconItem
@@ -742,9 +771,15 @@ function ThemeToggleMenuItem() {
       className="flex items-center justify-between gap-2 text-[13px]"
     >
       <span className="flex items-center gap-2">
-        <ContrastIcon ref={iconRef} size={14} className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center leading-none" />
+        <ContrastIcon
+          ref={iconRef}
+          size={14}
+          className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center leading-none"
+        />
         <span className="md:hidden">Theme</span>
-        <span className="hidden md:inline">{theme === "dark" ? "Light mode" : "Dark mode"}</span>
+        <span className="hidden md:inline">
+          {theme === "dark" ? "Light mode" : "Dark mode"}
+        </span>
       </span>
       <kbd className="inline-flex h-5 w-5 items-center justify-center rounded border border-[var(--strap-border)] bg-[var(--strap-surface-raised)] text-[10px] font-medium text-[var(--strap-text-secondary)]">
         M

@@ -15,7 +15,7 @@ import type { Metadata } from "next";
 const PATH = "/pricing";
 const TITLE = "Pricing";
 const DESCRIPTION =
-  "Strap is free: self-host the open source build, or use the hosted app with Personal and Company Straps at no charge. AI runs on an included key or BYOK.";
+  "Strap is free: self-host the open source build, or use the hosted app with Personal and Company Straps at no charge. Use the agents you already connect. Strap runs no in-app LLM calls and needs no model API key.";
 
 const DATE_MODIFIED = "2026-07-07";
 

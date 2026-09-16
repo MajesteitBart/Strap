@@ -64,7 +64,7 @@ wrong change.
 ```
 Next.js 16 (App Router, Turbopack)   React 19   TypeScript (strict)
 Tailwind v4   shadcn/ui   Tiptap   Framer Motion / motion
-Postgres 17 + Drizzle + Better Auth   OpenRouter (included key + BYOK)
+Postgres 17 + Drizzle + Better Auth
 ```
 
 ---
@@ -99,10 +99,8 @@ lib/
 ├── strap-backend.ts          Drizzle domain reads/writes
 ├── strap-markdown.ts         Markdown ↔ section parser
 ├── rich-text.ts              Tiptap content normalization
-├── ai/quality{,-runner,-rubric}.ts   quality analysis
-├── ai/openrouter.ts          OpenRouter call helper (included key + BYOK)
-├── ai/model-catalog.ts       OpenRouter model list + tier scoring
-├── onboarding/{compile,refine,validate}.ts   synthesizer pipeline
+├── quality-report.ts         read-only historical report compatibility
+├── onboarding/                 deterministic setup and external-assistant prompts
 ├── db/                      database contexts and scoped repositories
 ├── auth/                    Better Auth server and client
 ├── authz/                   explicit row and mutation guards
@@ -227,7 +225,7 @@ Rankings are higher = better. Cost reflects what the project owner pays; intelli
 
 ### Fetches
 - Server fetches in route handlers / server components.
-- Client fetches go through `lib/ai/quality-runner.ts`-style module
+- Client fetches go through `components/strap/settings-preload.ts`-style module
   singletons when state must survive navigation.
 - No `next/dynamic({ ssr: false })` for heavy public-route components
   — known to hang in Next 16 dev.

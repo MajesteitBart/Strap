@@ -158,7 +158,7 @@ export function CompanyPageView() {
                 </h2>
                 <p>
                   A Company Strap is free: invite as many members as you need, and
-                  run AI on the included key or your company&apos;s own key (BYOK).
+                  use your existing agents to propose improvements for review.
                 </p>
                 <div className="strap-actions">
                   <Link className="strap-button strap-button-primary" href="/pricing">

@@ -1,52 +1,52 @@
 import * as tables from "@/db/schema/application";
 import {
-  getAgentIconKind,
-  isCliAttributableAgentId,
+getAgentIconKind,
+isCliAttributableAgentId,
 } from "@/lib/agent-icon";
-import type { StrapQualityReport } from "@/lib/ai/quality";
-import { readLatestQualityReport, validateQualityReport } from "@/lib/ai/quality";
 import type { User } from "@/lib/auth/user";
-import { JsonBodyLimitError, readBoundedJson } from "@/lib/bounded-json";
-import { companyMcpWrite, type CompanyMcpOp } from "@/lib/company-sections";
+import { JsonBodyLimitError,readBoundedJson } from "@/lib/bounded-json";
+import { companyMcpWrite,type CompanyMcpOp } from "@/lib/company-sections";
 import type { DatabaseContext } from "@/lib/db/context";
 import { query } from "@/lib/db/query";
 import { findUser } from "@/lib/db/repositories/users";
 import { serviceContext } from "@/lib/db/service";
-import { getSiteUrl, isDatabaseConfigured } from "@/lib/env";
+import { getSiteUrl,isDatabaseConfigured } from "@/lib/env";
 import { resolveHeadlessAccessKey } from "@/lib/headless-access";
-import { digestCredential, isHeadlessKey } from "@/lib/headless-access-shared";
-import { findOAuthAccessToken, type StrapGrant, type StrapGrantMode } from "@/lib/oauth";
+import { digestCredential,isHeadlessKey } from "@/lib/headless-access-shared";
+import { findOAuthAccessToken,type StrapGrant,type StrapGrantMode } from "@/lib/oauth";
+import type { StrapQualityReport } from "@/lib/quality-report";
+import { readLatestQualityReport,validateQualityReport } from "@/lib/quality-report";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { markdownToRichHtml } from "@/lib/rich-text";
 import { callSkillTool } from "@/lib/skill-mcp";
-import { isSkillPayloadBatch, SKILL_TOOLS, skillToolsFor } from "@/lib/skill-tools";
+import { isSkillPayloadBatch,SKILL_TOOLS,skillToolsFor } from "@/lib/skill-tools";
 import {
-  createBlankStrapState,
-  getAvatarInitials,
-  loadCompanyStrapState,
-  loadStrapState,
-  recordCliAgentUsage,
-  recordMcpClientUsage,
+createBlankStrapState,
+getAvatarInitials,
+loadCompanyStrapState,
+loadStrapState,
+recordCliAgentUsage,
+recordMcpClientUsage,
 } from "@/lib/strap-backend";
 import type {
-  AccentKey,
-  AgentPermission,
-  GovernedSectionId,
-  StrapSection,
-  StrapState,
-  StrapSwitcherItem,
+AccentKey,
+AgentPermission,
+GovernedSectionId,
+StrapSection,
+StrapState,
+StrapSwitcherItem,
 } from "@/lib/strap-data";
 import {
-  buildAgentReadPayload,
-  buildVisibleStrapMarkdown,
-  isAccentKey,
-  permissionToWritable,
+buildAgentReadPayload,
+buildVisibleStrapMarkdown,
+isAccentKey,
+permissionToWritable,
 } from "@/lib/strap-data";
-import { getStrapRole, listUserStraps } from "@/lib/strap-membership";
-import { minPermission, resolveSectionPermission } from "@/lib/strap-permissions";
+import { getStrapRole,listUserStraps } from "@/lib/strap-membership";
+import { minPermission,resolveSectionPermission } from "@/lib/strap-permissions";
 import { STRAP_PROMPTS } from "@/lib/strap-prompts";
 import { isRecord } from "@/packages/strap/src/skills/bundle";
-import { and, eq } from "drizzle-orm";
+import { and,eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
@@ -423,7 +423,7 @@ const tools = [
   {
     name: "creed_get_quality_report",
     description:
-      "Read the latest auto-generated quality report. Tells you which sections are thin, vague, or stale so you can target the weakest ones first. Returns null if the user hasn't run an analysis yet.",
+      "Read a historical quality report, if one exists. In-app analysis is retired. Review the current profile directly and propose focused improvements.",
     inputSchema: {
       type: "object",
       properties: {
@@ -1311,7 +1311,7 @@ async function handleToolCall(
     if (!report) {
       return jsonToolResult({
         available: false,
-        reason: "No quality report yet. The user hasn't run an analysis on this Strap.",
+        reason: "No historical quality report is available. Read the profile and propose improvements directly.",
       });
     }
     if (optionalSectionId) {
