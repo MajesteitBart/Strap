@@ -2,6 +2,8 @@
 
 ## What Changed
 
+- The local `remove-in-app-ai` change removes first-party model calls, the in-app assistant, quality generation, Tab completion and model settings. Users rely on connected agents and existing proposal review. Historical MCP quality-report reads remain compatible. Verification and rollout boundaries are recorded in `.project/projects/remove-in-app-ai/updates/2026-09-16-verification.md`.
+
 - The completed `strap-rebrand` project establishes Strap as the canonical public product at `https://strap.bvdm.ai` with the positioning "Bootstrap your agents with context, skills, and secrets." On 2026-07-23 the user revised public messaging to "Bootstrap your agents with context, skills, and keys."; the technical model (vault, secret references, `secret://` URIs) keeps "secrets".
 - The supplied Strap logo, warm worktable visual system, resource colors, and typography now drive the public homepage, metadata, public chrome, authenticated UI, auth, and email surfaces.
 - New profile exports and GitHub integrations default to `strap.md`. Existing stored paths remain authoritative; default reads fall back to `creed.md`; pushes refuse to create a divergent second file.
@@ -42,7 +44,7 @@
 ## What Is Next
 
 - Local migration is implemented on `feature/remove-supabase`: Postgres/Drizzle, Better Auth, explicit authorization, encrypted Vault, database avatars, polling and secured maintenance. All 287 tests pass; build and types pass, lint has zero errors. The branch is committed and pushed in PR 16. Railway Postgres 18 and transaction pooling are provisioned, the isolated source-copy import reconciles all tables, and the hosted HTTP/API/MCP rehearsal passes. The production destination has its baseline schema but is not serving traffic. Live Google/X and delivered-email checks, final independent review and cutover remain open; production still uses Supabase. See `.project/projects/remove-supabase/updates/2026-09-16-pr-verification.md`.
-- Restore OpenWiki generation in draft PR 8. The maintainer funded OpenRouter on 2026-09-13; the API reports $10 in purchased credits and the production function key matches this checkout's funded key. A new workflow run can now verify the outstanding native-worker completion issue. No output from failed runs has been published. BYOK also remains available.
+- Restore OpenWiki generation in draft PR 8. The maintainer funded OpenRouter on 2026-09-13; the API reports $10 in purchased credits and the production function key matches this checkout's funded key. A new workflow run can now verify the outstanding native-worker completion issue. No output from failed runs has been published.
 - Complete reopened redesign tasks T-002 and T-005: verify delivered confirmation and recovery emails in mail clients. The removal branch now sends these templates through Resend; production still uses its existing backend until cutover. The application UI is deployed, but the redesign contract remains open until this email gate passes.
 - Continue serving the `creed.md` compatibility origin during the migration window.
 

@@ -24,8 +24,8 @@ export const PLAN_FACTS: PlanFact[] = [
     price: "$0",
     cadence: "forever",
     summary:
-      "Self-host the open source build. Full Strap editor, all MCP connections, and quality scoring. You run the backend and storage.",
-    usage: "Bring your own AI key.",
+      "Self-host the open source build. Full Strap editor, all MCP connections, and proposal review. You run the backend and storage.",
+    usage: "Use the agents you already connect. Strap runs no in-app LLM calls and needs no model API key.",
   },
   {
     name: "Personal",
@@ -33,7 +33,7 @@ export const PLAN_FACTS: PlanFact[] = [
     cadence: "forever",
     summary:
       "Hosted Strap for one person. Cross-device sync, backups, and managed auth and storage.",
-    usage: "AI runs on the deployment's included key or your own key (BYOK).",
+    usage: "Use the agents you already connect. Strap runs no in-app LLM calls and needs no model API key.",
   },
   {
     name: "Company",
@@ -41,11 +41,11 @@ export const PLAN_FACTS: PlanFact[] = [
     cadence: "forever",
     summary:
       "One shared Company Strap every member's agents read, with member roles, an activity view across the team, and admin controls.",
-    usage: "AI runs on the deployment's included key or a company key (BYOK).",
+    usage: "Use the agents you already connect. Strap runs no in-app LLM calls and needs no model API key.",
     seats: "Invite as many members as you need.",
   },
 ];
 
 // One-line pricing summary reused in plain-text surfaces (llms.txt).
 export const PRICING_ONE_LINER =
-  "Strap is free: self-host the open source build, or use the hosted app with Personal and Company Straps at no charge. AI features run on an included key or on your own OpenRouter key (BYOK).";
+  "Strap is free: self-host the open source build, or use the hosted app with Personal and Company Straps at no charge. Use the agents you already connect. Strap runs no in-app LLM calls and needs no model API key.";

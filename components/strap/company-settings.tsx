@@ -14,13 +14,6 @@ import {
   PERMISSION_OPTIONS,
   SectionPermissionControl,
 } from "@/components/strap/section-permission-control";
-import type {
-  AiMode,
-  AiUsageRange,
-  AiUsageSummary,
-  OpenRouterBalance,
-  PublicAiSettings,
-} from "@/components/strap/settings-preload";
 import {
   type BranchOption,
   type RepoOption,
@@ -30,7 +23,6 @@ import {
   DisconnectButton,
   IntegrationRow,
   ReauthorizeButton,
-  UsageCard,
 } from "@/components/strap/settings-screen";
 import { useStrap } from "@/components/strap/strap-provider";
 import { Button } from "@/components/ui/button";
@@ -41,12 +33,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { DownloadIcon } from "@/components/ui/download";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { SelectMenu } from "@/components/ui/select-menu";
 import { SendIcon } from "@/components/ui/send";
@@ -63,7 +49,6 @@ import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   AlertTriangle,
-  Check,
   ChevronDown,
   ChevronRight,
   LoaderCircle,
@@ -86,8 +71,7 @@ function sectionAccent(accent: string): string {
 const ROLE_PILL: Record<"owner" | "admin" | "member", string> = {
   owner: "bg-[var(--strap-context-tint)] text-[var(--strap-context)]",
   admin: "bg-[var(--strap-environments-tint)] text-[var(--strap-success)]",
-  member:
-    "bg-[var(--strap-agents-tint)] text-[var(--strap-caution)]",
+  member: "bg-[var(--strap-agents-tint)] text-[var(--strap-caution)]",
 };
 
 function RolePill({ role }: { role: "owner" | "admin" | "member" }) {
@@ -106,23 +90,9 @@ function RolePill({ role }: { role: "owner" | "admin" | "member" }) {
 const INVITE_BUTTON =
   "rounded-xl bg-[var(--strap-accent)] px-6 text-white hover:bg-[var(--strap-accent-hover)] hover:text-white";
 
-// Company-mode /settings, built to match the personal settings screen exactly:
-// a single scrolling column of sections, each a bare card under an outside H2,
-// separated by rules. Sections mirror the personal ones the company needs:
-// Profile (avatar, name, email), Members & permissions, Model usage, Danger zone.
-// AI lives in Model usage (like personal) - there is no separate API-key
-// section. Every member SEES every section; access is by role.
-// Managers (owner/admin) edit General + Members. The owner alone manages Model
-// usage (mode, BYOK key) and the Danger zone. A plain member sees the
-// same sections read-only: General is disabled, and Model usage shows the
-// figures + spend chart (time frame still switchable) with the owner-only
-// controls and purchase history hidden.
+// Company settings preserve role-based management of profile, members and integrations.
 
 // Shared personal-settings class strings, kept here so company renders identically.
-const PRIMARY_BUTTON =
-  "rounded-md bg-[var(--strap-text-primary)] px-4 text-[var(--strap-button-primary-fg)] hover:bg-[var(--strap-button-primary-hover)]";
-const GHOST_BUTTON =
-  "rounded-md px-3 text-[var(--strap-text-secondary)] hover:bg-[var(--strap-surface-raised)] hover:text-[var(--strap-text-primary)]";
 const DANGER_BUTTON =
   "rounded-md bg-[var(--strap-danger-fill)] px-4 text-white hover:bg-[var(--strap-danger-fill-hover)] hover:text-white";
 const FIELD_INPUT =
@@ -132,10 +102,6 @@ const FIELD_LABEL =
 const CARD =
   "mt-4 rounded-[var(--radius-xl)] border border-[var(--strap-border)] bg-[var(--strap-surface)] p-5";
 const H2 = "text-[16px] font-medium text-[var(--strap-text-primary)]";
-
-function looksLikeApiKey(value: string) {
-  return /^sk-or-[A-Za-z0-9-_]{8,}$/.test(value.trim());
-}
 
 function Section({
   title,
@@ -196,39 +162,6 @@ function GitHubMark({ className }: { className?: string }) {
     >
       <path d="M12 .5C5.65.5.5 5.66.5 12.02c0 5.09 3.29 9.4 7.86 10.93.58.11.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.2.7-3.88-1.54-3.88-1.54-.52-1.34-1.28-1.69-1.28-1.69-1.04-.71.08-.69.08-.69 1.15.08 1.75 1.18 1.75 1.18 1.02 1.76 2.68 1.25 3.34.96.1-.74.4-1.25.72-1.53-2.55-.29-5.24-1.28-5.24-5.68 0-1.25.45-2.27 1.18-3.07-.12-.29-.51-1.46.11-3.04 0 0 .97-.31 3.17 1.17a11 11 0 0 1 5.78 0c2.2-1.48 3.16-1.17 3.16-1.17.63 1.58.24 2.75.12 3.04.74.8 1.18 1.82 1.18 3.07 0 4.41-2.69 5.39-5.26 5.67.41.36.77 1.06.77 2.14 0 1.55-.01 2.79-.01 3.17 0 .31.21.68.8.56A11.53 11.53 0 0 0 23.5 12C23.5 5.66 18.35.5 12 .5Z" />
     </svg>
-  );
-}
-
-// One stat tile, matching the personal Model-usage stat tiles.
-function CreditTile({
-  label,
-  primary,
-  secondary,
-  size = 30,
-}: {
-  label: string;
-  primary: string;
-  secondary?: string;
-  size?: number;
-}) {
-  return (
-    <div className="rounded-[var(--radius-lg)] border border-[var(--strap-border)] px-4 py-3">
-      <div className="text-[13px] font-medium text-[var(--strap-text-secondary)]">
-        {label}
-      </div>
-      <div
-        className="mt-0.5 font-medium tracking-[-0.03em] text-[var(--strap-text-primary)]"
-        style={{ fontSize: `${size}px` }}
-      >
-        {primary}
-        {secondary ? (
-          <span className="text-[var(--strap-text-tertiary)]">
-            {" "}
-            {secondary}
-          </span>
-        ) : null}
-      </div>
-    </div>
   );
 }
 
@@ -312,21 +245,6 @@ export function CompanySettings() {
     {},
   );
 
-  // Model usage: company AI usage / BYOK, fetched directly (not via the
-  // personal settings cache, which is per-user). Read by every member; only the
-  // owner can mutate it.
-  const [aiSettings, setAiSettings] = useState<PublicAiSettings>({
-    provider: "openrouter",
-    keyStatus: "missing",
-    aiMode: "credits",
-  });
-  const [aiKeyDraft, setAiKeyDraft] = useState("");
-  const [aiSaving, setAiSaving] = useState(false);
-  const [usageRange, setUsageRange] = useState<AiUsageRange>("90d");
-  const [usage, setUsage] = useState<AiUsageSummary | null>(null);
-  const [openRouterBalance, setOpenRouterBalance] =
-    useState<OpenRouterBalance | null>(null);
-
   // Owner dialogs.
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState("");
@@ -351,67 +269,6 @@ export function CompanySettings() {
       cancelled = true;
     };
   }, [permTarget, creedId]);
-
-  // Model-usage data. Every member can view the company's model usage (owners
-  // additionally manage it), so this loads for all roles.
-  useEffect(() => {
-    if (!creedId) return;
-    let cancelled = false;
-    void (async () => {
-      // Pin the AI-settings read to THIS company Strap (not the active-Strap
-      // cookie), so the card always shows the company's own figures.
-      const res = await fetch(
-        `/api/app/ai/settings?creedId=${encodeURIComponent(creedId)}`,
-        { cache: "no-store" },
-      );
-      if (cancelled) return;
-      const s = (await res.json().catch(() => ({}))) as {
-        settings?: PublicAiSettings;
-      };
-      if (s.settings) setAiSettings(s.settings);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [creedId]);
-
-  useEffect(() => {
-    if (!creedId) return;
-    let cancelled = false;
-    void (async () => {
-      const res = await fetch(
-        `/api/app/ai/usage?range=${usageRange}&mode=${aiSettings.aiMode}&creedId=${encodeURIComponent(creedId)}`,
-        { cache: "no-store" },
-      );
-      const data = (await res.json().catch(() => ({}))) as {
-        usage?: AiUsageSummary;
-      };
-      if (!cancelled) setUsage(data.usage ?? null);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [creedId, usageRange, aiSettings.aiMode, aiSettings.keyStatus]);
-
-  useEffect(() => {
-    if (aiSettings.aiMode !== "byok" || aiSettings.keyStatus !== "valid") {
-      setOpenRouterBalance(null);
-      return;
-    }
-    let cancelled = false;
-    void (async () => {
-      const res = await fetch("/api/app/ai/openrouter-balance", {
-        cache: "no-store",
-      });
-      const data = (await res.json().catch(() => ({}))) as {
-        balance?: OpenRouterBalance | null;
-      };
-      if (!cancelled) setOpenRouterBalance(data.balance ?? null);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [aiSettings.aiMode, aiSettings.keyStatus]);
 
   // Keep the roster live without a manual refresh. Invite accepts happen on the
   // invitee's device, so a manager watching this screen needs the change pulled
@@ -854,58 +711,6 @@ export function CompanySettings() {
     });
   }
 
-  async function putAiSettings(
-    body: Record<string, unknown>,
-  ): Promise<PublicAiSettings | null> {
-    const res = await fetch("/api/app/ai/settings", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    const data = (await res.json().catch(() => ({}))) as {
-      settings?: PublicAiSettings;
-      error?: string;
-    };
-    if (!res.ok) {
-      toast.error(data.error ?? "Could not save AI settings.");
-      return null;
-    }
-    return data.settings ?? null;
-  }
-
-  async function saveAiKey() {
-    if (!looksLikeApiKey(aiKeyDraft)) return;
-    setAiSaving(true);
-    const next = await putAiSettings({ apiKey: aiKeyDraft.trim() });
-    if (next) {
-      setAiSettings(next);
-      setAiKeyDraft("");
-      toast.success("API key saved.");
-    }
-    setAiSaving(false);
-  }
-
-  async function clearAiKey() {
-    setAiSaving(true);
-    const next = await putAiSettings({ clearApiKey: true });
-    if (next) {
-      setAiSettings(next);
-      setAiKeyDraft("");
-      setOpenRouterBalance(null);
-      toast.success("API key cleared.");
-    }
-    setAiSaving(false);
-  }
-
-  async function changeAiMode(mode: AiMode) {
-    if (aiSettings.aiMode === mode) return;
-    const previous = aiSettings.aiMode;
-    setAiSettings((current) => ({ ...current, aiMode: mode }));
-    const next = await putAiSettings({ aiMode: mode });
-    if (next) setAiSettings(next);
-    else setAiSettings((current) => ({ ...current, aiMode: previous }));
-  }
-
   async function doDelete() {
     if (await post("/api/app/company", { creedId }, "DELETE")) {
       toast.success("Company Strap deleted.");
@@ -946,8 +751,6 @@ export function CompanySettings() {
     .trim()
     .split(/\s+/)
     .filter(Boolean).length;
-
-  const canSaveAiKey = looksLikeApiKey(aiKeyDraft) && !aiSaving;
 
   const blocks: ReactNode[] = [];
 
@@ -1368,143 +1171,6 @@ export function CompanySettings() {
     );
   }
 
-  // ── Model usage ──────────────────────────────────────────────────────────────
-  // Every member sees the usage chart. Owners alone manage mode switching and
-  // BYOK. "Included" runs on the deployment's shared OpenRouter key; BYOK runs
-  // on the company's own key.
-  blocks.push(
-    <section key="model-usage" className="scroll-mt-6">
-      <div className="flex items-center justify-between gap-4">
-        <h2 className={H2}>Model usage</h2>
-        {isOwner ? (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                type="button"
-                className="inline-flex h-8 items-center gap-2 rounded-md border border-[var(--strap-border)] bg-[var(--strap-surface)] px-3 text-sm text-[var(--strap-text-primary)] transition-colors duration-150 hover:bg-[var(--strap-surface-raised)]"
-              >
-                {aiSettings.aiMode === "credits" ? "Included" : "BYOK"}
-                <ChevronDown className="h-3.5 w-3.5 text-[var(--strap-text-secondary)]" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              className="min-w-32 space-y-1 border-[var(--strap-frame)] bg-[var(--strap-surface)] p-1.5"
-            >
-              {(["credits", "byok"] as AiMode[]).map((mode) => (
-                <DropdownMenuItem
-                  key={mode}
-                  onSelect={() => void changeAiMode(mode)}
-                  className={cn(
-                    "flex items-center justify-between gap-5 rounded-lg px-3 py-2 text-sm",
-                    aiSettings.aiMode === mode &&
-                      "bg-[var(--strap-surface-selected)] font-medium",
-                  )}
-                >
-                  <span>{mode === "credits" ? "Included" : "BYOK"}</span>
-                  {aiSettings.aiMode === mode ? (
-                    <Check className="h-3.5 w-3.5 shrink-0 text-[var(--strap-text-primary)]" />
-                  ) : null}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        ) : (
-          <span className="inline-flex h-8 items-center rounded-md border border-[var(--strap-border)] bg-[var(--strap-surface)] px-3 text-sm text-[var(--strap-text-tertiary)]">
-            {aiSettings.aiMode === "credits" ? "Included" : "BYOK"}
-          </span>
-        )}
-      </div>
-      <div className={CARD}>
-        <div className="grid gap-5 md:grid-cols-[1.1fr_0.9fr] md:items-stretch">
-          <div className="flex flex-col gap-4">
-            {aiSettings.aiMode === "credits" ? (
-              <p className="text-[14px] leading-7 text-[var(--strap-text-secondary)]">
-                AI features run on this deployment&apos;s shared OpenRouter key.
-                Switch to BYOK to run them on your company&apos;s own key
-                instead.
-              </p>
-            ) : (
-              <div>
-                {openRouterBalance ? (
-                  <div className="mb-4">
-                    <CreditTile
-                      label="OpenRouter balance"
-                      primary={
-                        openRouterBalance.remainingUsd != null
-                          ? `$${openRouterBalance.remainingUsd.toFixed(2)}`
-                          : "Unlimited"
-                      }
-                    />
-                  </div>
-                ) : null}
-                {isOwner ? (
-                  <>
-                    <label className="mb-2 block text-[13px] font-medium text-[var(--strap-text-secondary)]">
-                      OpenRouter API key
-                    </label>
-                    <Input
-                      type="password"
-                      value={aiKeyDraft}
-                      onChange={(e) => setAiKeyDraft(e.target.value)}
-                      placeholder={
-                        aiSettings.keyLastFour
-                          ? `Saved key ending in ${aiSettings.keyLastFour}`
-                          : "sk-or-..."
-                      }
-                      className="h-11 rounded-xl border-[var(--strap-border)] bg-[var(--strap-surface)] px-4 text-[14px]"
-                    />
-                  </>
-                ) : aiSettings.keyLastFour ? (
-                  <p className="text-[13px] text-[var(--strap-text-tertiary)]">
-                    Your company uses its own OpenRouter key
-                    {` ending in ${aiSettings.keyLastFour}`}.
-                  </p>
-                ) : null}
-              </div>
-            )}
-
-            {aiSettings.aiMode === "byok" && isOwner ? (
-              <div className="mt-auto flex items-center justify-between gap-2 pt-1">
-                <Button
-                  variant="ghost"
-                  className={GHOST_BUTTON}
-                  onClick={() =>
-                    aiSettings.keyLastFour
-                      ? void clearAiKey()
-                      : setAiKeyDraft("")
-                  }
-                  disabled={
-                    aiSaving || (!aiKeyDraft && !aiSettings.keyLastFour)
-                  }
-                >
-                  Clear
-                </Button>
-                <Button
-                  className={PRIMARY_BUTTON}
-                  onClick={() => void saveAiKey()}
-                  disabled={!canSaveAiKey}
-                >
-                  Save API key
-                  {aiSaving ? (
-                    <LoaderCircle className="h-4 w-4 animate-spin" />
-                  ) : null}
-                </Button>
-              </div>
-            ) : null}
-          </div>
-
-          <UsageCard
-            usage={usage}
-            range={usageRange}
-            onRangeChange={setUsageRange}
-            mode={aiSettings.aiMode}
-          />
-        </div>
-      </div>
-    </section>,
-  );
-
   // ── Version control (managers): the company file's GitHub sync target ────────
   if (isManager) {
     blocks.push(
@@ -1593,7 +1259,10 @@ export function CompanySettings() {
           <span className="font-medium text-[var(--strap-text-secondary)]">
             Last commit
           </span>
-          <span aria-hidden className="shrink-0 text-[var(--strap-text-tertiary)]">
+          <span
+            aria-hidden
+            className="shrink-0 text-[var(--strap-text-tertiary)]"
+          >
             ·
           </span>
           {state.settings.versionControl.lastRemoteMessage ? (
@@ -1930,9 +1599,7 @@ export function CompanySettings() {
       >
         <DialogContent className="rounded-[var(--radius-xl)] border-[var(--strap-frame)] bg-[var(--strap-surface)]">
           <DialogHeader>
-            <DialogTitle>
-              Transfer ownership
-            </DialogTitle>
+            <DialogTitle>Transfer ownership</DialogTitle>
           </DialogHeader>
           <p className="text-[14px] leading-7 text-[var(--strap-text-secondary)]">
             {(() => {

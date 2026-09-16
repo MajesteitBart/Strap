@@ -155,7 +155,7 @@ export function ApiKeyVaultScreen() {
           <section className="mt-6 rounded-xl border border-[var(--strap-border)] bg-[var(--strap-surface-raised)]/30 p-5">
             <h2 className="text-[15px] font-medium">{editor.id ? "Edit secret" : "Add a secret"}</h2>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
-              <label className="text-[13px] font-medium">Name<Input className="mt-2" value={editor.name} maxLength={120} onChange={(event) => setEditor((current) => ({ ...current, name: event.target.value }))} placeholder="OpenRouter production" /></label>
+              <label className="text-[13px] font-medium">Name<Input className="mt-2" value={editor.name} maxLength={120} onChange={(event) => setEditor((current) => ({ ...current, name: event.target.value }))} placeholder="Deployment API" /></label>
               <label className="text-[13px] font-medium">Description<Input className="mt-2" value={editor.description} maxLength={500} onChange={(event) => setEditor((current) => ({ ...current, description: event.target.value }))} placeholder="Used by the research agent" /></label>
             </div>
             <label className="mt-4 block text-[13px] font-medium">{editor.id ? "Replacement secret (optional)" : "Secret value"}<Textarea className="mt-2 min-h-24 font-mono" value={editor.secret} maxLength={16_384} onChange={(event) => setEditor((current) => ({ ...current, secret: event.target.value }))} autoComplete="off" spellCheck={false} placeholder={editor.id ? "Leave blank to keep the current value" : "Paste the API key"} /></label>

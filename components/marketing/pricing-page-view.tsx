@@ -22,14 +22,14 @@ const SHARED_FEATURES: Feature[] = [
 ];
 
 const FREE_EXTRAS: Feature[] = [
-  { label: "Bring your own AI key", included: true },
+  { label: "Use your existing agents", included: true },
   { label: "Cross-device sync and backups", included: false },
   { label: "Managed backend, auth and storage", included: false },
 ];
 
 const PERSONAL_FEATURES: Feature[] = [
   ...SHARED_FEATURES,
-  { label: "Included AI or BYOK", included: true },
+  { label: "Agent proposals and review", included: true },
   { label: "Cross-device sync and backups", included: true },
   { label: "Managed backend, auth and storage", included: true },
   { label: "Profile-scoped API-key Vault", included: true },
@@ -115,8 +115,7 @@ export function PricingPageView({
               />
             </div>
             <p className="strap-plans-note">
-              AI features run on the deployment&apos;s included key, with BYOK
-              available when you want model spend on your own key.
+              Your connected agents propose improvements. You approve or decline them in Strap.
             </p>
           </section>
 

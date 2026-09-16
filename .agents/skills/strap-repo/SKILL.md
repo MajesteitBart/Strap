@@ -1,6 +1,6 @@
 ---
 name: strap-repo
-description: Repository-specific guidance for understanding, reviewing, debugging, changing, testing, and operating Strap. Use for tasks involving the Next.js application, Personal or Company profiles, editor and proposals, Postgres schema or explicit authorization, OAuth/MCP, scoped keys, Vault, the Strap CLI, OpenRouter, GitHub synchronization, security boundaries, routing, or verification.
+description: Repository-specific guidance for understanding, reviewing, debugging, changing, testing, and operating Strap. Use for tasks involving the Next.js application, Personal or Company profiles, editor and proposals, Postgres schema or explicit authorization, OAuth/MCP, scoped keys, Vault, the Strap CLI, GitHub synchronization, security boundaries, routing, or verification.
 ---
 
 # Strap repository
@@ -24,7 +24,7 @@ Work from the repository's current source while using the generated OpenWiki sna
 - For runtime boundaries, route placement, active profile resolution, or Personal versus Company persistence, read [the architecture overview](../../../openwiki/architecture/overview.md).
 - For sections, permissions, proposals, review, onboarding, collaboration, and synchronization, read [the domain model](../../../openwiki/domain/strap-model.md).
 - For OAuth, MCP, scoped keys, token handling, connection behavior, or either CLI package, read [agents and OAuth](../../../openwiki/integrations/agents-and-oauth.md).
-- For database usage, OpenRouter, AI quotas, Vault, GitHub sync, configuration, or deployment, read [platform services](../../../openwiki/integrations/platform-services.md).
+- For database usage, historical quality reports, Vault, GitHub sync, configuration, or deployment, read [platform services](../../../openwiki/integrations/platform-services.md).
 - For migrations, explicit guards, service contexts, authorization, credential storage, privacy, auditing, retention, or plaintext boundaries, read [schema and security](../../../openwiki/data/schema-and-security.md).
 - For implementation changes, tests, high-risk files, coverage gaps, or final verification, read [the testing and change guide](../../../openwiki/development/testing-and-change-guide.md).
 

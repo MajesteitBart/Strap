@@ -1,13 +1,12 @@
 "use client";
 
-import { useEffect, type ReactNode } from "react";
-import { StrapShell } from "@/components/strap/shell";
 import { GettingStartedCard } from "@/components/strap/getting-started-card";
-import { QualityToasts } from "@/components/strap/quality-toasts";
+import { StrapShell } from "@/components/strap/shell";
+import { useStrap } from "@/components/strap/strap-provider";
 import { WelcomeDialog } from "@/components/strap/welcome-dialog";
 import { WelcomeVideoPreloader } from "@/components/strap/welcome-video-preloader";
-import { useStrap } from "@/components/strap/strap-provider";
 import { setWelcomePreviewVariant } from "@/lib/welcome-preview";
+import { useEffect,type ReactNode } from "react";
 
 const IS_DEV = process.env.NODE_ENV !== "production";
 
@@ -31,9 +30,7 @@ export function AppShellLayout({
 
   return (
     <>
-      {/* Mounted at the shell so a completion toast fires regardless of which
-          app page is open when the analysis finishes. */}
-      <QualityToasts />
+
       {/* Real first-run tour; self-gates on `show`. The dev P preview lives at
           the root (WelcomeDevPreview) so it works on any page. */}
       <WelcomeDialog show={showWelcome} paidAt={welcomePaidAt} variant={variant} />

@@ -27,7 +27,7 @@ export const strapVsMem0: Article = {
     },
     {
       type: "p",
-      text: "Strap sits on the user's side of the line. It is plain Markdown you own, with BYOK support, export, and delete at any time, and GitHub integration for version control. You do not need to write code to use it, and it works for anyone, not just developers.",
+      text: "Strap sits on the user's side of the line. It is plain Markdown you own, with export and delete at any time, and GitHub integration for version control. You do not need to write code to use it, and it works for anyone, not just developers.",
     },
     { type: "h2", text: "The honest comparison" },
     {
