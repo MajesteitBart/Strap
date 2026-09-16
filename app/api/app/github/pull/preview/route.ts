@@ -1,5 +1,4 @@
-import { NextResponse } from "next/server";
-import { parseCreedMarkdown } from "@/lib/strap-markdown";
+import { requireApiAuth } from "@/lib/api-auth";
 import {
   getConfiguredRepo,
   resolveGitHubProfileSnapshot,
@@ -7,19 +6,23 @@ import {
   withAuthenticatedGitHubAccess,
 } from "@/lib/github-version-control";
 import { resolveManagedCompanyCreedId } from "@/lib/strap-context";
+import { parseCreedMarkdown } from "@/lib/strap-markdown";
+import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
+  const auth = await requireApiAuth();
+  if (auth instanceof NextResponse) return auth;
   try {
     const body = (await request.json()) as { localHash?: string };
     const payload = await withAuthenticatedGitHubAccess(async ({
-      supabase,
+      context,
       user,
       integration,
       versionControl,
     }) => {
       // Pulling GitHub into a shared company file (an import that overwrites
       // sections) is not supported yet; company managers push out only.
-      if (await resolveManagedCompanyCreedId(supabase, user)) {
+      if (await resolveManagedCompanyCreedId(context, user)) {
         throw new Error("Pulling from GitHub into a company Strap isn't supported yet. You can push to GitHub.");
       }
       const configuredRepo = getConfiguredRepo(versionControl);

@@ -42,7 +42,7 @@ Keep the completed rename-first Strap release and its compatibility contracts in
 - `.project/context/`: distilled product, technical, testing, and delivery context.
 - `.project/projects/`: Delano specs, plans, decisions, workstreams, tasks, research, and updates.
 - `openwiki/`: generated architecture and workflow reference; regenerate it rather than hand-editing generated pages.
-- `app/`, `components/`, `lib/`, `supabase/`, `packages/strap/`, `packages/creed-cli/`, and `tests/`: implemented behavior and canonical executable truth. `packages/creed-cli/` is a preserved compatibility package.
+- `app/`, `components/`, `lib/`, `db/`, `packages/strap/`, `packages/creed-cli/`, and `tests/`: implemented behavior and canonical executable truth. `packages/creed-cli/` is a preserved compatibility package.
 - `.agents/`: canonical Delano runtime and repo-local skills. `.claude/` is compatibility only.
 
 ---
@@ -64,7 +64,7 @@ wrong change.
 ```
 Next.js 16 (App Router, Turbopack)   React 19   TypeScript (strict)
 Tailwind v4   shadcn/ui   Tiptap   Framer Motion / motion
-Supabase (Postgres + RLS + auth)   OpenRouter (included key + BYOK)
+Postgres 17 + Drizzle + Better Auth   OpenRouter (included key + BYOK)
 ```
 
 ---
@@ -80,7 +80,7 @@ app/                Next routes
 ├── api/creed/*     token-authed agent APIs (hash compare)
 ├── authorize/      browser OAuth consent
 ├── device/         OAuth device authorization
-├── auth/callback/  Supabase OAuth callback
+├── auth/callback/  legacy auth landing; OAuth callbacks use /api/auth/callback/*
 ├── mcp/route.ts    MCP protocol endpoint
 ├── home/           public landing (/home)
 ├── docs|pricing|privacy|terms|stack/   marketing
@@ -96,25 +96,28 @@ components/
 
 lib/
 ├── strap-data.ts             types, section IDs, accent maps, agent contract
-├── strap-backend.ts          Supabase reads/writes
+├── strap-backend.ts          Drizzle domain reads/writes
 ├── strap-markdown.ts         Markdown ↔ section parser
 ├── rich-text.ts              Tiptap content normalization
 ├── ai/quality{,-runner,-rubric}.ts   quality analysis
 ├── ai/openrouter.ts          OpenRouter call helper (included key + BYOK)
 ├── ai/model-catalog.ts       OpenRouter model list + tier scoring
 ├── onboarding/{compile,refine,validate}.ts   synthesizer pipeline
-├── supabase/{server,browser,admin}.ts        per-runtime clients
+├── db/                      database contexts and scoped repositories
+├── auth/                    Better Auth server and client
+├── authz/                   explicit row and mutation guards
 ├── secret-crypto.ts          AES-256-GCM token storage
 ├── headless-access.ts        scoped API-key creation and resolution
 ├── oauth-device.ts           device authorization grant lifecycle
-├── api-key-vault.ts          authorized Supabase Vault operations
+├── api-key-vault.ts          authorized app-encrypted Vault operations
 ├── audit-log.ts              creed_audit_events writer
 ├── rate-limit.ts             per-token rate limiting
 ├── observability.ts          structured log helpers
 ├── api-auth.ts               requireApiAuth helper
 └── branding.ts               env-driven contact / social URLs
 
-supabase/migrations/    canonical schema (forward-only, idempotent)
+db/schema/             canonical Drizzle schema
+db/migrations/         squashed baseline and forward-only migrations
 packages/strap/         primary @bvdm/strap CLI
 packages/creed-cli/     preserved legacy CLI compatibility package
 public/                 static assets
@@ -123,7 +126,7 @@ project-context/        gitignored — internal context pack (read this first)
 
 The four "god" files to be careful in:
 - `components/strap/file-screen.tsx` — the editor
-- `lib/strap-backend.ts` — Supabase glue
+- `lib/strap-backend.ts` — state loading and persistence
 - `lib/strap-data.ts` — types + agent contract + seed
 - `components/strap/settings-screen.tsx` — settings tabs
 
@@ -229,23 +232,12 @@ Rankings are higher = better. Cost reflects what the project owner pays; intelli
 - No `next/dynamic({ ssr: false })` for heavy public-route components
   — known to hang in Next 16 dev.
 
-### Supabase CLI + environment
-- Always invoke the Supabase CLI through `npx supabase`; do not rely on a
-  globally installed `supabase` binary.
-- `.env.local` is the canonical source for this checkout's Supabase instance
-  values. Load it into the current process before commands or scripts that
-  access the configured instance, and never print secret values in logs or
-  replies. Do not silently use credentials inherited from another shell or
-  checkout.
-- App/API checks use `NEXT_PUBLIC_SUPABASE_URL`,
-  `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, and `SUPABASE_SECRET_KEY` from
-  `.env.local`. Supabase management commands such as `npx supabase link` and
-  `npx supabase db push` additionally require CLI credentials (normally
-  `SUPABASE_ACCESS_TOKEN` and `SUPABASE_DB_PASSWORD`); keep those in
-  `.env.local` too, never in source.
-- Use `npx supabase db reset` for local migration verification. Before any
-  remote migration command, confirm the project ref derived from
-  `NEXT_PUBLIC_SUPABASE_URL` matches the intended instance.
+### Database and environment
+- .env.local is the canonical configuration for this checkout. Load it before local database commands and never print secrets.
+- Use npm run db:up, npm run db:migrate and npm run test:db for local Postgres. See db/README.md.
+- Keep viewer contexts and explicit authorization on session reads/writes. Service contexts are server-only, require a named purpose and retain domain role/credential guards.
+- Preserve the existing token encryption key during data copies. Better Auth, Vault and maintenance have separate keys.
+- Production provisioning, import and decommissioning require the planned cutover decision; local implementation does not authorize those operations.
 
 ### Animations
 - `framer-motion` (older imports) and `motion/react` (newer) are the
@@ -274,9 +266,7 @@ npm run lint            # zero new ESLint errors
 npm run build           # production build must succeed
 ```
 
-If you touched a Supabase migration, `npx supabase db reset` against a
-local Supabase before pushing — schema-only PRs that haven't been
-applied will not be merged.
+If you changed the schema, run `npm run db:migrate` and `npm run test:db` against local Postgres. Review the generated migration before deploying.
 
 If you touched the agent contract, paste the universal connection
 prompt into Claude Code or Codex and confirm the agent reads + proposes
@@ -350,3 +340,13 @@ This repository uses OpenWiki for recurring code documentation. Start with `open
 The scheduled OpenWiki GitHub Actions workflow refreshes the repository wiki. Do not hand-edit generated OpenWiki pages unless explicitly asked; prefer updating source code/docs and letting OpenWiki regenerate.
 
 <!-- OPENWIKI:END -->
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

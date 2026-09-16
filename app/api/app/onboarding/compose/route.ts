@@ -1,10 +1,10 @@
-import { NextResponse } from "next/server";
-import type { CreedSection } from "@/lib/strap-data";
-import { loadCreedState, persistCreedState } from "@/lib/strap-backend";
 import { requireApiAuth } from "@/lib/api-auth";
-import { parseCreedMarkdown } from "@/lib/strap-markdown";
-import { checkRateLimit } from "@/lib/rate-limit";
 import { recordAuditEvent } from "@/lib/audit-log";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { loadCreedState, persistCreedState } from "@/lib/strap-backend";
+import type { CreedSection } from "@/lib/strap-data";
+import { parseCreedMarkdown } from "@/lib/strap-markdown";
+import { NextResponse } from "next/server";
 
 // Onboarding compose via copy-paste (replaces the old MCP compose_creed). The
 // user pastes the Markdown Strap their assistant produced; we parse it and map
@@ -66,7 +66,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "That's too long to be a Strap." }, { status: 400 });
   }
 
-  const result = await loadCreedState(auth.supabase, auth.user, {
+  const result = await loadCreedState(auth.context, auth.user, {
     proposalLimit: 1,
     activityLimit: 1,
   });
@@ -130,7 +130,7 @@ export async function POST(request: Request) {
     mutationTick: result.state.mutationTick + 1,
   };
 
-  await persistCreedState(auth.supabase, auth.user.id, nextState);
+  await persistCreedState(auth.context, auth.user.id, nextState);
 
   void recordAuditEvent({
     userId: auth.user.id,

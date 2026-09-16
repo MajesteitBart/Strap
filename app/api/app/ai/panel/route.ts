@@ -1,10 +1,7 @@
-import { NextResponse } from "next/server";
-import { requireApiAuth } from "@/lib/api-auth";
 import { resolveAiCredential, resolveCompanyAiCredential } from "@/lib/ai/credits";
 import { callOpenRouter, parseJsonObject } from "@/lib/ai/openrouter";
 import { recordAiUsage } from "@/lib/ai/persistence";
-import { resolveActiveStrap } from "@/lib/strap-context";
-import { loadActiveStrapState } from "@/lib/strap-backend";
+import { requireApiAuth } from "@/lib/api-auth";
 import {
   buildAskMessages,
   buildPanelResponseFormat,
@@ -17,7 +14,10 @@ import {
   type PanelSectionSummary,
   type PanelTurn,
 } from "@/lib/panel/actions";
+import { loadActiveStrapState } from "@/lib/strap-backend";
+import { resolveActiveStrap } from "@/lib/strap-context";
 import { permissionIsReadable, sectionBodyMarkdown } from "@/lib/strap-data";
+import { NextResponse } from "next/server";
 
 // Panel's Search + Ask resolve in a single fast call; a minute is generous
 // headroom, not a target - the client aborts long before this.
@@ -61,12 +61,12 @@ export async function POST(request: Request) {
     // Load the active Strap (Personal or Company). Company state is
     // permission-filtered (Hidden sections already stripped) so the panel
     // respects the member's access, and AI meters on the company's credits.
-    const active = await resolveActiveStrap(auth.supabase, auth.user);
+    const active = await resolveActiveStrap(auth.context, auth.user);
     const companyId =
       active && active.creeds.find((c) => c.id === active.creedId)?.type === "company"
         ? active.creedId
         : null;
-    const { state } = await loadActiveStrapState(auth.supabase, auth.user, active);
+    const { state } = await loadActiveStrapState(auth.context, auth.user, active);
     const sections: PanelSectionSummary[] = state.sections
       .filter((section) => !section.archived && permissionIsReadable(section.agentPermission))
       .map((section) => ({
@@ -109,7 +109,7 @@ export async function POST(request: Request) {
 
     const credential = companyId
       ? await resolveCompanyAiCredential(companyId, "panel", auth.user.id)
-      : await resolveAiCredential(auth.supabase, auth.user.id, "panel");
+      : await resolveAiCredential(auth.context, auth.user.id, "panel");
     const result = await callOpenRouter({
       apiKey: credential.apiKey,
       modelId: credential.modelId,
@@ -152,7 +152,7 @@ export async function POST(request: Request) {
 
     try {
       await recordAiUsage({
-        client: auth.supabase,
+        client: auth.context,
         userId: auth.user.id,
         creedId: companyId,
         feature: "panel",

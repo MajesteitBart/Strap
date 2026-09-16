@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import {
   readAiUsageSummary,
   readCompanyAiUsageSummary,
@@ -10,6 +9,7 @@ import {
   resolveMemberCompanyStrap,
   resolveMemberCompanyStrapById,
 } from "@/lib/strap-context";
+import { NextResponse } from "next/server";
 
 const ranges = new Set<AiUsageRange>(["7d", "30d", "90d"]);
 
@@ -31,13 +31,13 @@ export async function GET(request: Request) {
     url.searchParams.get("strapId")?.trim() ||
     url.searchParams.get("creedId")?.trim();
   const company = requestedCreedId
-    ? await resolveMemberCompanyStrapById(auth.supabase, auth.user, requestedCreedId)
-    : await resolveMemberCompanyStrap(auth.supabase, auth.user);
+    ? await resolveMemberCompanyStrapById(auth.context, auth.user, requestedCreedId)
+    : await resolveMemberCompanyStrap(auth.context, auth.user);
   let usage;
   if (company) {
     usage = await readCompanyAiUsageSummary(company.creedId, resolvedRange, mode);
   } else {
-    usage = await readAiUsageSummary(auth.supabase, auth.user.id, resolvedRange, mode);
+    usage = await readAiUsageSummary(auth.context, auth.user.id, resolvedRange, mode);
   }
   return NextResponse.json({ usage });
 }

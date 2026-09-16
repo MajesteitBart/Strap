@@ -1,17 +1,17 @@
-import Link from "next/link";
 import {
   StrapPageHero,
   StrapSiteFooter,
   StrapSiteHeader,
 } from "@/components/marketing/strap-site-shell";
-import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { isDatabaseConfigured } from "@/lib/env";
+import Link from "next/link";
 
 // Legal placeholder. The published sentence is the product's current claim
 // and stays verbatim until terms replace it.
 export function TermsPageView() {
   return (
     <div className="strap-site">
-      <StrapSiteHeader configured={isSupabaseConfigured()} current="terms" />
+      <StrapSiteHeader configured={isDatabaseConfigured()} current="terms" />
 
       <main>
         <StrapPageHero

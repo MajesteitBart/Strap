@@ -1,3 +1,6 @@
+import * as tables from "@/db/schema/application";
+import { authorizeValues } from "@/lib/authz/policies";
+import { conflictSet, query } from "@/lib/db/query";
 import "server-only";
 // Server-side execution of Agent actions - the in-app Strap agent behaves
 // exactly like an external MCP agent:
@@ -13,8 +16,17 @@ import "server-only";
 // there is no client/server race (the old bug where accepted edits vanished on
 // refresh).
 
-import { randomBytes } from "crypto";
-import type { User } from "@supabase/supabase-js";
+import type { User } from "@/lib/auth/user";
+import {
+  companyMcpWrite,
+  setCompanySectionArchived,
+  type CompanyMcpOp,
+} from "@/lib/company-sections";
+import { serviceContext } from "@/lib/db/service";
+import { log } from "@/lib/observability";
+import type { AgentAction, AgentExecResult } from "@/lib/panel/agent";
+import { markdownToRichHtml, normalizeRichTextInput } from "@/lib/rich-text";
+import { loadStrapState, persistStrapState } from "@/lib/strap-backend";
 import {
   applyReorderDraft,
   getMetaProposalDiffText,
@@ -22,33 +34,19 @@ import {
   permissionToWritable,
   type AccentKey,
   type ActivityEntry,
+  type ProposalDraft,
   type StrapSection,
   type StrapState,
-  type ProposalDraft,
 } from "@/lib/strap-data";
-import { markdownToRichHtml, normalizeRichTextInput } from "@/lib/rich-text";
-import { loadStrapState, persistStrapState } from "@/lib/strap-backend";
-import {
-  companyMcpWrite,
-  setCompanySectionArchived,
-  type CompanyMcpOp,
-} from "@/lib/company-sections";
 import { getPersonalStrapId } from "@/lib/strap-membership";
-import { getSupabaseAdminClient } from "@/lib/supabase/admin";
-import { log } from "@/lib/observability";
-import type { AgentAction, AgentExecResult } from "@/lib/panel/agent";
+import { randomBytes } from "crypto";
 
 export const STRAP_AGENT_NAME = "Strap";
 
 /** @deprecated Use STRAP_AGENT_NAME for new internal callers. */
 export const CREED_AGENT_NAME = STRAP_AGENT_NAME;
 
-type UpsertTable = {
-  upsert: (
-    values: Record<string, unknown>,
-    options: { onConflict: string }
-  ) => Promise<{ error: { message: string } | null }>;
-};
+
 
 export type AgentExecution = {
   ok: boolean;
@@ -96,7 +94,7 @@ export async function executeAgentActions({
   actions: AgentAction[];
   state?: StrapState;
 }): Promise<AgentExecution> {
-  const admin = getSupabaseAdminClient();
+  const admin = serviceContext("lib/panel/agent-execute.ts");
   const baseState =
     preloaded ?? (await loadStrapState(admin as never, user, { proposalLimit: 1, activityLimit: 1 })).state;
   const creedId = baseState.creedId ?? (await getPersonalStrapId(admin as never, user.id));
@@ -121,8 +119,8 @@ export async function executeAgentActions({
   const baseMs = Date.now();
   let seq = 0;
   const nextNow = () => new Date(baseMs + seq++).toISOString();
-  const proposalTable = admin.from("creed_proposals") as unknown as UpsertTable;
-  const activityTable = admin.from("creed_activity") as unknown as UpsertTable;
+
+
 
   const byId = (id: string) => sections.find((section) => section.id === id && !section.archived);
 
@@ -142,8 +140,8 @@ export async function executeAgentActions({
     const isNew = params.draft.kind === "new-section";
     const metaDiff = getMetaProposalDiffText(params.draft, params.baseSection);
 
-    const { error: proposalError } = await proposalTable.upsert(
-      {
+    const { error: proposalError } = await query(admin, tables.creed_proposals, "insert", async (database, scope) => {
+    const values = {
         id: proposalId,
         creed_id: creedId,
         user_id: user.id,
@@ -160,19 +158,20 @@ export async function executeAgentActions({
         base_revision: params.baseSection ? baseState.sectionRevisions[params.baseSection.id] ?? null : null,
         created_at: rowNow,
         updated_at: rowNow,
-      },
-      { onConflict: "id" }
-    );
+      } as typeof tables.creed_proposals.$inferInsert;
+    await authorizeValues(admin, tables.creed_proposals, "insert", values);
+    return database.insert(tables.creed_proposals).values(values).onConflictDoUpdate({ target: [tables.creed_proposals.id], set: conflictSet(tables.creed_proposals, values), setWhere: scope });
+  });
     if (proposalError) {
       log.error("agent_proposal_insert_failed", { userId: user.id, message: proposalError.message });
       return null;
     }
-    // Activity is best-effort. The Supabase builder is a thenable, not a real
+    // Activity is best-effort. Resolve the database operation before
     // Promise, so `.catch()` on it throws "catch is not a function" - await it
     // inside try/catch instead, or the whole run fails after the edit lands.
     try {
-      await activityTable.upsert(
-        {
+      await query(admin, tables.creed_activity, "insert", async (database, scope) => {
+    const values = {
           id: `activity-${proposalId}`,
           creed_id: creedId,
           user_id: user.id,
@@ -191,9 +190,10 @@ export async function executeAgentActions({
           before_text: metaDiff ? metaDiff.before : params.beforeText,
           after_text: metaDiff ? metaDiff.after : getProposalPreviewText(params.draft),
           created_at: rowNow,
-        },
-        { onConflict: "id" }
-      );
+        } as typeof tables.creed_activity.$inferInsert;
+    await authorizeValues(admin, tables.creed_activity, "insert", values);
+    return database.insert(tables.creed_activity).values(values).onConflictDoUpdate({ target: [tables.creed_activity.id], set: conflictSet(tables.creed_activity, values), setWhere: scope });
+  });
     } catch {
       // ignore
     }

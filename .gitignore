@@ -19,6 +19,7 @@
 /.next/
 /.next-runtime*/
 /.next-preview*/
+/.next-legacy-verification/
 /out/
 
 # production
@@ -57,6 +58,7 @@ yarn-error.log*
 
 # local Delano runtime evidence and viewer state
 /.agents/logs/*.jsonl
+/.agents/logs/remove-supabase/
 /.project/viewer/
 
 # launch video workspace (Remotion) - local only, never pushed

@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server";
 import { requireApiAuth } from "@/lib/api-auth";
+import { recordAuditEvent } from "@/lib/audit-log";
 import { acceptInvite } from "@/lib/company-invites";
 import { setActiveCreed } from "@/lib/strap-context";
-import { recordAuditEvent } from "@/lib/audit-log";
+import { NextResponse } from "next/server";
 
 // POST /api/app/company/invites/accept { token } - the signed-in user accepts
 // an invite. Validates expiry and email match in the lib, then creates
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: result.error, code: result.code }, { status });
   }
 
-  await setActiveCreed(auth.supabase, auth.user, result.creedId);
+  await setActiveCreed(auth.context, auth.user, result.creedId);
   await recordAuditEvent({
     userId: auth.user.id,
     action: "company.invite_accepted",

@@ -1,12 +1,40 @@
-import { NextResponse } from "next/server";
-import type { User } from "@supabase/supabase-js";
+import * as tables from "@/db/schema/application";
+import {
+  getAgentIconKind,
+  isCliAttributableAgentId,
+} from "@/lib/agent-icon";
+import type { StrapQualityReport } from "@/lib/ai/quality";
+import { readLatestQualityReport, validateQualityReport } from "@/lib/ai/quality";
+import type { User } from "@/lib/auth/user";
+import { JsonBodyLimitError, readBoundedJson } from "@/lib/bounded-json";
+import { companyMcpWrite, type CompanyMcpOp } from "@/lib/company-sections";
+import type { DatabaseContext } from "@/lib/db/context";
+import { query } from "@/lib/db/query";
+import { findUser } from "@/lib/db/repositories/users";
+import { serviceContext } from "@/lib/db/service";
+import { getSiteUrl, isDatabaseConfigured } from "@/lib/env";
+import { resolveHeadlessAccessKey } from "@/lib/headless-access";
+import { digestCredential, isHeadlessKey } from "@/lib/headless-access-shared";
+import { findOAuthAccessToken, type StrapGrant, type StrapGrantMode } from "@/lib/oauth";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { markdownToRichHtml } from "@/lib/rich-text";
+import { callSkillTool } from "@/lib/skill-mcp";
+import { isSkillPayloadBatch, SKILL_TOOLS, skillToolsFor } from "@/lib/skill-tools";
+import {
+  createBlankStrapState,
+  getAvatarInitials,
+  loadCompanyStrapState,
+  loadStrapState,
+  recordCliAgentUsage,
+  recordMcpClientUsage,
+} from "@/lib/strap-backend";
 import type {
   AccentKey,
   AgentPermission,
+  GovernedSectionId,
   StrapSection,
   StrapState,
   StrapSwitcherItem,
-  GovernedSectionId,
 } from "@/lib/strap-data";
 import {
   buildAgentReadPayload,
@@ -14,36 +42,12 @@ import {
   isAccentKey,
   permissionToWritable,
 } from "@/lib/strap-data";
-import {
-  loadStrapState,
-  loadCompanyStrapState,
-  recordMcpClientUsage,
-  recordCliAgentUsage,
-  createBlankStrapState,
-  getAvatarInitials,
-} from "@/lib/strap-backend";
-import { companyMcpWrite, type CompanyMcpOp } from "@/lib/company-sections";
+import { getStrapRole, listUserStraps } from "@/lib/strap-membership";
 import { minPermission, resolveSectionPermission } from "@/lib/strap-permissions";
-import { listUserStraps, getStrapRole } from "@/lib/strap-membership";
 import { STRAP_PROMPTS } from "@/lib/strap-prompts";
-import { findOAuthAccessToken, type StrapGrant, type StrapGrantMode } from "@/lib/oauth";
-import { resolveHeadlessAccessKey } from "@/lib/headless-access";
-import { digestCredential, isHeadlessKey } from "@/lib/headless-access-shared";
-import type { SupabaseLikeClient } from "@/lib/supabase/types";
-import { checkRateLimit } from "@/lib/rate-limit";
-import { getSupabaseAdminClient } from "@/lib/supabase/admin";
-import { getSiteUrl, isSupabaseAdminConfigured } from "@/lib/supabase/env";
-import { readLatestQualityReport, validateQualityReport } from "@/lib/ai/quality";
-import type { StrapQualityReport } from "@/lib/ai/quality";
-import { markdownToRichHtml } from "@/lib/rich-text";
-import { SKILL_TOOLS, skillToolsFor, isSkillPayloadBatch } from "@/lib/skill-tools";
-import { callSkillTool } from "@/lib/skill-mcp";
-import { JsonBodyLimitError, readBoundedJson } from "@/lib/bounded-json";
 import { isRecord } from "@/packages/strap/src/skills/bundle";
-import {
-  getAgentIconKind,
-  isCliAttributableAgentId,
-} from "@/lib/agent-icon";
+import { and, eq } from "drizzle-orm";
+import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -823,7 +827,7 @@ function applyCredentialMode(state: StrapState, mode: StrapGrantMode): StrapStat
 // defaults to the Personal Strap. Returns the state + the switcher list (for
 // list_creeds).
 async function resolveMcpState(
-  admin: SupabaseLikeClient,
+  admin: DatabaseContext,
   user: { id: string } & Record<string, unknown>,
   credential: McpCredentialGrant,
   requests: JsonRpcRequest[]
@@ -908,11 +912,7 @@ async function resolveMcpState(
       // path all see the true effective permission. Hidden sections drop out.
       const overrides = new Map<string, AgentPermission>();
       if (role === "member") {
-        const { data: overrideRows } = (await admin
-          .from("creed_member_section_permissions")
-          .select("section_id, permission")
-          .eq("creed_id", target.id)
-          .eq("user_id", user.id)) as {
+        const { data: overrideRows } = (await query(admin, tables.creed_member_section_permissions, "select", (database, scope) => database.select({ section_id: tables.creed_member_section_permissions.section_id, permission: tables.creed_member_section_permissions.permission }).from(tables.creed_member_section_permissions).where(and(scope, eq(tables.creed_member_section_permissions.creed_id, target.id), eq(tables.creed_member_section_permissions.user_id, user.id))))) as {
           data: Array<{ section_id: string; permission: AgentPermission }> | null;
         };
         for (const row of overrideRows ?? []) overrides.set(row.section_id, row.permission);
@@ -2185,7 +2185,7 @@ async function loadLatestQualityReport(
   // userId is threaded down from the request entry where we already
   // resolved it once via findOAuthAccessToken - avoids a second indexed
   // lookup + token hashing pass on every quality-report read.
-  const admin = getSupabaseAdminClient();
+  const admin = serviceContext("app/mcp/route.ts");
   // Company Straps share one report keyed by creed_id; Personal reports stay
   // keyed by the owner's user_id.
   const row = await readLatestQualityReport(
@@ -2375,9 +2375,9 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  if (!isSupabaseAdminConfigured()) {
+  if (!isDatabaseConfigured()) {
     return NextResponse.json(
-      { error: "Supabase admin configuration is missing." },
+      { error: "Database configuration is missing." },
       { status: 503, headers: MCP_CORS_HEADERS }
     );
   }
@@ -2409,8 +2409,8 @@ export async function POST(request: Request) {
   }
   const userId = resolved.userId;
 
-  const admin = getSupabaseAdminClient();
-  const { data: userData, error: userError } = await admin.auth.admin.getUserById(userId);
+  const admin = serviceContext("app/mcp/route.ts");
+  const { data: userData, error: userError } = await findUser(admin, userId);
   if (userError || !userData.user) {
     return NextResponse.json(
       { error: userError?.message ?? "Could not load Strap account." },
@@ -2445,7 +2445,7 @@ export async function POST(request: Request) {
   // Strap named via the `creed` arg + granted to this token). Company Straps
   // load read-only. MCP only needs recent activity + a tight proposal cap.
   const { state, credentialMode } = await resolveMcpState(
-    admin as unknown as SupabaseLikeClient,
+    admin as unknown as DatabaseContext,
     userData.user as unknown as { id: string } & Record<string, unknown>,
     resolved,
     requests

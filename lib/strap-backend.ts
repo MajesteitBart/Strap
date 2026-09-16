@@ -1,55 +1,65 @@
-import { randomBytes } from "node:crypto";
-import "server-only";
-import { cache } from "react";
-import type { User } from "@supabase/supabase-js";
-import { getDisplayName } from "@/lib/user-name";
+import * as tables from "@/db/schema/application";
+import {
+  getAgentIconKind,
+  type CliAttributableAgentId,
+} from "@/lib/agent-icon";
+import type { User } from "@/lib/auth/user";
+import { authorizeValues } from "@/lib/authz/policies";
+import { AccessDeniedError } from "@/lib/authz/viewer";
+import { readCompanyGitHubIntegration } from "@/lib/company-github";
+import { getDatabase } from "@/lib/db/client";
+import type { DatabaseContext } from "@/lib/db/context";
+import { viewerContext } from "@/lib/db/context";
+import { callProcedure } from "@/lib/db/procedures";
+import { conflictSet, exactlyOne, maybeOne, query } from "@/lib/db/query";
+import { companyVersionControl } from "@/lib/db/repositories/company";
+import { findUser } from "@/lib/db/repositories/users";
+import { serviceContext } from "@/lib/db/service";
+import { getSiteUrl } from "@/lib/env";
+import { isGitHubOAuthAppConfigured } from "@/lib/github";
+import { log } from "@/lib/observability";
+import { STRAP_FILE_NAME } from "@/lib/profile-file";
+import { richTextContentEquivalent } from "@/lib/rich-text";
+import { decryptSecret, encryptSecret, hashSecret } from "@/lib/secret-crypto";
 import {
   buildAgentReadPayload,
   inferSectionTemplate,
+  initialOnboardingState,
+  initialStrapState,
   legacyPayloadToRichTextContent,
   normalizeAgentPermission,
   normalizeLegacyAccent,
   normalizeLegacyProposalDraft,
   normalizeLegacySectionId,
   permissionToWritable,
-  type AgentIconKind,
-  type ActivityStatus,
-  type GitHubSyncStatus,
-  initialStrapState,
-  initialOnboardingState,
   type AccentKey,
   type ActivityEntry,
+  type ActivityStatus,
   type ActorType,
-  type ConnectionItem,
-  type StrapSection,
-  type StrapState,
-  type CompanyContext,
-  type StrapMemberSummary,
-  type StrapSwitcherItem,
+  type AgentIconKind,
   type AgentPermission,
+  type CompanyContext,
+  type ConnectionItem,
+  type GitHubSyncStatus,
   type McpClient,
   type Proposal,
   type SectionTemplate,
+  type StrapMemberSummary,
+  type StrapSection,
+  type StrapState,
+  type StrapSwitcherItem,
 } from "@/lib/strap-data";
+import type { StrapSummary } from "@/lib/strap-membership";
+import { getPersonalStrapId, getStrapRole } from "@/lib/strap-membership";
 import {
   resolveSectionPermission,
   type StrapRole,
 } from "@/lib/strap-permissions";
-import {
-  getAgentIconKind,
-  type CliAttributableAgentId,
-} from "@/lib/agent-icon";
-import { getSiteUrl } from "@/lib/supabase/env";
-import { getSupabaseAdminClient } from "@/lib/supabase/admin";
-import { decryptSecret, encryptSecret, hashSecret } from "@/lib/secret-crypto";
-import { isGitHubOAuthAppConfigured } from "@/lib/github";
-import { readCompanyGitHubIntegration } from "@/lib/company-github";
-import { log } from "@/lib/observability";
-import type { SupabaseLikeClient } from "@/lib/supabase/types";
-import { richTextContentEquivalent } from "@/lib/rich-text";
-import type { StrapSummary } from "@/lib/strap-membership";
-import { getPersonalStrapId } from "@/lib/strap-membership";
-import { STRAP_FILE_NAME } from "@/lib/profile-file";
+import { getDisplayName } from "@/lib/user-name";
+import { and, asc, desc, eq, inArray, isNull } from "drizzle-orm";
+import { randomBytes } from "node:crypto";
+import { cache } from "react";
+import "server-only";
 
 type SectionRow = {
   user_id: string;
@@ -168,7 +178,6 @@ type IntegrationRow = {
 };
 
 type VersionControlRow = {
-  user_id: string;
   provider: "github";
   repo_owner: string | null;
   repo_name: string | null;
@@ -214,12 +223,8 @@ function assertNoError(error: { message: string } | null, fallback: string) {
   }
 }
 
-async function readTokenRow(client: SupabaseLikeClient, userId: string) {
-  const { data, error } = await client
-    .from("creed_tokens")
-    .select("*")
-    .eq("user_id", userId)
-    .maybeSingle();
+async function readTokenRow(client: DatabaseContext, userId: string) {
+  const { data, error } = await query(client, tables.creed_tokens, "select", (database, scope) => database.select().from(tables.creed_tokens).where(and(scope, eq(tables.creed_tokens.user_id, userId)))).then(maybeOne);
 
   assertNoError(error, "Could not load Strap tokens.");
   const row = (data as TokenRow | null) ?? null;
@@ -283,26 +288,7 @@ export function getUserName(user: User) {
 }
 
 export function getAvatarUrl(user: User) {
-  const metadata = user.user_metadata ?? {};
-  const identities =
-    (
-      user as User & {
-        identities?: Array<{ identity_data?: Record<string, unknown> | null }>;
-      }
-    ).identities ?? [];
-  const identityData =
-    identities
-      .map((identity) => identity?.identity_data ?? {})
-      .find((identity) => identity && Object.keys(identity).length > 0) ?? {};
-
-  const raw =
-    metadata.avatar_url ||
-    metadata.picture ||
-    metadata.photo_url ||
-    identityData.avatar_url ||
-    identityData.picture ||
-    identityData.photo_url;
-  return typeof raw === "string" && raw.trim() ? raw.trim() : undefined;
+  return user.avatarUrl?.trim() || user.image?.trim() || undefined;
 }
 
 function getIdentityData(
@@ -395,15 +381,10 @@ function buildVersionControlSettings(
 }
 
 async function readGithubIntegrationRow(
-  client: SupabaseLikeClient,
+  client: DatabaseContext,
   userId: string,
 ) {
-  const { data, error } = await client
-    .from("creed_integrations")
-    .select("*")
-    .eq("user_id", userId)
-    .eq("provider", "github")
-    .maybeSingle();
+  const { data, error } = await query(client, tables.creed_integrations, "select", (database, scope) => database.select().from(tables.creed_integrations).where(and(scope, eq(tables.creed_integrations.user_id, userId), eq(tables.creed_integrations.provider, "github")))).then(maybeOne);
 
   assertNoError(error, "Could not load GitHub integration.");
   const row = (data as IntegrationRow | null) ?? null;
@@ -411,50 +392,36 @@ async function readGithubIntegrationRow(
 }
 
 async function readVersionControlRow(
-  client: SupabaseLikeClient,
+  client: DatabaseContext,
   userId: string,
 ) {
-  const { data, error } = await client
-    .from("creed_version_control")
-    .select("*")
-    .eq("user_id", userId)
-    .maybeSingle();
+  const { data, error } = await query(client, tables.creed_version_control, "select", (database, scope) => database.select().from(tables.creed_version_control).where(and(scope, eq(tables.creed_version_control.user_id, userId)))).then(maybeOne);
 
   assertNoError(error, "Could not load version control settings.");
   return (data as VersionControlRow | null) ?? null;
 }
 
-async function readMcpClientRows(
-  client: SupabaseLikeClient,
-  userId: string,
-  creedId?: string | null,
-) {
-  let query = client
-    .from("creed_mcp_clients")
-    .select("*")
-    .order("last_seen_at", { ascending: false });
-  query = creedId ? query.eq("creed_id", creedId) : query.eq("user_id", userId);
-  const { data, error } = await query;
-
+async function readMcpClientRows(client: DatabaseContext, userId: string, creedId?: string | null) {
+  const { data, error } = await query(client, tables.creed_mcp_clients, "select", (database, scope) => database.select().from(tables.creed_mcp_clients)
+    .where(and(scope, creedId ? eq(tables.creed_mcp_clients.creed_id, creedId) : eq(tables.creed_mcp_clients.user_id, userId)))
+    .orderBy(desc(tables.creed_mcp_clients.last_seen_at)));
   assertNoError(error, "Could not load MCP clients.");
-  return ((data as McpClientRow[] | null) ?? [])
-    .filter((row) => row.client_name.trim().toLowerCase() !== "mcp client")
-    .map(hydrateMcpClient);
+  return ((data as McpClientRow[] | null) ?? []).filter(row => row.client_name.trim().toLowerCase() !== "mcp client").map(hydrateMcpClient);
 }
 
-export async function readGitHubIntegration(client: unknown, userId: string) {
-  return readGithubIntegrationRow(client as SupabaseLikeClient, userId);
+export async function readGitHubIntegration(client: DatabaseContext, userId: string) {
+  return readGithubIntegrationRow(client, userId);
 }
 
 export async function readVersionControlConfig(
-  client: unknown,
+  client: DatabaseContext,
   userId: string,
 ) {
-  return readVersionControlRow(client as SupabaseLikeClient, userId);
+  return readVersionControlRow(client, userId);
 }
 
 export async function upsertGitHubIntegration(
-  client: unknown,
+  client: DatabaseContext,
   userId: string,
   input: {
     status?: "connected" | "not-connected" | "disconnected";
@@ -465,14 +432,14 @@ export async function upsertGitHubIntegration(
     tokenExpiresAt?: string | null;
   },
 ) {
-  const db = client as SupabaseLikeClient;
+  const db = client;
   const now = new Date().toISOString();
 
   const accessToken = input.accessToken?.trim() || null;
   const refreshToken = input.refreshToken?.trim() || null;
 
-  const { error } = await db.from("creed_integrations").upsert(
-    {
+  const { error } = await query(db, tables.creed_integrations, "insert", async (database, scope) => {
+    const values = {
       user_id: userId,
       provider: "github",
       status: input.status ?? "connected",
@@ -487,15 +454,16 @@ export async function upsertGitHubIntegration(
       token_expires_at: input.tokenExpiresAt ?? null,
       created_at: now,
       updated_at: now,
-    },
-    { onConflict: "user_id,provider" },
-  );
+    } as typeof tables.creed_integrations.$inferInsert;
+    await authorizeValues(db, tables.creed_integrations, "insert", values);
+    return database.insert(tables.creed_integrations).values(values).onConflictDoUpdate({ target: [tables.creed_integrations.user_id, tables.creed_integrations.provider], set: conflictSet(tables.creed_integrations, values), setWhere: scope });
+  });
 
   assertNoError(error, "Could not persist GitHub integration.");
 }
 
-export async function clearGitHubIntegration(client: unknown, userId: string) {
-  const db = client as SupabaseLikeClient;
+export async function clearGitHubIntegration(client: DatabaseContext, userId: string) {
+  const db = client;
 
   // Keep the integration row (status = 'disconnected') so the UI can show
   // "Disconnected" (previously connected) vs "Not connected" (never).
@@ -508,9 +476,8 @@ export async function clearGitHubIntegration(client: unknown, userId: string) {
   // greyed-out UI doesn't claim it's still in sync.
   const [{ error: integrationError }, { error: versionControlError }] =
     await Promise.all([
-      db
-        .from("creed_integrations")
-        .update({
+      query(db, tables.creed_integrations, "update", async (database, scope) => {
+    const values = {
           status: "disconnected",
           provider_account_id: null,
           provider_login: null,
@@ -519,13 +486,15 @@ export async function clearGitHubIntegration(client: unknown, userId: string) {
           encrypted_access_token: null,
           encrypted_refresh_token: null,
           token_expires_at: null,
-        })
-        .eq("user_id", userId)
-        .eq("provider", "github"),
-      db
-        .from("creed_version_control")
-        .update({ sync_status: "unknown" })
-        .eq("user_id", userId),
+        } as Partial<typeof tables.creed_integrations.$inferInsert>;
+    await authorizeValues(db, tables.creed_integrations, "update", values);
+    return database.update(tables.creed_integrations).set(values).where(and(scope, eq(tables.creed_integrations.user_id, userId), eq(tables.creed_integrations.provider, "github")));
+  }),
+      query(db, tables.creed_version_control, "update", async (database, scope) => {
+    const values = { sync_status: "unknown" } as Partial<typeof tables.creed_version_control.$inferInsert>;
+    await authorizeValues(db, tables.creed_version_control, "update", values);
+    return database.update(tables.creed_version_control).set(values).where(and(scope, eq(tables.creed_version_control.user_id, userId)));
+  }),
     ]);
 
   assertNoError(integrationError, "Could not clear GitHub integration.");
@@ -541,8 +510,8 @@ export async function clearGitHubIntegration(client: unknown, userId: string) {
 // one getUserById per request.
 const fetchEnrichedUser = cache(async (userId: string): Promise<User | null> => {
   try {
-    const admin = getSupabaseAdminClient();
-    const { data, error } = await admin.auth.admin.getUserById(userId);
+    const admin = serviceContext("lib/strap-backend.ts");
+    const { data, error } = await findUser(admin, userId);
     if (error || !data.user) {
       return null;
     }
@@ -1017,8 +986,8 @@ function isNoopActivityEntry(entry: ActivityEntry) {
   );
 }
 
-async function ensureTokenRow(client: unknown, userId: string) {
-  const db = client as SupabaseLikeClient;
+async function ensureTokenRow(client: DatabaseContext, userId: string) {
+  const db = client;
   const data = await readTokenRow(db, userId);
 
   if (data) {
@@ -1045,9 +1014,8 @@ async function ensureTokenRow(client: unknown, userId: string) {
       const directEdit = tokenFields(
         data.direct_edit_token || generateToken("xt_direct"),
       );
-      const { data: upgradedRow, error: upgradeError } = await db
-        .from("creed_tokens")
-        .update({
+      const { data: upgradedRow, error: upgradeError } = await query(db, tables.creed_tokens, "update", async (database, scope) => {
+    const values = {
           // Mirror the encrypted blob into the legacy plaintext columns so
           // we satisfy any lingering NOT NULL / UNIQUE constraints in
           // databases that haven't applied 20260502130000. The blob is
@@ -1063,10 +1031,10 @@ async function ensureTokenRow(client: unknown, userId: string) {
           encrypted_proposal_token: proposal.encrypted,
           encrypted_direct_edit_token: directEdit.encrypted,
           updated_at: new Date().toISOString(),
-        })
-        .eq("user_id", userId)
-        .select("*")
-        .single();
+        } as Partial<typeof tables.creed_tokens.$inferInsert>;
+    await authorizeValues(db, tables.creed_tokens, "update", values);
+    return database.update(tables.creed_tokens).set(values).where(and(scope, eq(tables.creed_tokens.user_id, userId))).returning();
+  }).then(exactlyOne);
 
       assertNoError(upgradeError, "Could not upgrade Strap tokens.");
       return resolveTokenRow(upgradedRow as TokenRow);
@@ -1099,9 +1067,10 @@ async function ensureTokenRow(client: unknown, userId: string) {
     updated_at: now,
   };
 
-  const { error: upsertError } = await db.from("creed_tokens").upsert(nextRow, {
-    onConflict: "user_id",
-    ignoreDuplicates: true,
+  const { error: upsertError } = await query(db, tables.creed_tokens, "insert", async (database, _scope) => {
+    const values = nextRow as typeof tables.creed_tokens.$inferInsert;
+    await authorizeValues(db, tables.creed_tokens, "insert", values);
+    return database.insert(tables.creed_tokens).values(values).onConflictDoNothing({ target: [tables.creed_tokens.user_id] });
   });
 
   assertNoError(upsertError, "Could not create Strap tokens.");
@@ -1118,7 +1087,7 @@ async function ensureTokenRow(client: unknown, userId: string) {
   }
 
   try {
-    const admin = getSupabaseAdminClient() as unknown as SupabaseLikeClient;
+    const admin = serviceContext("lib/strap-backend.ts");
     const adminExisting = await readTokenRow(admin, userId);
     if (adminExisting) {
       return adminExisting;
@@ -1128,11 +1097,11 @@ async function ensureTokenRow(client: unknown, userId: string) {
       ...nextRow,
       updated_at: new Date().toISOString(),
     };
-    const { data: createdRow, error: adminError } = await admin
-      .from("creed_tokens")
-      .upsert(adminRow, { onConflict: "user_id" })
-      .select("*")
-      .single();
+    const { data: createdRow, error: adminError } = await query(admin, tables.creed_tokens, "insert", async (database, scope) => {
+    const values = adminRow as typeof tables.creed_tokens.$inferInsert;
+    await authorizeValues(admin, tables.creed_tokens, "insert", values);
+    return database.insert(tables.creed_tokens).values(values).onConflictDoUpdate({ target: [tables.creed_tokens.user_id], set: conflictSet(tables.creed_tokens, values), setWhere: scope }).returning();
+  }).then(exactlyOne);
 
     assertNoError(
       adminError,
@@ -1142,7 +1111,7 @@ async function ensureTokenRow(client: unknown, userId: string) {
   } catch (error) {
     if (
       error instanceof Error &&
-      /Supabase admin client is not configured/i.test(error.message)
+      /Database is not configured/i.test(error.message)
     ) {
       throw new Error("Could not load Strap tokens after creation.");
     }
@@ -1236,33 +1205,17 @@ export function createBlankCreedState(
  * not be bounced back into first-run onboarding.
  */
 export async function hasPersistedCreed(
-  client: unknown,
+  client: DatabaseContext,
   userId: string,
 ): Promise<boolean> {
-  const db = client as SupabaseLikeClient;
+  const db = client;
   const creedId = await getPersonalStrapId(db, userId);
   return creedId !== null;
 }
 
-// Per-request dedup via React's `cache()`. If multiple server components or
-// nested helpers in the same request all call `loadStrapState(client, user)`,
-// only the first triggers the 7-query Supabase fan-out + token enrichment;
-// the rest receive the same in-flight promise. The cache scope is bounded
-// to a single request, so writes elsewhere (persistStrapState) always see
-// fresh data on the next request - no staleness risk.
-//
-// Cache key is identity-based on `client` and `user`. In practice the
-// supabase client and user objects are stable within a single render tree,
-// so the dedup fires reliably; if either object changes (e.g. impersonation
-// in a server action), the cache treats it as a different call.
-//
-// `proposalLimit` / `activityLimit` let non-display callers (MCP, proposal
-// submissions, GitHub sync) avoid pulling 500 historical rows they'll never
-// look at. The defaults match the previous behaviour so display surfaces
-// keep their full history without any opt-in.
 export const loadCreedState = cache(
   async (
-    client: unknown,
+    client: DatabaseContext,
     user: User,
     options?: { proposalLimit?: number; activityLimit?: number },
   ): Promise<PersistResult> => {
@@ -1271,13 +1224,13 @@ export const loadCreedState = cache(
 );
 
 async function loadCreedStateImpl(
-  client: unknown,
+  client: DatabaseContext,
   user: User,
   options?: { proposalLimit?: number; activityLimit?: number },
 ): Promise<PersistResult> {
   const proposalLimit = options?.proposalLimit ?? 500;
   const activityLimit = options?.activityLimit ?? 500;
-  const db = client as SupabaseLikeClient;
+  const db = client;
   // These five reads are independent of each other; only readMcpClientRows
   // needs personalCreedId, so run the rest as one wave instead of a serial
   // chain (was ~5 sequential round-trips, now 2).
@@ -1311,28 +1264,10 @@ async function loadCreedStateImpl(
     { data: activityRows, error: activityError },
     { data: connectionRows, error: connectionError },
   ] = await Promise.all([
-    db
-      .from("creed_sections")
-      .select("*")
-      .eq("creed_id", personalCreedId)
-      .order("position", { ascending: true }),
-    db
-      .from("creed_proposals")
-      .select("*")
-      .eq("creed_id", personalCreedId)
-      .order("created_at", { ascending: false })
-      .limit(proposalLimit),
-    db
-      .from("creed_activity")
-      .select("*")
-      .eq("creed_id", personalCreedId)
-      .order("created_at", { ascending: false })
-      .limit(activityLimit),
-    db
-      .from("creed_connections")
-      .select("*")
-      .eq("creed_id", personalCreedId)
-      .order("updated_at", { ascending: false }),
+    query(db, tables.creed_sections, "select", (database, scope) => database.select().from(tables.creed_sections).where(and(scope, eq(tables.creed_sections.creed_id, personalCreedId))).orderBy(asc(tables.creed_sections.position))),
+    query(db, tables.creed_proposals, "select", (database, scope) => database.select().from(tables.creed_proposals).where(and(scope, eq(tables.creed_proposals.creed_id, personalCreedId))).orderBy(desc(tables.creed_proposals.created_at)).limit(proposalLimit)),
+    query(db, tables.creed_activity, "select", (database, scope) => database.select().from(tables.creed_activity).where(and(scope, eq(tables.creed_activity.creed_id, personalCreedId))).orderBy(desc(tables.creed_activity.created_at)).limit(activityLimit)),
+    query(db, tables.creed_connections, "select", (database, scope) => database.select().from(tables.creed_connections).where(and(scope, eq(tables.creed_connections.creed_id, personalCreedId))).orderBy(desc(tables.creed_connections.updated_at))),
   ]);
 
   assertNoError(sectionError, "Could not load Strap sections.");
@@ -1435,7 +1370,7 @@ async function loadCreedStateImpl(
 // `active` comes from resolveActiveCreed (cookie + membership validated); pass
 // null for a brand-new user with no Strap yet.
 export async function loadActiveCreedState(
-  client: unknown,
+  client: DatabaseContext,
   user: User,
   active: {
     creedId: string;
@@ -1483,21 +1418,14 @@ export async function loadCompanyCreedState(
   role: StrapRole,
   creeds: StrapSwitcherItem[],
 ): Promise<PersistResult> {
-  const admin = getSupabaseAdminClient() as unknown as SupabaseLikeClient;
-  const authAdmin = getSupabaseAdminClient() as unknown as {
-    auth: {
-      admin: {
-        getUserById: (id: string) => Promise<{ data: { user: User | null } }>;
-      };
-    };
-  };
+  const admin = viewerContext(getDatabase(), { userId: user.id });
+  const verifiedRole = await getStrapRole(admin, user.id, creedId);
+  if (!verifiedRole) throw new AccessDeniedError();
+  role = verifiedRole;
+  const authAdmin = serviceContext("lib/strap-backend.ts");
   const resolvedUser = await enrichUserForState(user);
 
-  const creedWithAvatar = (await admin
-    .from("creeds")
-    .select("name, company_email, avatar_url")
-    .eq("id", creedId)
-    .maybeSingle()) as {
+  const creedWithAvatar = (await query(admin, tables.creeds, "select", (database, scope) => database.select({ name: tables.creeds.name, company_email: tables.creeds.company_email, avatar_url: tables.creeds.avatar_url }).from(tables.creeds).where(and(scope, eq(tables.creeds.id, creedId)))).then(maybeOne)) as {
     data: {
       name?: string;
       company_email?: string | null;
@@ -1506,11 +1434,7 @@ export async function loadCompanyCreedState(
     error: unknown;
   };
   const creedResult = creedWithAvatar.error
-    ? ((await admin
-        .from("creeds")
-        .select("name, company_email")
-        .eq("id", creedId)
-        .maybeSingle()) as {
+    ? ((await query(admin, tables.creeds, "select", (database, scope) => database.select({ name: tables.creeds.name, company_email: tables.creeds.company_email }).from(tables.creeds).where(and(scope, eq(tables.creeds.id, creedId)))).then(maybeOne)) as {
         data: { name?: string; company_email?: string | null } | null;
         error: unknown;
       })
@@ -1529,63 +1453,23 @@ export async function loadCompanyCreedState(
     companyGithubIntegration,
     companyVersionControlResult,
   ] = await Promise.all([
-    admin
-      .from("creed_sections")
-      .select("*")
-      .eq("creed_id", creedId)
-      .is("deleted_at", null)
-      .order("position", { ascending: true }),
-    admin
-      .from("creed_proposals")
-      .select("*")
-      .eq("creed_id", creedId)
-      .order("created_at", { ascending: false })
-      .limit(500),
-    admin
-      .from("creed_activity")
-      .select("*")
-      .eq("creed_id", creedId)
-      .order("created_at", { ascending: false })
-      .limit(500),
-    admin.from("creed_members").select("user_id, role").eq("creed_id", creedId),
-    admin
-      .from("creed_member_section_permissions")
-      .select("section_id, permission")
-      .eq("creed_id", creedId)
-      .eq("user_id", user.id),
-    admin
-      .from("creed_invites")
-      .select("id, email, role")
-      .eq("creed_id", creedId)
-      .eq("status", "pending")
-      .order("created_at", { ascending: true }),
-    admin
-      .from("creed_connections")
-      .select("*")
-      .eq("creed_id", creedId)
-      .order("updated_at", { ascending: false }),
-    admin
-      .from("creed_mcp_clients")
-      .select("*")
-      .eq("creed_id", creedId)
-      .order("last_seen_at", { ascending: false }),
+    query(admin, tables.creed_sections, "select", (database, scope) => database.select().from(tables.creed_sections).where(and(scope, eq(tables.creed_sections.creed_id, creedId), isNull(tables.creed_sections.deleted_at))).orderBy(asc(tables.creed_sections.position))),
+    query(admin, tables.creed_proposals, "select", (database, scope) => database.select().from(tables.creed_proposals).where(and(scope, eq(tables.creed_proposals.creed_id, creedId))).orderBy(desc(tables.creed_proposals.created_at)).limit(500)),
+    query(admin, tables.creed_activity, "select", (database, scope) => database.select().from(tables.creed_activity).where(and(scope, eq(tables.creed_activity.creed_id, creedId))).orderBy(desc(tables.creed_activity.created_at)).limit(500)),
+    query(admin, tables.creed_members, "select", (database, scope) => database.select({ user_id: tables.creed_members.user_id, role: tables.creed_members.role }).from(tables.creed_members).where(and(scope, eq(tables.creed_members.creed_id, creedId)))),
+    query(admin, tables.creed_member_section_permissions, "select", (database, scope) => database.select({ section_id: tables.creed_member_section_permissions.section_id, permission: tables.creed_member_section_permissions.permission }).from(tables.creed_member_section_permissions).where(and(scope, eq(tables.creed_member_section_permissions.creed_id, creedId), eq(tables.creed_member_section_permissions.user_id, user.id)))),
+    query(admin, tables.creed_invites, "select", (database, scope) => database.select({ id: tables.creed_invites.id, email: tables.creed_invites.email, role: tables.creed_invites.role }).from(tables.creed_invites).where(and(scope, eq(tables.creed_invites.creed_id, creedId), eq(tables.creed_invites.status, "pending"))).orderBy(asc(tables.creed_invites.created_at))),
+    query(admin, tables.creed_connections, "select", (database, scope) => database.select().from(tables.creed_connections).where(and(scope, eq(tables.creed_connections.creed_id, creedId))).orderBy(desc(tables.creed_connections.updated_at))),
+    query(admin, tables.creed_mcp_clients, "select", (database, scope) => database.select().from(tables.creed_mcp_clients).where(and(scope, eq(tables.creed_mcp_clients.creed_id, creedId))).orderBy(desc(tables.creed_mcp_clients.last_seen_at))),
     // The member's OWN per-section agent ceiling for this Company Strap (the
     // company twin of personal agent_permission; no row = 'propose').
-    admin
-      .from("creed_member_agent_permissions")
-      .select("section_id, permission")
-      .eq("creed_id", creedId)
-      .eq("user_id", user.id),
+    query(admin, tables.creed_member_agent_permissions, "select", (database, scope) => database.select({ section_id: tables.creed_member_agent_permissions.section_id, permission: tables.creed_member_agent_permissions.permission }).from(tables.creed_member_agent_permissions).where(and(scope, eq(tables.creed_member_agent_permissions.creed_id, creedId), eq(tables.creed_member_agent_permissions.user_id, user.id)))),
     // The TEAM's GitHub connection (manager-only): a single team-wide token,
     // separate from any member's personal GitHub. Members never see it.
     role === "owner" || role === "admin"
       ? readCompanyGitHubIntegration(creedId).catch(() => null)
       : Promise.resolve(null),
-    admin
-      .from("creed_company_version_control")
-      .select("*")
-      .eq("creed_id", creedId)
-      .maybeSingle(),
+    companyVersionControl(admin.database, { userId: user.id }, creedId).then(data => ({ data, error: null })),
   ]);
 
   const creedRow = creedResult.data as {
@@ -1641,8 +1525,7 @@ export async function loadCompanyCreedState(
   // borrow its author's avatar.
   const members: StrapMemberSummary[] = await Promise.all(
     memberRows.map(async (row) => {
-      const { data } = await authAdmin.auth.admin
-        .getUserById(row.user_id)
+      const { data } = await findUser(authAdmin, row.user_id)
         .catch(() => ({ data: { user: null } }));
       const memberUser = data.user;
       const name = memberUser ? getUserName(memberUser) : "Member";
@@ -1845,23 +1728,18 @@ export async function loadCompanyCreedState(
 }
 
 export async function persistCreedState(
-  client: unknown,
+  client: DatabaseContext,
   userId: string,
   state: StrapState,
 ) {
-  const db = client as SupabaseLikeClient;
+  const db = client;
   const creedId = await getPersonalStrapId(db, userId);
   if (!creedId) {
     throw new Error("Could not resolve the personal Strap.");
   }
   const [currentSectionsResult, existingProposalsResult] = await Promise.all([
-    db
-      .from("creed_sections")
-      .select(
-        "section_id, kind, name, accent, payload, revision, last_edited_at, archived_at",
-      )
-      .eq("creed_id", creedId),
-    db.from("creed_proposals").select("id").eq("creed_id", creedId),
+    query(db, tables.creed_sections, "select", (database, scope) => database.select({ section_id: tables.creed_sections.section_id, kind: tables.creed_sections.kind, name: tables.creed_sections.name, accent: tables.creed_sections.accent, payload: tables.creed_sections.payload, revision: tables.creed_sections.revision, last_edited_at: tables.creed_sections.last_edited_at, archived_at: tables.creed_sections.archived_at }).from(tables.creed_sections).where(and(scope, eq(tables.creed_sections.creed_id, creedId)))),
+    query(db, tables.creed_proposals, "select", (database, scope) => database.select({ id: tables.creed_proposals.id }).from(tables.creed_proposals).where(and(scope, eq(tables.creed_proposals.creed_id, creedId)))),
   ]);
 
   assertNoError(
@@ -2006,23 +1884,29 @@ export async function persistCreedState(
   const sectionIds = state.sections.map((section) => section.id);
 
   if (sectionRows.length > 0) {
-    const { error } = await db
-      .from("creed_sections")
-      .upsert(sectionRows, { onConflict: "creed_id,section_id" });
+    const { error } = await query(db, tables.creed_sections, "insert", async (database, scope) => {
+    const values = sectionRows as typeof tables.creed_sections.$inferInsert[];
+    await authorizeValues(db, tables.creed_sections, "insert", values);
+    return database.insert(tables.creed_sections).values(values).onConflictDoUpdate({ target: [tables.creed_sections.creed_id, tables.creed_sections.section_id], set: conflictSet(tables.creed_sections, values), setWhere: scope });
+  });
     assertNoError(error, "Could not persist Strap sections.");
   }
 
   if (proposalRows.length > 0) {
-    const { error } = await db
-      .from("creed_proposals")
-      .upsert(proposalRows, { onConflict: "id" });
+    const { error } = await query(db, tables.creed_proposals, "insert", async (database, scope) => {
+    const values = proposalRows as typeof tables.creed_proposals.$inferInsert[];
+    await authorizeValues(db, tables.creed_proposals, "insert", values);
+    return database.insert(tables.creed_proposals).values(values).onConflictDoUpdate({ target: [tables.creed_proposals.id], set: conflictSet(tables.creed_proposals, values), setWhere: scope });
+  });
     assertNoError(error, "Could not persist Strap proposals.");
   }
 
   if (activityRows.length > 0) {
-    const { error } = await db
-      .from("creed_activity")
-      .upsert(activityRows, { onConflict: "id" });
+    const { error } = await query(db, tables.creed_activity, "insert", async (database, scope) => {
+    const values = activityRows as typeof tables.creed_activity.$inferInsert[];
+    await authorizeValues(db, tables.creed_activity, "insert", values);
+    return database.insert(tables.creed_activity).values(values).onConflictDoUpdate({ target: [tables.creed_activity.id], set: conflictSet(tables.creed_activity, values), setWhere: scope });
+  });
     assertNoError(error, "Could not persist Strap activity.");
   }
 
@@ -2050,9 +1934,11 @@ export async function persistCreedState(
     created_at: now,
   };
 
-  const { error: versionControlError } = await db
-    .from("creed_version_control")
-    .upsert(versionControlRow, { onConflict: "user_id" });
+  const { error: versionControlError } = await query(db, tables.creed_version_control, "insert", async (database, scope) => {
+    const values = versionControlRow as typeof tables.creed_version_control.$inferInsert;
+    await authorizeValues(db, tables.creed_version_control, "insert", values);
+    return database.insert(tables.creed_version_control).values(values).onConflictDoUpdate({ target: [tables.creed_version_control.user_id], set: conflictSet(tables.creed_version_control, values), setWhere: scope });
+  });
   assertNoError(
     versionControlError,
     "Could not persist version control settings.",
@@ -2073,11 +1959,7 @@ export async function persistCreedState(
     // `.in()` list; skipping the call when the list is empty is the real fix
     // and lets every genuine delete error surface.
     if (removableSectionIds.length > 0) {
-      const { error } = await db
-        .from("creed_sections")
-        .delete()
-        .eq("creed_id", creedId)
-        .in("section_id", removableSectionIds);
+      const { error } = await query(db, tables.creed_sections, "delete", (database, scope) => database.delete(tables.creed_sections).where(and(scope, eq(tables.creed_sections.creed_id, creedId), inArray(tables.creed_sections.section_id, removableSectionIds))));
       assertNoError(error, "Could not remove deleted sections.");
     }
   }
@@ -2098,34 +1980,31 @@ export async function persistCreedState(
   );
 
   if (removableProposalIds.length > 0) {
-    const { error: removeError } = await db
-      .from("creed_proposals")
-      .delete()
-      .eq("creed_id", creedId)
-      .in("id", removableProposalIds);
+    const { error: removeError } = await query(db, tables.creed_proposals, "delete", (database, scope) => database.delete(tables.creed_proposals).where(and(scope, eq(tables.creed_proposals.creed_id, creedId), inArray(tables.creed_proposals.id, removableProposalIds))));
     assertNoError(removeError, "Could not remove resolved proposals.");
   }
 
   await ensureTokenRow(db, userId);
-  const { error: tokenError } = await db
-    .from("creed_tokens")
-    .update({
+  const { error: tokenError } = await query(db, tables.creed_tokens, "update", async (database, scope) => {
+    const values = {
       require_approval: state.settings.requireApproval,
       updated_at: now,
-    })
-    .eq("user_id", userId);
+    } as Partial<typeof tables.creed_tokens.$inferInsert>;
+    await authorizeValues(db, tables.creed_tokens, "update", values);
+    return database.update(tables.creed_tokens).set(values).where(and(scope, eq(tables.creed_tokens.user_id, userId)));
+  });
   assertNoError(tokenError, "Could not persist Strap settings.");
 }
 
 export async function recordConnectionUsage(
-  client: unknown,
+  client: DatabaseContext,
   userId: string,
   integrationId?: string | null,
   agentName?: string | null,
   observedVia: "read" | "proposal" = "read",
   creedId?: string | null,
 ) {
-  const db = client as SupabaseLikeClient;
+  const db = client;
   const targetCreedId = creedId ?? (await getPersonalStrapId(db, userId));
   if (!targetCreedId) {
     throw new Error("Could not resolve Strap for connection usage.");
@@ -2135,8 +2014,8 @@ export async function recordConnectionUsage(
   );
   const now = new Date().toISOString();
 
-  const { error } = await db.from("creed_connections").upsert(
-    {
+  const { error } = await query(db, tables.creed_connections, "insert", async (database, scope) => {
+    const values = {
       creed_id: targetCreedId,
       user_id: userId,
       connection_id: connectionId,
@@ -2146,34 +2025,24 @@ export async function recordConnectionUsage(
       observed_via: observedVia,
       created_at: now,
       updated_at: now,
-    },
-    { onConflict: "creed_id,connection_id" },
-  );
+    } as typeof tables.creed_connections.$inferInsert;
+    await authorizeValues(db, tables.creed_connections, "insert", values);
+    return database.insert(tables.creed_connections).values(values).onConflictDoUpdate({ target: [tables.creed_connections.creed_id, tables.creed_connections.connection_id], set: conflictSet(tables.creed_connections, values), setWhere: scope });
+  });
 
   assertNoError(error, "Could not record Strap connection usage.");
 }
 
-async function findUserIdByTokenHash(
-  db: SupabaseLikeClient,
-  table: string,
-  hashColumn: string,
-  token: string,
-  errorMessage: string,
-): Promise<string | null> {
-  const tokenHash = hashSecret(token);
-  const { data, error } = await db
-    .from(table)
-    .select("user_id")
-    .eq(hashColumn, tokenHash)
-    .maybeSingle();
-
+async function findUserIdByTokenHash(db: DatabaseContext, _table: "creed_tokens", hashColumn: "read_token_hash" | "proposal_token_hash" | "direct_edit_token_hash", token: string, errorMessage: string): Promise<string | null> {
+  const { data, error } = await query(db, tables.creed_tokens, "select", (database, scope) => database.select({ user_id: tables.creed_tokens.user_id }).from(tables.creed_tokens)
+    .where(and(scope, eq(tables.creed_tokens[hashColumn], hashSecret(token))))).then(maybeOne);
   assertNoError(error, errorMessage);
-  return (data as { user_id: string } | null)?.user_id ?? null;
+  return data?.user_id ?? null;
 }
 
-export async function findUserIdByReadToken(client: unknown, token: string) {
+export async function findUserIdByReadToken(client: DatabaseContext, token: string) {
   return findUserIdByTokenHash(
-    client as SupabaseLikeClient,
+    client,
     "creed_tokens",
     "read_token_hash",
     token,
@@ -2182,11 +2051,11 @@ export async function findUserIdByReadToken(client: unknown, token: string) {
 }
 
 export async function findUserIdByProposalToken(
-  client: unknown,
+  client: DatabaseContext,
   token: string,
 ) {
   return findUserIdByTokenHash(
-    client as SupabaseLikeClient,
+    client,
     "creed_tokens",
     "proposal_token_hash",
     token,
@@ -2195,11 +2064,11 @@ export async function findUserIdByProposalToken(
 }
 
 export async function findUserIdByDirectEditToken(
-  client: unknown,
+  client: DatabaseContext,
   token: string,
 ) {
   return findUserIdByTokenHash(
-    client as SupabaseLikeClient,
+    client,
     "creed_tokens",
     "direct_edit_token_hash",
     token,
@@ -2212,12 +2081,12 @@ export async function findUserIdByDirectEditToken(
 // seen" status shown in the UI is derived from this roster, so there is no
 // separate credential row to touch.
 export async function recordMcpClientUsage(
-  client: unknown,
+  client: DatabaseContext,
   userId: string,
   clientName?: string | null,
   creedId?: string | null,
 ) {
-  const db = client as SupabaseLikeClient;
+  const db = client;
   const targetCreedId = creedId ?? (await getPersonalStrapId(db, userId));
   if (!targetCreedId) {
     throw new Error("Could not resolve Strap for MCP usage.");
@@ -2230,8 +2099,8 @@ export async function recordMcpClientUsage(
 
   if (hasSpecificClientName) {
     const clientId = normalizeMcpClientId(normalizedClientName);
-    const { error: clientError } = await db.from("creed_mcp_clients").upsert(
-      {
+    const { error: clientError } = await query(db, tables.creed_mcp_clients, "insert", async (database, scope) => {
+    const values = {
         creed_id: targetCreedId,
         user_id: userId,
         client_id: clientId,
@@ -2240,21 +2109,17 @@ export async function recordMcpClientUsage(
         // Omit created_at so the column default seeds it on first insert and a
         // later read never resets first-seen (onConflict would overwrite it).
         updated_at: now,
-      },
-      { onConflict: "creed_id,client_id" },
-    );
+      } as typeof tables.creed_mcp_clients.$inferInsert;
+    await authorizeValues(db, tables.creed_mcp_clients, "insert", values);
+    return database.insert(tables.creed_mcp_clients).values(values).onConflictDoUpdate({ target: [tables.creed_mcp_clients.creed_id, tables.creed_mcp_clients.client_id], set: conflictSet(tables.creed_mcp_clients, values), setWhere: scope });
+  });
 
     assertNoError(clientError, "Could not record MCP client usage.");
 
     // Bump the per-agent daily read rollup that powers the MCP health
     // dashboard. Best-effort: a failed counter must never break a read.
-    const rpcClient = db as unknown as {
-      rpc: (
-        fn: string,
-        params: Record<string, unknown>,
-      ) => Promise<{ error: { message: string } | null }>;
-    };
-    const { error: readEventError } = await rpcClient.rpc(
+
+    const { error: readEventError } = await callProcedure(db,
       "increment_mcp_read_for_creed",
       {
         p_creed_id: targetCreedId,
@@ -2281,45 +2146,43 @@ export async function recordMcpClientUsage(
 }
 
 export async function recordCliAgentUsage(
-  client: unknown,
+  client: DatabaseContext,
   userId: string,
   tokenId: string,
   agentIcon: CliAttributableAgentId,
   creedId: string,
 ) {
-  const db = client as SupabaseLikeClient;
+  const db = client;
   const now = new Date().toISOString();
-  const { error } = await db.from("creed_mcp_clients").upsert(
-    {
+  const { error } = await query(db, tables.creed_mcp_clients, "insert", async (database, scope) => {
+    const values = {
       creed_id: creedId,
       user_id: userId,
       client_id: `cli-${tokenId}-${agentIcon}`,
       client_name: `Strap CLI via ${agentIcon}`,
       last_seen_at: now,
       updated_at: now,
-    },
-    { onConflict: "creed_id,client_id" },
-  );
+    } as typeof tables.creed_mcp_clients.$inferInsert;
+    await authorizeValues(db, tables.creed_mcp_clients, "insert", values);
+    return database.insert(tables.creed_mcp_clients).values(values).onConflictDoUpdate({ target: [tables.creed_mcp_clients.creed_id, tables.creed_mcp_clients.client_id], set: conflictSet(tables.creed_mcp_clients, values), setWhere: scope });
+  });
   assertNoError(error, "Could not record CLI agent usage.");
 }
 
 export async function buildAgentPayloadForToken(
-  client: unknown,
+  client: DatabaseContext,
   token: string,
   integrationId?: string | null,
 ) {
-  const db = client as SupabaseLikeClient;
+  const db = client;
   const userId = await findUserIdByReadToken(db, token);
   if (!userId) {
     return null;
   }
 
-  if (!db.auth?.admin?.getUserById) {
-    throw new Error("Supabase admin getUserById is not available.");
-  }
 
   const { data: userData, error: userError } =
-    await db.auth.admin.getUserById(userId);
+    await findUser(db, userId);
 
   if (userError || !userData?.user) {
     throw new Error(userError?.message || "Could not load token owner.");

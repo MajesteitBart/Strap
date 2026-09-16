@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { access, readFile } from "node:fs/promises";
 import test from "node:test";
+import { renderAuthEmail } from "../lib/email-templates/auth.ts";
 
 const richTextCompatibilityClasses = [
   "creed-callout",
@@ -152,14 +153,14 @@ test("every public, auth, and consent surface composes the worktable shell", asy
 
 test("transactional emails use the worktable palette and keep their template variables", async () => {
   const [confirm, reset, invite] = await Promise.all([
-    readFile("supabase/email-templates/confirm-signup.html", "utf8"),
-    readFile("supabase/email-templates/reset-password.html", "utf8"),
+    renderAuthEmail("confirmation", "https://fixture.test/confirm", "https://fixture.test"),
+    renderAuthEmail("reset", "https://fixture.test/confirm", "https://fixture.test"),
     readFile("lib/email-templates/company-invite.ts", "utf8"),
   ]);
 
   for (const html of [confirm, reset]) {
-    assert.match(html, /\{\{ \.ConfirmationURL \}\}/);
-    assert.match(html, /\{\{ \.SiteURL \}\}\/assets\/brand\/brandmark-email\.png/);
+    assert.match(html, /https:\/\/fixture.test\/confirm/);
+    assert.match(html, /https:\/\/fixture.test\/assets\/brand\/brandmark-email\.png/);
   }
   for (const html of [confirm, reset, invite]) {
     assert.match(html, /background-color:#fbf6ee/);

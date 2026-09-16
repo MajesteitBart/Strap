@@ -1,12 +1,12 @@
-import Link from "next/link";
-import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { FaqSection } from "@/components/marketing/faq-section";
 import {
   StrapPageHero,
   StrapSiteFooter,
   StrapSiteHeader,
 } from "@/components/marketing/strap-site-shell";
-import { FaqSection } from "@/components/marketing/faq-section";
+import { isDatabaseConfigured } from "@/lib/env";
 import { companyFaqItems } from "@/lib/marketing/faq";
+import Link from "next/link";
 
 // Server-rendered Company plan landing page. All content ships in the initial
 // HTML so crawlers and answer engines read the full pitch, roles, and pricing
@@ -58,7 +58,7 @@ const MEMBERS = [
 export function CompanyPageView() {
   return (
     <div className="strap-site">
-      <StrapSiteHeader configured={isSupabaseConfigured()} current="company" />
+      <StrapSiteHeader configured={isDatabaseConfigured()} current="company" />
 
       <main>
         <StrapPageHero

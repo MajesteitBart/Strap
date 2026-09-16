@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server";
-import { checkRateLimit } from "@/lib/rate-limit";
+import { isDatabaseConfigured } from "@/lib/env";
 import { digestCredential } from "@/lib/headless-access-shared";
-import { createDeviceAuthorization } from "@/lib/oauth-device";
 import { getOAuthClient } from "@/lib/oauth";
-import { isSupabaseAdminConfigured } from "@/lib/supabase/env";
+import { createDeviceAuthorization } from "@/lib/oauth-device";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -31,7 +31,7 @@ async function readParams(request: Request): Promise<Record<string, string>> {
 }
 
 export async function POST(request: Request) {
-  if (!isSupabaseAdminConfigured()) {
+  if (!isDatabaseConfigured()) {
     return NextResponse.json({ error: "server_error" }, { status: 503, headers: HEADERS });
   }
   let params: Record<string, string>;

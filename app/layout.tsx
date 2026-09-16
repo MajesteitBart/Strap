@@ -1,11 +1,11 @@
+import { ThemeProvider } from "@/components/strap/theme-provider";
+import { WelcomeDevPreview } from "@/components/strap/welcome-dev-preview";
+import { Toaster } from "@/components/ui/toaster";
+import { getSiteUrl } from "@/lib/env";
+import { BRAND_DESCRIPTION, BRAND_META_TITLE, BRAND_NAME } from "@/lib/marketing/brand";
 import type { Metadata } from "next";
 import { Bricolage_Grotesque, Geist, Geist_Mono, Inter, JetBrains_Mono } from "next/font/google";
 import type { ReactNode } from "react";
-import { ThemeProvider } from "@/components/strap/theme-provider";
-import { WelcomeDevPreview } from "@/components/strap/welcome-dev-preview";
-import { BRAND_DESCRIPTION, BRAND_META_TITLE, BRAND_NAME } from "@/lib/marketing/brand";
-import { getSiteUrl } from "@/lib/supabase/env";
-import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -71,12 +71,6 @@ export const metadata: Metadata = {
   },
 };
 
-// The root layout is intentionally static: it holds no user state, reads no
-// cookies/headers, and renders no StrapProvider. That is what lets marketing
-// pages prerender as a static shell so <Link> fully prefetches them and
-// navigation is instant with no server round-trip. The user-specific work
-// (Supabase session, loadStrapState, StrapProvider) lives in <AuthedProviders>,
-// pulled in only by the layouts that need it (the app shell and onboarding).
 export default function RootLayout({
   children,
 }: Readonly<{

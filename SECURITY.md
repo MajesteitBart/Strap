@@ -19,19 +19,19 @@ The highest-risk surfaces are:
 - `/api/app/**`, which must enforce `requireApiAuth()`
 - headless access keys and explicit Personal or Company grants
 - encrypted provider tokens and `CREED_ENCRYPTION_SECRET`
-- Supabase Vault secret boundaries and metadata-only audit behavior
+- Application-encrypted Vault secret boundaries and metadata-only audit behavior
 - prompt injection through user- or agent-supplied content
 - security headers and CSP in `next.config.ts`
-- Supabase RLS policies in `supabase/migrations/**`
+- Explicit database guards in `lib/authz/**` and scoped repositories in `lib/db/**`
 
 Access to another user's context or secrets, privilege escalation across Personal or Company boundaries, plaintext credential disclosure, and bypasses of approval or section permission are in scope.
 
-Third-party service vulnerabilities in Supabase, OpenRouter, GitHub, Stripe, or Resend should be reported upstream unless Strap's integration creates the issue.
+Third-party service vulnerabilities in Better Auth, Postgres, OpenRouter, GitHub, Stripe, or Resend should be reported upstream unless Strap's integration creates the issue.
 
 ## Self-hosting hardening
 
 1. Generate a fresh 32-byte base64 `CREED_ENCRYPTION_SECRET`. The name is retained as a compatibility identifier.
-2. Use distinct Supabase server secrets per environment and never commit them.
+2. Use distinct database credentials, Better Auth, token-encryption, Vault and maintenance secrets per environment and never commit them.
 3. Set `NEXT_PUBLIC_SITE_URL` to the exact HTTPS origin used for OAuth discovery.
 4. Set `CREED_CSP_ENFORCE=1` only after validating a report-only deployment cycle.
 5. Apply every migration before accepting real users.

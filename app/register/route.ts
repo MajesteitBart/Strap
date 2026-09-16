@@ -1,7 +1,7 @@
-import { NextResponse } from "next/server";
+import { isDatabaseConfigured } from "@/lib/env";
 import { registerOAuthClient } from "@/lib/oauth";
 import { checkRateLimit } from "@/lib/rate-limit";
-import { isSupabaseAdminConfigured } from "@/lib/supabase/env";
+import { NextResponse } from "next/server";
 
 // RFC 7591 Dynamic Client Registration. MCP clients self-register here with no
 // pre-shared id, which is what makes "paste the URL" connect work for any
@@ -42,7 +42,7 @@ function isValidRedirectUri(value: unknown): value is string {
 }
 
 export async function POST(request: Request) {
-  if (!isSupabaseAdminConfigured()) {
+  if (!isDatabaseConfigured()) {
     return NextResponse.json(
       { error: "server_error" },
       { status: 503, headers: CORS_HEADERS }

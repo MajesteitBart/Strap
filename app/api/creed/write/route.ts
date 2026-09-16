@@ -1,4 +1,14 @@
-import { NextResponse } from "next/server";
+import { findUser } from "@/lib/db/repositories/users";
+import { serviceContext } from "@/lib/db/service";
+import { isDatabaseConfigured } from "@/lib/env";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { markdownToRichHtml, normalizeRichTextInput, richTextContentEquivalent } from "@/lib/rich-text";
+import {
+  findUserIdByDirectEditToken,
+  loadCreedState,
+  persistCreedState,
+  recordConnectionUsage,
+} from "@/lib/strap-backend";
 import type {
   AccentKey,
   ActivityEntry,
@@ -17,16 +27,7 @@ import {
   normalizeLegacySectionId,
   permissionToWritable,
 } from "@/lib/strap-data";
-import {
-  findUserIdByDirectEditToken,
-  loadCreedState,
-  persistCreedState,
-  recordConnectionUsage,
-} from "@/lib/strap-backend";
-import { checkRateLimit } from "@/lib/rate-limit";
-import { markdownToRichHtml, normalizeRichTextInput, richTextContentEquivalent } from "@/lib/rich-text";
-import { getSupabaseAdminClient } from "@/lib/supabase/admin";
-import { isSupabaseAdminConfigured } from "@/lib/supabase/env";
+import { NextResponse } from "next/server";
 
 // This is the direct-edit endpoint, so every mutation here requires the target
 // section's permission to be "direct". Propose sections must go through the
@@ -283,8 +284,8 @@ function buildAfterTextFromPatch(patch: DirectSectionPatch) {
 }
 
 export async function POST(request: Request) {
-  if (!isSupabaseAdminConfigured()) {
-    return NextResponse.json({ error: "Supabase admin configuration is missing." }, { status: 503 });
+  if (!isDatabaseConfigured()) {
+    return NextResponse.json({ error: "Database configuration is missing." }, { status: 503 });
   }
 
   const authHeader = request.headers.get("authorization");
@@ -312,13 +313,13 @@ export async function POST(request: Request) {
     );
   }
 
-  const admin = getSupabaseAdminClient();
+  const admin = serviceContext("app/api/creed/write/route.ts");
   const userId = await findUserIdByDirectEditToken(admin as never, writeToken);
   if (!userId) {
     return NextResponse.json({ error: "Invalid write token." }, { status: 401 });
   }
 
-  const { data: userData, error: userError } = await admin.auth.admin.getUserById(userId);
+  const { data: userData, error: userError } = await findUser(admin, userId);
   if (userError || !userData.user) {
     return NextResponse.json({ error: userError?.message ?? "Could not load token owner." }, { status: 500 });
   }

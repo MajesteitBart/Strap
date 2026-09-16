@@ -1,8 +1,11 @@
-import { NextResponse } from "next/server";
+import * as tables from "@/db/schema/application";
 import { requireApiAuth } from "@/lib/api-auth";
-import { inferAgentIconKind } from "@/lib/strap-backend";
+import { query } from "@/lib/db/query";
+import { serviceContext } from "@/lib/db/service";
 import { revokeOAuthTokensForUser } from "@/lib/oauth";
-import { getSupabaseAdminClient } from "@/lib/supabase/admin";
+import { inferAgentIconKind } from "@/lib/strap-backend";
+import { and, eq, inArray, isNull } from "drizzle-orm";
+import { NextResponse } from "next/server";
 
 // Disconnects one agent: revokes its OAuth tokens and clears its roster rows so
 // the connections screen flips the card back to "Not connected". Cards are
@@ -19,14 +22,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Missing agent icon." }, { status: 400 });
   }
 
-  const admin = getSupabaseAdminClient();
+  const admin = serviceContext("app/api/app/mcp/revoke/route.ts");
 
   // Revoke OAuth tokens whose registered client name resolves to this icon.
-  const { data: tokenRows, error: tokenError } = await admin
-    .from("oauth_tokens")
-    .select("client_id")
-    .eq("user_id", auth.user.id)
-    .is("revoked_at", null);
+  const { data: tokenRows, error: tokenError } = await query(admin, tables.oauth_tokens, "select", (database, scope) => database.select({ client_id: tables.oauth_tokens.client_id }).from(tables.oauth_tokens).where(and(scope, eq(tables.oauth_tokens.user_id, auth.user.id), isNull(tables.oauth_tokens.revoked_at))));
   if (tokenError) {
     return NextResponse.json({ error: "Could not load tokens." }, { status: 500 });
   }
@@ -36,10 +35,7 @@ export async function POST(request: Request) {
     ),
   ];
   if (clientIds.length > 0) {
-    const { data: oauthClients, error: clientError } = await admin
-      .from("oauth_clients")
-      .select("client_id, client_name")
-      .in("client_id", clientIds);
+    const { data: oauthClients, error: clientError } = await query(admin, tables.oauth_clients, "select", (database, scope) => database.select({ client_id: tables.oauth_clients.client_id, client_name: tables.oauth_clients.client_name }).from(tables.oauth_clients).where(and(scope, inArray(tables.oauth_clients.client_id, clientIds))));
     if (clientError) {
       return NextResponse.json({ error: "Could not load clients." }, { status: 500 });
     }
@@ -55,10 +51,7 @@ export async function POST(request: Request) {
   // Clear matching roster rows so connected/last-seen status resets. The
   // roster's client_name is the MCP clientInfo name, which resolves through
   // the same alias table as the card icons.
-  const { data: rosterRows, error: rosterError } = await admin
-    .from("creed_mcp_clients")
-    .select("client_id, client_name")
-    .eq("user_id", auth.user.id);
+  const { data: rosterRows, error: rosterError } = await query(admin, tables.creed_mcp_clients, "select", (database, scope) => database.select({ client_id: tables.creed_mcp_clients.client_id, client_name: tables.creed_mcp_clients.client_name }).from(tables.creed_mcp_clients).where(and(scope, eq(tables.creed_mcp_clients.user_id, auth.user.id))));
   if (rosterError) {
     return NextResponse.json({ error: "Could not load MCP clients." }, { status: 500 });
   }
@@ -68,11 +61,7 @@ export async function POST(request: Request) {
     .filter((row) => inferAgentIconKind(row.client_name) === icon)
     .map((row) => row.client_id);
   if (rosterIds.length > 0) {
-    const { error: deleteError } = await admin
-      .from("creed_mcp_clients")
-      .delete()
-      .eq("user_id", auth.user.id)
-      .in("client_id", rosterIds);
+    const { error: deleteError } = await query(admin, tables.creed_mcp_clients, "delete", (database, scope) => database.delete(tables.creed_mcp_clients).where(and(scope, eq(tables.creed_mcp_clients.user_id, auth.user.id), inArray(tables.creed_mcp_clients.client_id, rosterIds))));
     if (deleteError) {
       return NextResponse.json({ error: "Could not disconnect agent." }, { status: 500 });
     }

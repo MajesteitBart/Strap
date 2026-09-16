@@ -1,10 +1,10 @@
-import Link from "next/link";
 import {
   StrapPageHero,
   StrapSiteFooter,
   StrapSiteHeader,
 } from "@/components/marketing/strap-site-shell";
-import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { isDatabaseConfigured } from "@/lib/env";
+import Link from "next/link";
 
 const stackRows = [
   {
@@ -20,9 +20,9 @@ const stackRows = [
     tone: "context",
   },
   {
-    name: "Supabase",
-    purpose: "Authentication, Postgres, RLS, realtime, storage, and Vault",
-    website: "https://supabase.com",
+    name: "Postgres, Drizzle, and Better Auth",
+    purpose: "Database, application authorization, and account authentication",
+    website: "https://www.postgresql.org",
     tone: "secrets",
   },
   {
@@ -51,7 +51,7 @@ const stackRows = [
   },
   {
     name: "Resend",
-    purpose: "Transactional Company invitation email",
+    purpose: "Account verification, password resets, and Company invitations",
     website: "https://resend.com",
     tone: "skills",
   },
@@ -60,7 +60,7 @@ const stackRows = [
 export function StackPageView() {
   return (
     <div className="strap-site">
-      <StrapSiteHeader configured={isSupabaseConfigured()} current="stack" />
+      <StrapSiteHeader configured={isDatabaseConfigured()} current="stack" />
 
       <main>
         <StrapPageHero

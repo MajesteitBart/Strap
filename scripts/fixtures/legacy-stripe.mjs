@@ -1,7 +1,7 @@
 // Explicit local-only Stripe fixture for verify-legacy-deletion.mjs. Load with
 // NODE_OPTIONS=--import=<absolute file URL> on a disposable local app server.
-const database = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL ?? "http://invalid");
-if (database.protocol !== "http:" || !["localhost", "127.0.0.1"].includes(database.hostname) ||
+const database = new URL(process.env.DATABASE_URL ?? "http://invalid");
+if (!["postgres:", "postgresql:"].includes(database.protocol) || !["localhost", "127.0.0.1"].includes(database.hostname) ||
     process.env.STRIPE_SECRET_KEY !== "sk_test_local_fixture") {
   throw new Error("Legacy Stripe fixtures require a local database and the fixture key.");
 }

@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server";
-import type { CreedSection } from "@/lib/strap-data";
-import { loadCreedState, persistCreedState } from "@/lib/strap-backend";
-import { requireAuthenticatedUser } from "@/lib/github-version-control";
-import { resolveManagedCompanyCreedId } from "@/lib/strap-context";
+import { requireApiAuth } from "@/lib/api-auth";
 import { canAdoptResolvedProfilePath } from "@/lib/profile-file";
+import { loadCreedState, persistCreedState } from "@/lib/strap-backend";
+import { resolveManagedCompanyCreedId } from "@/lib/strap-context";
+import type { CreedSection } from "@/lib/strap-data";
+import { NextResponse } from "next/server";
 
 type ApplyBody = {
   sections?: CreedSection[];
@@ -15,11 +15,13 @@ type ApplyBody = {
 };
 
 export async function POST(request: Request) {
+  const auth = await requireApiAuth();
+  if (auth instanceof NextResponse) return auth;
   try {
-    const { supabase, user } = await requireAuthenticatedUser();
+    const { context, user } = auth;
     // Applying a GitHub import overwrites sections via the personal full-state
     // persist, which is blocked for Company Straps; guard it explicitly.
-    if (await resolveManagedCompanyCreedId(supabase, user)) {
+    if (await resolveManagedCompanyCreedId(context, user)) {
       return NextResponse.json(
         { error: "Pulling from GitHub into a company Strap isn't supported yet. You can push to GitHub." },
         { status: 400 }
@@ -31,7 +33,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing imported sections." }, { status: 400 });
     }
 
-    const result = await loadCreedState(supabase, user);
+    const result = await loadCreedState(context, user);
     const remotePath = body.remotePath?.trim();
     if (
       remotePath &&
@@ -100,7 +102,7 @@ export async function POST(request: Request) {
       ]),
     };
 
-    await persistCreedState(supabase, user.id, nextState);
+    await persistCreedState(context, user.id, nextState);
 
     return NextResponse.json({ ok: true });
   } catch (error) {

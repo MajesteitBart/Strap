@@ -1,10 +1,13 @@
-import { NextResponse } from "next/server";
+import * as tables from "@/db/schema/application";
 import { requireApiAuth } from "@/lib/api-auth";
+import { query } from "@/lib/db/query";
+import { serviceContext } from "@/lib/db/service";
 import {
   getGrantedClientIds,
   hasActiveConnectionIcon,
 } from "@/lib/mcp-connection-status";
-import { getSupabaseAdminClient } from "@/lib/supabase/admin";
+import { and, eq, gt, inArray, isNull } from "drizzle-orm";
+import { NextResponse } from "next/server";
 
 // Live connection check for one agent card: does this agent hold a usable
 // (unrevoked, unexpired) OAuth token right now? Matched by brand icon the same
@@ -26,15 +29,10 @@ export async function GET(request: Request) {
     );
   }
 
-  const admin = getSupabaseAdminClient();
+  const admin = serviceContext("app/api/app/mcp/test/route.ts");
   const nowIso = new Date().toISOString();
 
-  const { data: tokenRows, error: tokenError } = await admin
-    .from("oauth_tokens")
-    .select("id, client_id")
-    .eq("user_id", auth.user.id)
-    .is("revoked_at", null)
-    .gt("refresh_expires_at", nowIso);
+  const { data: tokenRows, error: tokenError } = await query(admin, tables.oauth_tokens, "select", (database, scope) => database.select({ id: tables.oauth_tokens.id, client_id: tables.oauth_tokens.client_id }).from(tables.oauth_tokens).where(and(scope, eq(tables.oauth_tokens.user_id, auth.user.id), isNull(tables.oauth_tokens.revoked_at), gt(tables.oauth_tokens.refresh_expires_at, nowIso))));
   if (tokenError) {
     return NextResponse.json({ error: "Could not load tokens." }, { status: 500 });
   }
@@ -46,11 +44,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ connected: false });
   }
 
-  const { data: grantRows, error: grantError } = await admin
-    .from("oauth_token_creeds")
-    .select("token_id")
-    .eq("creed_id", creedId)
-    .in("token_id", tokenIds);
+  const { data: grantRows, error: grantError } = await query(admin, tables.oauth_token_creeds, "select", (database, scope) => database.select({ token_id: tables.oauth_token_creeds.token_id }).from(tables.oauth_token_creeds).where(and(scope, eq(tables.oauth_token_creeds.creed_id, creedId), inArray(tables.oauth_token_creeds.token_id, tokenIds))));
   if (grantError) {
     return NextResponse.json({ error: "Could not load grants." }, { status: 500 });
   }
@@ -65,10 +59,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ connected: false });
   }
 
-  const { data: oauthClients, error: clientError } = await admin
-    .from("oauth_clients")
-    .select("client_name")
-    .in("client_id", clientIds);
+  const { data: oauthClients, error: clientError } = await query(admin, tables.oauth_clients, "select", (database, scope) => database.select({ client_name: tables.oauth_clients.client_name }).from(tables.oauth_clients).where(and(scope, inArray(tables.oauth_clients.client_id, clientIds))));
   if (clientError) {
     return NextResponse.json({ error: "Could not load clients." }, { status: 500 });
   }
@@ -86,11 +77,7 @@ export async function GET(request: Request) {
     (name) => name.trim().toLowerCase() === "mcp client",
   );
   if (!connected && hasGenericClient) {
-    const { data: rosterRows, error: rosterError } = await admin
-      .from("creed_mcp_clients")
-      .select("client_name")
-      .eq("user_id", auth.user.id)
-      .eq("creed_id", creedId);
+    const { data: rosterRows, error: rosterError } = await query(admin, tables.creed_mcp_clients, "select", (database, scope) => database.select({ client_name: tables.creed_mcp_clients.client_name }).from(tables.creed_mcp_clients).where(and(scope, eq(tables.creed_mcp_clients.user_id, auth.user.id), eq(tables.creed_mcp_clients.creed_id, creedId))));
     if (rosterError) {
       return NextResponse.json({ error: "Could not load MCP clients." }, { status: 500 });
     }

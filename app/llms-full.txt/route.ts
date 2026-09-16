@@ -1,13 +1,13 @@
-import { getSiteUrl } from "@/lib/supabase/env";
+import { getSiteUrl } from "@/lib/env";
 import { BRAND_DESCRIPTION, BRAND_TAGLINE } from "@/lib/marketing/brand";
-import { PLAN_FACTS } from "@/lib/marketing/pricing";
 import {
-  homeFaqItems,
   contextFileFaqItems,
+  homeFaqItems,
   pricingFaqItems,
   type FaqItem,
 } from "@/lib/marketing/faq";
 import { learnArticles } from "@/lib/marketing/learn";
+import { PLAN_FACTS } from "@/lib/marketing/pricing";
 
 // Serves /llms-full.txt - the full plain-text content of Strap's most citable
 // pages in one document. Generated from the same content modules the site

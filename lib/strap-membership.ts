@@ -1,6 +1,9 @@
-import "server-only";
-import type { SupabaseLikeClient } from "@/lib/supabase/types";
+import * as tables from "@/db/schema/application";
+import type { DatabaseContext } from "@/lib/db/context";
+import { maybeOne, query } from "@/lib/db/query";
 import type { StrapRole, StrapType } from "@/lib/strap-permissions";
+import { and, eq, inArray } from "drizzle-orm";
+import "server-only";
 
 // Membership + Strap-listing helpers.
 //
@@ -11,7 +14,7 @@ import type { StrapRole, StrapType } from "@/lib/strap-permissions";
 //
 // Reads go through whatever client the caller passes (the user's session client
 // under RLS, or the service-role admin client). The generated Database types do
-// not yet know these tables, so we use the SupabaseLikeClient cast the rest of
+// not yet know these tables, so we use the DatabaseContext cast the rest of
 // the backend uses.
 
 export type StrapSummary = {
@@ -49,14 +52,11 @@ type MemberRow = {
  * DB blip degrades to "personal only" rather than throwing.
  */
 export async function listUserStraps(
-  client: unknown,
+  client: DatabaseContext,
   userId: string
 ): Promise<StrapSummary[]> {
-  const db = client as SupabaseLikeClient;
-  const { data: memberRows, error: memberError } = (await db
-    .from("creed_members")
-    .select("creed_id, role")
-    .eq("user_id", userId)) as { data: Array<{ creed_id: string; role: StrapRole }> | null; error: unknown };
+  const db = client;
+  const { data: memberRows, error: memberError } = (await query(db, tables.creed_members, "select", (database, scope) => database.select({ creed_id: tables.creed_members.creed_id, role: tables.creed_members.role }).from(tables.creed_members).where(and(scope, eq(tables.creed_members.user_id, userId))))) as { data: Array<{ creed_id: string; role: StrapRole }> | null; error: unknown };
 
   if (memberError || !memberRows || memberRows.length === 0) {
     return [];
@@ -66,16 +66,10 @@ export async function listUserStraps(
   const ids = [...roleByCreed.keys()];
 
   let creedRows: CreedRow[] | null = null;
-  const withAvatar = (await db
-    .from("creeds")
-    .select("id, type, name, owner_user_id, avatar_url, onboarding_stage")
-    .in("id", ids)) as { data: CreedRow[] | null; error: unknown };
+  const withAvatar = (await query(db, tables.creeds, "select", (database, scope) => database.select({ id: tables.creeds.id, type: tables.creeds.type, name: tables.creeds.name, owner_user_id: tables.creeds.owner_user_id, avatar_url: tables.creeds.avatar_url, onboarding_stage: tables.creeds.onboarding_stage }).from(tables.creeds).where(and(scope, inArray(tables.creeds.id, ids))))) as { data: CreedRow[] | null; error: unknown };
 
   if (withAvatar.error) {
-    const fallback = (await db
-      .from("creeds")
-      .select("id, type, name, owner_user_id, onboarding_stage")
-      .in("id", ids)) as { data: CreedRow[] | null; error: unknown };
+    const fallback = (await query(db, tables.creeds, "select", (database, scope) => database.select({ id: tables.creeds.id, type: tables.creeds.type, name: tables.creeds.name, owner_user_id: tables.creeds.owner_user_id, onboarding_stage: tables.creeds.onboarding_stage }).from(tables.creeds).where(and(scope, inArray(tables.creeds.id, ids))))) as { data: CreedRow[] | null; error: unknown };
     if (fallback.error || !fallback.data) {
       return [];
     }
@@ -108,33 +102,23 @@ export async function listUserStraps(
 
 /** The caller's role on a Strap, or null if they are not a member. */
 export async function getStrapRole(
-  client: unknown,
+  client: DatabaseContext,
   userId: string,
   creedId: string
 ): Promise<StrapRole | null> {
-  const db = client as SupabaseLikeClient;
-  const { data, error } = (await db
-    .from("creed_members")
-    .select("role")
-    .eq("creed_id", creedId)
-    .eq("user_id", userId)
-    .maybeSingle()) as { data: { role: StrapRole } | null; error: unknown };
+  const db = client;
+  const { data, error } = (await query(db, tables.creed_members, "select", (database, scope) => database.select({ role: tables.creed_members.role }).from(tables.creed_members).where(and(scope, eq(tables.creed_members.creed_id, creedId), eq(tables.creed_members.user_id, userId)))).then(maybeOne)) as { data: { role: StrapRole } | null; error: unknown };
   if (error || !data) return null;
   return data.role;
 }
 
 /** The owner's Personal Strap id, creating nothing. Null if none exists. */
 export async function getPersonalStrapId(
-  client: unknown,
+  client: DatabaseContext,
   userId: string
 ): Promise<string | null> {
-  const db = client as SupabaseLikeClient;
-  const { data, error } = (await db
-    .from("creeds")
-    .select("id")
-    .eq("owner_user_id", userId)
-    .eq("type", "personal")
-    .maybeSingle()) as { data: { id: string } | null; error: unknown };
+  const db = client;
+  const { data, error } = (await query(db, tables.creeds, "select", (database, scope) => database.select({ id: tables.creeds.id }).from(tables.creeds).where(and(scope, eq(tables.creeds.owner_user_id, userId), eq(tables.creeds.type, "personal")))).then(maybeOne)) as { data: { id: string } | null; error: unknown };
   if (error || !data) return null;
   return data.id;
 }
@@ -145,27 +129,19 @@ export async function getPersonalStrapId(
  * Reads membership under RLS via the passed client.
  */
 export async function hasCompanyMembership(
-  client: unknown,
+  client: DatabaseContext,
   userId: string
 ): Promise<boolean> {
-  const db = client as SupabaseLikeClient;
-  const { data: memberRows, error: memberError } = (await db
-    .from("creed_members")
-    .select("creed_id")
-    .eq("user_id", userId)) as { data: Array<{ creed_id: string }> | null; error: unknown };
+  const db = client;
+  const { data: memberRows, error: memberError } = (await query(db, tables.creed_members, "select", (database, scope) => database.select({ creed_id: tables.creed_members.creed_id }).from(tables.creed_members).where(and(scope, eq(tables.creed_members.user_id, userId))))) as { data: Array<{ creed_id: string }> | null; error: unknown };
   if (memberError || !memberRows?.length) return false;
 
-  const { data: companyRows, error: companyError } = (await db
-    .from("creeds")
-    .select("id")
-    .in("id", memberRows.map((row) => row.creed_id))
-    .eq("type", "company")
-    .limit(1)) as { data: Array<{ id: string }> | null; error: unknown };
+  const { data: companyRows, error: companyError } = (await query(db, tables.creeds, "select", (database, scope) => database.select({ id: tables.creeds.id }).from(tables.creeds).where(and(scope, inArray(tables.creeds.id, memberRows.map((row) => row.creed_id)), eq(tables.creeds.type, "company"))).limit(1))) as { data: Array<{ id: string }> | null; error: unknown };
 
   return !companyError && Boolean(companyRows?.length);
 }
 
-export type { MemberRow, CreedRow };
+export type { CreedRow, MemberRow };
 
 /** @deprecated Use listUserStraps. */
 export const listUserCreeds = listUserStraps;

@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server";
+import { isDatabaseConfigured } from "@/lib/env";
 import { NO_STORE_HEADERS } from "@/lib/http-headers";
-import { markEntitlementWelcomed, markCompanyWelcomed } from "@/lib/welcome";
+import { getRequestAuth, getRequestDatabaseContext } from "@/lib/request-auth";
 import { resolveOwnedCompanyStrapId } from "@/lib/strap-context";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { markCompanyWelcomed, markEntitlementWelcomed } from "@/lib/welcome";
+import { NextResponse } from "next/server";
 
 // Marks the one-time welcome pop-up as seen for the current user. Called
 // (fire-and-forget) whenever the user closes the tour - via the X, Esc,
@@ -20,14 +20,14 @@ export const dynamic = "force-dynamic";
 
 
 export async function POST() {
-  if (!isSupabaseConfigured()) {
+  if (!isDatabaseConfigured()) {
     return new NextResponse(null, { status: 204, headers: NO_STORE_HEADERS });
   }
 
-  const supabase = await createSupabaseServerClient();
+  const context = await getRequestDatabaseContext();
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await getRequestAuth().then(({ user }) => ({ data: { user } }));
 
   if (!user) {
     return NextResponse.json(
@@ -41,7 +41,7 @@ export async function POST() {
     // gated on the company billing row - mark that. Otherwise mark the personal
     // entitlement. resolveOwnedCompanyCreedId is null for members and personal
     // Straps, so their path is unchanged.
-    const ownedCompanyId = await resolveOwnedCompanyStrapId(supabase, user);
+    const ownedCompanyId = await resolveOwnedCompanyStrapId(context, user);
     if (ownedCompanyId) {
       await markCompanyWelcomed(ownedCompanyId);
     } else {

@@ -11,11 +11,11 @@ const enforceCsp =
 const csp = [
   "default-src 'self'",
   // Scripts: same-origin + Next runtime needs eval in dev; loosen to unsafe-inline so we don't break inline boot
-  `script-src 'self' 'unsafe-inline' ${isDev ? "'unsafe-eval'" : ""} https://*.supabase.co`,
+  `script-src 'self' 'unsafe-inline' ${isDev ? "'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
-  "connect-src 'self' https://*.supabase.co https://*.supabase.in https://api.openrouter.ai https://openrouter.ai https://api.github.com",
+  "connect-src 'self' https://api.openrouter.ai https://openrouter.ai https://api.github.com",
   "frame-src 'self'",
   "frame-ancestors 'self'",
   "base-uri 'self'",
@@ -98,7 +98,6 @@ const nextConfig: NextConfig = {
     // the high-res landing backgrounds.
     qualities: [75, 100],
     remotePatterns: [
-      { protocol: "https", hostname: "**.supabase.co" },
       { protocol: "https", hostname: "avatars.githubusercontent.com" },
       { protocol: "https", hostname: "lh3.googleusercontent.com" },
     ],

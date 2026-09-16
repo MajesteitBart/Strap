@@ -12,20 +12,11 @@
 // stability of every action.
 /* eslint-disable react-hooks/exhaustive-deps */
 
+import { normalizeRichTextInput, richTextContentEquivalent } from "@/lib/rich-text";
 import {
-  createContext,
-  useCallback,
-  useEffect,
-  useContext,
-  useMemo,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react";
-import {
+  applyReorderDraft,
   buildVisibleStrapMarkdown,
   createStarterContent,
-  applyReorderDraft,
   getMetaProposalDiffText,
   getProposalPreviewText,
   inferAgentSectionAccent,
@@ -38,22 +29,30 @@ import {
   type AccentKey,
   type ActivityEntry,
   type AgentPermission,
-  type StrapSection,
-  type StrapSettings,
-  type StrapState,
   type GettingStartedStepKey,
   type Proposal,
   type ProposalDraft,
+  type StrapSection,
+  type StrapSettings,
+  type StrapState,
 } from "@/lib/strap-data";
-import { normalizeRichTextInput, richTextContentEquivalent } from "@/lib/rich-text";
-import type { RealtimeChannel } from "@supabase/supabase-js";
-import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
+
+import { authClient } from "@/lib/auth/client";
 import { toast } from "sonner";
 
 type StrapContextValue = {
   state: StrapState;
   // Company only: sectionId -> names of OTHER members editing it right now.
-  sectionPresence: Record<string, string[]>;
   toggleLock: () => void;
   toggleSectionLock: (sectionId: string) => void;
   updateRichTextSection: (sectionId: string, content: string) => void;
@@ -573,140 +572,9 @@ export function StrapProvider({
   const runCompanySaveRef = useRef<((sectionId: string) => Promise<void>) | null>(
     null,
   );
-  // Company presence: which sections OTHER members are editing right now
-  // (sectionId -> display names), via a Supabase Realtime presence channel.
-  // Lets collisions be avoided socially - the section header shows "X is
-  // editing" - since same-section concurrent edits are whole-section
-  // last-write-wins.
-  const [sectionPresence, setSectionPresence] = useState<
-    Record<string, string[]>
-  >({});
-  const presenceChannelRef = useRef<RealtimeChannel | null>(null);
-  const presenceIdleTimerRef = useRef<number | null>(null);
-  // Sync plumbing: in-flight/min-gap dedupe, the activity clock that drives
-  // the adaptive poll cadence, and a ref so the presence channel (created
-  // earlier in the component) can trigger syncs without a TDZ on
-  // syncFromServer.
   const syncInFlightRef = useRef(false);
   const lastSyncAtRef = useRef(0);
   const syncActivityRef = useRef(Date.now());
-  const syncFromServerRef = useRef<() => void>(() => {});
-  // The section we've announced (null once idle-cleared). Presence state
-  // persists server-side until untrack/leave, so we only re-track when the
-  // section actually changes - keystrokes merely push the idle deadline out,
-  // keeping the websocket quiet during long writing sessions.
-  const presenceTrackedSectionRef = useRef<string | null>(null);
-  const presenceLastJsonRef = useRef("");
-
-  useEffect(() => {
-    if (state.creedType !== "company" || !state.creedId) {
-      setSectionPresence({});
-      return;
-    }
-    const supabase = getSupabaseBrowserClient();
-    // Keyed by email so a member's multiple tabs collapse to one presence;
-    // the random fallback keeps two email-less members from sharing a key
-    // (which would make them invisible to each other and clobber each
-    // other's announcements). Read via latestStateRef so a profile rename
-    // doesn't tear the channel down mid-session.
-    const user = latestStateRef.current.user;
-    const presenceKey =
-      user.email || user.handle || `member-${Math.random().toString(36).slice(2, 10)}`;
-    const channel = supabase.channel(`presence:creed:${state.creedId}`, {
-      config: { presence: { key: presenceKey } },
-    });
-    presenceChannelRef.current = channel;
-    const recompute = () => {
-      const raw = channel.presenceState() as Record<
-        string,
-        Array<{ name?: string; sectionId?: string | null }>
-      >;
-      const next: Record<string, string[]> = {};
-      for (const [key, metas] of Object.entries(raw)) {
-        if (key === presenceKey) continue;
-        for (const meta of metas) {
-          if (!meta?.sectionId || !meta.name) continue;
-          const names = (next[meta.sectionId] ??= []);
-          if (!names.includes(meta.name)) names.push(meta.name);
-        }
-      }
-      // Presence syncs fire for every member's track/untrack; most produce an
-      // identical map. Bail before setState so they don't re-render the app.
-      const json = JSON.stringify(next);
-      if (json === presenceLastJsonRef.current) return;
-      presenceLastJsonRef.current = json;
-      setSectionPresence(next);
-    };
-    // Another member saved: pull their change now instead of waiting out the
-    // poll. Trailing-debounced - a typing burst broadcasts per autosave, one
-    // GET after it settles delivers the same freshness.
-    let broadcastDebounce: number | null = null;
-    channel.on("broadcast", { event: "state-changed" }, () => {
-      syncActivityRef.current = Date.now();
-      if (broadcastDebounce !== null) window.clearTimeout(broadcastDebounce);
-      broadcastDebounce = window.setTimeout(() => {
-        broadcastDebounce = null;
-        syncFromServerRef.current();
-      }, 1_000);
-    });
-    channel.on("presence", { event: "sync" }, recompute).subscribe((status: string) => {
-      // If the user started typing before the join handshake finished, that
-      // early track() was dropped - announce again now that we're joined.
-      if (status === "SUBSCRIBED" && presenceTrackedSectionRef.current) {
-        void channel.track({
-          name: latestStateRef.current.user.name,
-          sectionId: presenceTrackedSectionRef.current,
-        });
-      }
-    });
-    return () => {
-      presenceChannelRef.current = null;
-      presenceTrackedSectionRef.current = null;
-      presenceLastJsonRef.current = "";
-      if (broadcastDebounce !== null) {
-        window.clearTimeout(broadcastDebounce);
-        broadcastDebounce = null;
-      }
-      if (presenceIdleTimerRef.current !== null) {
-        window.clearTimeout(presenceIdleTimerRef.current);
-        presenceIdleTimerRef.current = null;
-      }
-      void supabase.removeChannel(channel);
-      setSectionPresence({});
-    };
-  }, [state.creedType, state.creedId]);
-
-  // Announce "I'm editing section X". Called from the company typing path.
-  // Sends a frame only when the tracked section changes; every keystroke
-  // resets the idle timer, and after 20s of quiet the announcement is cleared
-  // so a closed laptop doesn't show as editing forever (leaving the channel
-  // also clears it server-side).
-  function trackEditingPresence(sectionId: string) {
-    const channel = presenceChannelRef.current;
-    if (!channel) return;
-    if (presenceIdleTimerRef.current !== null) {
-      window.clearTimeout(presenceIdleTimerRef.current);
-    }
-    presenceIdleTimerRef.current = window.setTimeout(() => {
-      presenceTrackedSectionRef.current = null;
-      void presenceChannelRef.current?.track({
-        name: latestStateRef.current.user.name,
-        sectionId: null,
-      });
-    }, 20_000);
-    if (presenceTrackedSectionRef.current === sectionId) return;
-    presenceTrackedSectionRef.current = sectionId;
-    void channel
-      .track({ name: latestStateRef.current.user.name, sectionId })
-      .then((status) => {
-        // A failed track (e.g. channel still joining) must not stick: clear
-        // the marker so the next keystroke (or the SUBSCRIBED callback above)
-        // re-announces.
-        if (status !== "ok" && presenceTrackedSectionRef.current === sectionId) {
-          presenceTrackedSectionRef.current = null;
-        }
-      });
-  }
   const broadcastStateChanged = useCallback(() => {
     const creedId = latestStateRef.current.creedId;
     if (!creedId) return;
@@ -716,15 +584,6 @@ export function StrapProvider({
       syncChannelRef.current?.postMessage({ creedId });
     } catch {
       // Channel closed mid-teardown; the other tab's poll still covers it.
-    }
-    // Company creeds also announce to the other members' browsers over the
-    // realtime channel, so their screens update now, not at the next poll.
-    if (latestStateRef.current.creedType === "company") {
-      void presenceChannelRef.current
-        ?.send({ type: "broadcast", event: "state-changed", payload: { creedId } })
-        .catch(() => {
-          // Channel not joined yet or transient network error; polling covers it.
-        });
     }
   }, []);
   // Company mode saves per section (not the full-state PUT). One debounce timer
@@ -1250,12 +1109,7 @@ export function StrapProvider({
     return () => window.removeEventListener("online", onOnline);
   }, [persistenceEnabled, flushPendingState]);
 
-  // Keep the presence channel's broadcast handler pointed at the current
-  // syncFromServer (the channel effect runs earlier in the component than the
-  // callback's declaration, so it goes through this ref).
-  useEffect(() => {
-    syncFromServerRef.current = () => void syncFromServer();
-  }, [syncFromServer]);
+
 
   // ---- "Get started" checklist ------------------------------------------
   // Steps only flip false -> true. Local state updates immediately (no
@@ -1700,7 +1554,7 @@ export function StrapProvider({
     markGettingStartedStep("edit");
     // Company mode persists per section (the full-state PUT is disabled).
     if (latestStateRef.current.creedType === "company") {
-      trackEditingPresence(sectionId);
+
       saveCompanySection(sectionId, content);
     }
   }
@@ -2718,8 +2572,7 @@ export function StrapProvider({
   }
 
   async function signOut() {
-    const supabase = getSupabaseBrowserClient();
-    await supabase.auth.signOut();
+    await authClient.signOut();
     window.location.href = "/";
   }
 
@@ -2805,10 +2658,9 @@ export function StrapProvider({
   const contextValue = useMemo<StrapContextValue>(
     () => ({
       state,
-      sectionPresence,
       ...stableActions,
     }),
-    [state, sectionPresence, stableActions],
+    [state, stableActions],
   );
 
   return (

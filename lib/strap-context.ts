@@ -1,16 +1,16 @@
-import "server-only";
-import { cache } from "react";
-import { cookies } from "next/headers";
-import type { User } from "@supabase/supabase-js";
-import { getSupabaseAdminClient } from "@/lib/supabase/admin";
+import type { User } from "@/lib/auth/user";
+import type { DatabaseContext } from "@/lib/db/context";
+import { ensurePersonalProfile } from "@/lib/db/repositories/personal";
 import {
-  listUserStraps,
-  getPersonalStrapId,
   getStrapRole,
-  type StrapSummary,
+  listUserStraps,
+  type StrapSummary
 } from "@/lib/strap-membership";
 import type { StrapRole } from "@/lib/strap-permissions";
 import { getDisplayName } from "@/lib/user-name";
+import { cookies } from "next/headers";
+import { cache } from "react";
+import "server-only";
 
 // Active-Strap resolution.
 //
@@ -46,7 +46,7 @@ export type ActiveCreed = ActiveStrap;
 // the args match, so the membership read runs once per request. A no-op in
 // route handlers.
 export const resolveActiveStrap = cache(async function resolveActiveStrap(
-  client: unknown,
+  client: DatabaseContext,
   user: User
 ): Promise<ActiveCreed | null> {
   const creeds = await listUserStraps(client, user.id);
@@ -72,7 +72,7 @@ export const resolveActiveStrap = cache(async function resolveActiveStrap(
  * Strap), which preserves the exact personal behaviour for everyone else.
  */
 export async function resolveOwnedCompanyStrapId(
-  client: unknown,
+  client: DatabaseContext,
   user: User
 ): Promise<string | null> {
   const active = await resolveActiveStrap(client, user);
@@ -87,7 +87,7 @@ export async function resolveOwnedCompanyStrapId(
  * manager tool, and a null result means "treat this request as personal".
  */
 export async function resolveManagedCompanyStrapId(
-  client: unknown,
+  client: DatabaseContext,
   user: User
 ): Promise<string | null> {
   const active = await resolveActiveStrap(client, user);
@@ -106,7 +106,7 @@ export async function resolveManagedCompanyStrapId(
  * a read strip owner-only detail (e.g. purchase history) for plain members.
  */
 export async function resolveMemberCompanyStrap(
-  client: unknown,
+  client: DatabaseContext,
   user: User
 ): Promise<{ creedId: string; role: StrapRole } | null> {
   const active = await resolveActiveStrap(client, user);
@@ -124,7 +124,7 @@ export async function resolveMemberCompanyStrap(
  * the user is a member of. `client` reads membership under RLS.
  */
 export async function resolveMemberCompanyStrapById(
-  client: unknown,
+  client: DatabaseContext,
   user: User,
   creedId: string
 ): Promise<{ creedId: string; role: StrapRole } | null> {
@@ -139,7 +139,7 @@ export async function resolveMemberCompanyStrapById(
  * Called by POST /api/app/straps/activate.
  */
 export async function setActiveStrap(
-  client: unknown,
+  client: DatabaseContext,
   user: User,
   creedId: string
 ): Promise<StrapRole | null> {
@@ -163,42 +163,8 @@ export async function setActiveStrap(
  * somehow missing (e.g. a user created before the backfill, or a race). Used by
  * paths that must always resolve a Personal Strap (the personal state loader).
  */
-export async function ensurePersonalStrapId(
-  client: unknown,
-  user: User
-): Promise<string> {
-  const existing = await getPersonalStrapId(client, user.id);
-  if (existing) return existing;
-
-  const admin = getSupabaseAdminClient() as unknown as {
-    from: (t: string) => {
-      insert: (v: unknown) => {
-        select: (c: string) => { single: () => Promise<{ data: { id: string } | null; error: unknown }> };
-      };
-    };
-  };
-  const name = getDisplayName(user, "Your Strap");
-
-  const { data, error } = await admin
-    .from("creeds")
-    .insert({ type: "personal", name, owner_user_id: user.id })
-    .select("id")
-    .single();
-  if (error || !data) {
-    throw new Error("Could not provision a personal Strap.");
-  }
-
-  // Owner membership row (best-effort; the unique index makes a retry safe).
-  const adminMembers = getSupabaseAdminClient() as unknown as {
-    from: (t: string) => { insert: (v: unknown) => Promise<{ error: unknown }> };
-  };
-  await adminMembers.from("creed_members").insert({
-    creed_id: data.id,
-    user_id: user.id,
-    role: "owner",
-  });
-
-  return data.id;
+export async function ensurePersonalStrapId(client: DatabaseContext, user: User): Promise<string> {
+  return ensurePersonalProfile(client, user.id, getDisplayName(user, "Your Strap"));
 }
 
 export const ACTIVE_STRAP_COOKIE = ACTIVE_CREED_COOKIE;

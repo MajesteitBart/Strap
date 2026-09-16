@@ -1,29 +1,31 @@
-import { NextResponse } from "next/server";
-import {
-  getConfiguredRepo,
-  hasLinkedGitHubIdentity,
-  requireAuthenticatedUser,
-  resolveGitHubProfileSnapshot,
-  resolveSyncStatus,
-  withAuthenticatedGitHubAccess,
-} from "@/lib/github-version-control";
-import { readGitHubIntegration, readVersionControlConfig } from "@/lib/strap-backend";
-import { resolveManagedCompanyCreedId } from "@/lib/strap-context";
-import { readCompanyVersionControl } from "@/lib/company-version-control";
+import { requireApiAuth } from "@/lib/api-auth";
 import {
   readCompanyGitHubIntegration,
   withCompanyGitHubAccess,
 } from "@/lib/company-github";
+import { readCompanyVersionControl } from "@/lib/company-version-control";
+import {
+  getConfiguredRepo,
+  hasLinkedGitHubIdentity,
+  resolveGitHubProfileSnapshot,
+  resolveSyncStatus,
+  withAuthenticatedGitHubAccess
+} from "@/lib/github-version-control";
+import { readGitHubIntegration, readVersionControlConfig } from "@/lib/strap-backend";
+import { resolveManagedCompanyCreedId } from "@/lib/strap-context";
+import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
+  const auth = await requireApiAuth();
+  if (auth instanceof NextResponse) return auth;
   try {
     const { searchParams } = new URL(request.url);
     const localHash = searchParams.get("localHash")?.trim() ?? "";
-    const { supabase, user } = await requireAuthenticatedUser();
+    const { context, user } = auth;
 
     // Company managers resolve status against the TEAM connection + the company
     // target. Members and Personal Straps resolve against their own.
-    const companyId = await resolveManagedCompanyCreedId(supabase, user);
+    const companyId = await resolveManagedCompanyCreedId(context, user);
     if (companyId) {
       const companyVc = await readCompanyVersionControl(companyId);
       const configuredRepo = getConfiguredRepo(companyVc);
@@ -62,8 +64,8 @@ export async function GET(request: Request) {
       return NextResponse.json(payload);
     }
 
-    const integration = await readGitHubIntegration(supabase, user.id);
-    const versionControl = await readVersionControlConfig(supabase, user.id);
+    const integration = await readGitHubIntegration(context, user.id);
+    const versionControl = await readVersionControlConfig(context, user.id);
     const configuredRepo = getConfiguredRepo(versionControl);
 
     const linkedIdentity = hasLinkedGitHubIdentity(user);

@@ -19,6 +19,21 @@ jobs:
     timeout-minutes: 15
     env:
       NEXT_PUBLIC_SITE_URL: http://localhost:3000
+      DATABASE_URL: postgresql://strap:strap-ci-only@127.0.0.1:5432/strap
+    services:
+      postgres:
+        image: postgres:17.6-alpine
+        env:
+          POSTGRES_USER: strap
+          POSTGRES_PASSWORD: strap-ci-only
+          POSTGRES_DB: strap
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U strap -d strap"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
@@ -26,11 +41,30 @@ jobs:
           node-version: "22"
           cache: npm
       - run: npm ci
+      - run: npm run db:migrate
       - run: npm test
       - run: npx tsc --noEmit -p .
       - run: npm run lint
       - run: npm run audit:brand
       - run: npm run build
+      - name: Exercise the built app, authorization, and concurrent token refresh
+        env:
+          BETTER_AUTH_URL: http://localhost:3000
+          BETTER_AUTH_SECRET: ci-only-auth-secret-not-used-outside-tests
+          STRAP_ENCRYPTION_SECRET: ci-only-token-secret-not-used-outside-tests
+          STRAP_VAULT_SECRET: ci-only-vault-secret-not-used-outside-tests
+          STRAP_MAINTENANCE_SECRET: ci-only-maintenance-secret-not-used-outside-tests
+        run: |
+          npm run start > /tmp/strap-runtime.log 2>&1 &
+          app_pid=$!
+          trap 'kill "$app_pid" 2>/dev/null || true' EXIT
+          for attempt in {1..30}; do
+            if curl --fail --silent http://localhost:3000/api/health > /dev/null; then
+              break
+            fi
+            sleep 1
+          done
+          npm run verify:local
 
   cli:
     runs-on: ubuntu-latest

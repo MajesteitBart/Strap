@@ -41,8 +41,9 @@
 
 ## What Is Next
 
+- Local migration is implemented on `feature/remove-supabase`: Postgres/Drizzle, Better Auth, explicit authorization, encrypted Vault, database avatars, polling and secured maintenance. All 283 tests and local browser/API/MCP/import rehearsals pass; build succeeds, lint has zero errors. The branch remains uncommitted. Google setup, independent authorization review and hosted cutover remain open; the existing Supabase callback and production resources are untouched. See `.project/projects/remove-supabase/updates/2026-09-13-local-runtime-verified.md`.
 - Restore OpenWiki generation in draft PR 8. The maintainer funded OpenRouter on 2026-09-13; the API reports $10 in purchased credits and the production function key matches this checkout's funded key. A new workflow run can now verify the outstanding native-worker completion issue. No output from failed runs has been published. BYOK also remains available.
-- Complete reopened redesign tasks T-002 and T-005: apply the committed confirmation and recovery email templates through Supabase management access and verify delivered emails in mail clients. The application UI is deployed, but the redesign contract remains open until this email gate passes.
+- Complete reopened redesign tasks T-002 and T-005: verify delivered confirmation and recovery emails in mail clients. The removal branch now sends these templates through Resend; production still uses its existing backend until cutover. The application UI is deployed, but the redesign contract remains open until this email gate passes.
 - Continue serving the `creed.md` compatibility origin during the migration window.
 
 ## Remaining Risks

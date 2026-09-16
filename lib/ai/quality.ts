@@ -1,5 +1,18 @@
-import "server-only";
-import { createHash } from "node:crypto";
+import * as tables from "@/db/schema/application";
+import { resolveAiCredential, resolveCompanyAiCredential } from "@/lib/ai/credits";
+import { callOpenRouter, parseJsonObject } from "@/lib/ai/openrouter";
+import { recordAiUsage } from "@/lib/ai/persistence";
+import {
+  buildQualityPrompt,
+  buildQualityResponseFormat,
+  qualitySubject,
+  STRAP_QUALITY_RUBRIC_VERSION,
+  type QualityScope,
+} from "@/lib/ai/quality-rubric";
+import { authorizeValues } from "@/lib/authz/policies";
+import { conflictSet, maybeOne, query } from "@/lib/db/query";
+import { serviceContext } from "@/lib/db/service";
+import { log } from "@/lib/observability";
 import {
   GOALS_SECTION_ID,
   IDENTITY_SECTION_ID,
@@ -8,20 +21,11 @@ import {
   WORK_SECTION_ID,
   type StrapSection,
 } from "@/lib/strap-data";
-import { callOpenRouter, parseJsonObject } from "@/lib/ai/openrouter";
-import { recordAiUsage } from "@/lib/ai/persistence";
-import { resolveAiCredential, resolveCompanyAiCredential } from "@/lib/ai/credits";
-import { getSupabaseAdminClient } from "@/lib/supabase/admin";
-import {
-  buildQualityPrompt,
-  buildQualityResponseFormat,
-  STRAP_QUALITY_RUBRIC_VERSION,
-  qualitySubject,
-  type QualityScope,
-} from "@/lib/ai/quality-rubric";
-import { log } from "@/lib/observability";
+import { and, desc, eq } from "drizzle-orm";
+import { createHash } from "node:crypto";
+import "server-only";
 
-import type { SupabaseLikeClient } from "@/lib/supabase/types";
+import type { DatabaseContext } from "@/lib/db/context";
 
 // A short headline + a one-sentence detail. The headline shows in the
 // collapsed quality popover; the detail expands on demand.
@@ -465,15 +469,13 @@ function overallQualitativeFromReport(report: StrapQualityReport): OverallQualit
 // creed_id (so every member sees the one shared report); otherwise the personal
 // path is byte-identical to before.
 async function readCachedReport(
-  client: unknown,
+  client: DatabaseContext,
   userId: string,
   contentHash: string,
   creedId?: string
 ) {
-  const db = client as SupabaseLikeClient;
-  let query = db.from("creed_quality_reports").select("*").eq("content_hash", contentHash);
-  query = creedId ? query.eq("creed_id", creedId) : query.eq("user_id", userId);
-  const { data, error } = await query.order("updated_at", { ascending: false }).limit(1).maybeSingle();
+  const db = client;
+  const { data, error } = await query(db, tables.creed_quality_reports, "select", (database, scope) => database.select().from(tables.creed_quality_reports).where(and(scope, eq(tables.creed_quality_reports.content_hash, contentHash), creedId ? eq(tables.creed_quality_reports.creed_id, creedId) : eq(tables.creed_quality_reports.user_id, userId))).orderBy(desc(tables.creed_quality_reports.updated_at)).limit(1)).then(maybeOne);
 
   assertNoError(error, "Could not load quality report.");
   return data as {
@@ -482,14 +484,9 @@ async function readCachedReport(
   } | null;
 }
 
-export async function readLatestQualityReport(client: unknown, userId: string, creedId?: string) {
-  const db = client as SupabaseLikeClient;
-  let query = db.from("creed_quality_reports").select("*");
-  query = creedId ? query.eq("creed_id", creedId) : query.eq("user_id", userId);
-  const { data, error } = await query
-    .order("updated_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+export async function readLatestQualityReport(client: DatabaseContext, userId: string, creedId?: string) {
+  const db = client;
+  const { data, error } = await query(db, tables.creed_quality_reports, "select", (database, scope) => database.select().from(tables.creed_quality_reports).where(and(scope, creedId ? eq(tables.creed_quality_reports.creed_id, creedId) : eq(tables.creed_quality_reports.user_id, userId))).orderBy(desc(tables.creed_quality_reports.updated_at)).limit(1)).then(maybeOne);
 
   assertNoError(error, "Could not load quality report.");
   return data as {
@@ -531,7 +528,7 @@ export async function readQualityBaseline({
   sections,
   companyRead = false,
 }: {
-  client: unknown;
+  client: DatabaseContext;
   userId: string;
   // The report key (personal creed or shared company creed). Always set.
   creedId: string;
@@ -639,17 +636,13 @@ async function persistQualityReport({
 }) {
   try {
     const now = new Date().toISOString();
-    const db = getSupabaseAdminClient() as unknown as SupabaseLikeClient;
+    const db = serviceContext("lib/ai/quality.ts");
 
     let report: ReportWithHashes = reportWithHashes;
     let hashes = sectionHashes;
     let hash = contentHash;
     if (mergeShared) {
-      const { data: stored } = (await db
-        .from("creed_quality_reports")
-        .select("report, content_hash, section_hashes")
-        .eq("creed_id", creedId)
-        .maybeSingle()) as {
+      const { data: stored } = (await query(db, tables.creed_quality_reports, "select", (database, scope) => database.select({ report: tables.creed_quality_reports.report, content_hash: tables.creed_quality_reports.content_hash, section_hashes: tables.creed_quality_reports.section_hashes }).from(tables.creed_quality_reports).where(and(scope, eq(tables.creed_quality_reports.creed_id, creedId)))).then(maybeOne)) as {
         data: { report?: StoredReport; content_hash?: string; section_hashes?: Record<string, string> } | null;
       };
       const merged = mergeSharedReport(
@@ -665,8 +658,8 @@ async function persistQualityReport({
       hash = merged.contentHash;
     }
 
-    const { error } = await db.from("creed_quality_reports").upsert(
-      {
+    const { error } = await query(db, tables.creed_quality_reports, "insert", async (database, scope) => {
+    const values = {
         user_id: userId,
         creed_id: creedId,
         content_hash: hash,
@@ -675,9 +668,10 @@ async function persistQualityReport({
         report,
         created_at: now,
         updated_at: now,
-      },
-      { onConflict: "creed_id" },
-    );
+      } as typeof tables.creed_quality_reports.$inferInsert;
+    await authorizeValues(db, tables.creed_quality_reports, "insert", values);
+    return database.insert(tables.creed_quality_reports).values(values).onConflictDoUpdate({ target: [tables.creed_quality_reports.creed_id], set: conflictSet(tables.creed_quality_reports, values), setWhere: scope });
+  });
     assertNoError(error, "Could not save quality report.");
   } catch (cause) {
     log.warn("quality_report_persist_failed", {
@@ -703,7 +697,7 @@ export async function analyzeCreedQuality({
   force = false,
   targetSectionIds,
 }: {
-  client: unknown;
+  client: DatabaseContext;
   userId: string;
   // The report key. Every report (personal or company) is keyed by creed_id: a
   // personal report by the owner's personal creed, a company report by the

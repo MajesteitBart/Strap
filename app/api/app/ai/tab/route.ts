@@ -1,5 +1,3 @@
-import { NextResponse } from "next/server";
-import { requireApiAuth } from "@/lib/api-auth";
 import { resolveAiCredential, resolveCompanyAiCredential } from "@/lib/ai/credits";
 import { streamOpenRouter } from "@/lib/ai/openrouter";
 import { recordAiUsage } from "@/lib/ai/persistence";
@@ -11,11 +9,13 @@ import {
   TAB_MAX_BEFORE_CHARS,
   type TabMode,
 } from "@/lib/ai/tab";
+import { requireApiAuth } from "@/lib/api-auth";
+import { log } from "@/lib/observability";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { loadActiveStrapState } from "@/lib/strap-backend";
 import { resolveActiveStrap } from "@/lib/strap-context";
 import { sectionBodyMarkdown } from "@/lib/strap-data";
-import { checkRateLimit } from "@/lib/rate-limit";
-import { log } from "@/lib/observability";
+import { NextResponse } from "next/server";
 
 // Tab autocomplete: one explicit press, one streamed suggestion. The route
 // streams raw completion text (text/plain) so the ghost renders from the first
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const activeCreed = await resolveActiveStrap(auth.supabase, auth.user);
+  const activeCreed = await resolveActiveStrap(auth.context, auth.user);
   const companyEntry = activeCreed?.creeds.find(
     (c) => c.id === activeCreed.creedId && c.type === "company",
   );
@@ -79,7 +79,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing or oversized request." }, { status: 400 });
     }
 
-    const { state } = await loadActiveStrapState(auth.supabase, auth.user, activeCreed);
+    const { state } = await loadActiveStrapState(auth.context, auth.user, activeCreed);
     const target = state.sections.find(
       (section) => section.id === sectionId && !section.archived,
     );
@@ -100,7 +100,7 @@ export async function POST(request: Request) {
 
     const credential = companyId
       ? await resolveCompanyAiCredential(companyId, "tab", auth.user.id)
-      : await resolveAiCredential(auth.supabase, auth.user.id, "tab");
+      : await resolveAiCredential(auth.context, auth.user.id, "tab");
 
     payload = {
       messages: [
@@ -176,7 +176,7 @@ export async function POST(request: Request) {
         // were still generated, so they still count.
         try {
           await recordAiUsage({
-            client: auth.supabase,
+            client: auth.context,
             userId: auth.user.id,
             creedId: companyId,
             feature: "tab",

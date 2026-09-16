@@ -1,3 +1,7 @@
+import * as tables from "@/db/schema/application";
+import { authorizeValues } from "@/lib/authz/policies";
+import { maybeOne, query } from "@/lib/db/query";
+import { and, eq, gt, isNull } from "drizzle-orm";
 import "server-only";
 // Minimal OAuth 2.1 authorization-server logic for the Strap MCP endpoint.
 // Opaque tokens only (no JWT): each token is random, stored as a SHA-256 hash
@@ -6,17 +10,17 @@ import "server-only";
 // no new crypto or dependencies. PKCE S256 is mandatory; codes are single-use
 // and short-lived. The admin (service-role) client is used throughout because
 // the oauth_* tables are service-role only.
-import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
-import { encryptSecret, hashSecret } from "@/lib/secret-crypto";
-import { getSupabaseAdminClient } from "@/lib/supabase/admin";
+import type { DatabaseContext } from "@/lib/db/context";
+import { serviceContext } from "@/lib/db/service";
 import { log } from "@/lib/observability";
-import type { SupabaseLikeClient } from "@/lib/supabase/types";
+import { encryptSecret, hashSecret } from "@/lib/secret-crypto";
+import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
 
 // The admin client's generated types don't know about the oauth_* tables, so we
 // access them through the same loose structural shim creed-backend uses and cast
 // row shapes explicitly.
-function adminDb(): SupabaseLikeClient {
-  return getSupabaseAdminClient() as unknown as SupabaseLikeClient;
+function adminDb(): DatabaseContext {
+  return serviceContext("lib/oauth.ts");
 }
 
 type ClientRow = { client_id: string; client_name: string; redirect_uris: string[] | null };
@@ -149,10 +153,14 @@ export async function registerOAuthClient(input: {
   const clientName = (input.clientName?.trim() || "MCP Client").slice(0, 120);
   const redirectUris = input.redirectUris;
 
-  const { error } = await admin.from("oauth_clients").insert({
+  const { error } = await query(admin, tables.oauth_clients, "insert", async (database, _scope) => {
+    const values = {
     client_id: clientId,
     client_name: clientName,
     redirect_uris: redirectUris,
+  } as typeof tables.oauth_clients.$inferInsert;
+    await authorizeValues(admin, tables.oauth_clients, "insert", values);
+    return database.insert(tables.oauth_clients).values(values);
   });
   if (error) {
     throw new Error(error.message);
@@ -163,11 +171,7 @@ export async function registerOAuthClient(input: {
 
 export async function getOAuthClient(clientId: string): Promise<OAuthClient | null> {
   const admin = adminDb();
-  const { data } = await admin
-    .from("oauth_clients")
-    .select("client_id, client_name, redirect_uris")
-    .eq("client_id", clientId)
-    .maybeSingle();
+  const { data } = await query(admin, tables.oauth_clients, "select", (database, scope) => database.select({ client_id: tables.oauth_clients.client_id, client_name: tables.oauth_clients.client_name, redirect_uris: tables.oauth_clients.redirect_uris }).from(tables.oauth_clients).where(and(scope, eq(tables.oauth_clients.client_id, clientId)))).then(maybeOne);
   const row = (data as ClientRow | null) ?? null;
   if (!row) {
     return null;
@@ -189,7 +193,8 @@ export async function issueAuthorizationCode(input: {
 }): Promise<string> {
   const admin = adminDb();
   const code = generateOpaqueToken("strap_ac");
-  const { error } = await admin.from("oauth_authorization_codes").insert({
+  const { error } = await query(admin, tables.oauth_authorization_codes, "insert", async (database, _scope) => {
+    const values = {
     code_hash: hashSecret(code),
     client_id: input.clientId,
     user_id: input.userId,
@@ -199,6 +204,9 @@ export async function issueAuthorizationCode(input: {
     // The Creeds the user granted this connection, carried to token issue.
     creed_grants: input.creedGrants,
     expires_at: new Date(Date.now() + CODE_TTL_MS).toISOString(),
+  } as typeof tables.oauth_authorization_codes.$inferInsert;
+    await authorizeValues(admin, tables.oauth_authorization_codes, "insert", values);
+    return database.insert(tables.oauth_authorization_codes).values(values);
   });
   if (error) {
     throw new Error(error.message);
@@ -215,13 +223,11 @@ export async function redeemAuthorizationCode(input: {
   codeVerifier: string;
 }): Promise<{ userId: string; scope: string; creedGrants: CreedGrant[] } | { error: string }> {
   const admin = adminDb();
-  const { data, error } = await admin
-    .from("oauth_authorization_codes")
-    .update({ used_at: new Date().toISOString() })
-    .eq("code_hash", hashSecret(input.code))
-    .is("used_at", null)
-    .select("client_id, user_id, redirect_uri, code_challenge, scope, expires_at, creed_grants")
-    .maybeSingle();
+  const { data, error } = await query(admin, tables.oauth_authorization_codes, "update", async (database, scope) => {
+    const values = { used_at: new Date().toISOString() } as Partial<typeof tables.oauth_authorization_codes.$inferInsert>;
+    await authorizeValues(admin, tables.oauth_authorization_codes, "update", values);
+    return database.update(tables.oauth_authorization_codes).set(values).where(and(scope, eq(tables.oauth_authorization_codes.code_hash, hashSecret(input.code)), isNull(tables.oauth_authorization_codes.used_at))).returning({ client_id: tables.oauth_authorization_codes.client_id, user_id: tables.oauth_authorization_codes.user_id, redirect_uri: tables.oauth_authorization_codes.redirect_uri, code_challenge: tables.oauth_authorization_codes.code_challenge, scope: tables.oauth_authorization_codes.scope, expires_at: tables.oauth_authorization_codes.expires_at, creed_grants: tables.oauth_authorization_codes.creed_grants });
+  }).then(maybeOne);
 
   if (error) {
     return { error: "server_error" };
@@ -258,9 +264,8 @@ export async function issueTokenPair(input: {
   const refreshToken = generateOpaqueToken("strap_rt");
   const now = Date.now();
 
-  const { data, error } = await admin
-    .from("oauth_tokens")
-    .insert({
+  const { data, error } = await query(admin, tables.oauth_tokens, "insert", async (database, _scope) => {
+    const values = {
       access_token_hash: hashSecret(accessToken),
       refresh_token_hash: hashSecret(refreshToken),
       encrypted_access_token: encryptSecret(accessToken),
@@ -271,9 +276,10 @@ export async function issueTokenPair(input: {
       creed_grants_explicit: input.creedGrantsExplicit ?? input.creedGrants.length > 0,
       access_expires_at: new Date(now + ACCESS_TTL_MS).toISOString(),
       refresh_expires_at: new Date(now + REFRESH_TTL_MS).toISOString(),
-    })
-    .select("id")
-    .maybeSingle();
+    } as typeof tables.oauth_tokens.$inferInsert;
+    await authorizeValues(admin, tables.oauth_tokens, "insert", values);
+    return database.insert(tables.oauth_tokens).values(values).returning({ id: tables.oauth_tokens.id });
+  }).then(maybeOne);
   if (error || !data) {
     throw new Error(error?.message ?? "Could not issue token.");
   }
@@ -300,7 +306,7 @@ export async function issueTokenPair(input: {
 // narrows access, never widens it - so we log and continue rather than throw a
 // 500 that would strand a consumed auth code or (on refresh) a revoked token.
 async function writeTokenCreedGrants(
-  admin: SupabaseLikeClient,
+  admin: DatabaseContext,
   tokenId: string,
   grants: CreedGrant[]
 ) {
@@ -314,7 +320,11 @@ async function writeTokenCreedGrants(
     creed_id: creedId,
     mode,
   }));
-  const { error } = await admin.from("oauth_token_creeds").insert(rows);
+  const { error } = await query(admin, tables.oauth_token_creeds, "insert", async (database, _scope) => {
+    const values = rows as typeof tables.oauth_token_creeds.$inferInsert[];
+    await authorizeValues(admin, tables.oauth_token_creeds, "insert", values);
+    return database.insert(tables.oauth_token_creeds).values(values);
+  });
   if (error) {
     log.warn("Could not persist OAuth Strap grants", { tokenId, message: error.message });
   }
@@ -326,11 +336,7 @@ export async function rotateRefreshToken(
   refreshToken: string
 ): Promise<IssuedTokens | { error: string }> {
   const admin = adminDb();
-  const { data, error } = await admin
-    .from("oauth_tokens")
-    .select("id, client_id, user_id, scope, revoked_at, refresh_expires_at, creed_grants_explicit")
-    .eq("refresh_token_hash", hashSecret(refreshToken))
-    .maybeSingle();
+  const { data, error } = await query(admin, tables.oauth_tokens, "select", (database, scope) => database.select({ id: tables.oauth_tokens.id, client_id: tables.oauth_tokens.client_id, user_id: tables.oauth_tokens.user_id, scope: tables.oauth_tokens.scope, revoked_at: tables.oauth_tokens.revoked_at, refresh_expires_at: tables.oauth_tokens.refresh_expires_at, creed_grants_explicit: tables.oauth_tokens.creed_grants_explicit }).from(tables.oauth_tokens).where(and(scope, eq(tables.oauth_tokens.refresh_token_hash, hashSecret(refreshToken))))).then(maybeOne);
 
   if (error) {
     return { error: "server_error" };
@@ -346,18 +352,26 @@ export async function rotateRefreshToken(
   // Carry the old token's per-Strap grants onto the rotated token, otherwise a
   // connection would lose its Strap scoping on the first refresh (and MCP would
   // fall back to personal-only for a token that had been granted a company).
-  const { data: grantRows } = await admin
-    .from("oauth_token_creeds")
-    .select("creed_id, mode")
-    .eq("token_id", row.id);
+  const { data: grantRows, error: grantError } = await query(admin, tables.oauth_token_creeds, "select", (database, scope) => database.select({ creed_id: tables.oauth_token_creeds.creed_id, mode: tables.oauth_token_creeds.mode }).from(tables.oauth_token_creeds).where(and(scope, eq(tables.oauth_token_creeds.token_id, row.id))));
+  if (grantError) return { error: "server_error" };
   const creedGrants: CreedGrant[] = ((grantRows as Array<{ creed_id: string; mode: CreedGrantMode }> | null) ?? []).map(
     (g) => ({ creedId: g.creed_id, mode: g.mode })
   );
 
-  await admin
-    .from("oauth_tokens")
-    .update({ revoked_at: new Date().toISOString() })
-    .eq("id", row.id);
+  // Claim once in Postgres: concurrent refreshes may both pass the read above.
+  // Only the request that revokes a still-live row may issue a replacement.
+  const { data: claimed, error: claimError } = await query(admin, tables.oauth_tokens, "update", async (database, scope) => {
+    const values = { revoked_at: new Date().toISOString() } as Partial<typeof tables.oauth_tokens.$inferInsert>;
+    await authorizeValues(admin, tables.oauth_tokens, "update", values);
+    return database.update(tables.oauth_tokens).set(values).where(and(
+      scope,
+      eq(tables.oauth_tokens.id, row.id),
+      isNull(tables.oauth_tokens.revoked_at),
+      gt(tables.oauth_tokens.refresh_expires_at, values.revoked_at!),
+    )).returning({ id: tables.oauth_tokens.id });
+  }).then(maybeOne);
+  if (claimError) return { error: "server_error" };
+  if (!claimed) return { error: "invalid_grant" };
 
   return issueTokenPair({
     clientId: row.client_id,
@@ -372,11 +386,7 @@ export async function findOAuthAccessToken(
   token: string
 ): Promise<ResolvedAccessToken | null> {
   const admin = adminDb();
-  const { data } = await admin
-    .from("oauth_tokens")
-    .select("id, client_id, user_id, scope, revoked_at, access_expires_at, creed_grants_explicit")
-    .eq("access_token_hash", hashSecret(token))
-    .maybeSingle();
+  const { data } = await query(admin, tables.oauth_tokens, "select", (database, scope) => database.select({ id: tables.oauth_tokens.id, client_id: tables.oauth_tokens.client_id, user_id: tables.oauth_tokens.user_id, scope: tables.oauth_tokens.scope, revoked_at: tables.oauth_tokens.revoked_at, access_expires_at: tables.oauth_tokens.access_expires_at, creed_grants_explicit: tables.oauth_tokens.creed_grants_explicit }).from(tables.oauth_tokens).where(and(scope, eq(tables.oauth_tokens.access_token_hash, hashSecret(token))))).then(maybeOne);
 
   const row = (data as TokenRow | null) ?? null;
   if (!row || row.revoked_at) {
@@ -388,17 +398,10 @@ export async function findOAuthAccessToken(
 
   // Best-effort last-used stamp on every OAuth/MCP request. Swallow rejections
   // so a transient DB blip can't become an unhandled promise rejection.
-  void admin
-    .from("oauth_tokens")
-    .update({ last_used_at: new Date().toISOString() })
-    .eq("id", row.id)
-    .then(undefined, () => {});
+  await query(admin, tables.oauth_tokens, "update", (database, scope) => database.update(tables.oauth_tokens).set({ last_used_at: new Date().toISOString() }).where(and(scope, eq(tables.oauth_tokens.id, row.id))));
 
   const client = await getOAuthClient(row.client_id);
-  const { data: grantRows } = await admin
-    .from("oauth_token_creeds")
-    .select("creed_id, mode")
-    .eq("token_id", row.id);
+  const { data: grantRows } = await query(admin, tables.oauth_token_creeds, "select", (database, scope) => database.select({ creed_id: tables.oauth_token_creeds.creed_id, mode: tables.oauth_token_creeds.mode }).from(tables.oauth_token_creeds).where(and(scope, eq(tables.oauth_token_creeds.token_id, row.id))));
   const creedGrants: CreedGrant[] = ((grantRows as Array<{ creed_id: string; mode: CreedGrantMode }> | null) ?? [])
     .map((grant) => ({ creedId: grant.creed_id, mode: grant.mode }));
   return {
@@ -415,15 +418,8 @@ export async function findOAuthAccessToken(
 
 export async function revokeOAuthTokensForUser(userId: string, clientId?: string) {
   const admin = adminDb();
-  let query = admin
-    .from("oauth_tokens")
-    .update({ revoked_at: new Date().toISOString() })
-    .eq("user_id", userId)
-    .is("revoked_at", null);
-  if (clientId) {
-    query = query.eq("client_id", clientId);
-  }
-  await query;
+  await query(admin, tables.oauth_tokens, "update", (database, scope) => database.update(tables.oauth_tokens).set({ revoked_at: new Date().toISOString() })
+    .where(and(scope, eq(tables.oauth_tokens.user_id, userId), isNull(tables.oauth_tokens.revoked_at), clientId ? eq(tables.oauth_tokens.client_id, clientId) : undefined)));
 }
 
 // RFC 7009 token revocation for public OAuth clients such as Creed CLI. The
@@ -433,21 +429,11 @@ export async function revokeOAuthTokensForUser(userId: string, clientId?: string
 export async function revokeOAuthToken(token: string, clientId: string) {
   const admin = adminDb();
   const tokenHash = hashSecret(token);
-  const accessLookup = await admin
-    .from("oauth_tokens")
-    .select("id, user_id, client_id")
-    .eq("access_token_hash", tokenHash)
-    .eq("client_id", clientId)
-    .maybeSingle();
+  const accessLookup = await query(admin, tables.oauth_tokens, "select", (database, scope) => database.select({ id: tables.oauth_tokens.id, user_id: tables.oauth_tokens.user_id, client_id: tables.oauth_tokens.client_id }).from(tables.oauth_tokens).where(and(scope, eq(tables.oauth_tokens.access_token_hash, tokenHash), eq(tables.oauth_tokens.client_id, clientId)))).then(maybeOne);
   if (accessLookup.error) return { ok: false as const, error: "server_error" };
   const refreshLookup = accessLookup.data
     ? null
-    : await admin
-        .from("oauth_tokens")
-        .select("id, user_id, client_id")
-        .eq("refresh_token_hash", tokenHash)
-        .eq("client_id", clientId)
-        .maybeSingle();
+    : await query(admin, tables.oauth_tokens, "select", (database, scope) => database.select({ id: tables.oauth_tokens.id, user_id: tables.oauth_tokens.user_id, client_id: tables.oauth_tokens.client_id }).from(tables.oauth_tokens).where(and(scope, eq(tables.oauth_tokens.refresh_token_hash, tokenHash), eq(tables.oauth_tokens.client_id, clientId)))).then(maybeOne);
   if (refreshLookup?.error) return { ok: false as const, error: "server_error" };
   const row = (accessLookup.data ?? refreshLookup?.data) as {
     id: string;
@@ -459,10 +445,11 @@ export async function revokeOAuthToken(token: string, clientId: string) {
   if (!row) return { ok: true as const, userId: null, clientId: null };
 
   const revokedAt = new Date().toISOString();
-  const { error: revokeError } = await admin
-    .from("oauth_tokens")
-    .update({ revoked_at: revokedAt })
-    .eq("id", row.id);
+  const { error: revokeError } = await query(admin, tables.oauth_tokens, "update", async (database, scope) => {
+    const values = { revoked_at: revokedAt } as Partial<typeof tables.oauth_tokens.$inferInsert>;
+    await authorizeValues(admin, tables.oauth_tokens, "update", values);
+    return database.update(tables.oauth_tokens).set(values).where(and(scope, eq(tables.oauth_tokens.id, row.id)));
+  });
   if (revokeError) return { ok: false as const, error: "server_error" };
 
   return {

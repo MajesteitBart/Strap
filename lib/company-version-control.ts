@@ -1,6 +1,10 @@
+import * as tables from "@/db/schema/application";
+import { authorizeValues } from "@/lib/authz/policies";
+import type { DatabaseContext } from "@/lib/db/context";
+import { conflictSet, maybeOne, query } from "@/lib/db/query";
+import { serviceContext } from "@/lib/db/service";
+import { and, eq } from "drizzle-orm";
 import "server-only";
-import { getSupabaseAdminClient } from "@/lib/supabase/admin";
-import type { SupabaseLikeClient } from "@/lib/supabase/types";
 
 // The Company Strap's GitHub sync target + last-sync bookkeeping
 // (creed_company_version_control). Configured by an owner/admin; pushes run on
@@ -20,20 +24,14 @@ export type CompanyVersionControlRow = {
   sync_status: string | null;
 };
 
-function admin(): SupabaseLikeClient {
-  return getSupabaseAdminClient() as unknown as SupabaseLikeClient;
+function admin(): DatabaseContext {
+  return serviceContext("lib/company-version-control.ts");
 }
 
 export async function readCompanyVersionControl(
   creedId: string
 ): Promise<CompanyVersionControlRow | null> {
-  const { data } = await admin()
-    .from("creed_company_version_control")
-    .select(
-      "repo_owner, repo_name, branch, path, last_remote_sha, last_remote_message, last_remote_committed_at, last_synced_content_hash, sync_status"
-    )
-    .eq("creed_id", creedId)
-    .maybeSingle();
+  const { data } = await query(admin(), tables.creed_company_version_control, "select", (database, scope) => database.select({ repo_owner: tables.creed_company_version_control.repo_owner, repo_name: tables.creed_company_version_control.repo_name, branch: tables.creed_company_version_control.branch, path: tables.creed_company_version_control.path, last_remote_sha: tables.creed_company_version_control.last_remote_sha, last_remote_message: tables.creed_company_version_control.last_remote_message, last_remote_committed_at: tables.creed_company_version_control.last_remote_committed_at, last_synced_content_hash: tables.creed_company_version_control.last_synced_content_hash, sync_status: tables.creed_company_version_control.sync_status }).from(tables.creed_company_version_control).where(and(scope, eq(tables.creed_company_version_control.creed_id, creedId)))).then(maybeOne);
   return (data as CompanyVersionControlRow | null) ?? null;
 }
 
@@ -54,7 +52,9 @@ export async function updateCompanyVersionControlSync(
   if (patch.lastRemoteCommittedAt !== undefined) row.last_remote_committed_at = patch.lastRemoteCommittedAt;
   if (patch.lastSyncedContentHash !== undefined) row.last_synced_content_hash = patch.lastSyncedContentHash;
   if (patch.syncStatus !== undefined) row.sync_status = patch.syncStatus;
-  await admin()
-    .from("creed_company_version_control")
-    .upsert(row, { onConflict: "creed_id" });
+  await query(admin(), tables.creed_company_version_control, "insert", async (database, scope) => {
+    const values = row as typeof tables.creed_company_version_control.$inferInsert;
+    await authorizeValues(admin(), tables.creed_company_version_control, "insert", values);
+    return database.insert(tables.creed_company_version_control).values(values).onConflictDoUpdate({ target: [tables.creed_company_version_control.creed_id], set: conflictSet(tables.creed_company_version_control, values), setWhere: scope });
+  });
 }
