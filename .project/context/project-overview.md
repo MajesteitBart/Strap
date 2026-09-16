@@ -13,6 +13,6 @@
 - Future delivery scopes are created only from explicit product outcomes.
 
 ## Current Health
-- The Next.js application, Supabase schema, tests, Strap and legacy CLI packages, and generated OpenWiki documentation run independently of Delano.
+- The Next.js application, Drizzle schema, tests, Strap and legacy CLI packages, and generated OpenWiki documentation run independently of Delano.
 - Delano runtime files and the first project contract were installed on 2026-07-22. Validation evidence belongs in the project task logs and `progress.md`.
-- High-risk surfaces include authentication boundaries, RLS and service-role access, agent instructions, Company permissions, billing/frozen-state behavior, and large orchestration files identified in `AGENTS.md`.
+- High-risk surfaces include authentication boundaries, explicit database authorization and service contexts, agent instructions, Company permissions, billing/frozen-state behavior, and large orchestration files identified in `AGENTS.md`.

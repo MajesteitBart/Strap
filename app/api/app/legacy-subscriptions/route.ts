@@ -1,10 +1,13 @@
-import { NextResponse } from "next/server";
+import * as tables from "@/db/schema/application";
 import { requireApiAuth } from "@/lib/api-auth";
-import { NO_STORE_HEADERS } from "@/lib/http-headers";
-import { getSupabaseAdminClient } from "@/lib/supabase/admin";
-import type { SupabaseLikeClient } from "@/lib/supabase/types";
 import { recordAuditEvent } from "@/lib/audit-log";
+import { authorizeValues } from "@/lib/authz/policies";
+import { maybeOne, query } from "@/lib/db/query";
+import { serviceContext } from "@/lib/db/service";
+import { NO_STORE_HEADERS } from "@/lib/http-headers";
 import { cancelLegacySubscription, isOngoingSubscription, parseSubscriptionTarget, readLegacySubscriptions, type LegacySubscription, type LegacySubscriptionFailure } from "@/lib/legacy-subscriptions";
+import { and, eq } from "drizzle-orm";
+import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -18,13 +21,9 @@ export async function GET() {
   if (auth instanceof NextResponse) return auth;
   const secret = process.env.STRIPE_SECRET_KEY?.trim();
   const [personalResult, companyResult, ownedResult] = await Promise.all([
-    auth.supabase.from("creed_entitlements")
-      .select("status,current_period_end,cancel_at_period_end,stripe_subscription_id,billing_mode")
-      .eq("user_id", auth.user.id).maybeSingle(),
-    auth.supabase.from("creed_company_billing")
-      .select("creed_id,status,current_period_end,cancel_at_period_end,stripe_subscription_id,billing_mode"),
-    auth.supabase.from("creeds").select("id")
-      .eq("owner_user_id", auth.user.id).eq("type", "company"),
+    query(auth.context, tables.creed_entitlements, "select", (database, scope) => database.select({ status: tables.creed_entitlements.status, current_period_end: tables.creed_entitlements.current_period_end, cancel_at_period_end: tables.creed_entitlements.cancel_at_period_end, stripe_subscription_id: tables.creed_entitlements.stripe_subscription_id, billing_mode: tables.creed_entitlements.billing_mode }).from(tables.creed_entitlements).where(and(scope, eq(tables.creed_entitlements.user_id, auth.user.id)))).then(maybeOne),
+    query(auth.context, tables.creed_company_billing, "select", (database, scope) => database.select({ creed_id: tables.creed_company_billing.creed_id, status: tables.creed_company_billing.status, current_period_end: tables.creed_company_billing.current_period_end, cancel_at_period_end: tables.creed_company_billing.cancel_at_period_end, stripe_subscription_id: tables.creed_company_billing.stripe_subscription_id, billing_mode: tables.creed_company_billing.billing_mode }).from(tables.creed_company_billing).where(and(scope))),
+    query(auth.context, tables.creeds, "select", (database, scope) => database.select({ id: tables.creeds.id }).from(tables.creeds).where(and(scope, eq(tables.creeds.owner_user_id, auth.user.id), eq(tables.creeds.type, "company")))),
   ]);
   if (personalResult.error || companyResult.error || ownedResult.error) {
     return errorResponse("Could not check legacy subscriptions. Please try again.", 500);
@@ -81,18 +80,15 @@ export async function DELETE(request: Request) {
 
   const verifyOwnership = async () => {
     if (target.scope === "personal") return null;
-    const owner = await auth.supabase.from("creeds").select("id")
-      .eq("id", target.strapId).eq("type", "company").eq("owner_user_id", auth.user.id).maybeSingle();
+    const owner = await query(auth.context, tables.creeds, "select", (database, scope) => database.select({ id: tables.creeds.id }).from(tables.creeds).where(and(scope, eq(tables.creeds.id, target.strapId), eq(tables.creeds.type, "company"), eq(tables.creeds.owner_user_id, auth.user.id)))).then(maybeOne);
     if (owner.error) return { error: "Could not verify subscription ownership.", status: 500 };
     return owner.data ? null : { error: "No legacy subscription found.", status: 404 };
   };
   const denied = await verifyOwnership();
   if (denied) return errorResponse(denied.error, denied.status);
   const result = target.scope === "personal"
-    ? await auth.supabase.from("creed_entitlements").select("stripe_subscription_id,billing_mode")
-        .eq("user_id", auth.user.id).maybeSingle()
-    : await auth.supabase.from("creed_company_billing").select("stripe_subscription_id,billing_mode")
-        .eq("creed_id", target.strapId).maybeSingle();
+    ? await query(auth.context, tables.creed_entitlements, "select", (database, scope) => database.select({ stripe_subscription_id: tables.creed_entitlements.stripe_subscription_id, billing_mode: tables.creed_entitlements.billing_mode }).from(tables.creed_entitlements).where(and(scope, eq(tables.creed_entitlements.user_id, auth.user.id)))).then(maybeOne)
+    : await query(auth.context, tables.creed_company_billing, "select", (database, scope) => database.select({ stripe_subscription_id: tables.creed_company_billing.stripe_subscription_id, billing_mode: tables.creed_company_billing.billing_mode }).from(tables.creed_company_billing).where(and(scope, eq(tables.creed_company_billing.creed_id, target.strapId)))).then(maybeOne);
   if (result.error) return errorResponse("Could not check legacy subscriptions.", 500);
   const subscriptionId: unknown = result.data?.stripe_subscription_id;
   if (typeof subscriptionId !== "string" || !subscriptionId.trim()) {
@@ -107,7 +103,7 @@ export async function DELETE(request: Request) {
     const cancellation = await cancelLegacySubscription({ subscriptionId, secret, revalidate: verifyOwnership });
     if ("error" in cancellation) return errorResponse(cancellation.error, cancellation.status);
     const { subscription } = cancellation;
-    const admin = getSupabaseAdminClient() as unknown as SupabaseLikeClient;
+    const admin = serviceContext("app/api/app/legacy-subscriptions/route.ts");
     const patch = {
       ...(!isOngoingSubscription(subscription.status) ? { status: "canceled" } : {}),
       cancel_at_period_end: subscription.cancelAtPeriodEnd,
@@ -115,11 +111,16 @@ export async function DELETE(request: Request) {
     };
     // Bind the write to the authorized profile and exact subscription.
     const update = target.scope === "personal"
-      ? await admin.from("creed_entitlements").update(patch)
-          .eq("user_id", auth.user.id).eq("stripe_subscription_id", subscriptionId).select("user_id")
-      : await admin.from("creed_company_billing").update(patch)
-          .eq("creed_id", target.strapId)
-          .eq("stripe_subscription_id", subscriptionId).select("creed_id");
+      ? await query(admin, tables.creed_entitlements, "update", async (database, scope) => {
+    const values = patch as Partial<typeof tables.creed_entitlements.$inferInsert>;
+    await authorizeValues(admin, tables.creed_entitlements, "update", values);
+    return database.update(tables.creed_entitlements).set(values).where(and(scope, eq(tables.creed_entitlements.user_id, auth.user.id), eq(tables.creed_entitlements.stripe_subscription_id, subscriptionId))).returning({ user_id: tables.creed_entitlements.user_id });
+  })
+      : await query(admin, tables.creed_company_billing, "update", async (database, scope) => {
+    const values = patch as Partial<typeof tables.creed_company_billing.$inferInsert>;
+    await authorizeValues(admin, tables.creed_company_billing, "update", values);
+    return database.update(tables.creed_company_billing).set(values).where(and(scope, eq(tables.creed_company_billing.creed_id, target.strapId), eq(tables.creed_company_billing.stripe_subscription_id, subscriptionId))).returning({ creed_id: tables.creed_company_billing.creed_id });
+  });
     if (update.error || !Array.isArray(update.data) || !update.data.length) {
       return errorResponse("Stripe confirmed cancellation, but local status could not be saved. Refresh to confirm.", 500);
     }

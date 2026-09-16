@@ -1,7 +1,7 @@
-import "server-only";
 import { estimateAiCostUsd, getAiModel } from "@/lib/ai/model-catalog";
 import { resolveOpenRouterProviderPreferences } from "@/lib/ai/openrouter-routing";
-import { getSiteUrl } from "@/lib/supabase/env";
+import { getSiteUrl } from "@/lib/env";
+import "server-only";
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 

@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server";
 import { requireApiAuth } from "@/lib/api-auth";
-import { getCreedRole } from "@/lib/strap-membership";
-import { clearCompanyGitHubIntegration } from "@/lib/company-github";
 import { recordAuditEvent } from "@/lib/audit-log";
+import { clearCompanyGitHubIntegration } from "@/lib/company-github";
 import { readStrapId } from "@/lib/strap-api";
+import { getCreedRole } from "@/lib/strap-membership";
+import { NextResponse } from "next/server";
 
 // DELETE /api/app/company/github { creedId } - disconnect the team's GitHub
 // (owner/admin). Clears the stored token; the configured repo/branch is kept
@@ -21,7 +21,7 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: "strapId is required." }, { status: 400 });
   }
 
-  const role = await getCreedRole(auth.supabase, auth.user.id, strapId);
+  const role = await getCreedRole(auth.context, auth.user.id, strapId);
   if (role !== "owner" && role !== "admin") {
     return NextResponse.json(
       { error: "Only an owner or admin can manage the team GitHub connection." },

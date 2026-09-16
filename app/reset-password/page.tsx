@@ -1,6 +1,6 @@
-import type { Metadata } from "next";
 import { ResetPasswordScreen } from "@/components/auth/reset-password-screen";
-import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { isDatabaseConfigured } from "@/lib/env";
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Reset password",
@@ -8,5 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function ResetPasswordPage() {
-  return <ResetPasswordScreen configured={isSupabaseConfigured()} />;
+  return <ResetPasswordScreen configured={isDatabaseConfigured()} />;
 }

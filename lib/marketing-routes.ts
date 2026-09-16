@@ -1,8 +1,3 @@
-// Shared list of marketing / public route prefixes - routes that never need
-// the signed-in user's state on the server. Used in two places that must agree:
-//   - the root layout, to skip the loadStrapState fan-out
-//   - the proxy/middleware, to skip the Supabase session refresh
-// Keeping the list here prevents the two from drifting apart.
 
 export const MARKETING_PREFIXES = [
   "/home",

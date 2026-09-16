@@ -1,24 +1,29 @@
-import "server-only";
-import { randomBytes } from "node:crypto";
-import { getSiteUrl } from "@/lib/supabase/env";
-import { getSupabaseAdminClient } from "@/lib/supabase/admin";
-import type { SupabaseLikeClient } from "@/lib/supabase/types";
+import * as tables from "@/db/schema/application";
+import { recordAuditEvent } from "@/lib/audit-log";
+import { authorizeValues } from "@/lib/authz/policies";
+import type { DatabaseContext } from "@/lib/db/context";
+import { callProcedure } from "@/lib/db/procedures";
+import { maybeOne, query } from "@/lib/db/query";
+import { serviceContext } from "@/lib/db/service";
+import { getSiteUrl } from "@/lib/env";
 import { digestCredential } from "@/lib/headless-access-shared";
 import { getOAuthClient, type CreedGrantMode, type OAuthClient } from "@/lib/oauth";
-import { listUserStraps, type StrapSummary } from "@/lib/strap-membership";
-import { recordAuditEvent } from "@/lib/audit-log";
 import {
   capDeviceGrantMode,
   createDeviceUserCode,
   normalizeDeviceUserCode,
   normalizeOAuthScope,
 } from "@/lib/oauth-device-shared";
+import { listUserStraps, type StrapSummary } from "@/lib/strap-membership";
+import { and, eq, gt } from "drizzle-orm";
+import { randomBytes } from "node:crypto";
+import "server-only";
 
 const DEVICE_TTL_MS = 10 * 60 * 1000;
 const DEVICE_INTERVAL_SECONDS = 5;
 
-type RpcResult = { data: unknown; error: { message: string } | null };
-type RpcClient = { rpc: (name: string, args: Record<string, unknown>) => Promise<RpcResult> };
+
+
 
 type DeviceRow = {
   id: string;
@@ -33,13 +38,11 @@ export type DevicePollResult =
   | { outcome: "authorization_pending" | "slow_down"; retryAfterSeconds: number }
   | { outcome: "access_denied" | "expired_token" | "invalid_grant" | "server_error" };
 
-function adminDb(): SupabaseLikeClient {
-  return getSupabaseAdminClient() as unknown as SupabaseLikeClient;
+function adminDb(): DatabaseContext {
+  return serviceContext("lib/oauth-device.ts");
 }
 
-function rpcDb(): RpcClient {
-  return getSupabaseAdminClient() as unknown as RpcClient;
-}
+
 
 export async function createDeviceAuthorization(input: {
   clientId: string;
@@ -55,13 +58,17 @@ export async function createDeviceAuthorization(input: {
   const userCode = createDeviceUserCode();
   const normalizedUserCode = normalizeDeviceUserCode(userCode);
   if (!normalizedUserCode) throw new Error("Could not generate device code.");
-  const { error } = await adminDb().from("oauth_device_authorizations").insert({
+  const { error } = await query(adminDb(), tables.oauth_device_authorizations, "insert", async (database, _scope) => {
+    const values = {
     device_code_hash: digestCredential(deviceCode),
     user_code_hash: digestCredential(normalizedUserCode),
     client_id: input.clientId,
     scope: normalizeOAuthScope(input.scope),
     interval_seconds: DEVICE_INTERVAL_SECONDS,
     expires_at: new Date(Date.now() + DEVICE_TTL_MS).toISOString(),
+  } as typeof tables.oauth_device_authorizations.$inferInsert;
+    await authorizeValues(adminDb(), tables.oauth_device_authorizations, "insert", values);
+    return database.insert(tables.oauth_device_authorizations).values(values);
   });
   if (error) throw new Error("Could not create device authorization.");
   return {
@@ -76,7 +83,7 @@ export async function createDeviceAuthorization(input: {
 export async function verifyDeviceUserCode(value: string): Promise<string | null> {
   const normalized = normalizeDeviceUserCode(value);
   if (!normalized) return null;
-  const { data, error } = await rpcDb().rpc("record_oauth_device_verification", {
+  const { data, error } = await callProcedure(adminDb(), "record_oauth_device_verification", {
     p_user_code_hash: digestCredential(normalized),
   });
   if (error) return null;
@@ -88,13 +95,7 @@ export async function getDeviceApproval(input: {
   requestId: string;
   userId: string;
 }): Promise<{ request: DeviceRow; client: OAuthClient; creeds: StrapSummary[] } | null> {
-  const { data, error } = await adminDb()
-    .from("oauth_device_authorizations")
-    .select("id, client_id, scope, status, expires_at")
-    .eq("id", input.requestId)
-    .eq("status", "pending")
-    .gt("expires_at", new Date().toISOString())
-    .maybeSingle();
+  const { data, error } = await query(adminDb(), tables.oauth_device_authorizations, "select", (database, scope) => database.select({ id: tables.oauth_device_authorizations.id, client_id: tables.oauth_device_authorizations.client_id, scope: tables.oauth_device_authorizations.scope, status: tables.oauth_device_authorizations.status, expires_at: tables.oauth_device_authorizations.expires_at }).from(tables.oauth_device_authorizations).where(and(scope, eq(tables.oauth_device_authorizations.id, input.requestId), eq(tables.oauth_device_authorizations.status, "pending"), gt(tables.oauth_device_authorizations.expires_at, new Date().toISOString())))).then(maybeOne);
   if (error || !data) return null;
   const row = data as DeviceRow;
   const [client, creeds] = await Promise.all([
@@ -116,13 +117,11 @@ export async function decideDeviceAuthorization(input: {
   const approval = await getDeviceApproval({ requestId: input.requestId, userId: input.userId });
   if (!approval) return false;
   if (input.decision === "deny") {
-    const { data } = await adminDb()
-      .from("oauth_device_authorizations")
-      .update({ status: "denied" })
-      .eq("id", input.requestId)
-      .eq("status", "pending")
-      .select("id")
-      .maybeSingle();
+    const { data } = await query(adminDb(), tables.oauth_device_authorizations, "update", async (database, scope) => {
+    const values = { status: "denied" } as Partial<typeof tables.oauth_device_authorizations.$inferInsert>;
+    await authorizeValues(adminDb(), tables.oauth_device_authorizations, "update", values);
+    return database.update(tables.oauth_device_authorizations).set(values).where(and(scope, eq(tables.oauth_device_authorizations.id, input.requestId), eq(tables.oauth_device_authorizations.status, "pending"))).returning({ id: tables.oauth_device_authorizations.id });
+  }).then(maybeOne);
     if (!data) return false;
     void recordAuditEvent({
       userId: input.userId,
@@ -137,20 +136,17 @@ export async function decideDeviceAuthorization(input: {
   if (!creed) return false;
   const mode = capDeviceGrantMode(input.mode, approval.request.scope);
   const now = new Date().toISOString();
-  const { data } = await adminDb()
-    .from("oauth_device_authorizations")
-    .update({
+  const { data } = await query(adminDb(), tables.oauth_device_authorizations, "update", async (database, scope) => {
+    const values = {
       status: "approved",
       user_id: input.userId,
       creed_id: creed.id,
       mode,
       approved_at: now,
-    })
-    .eq("id", input.requestId)
-    .eq("status", "pending")
-    .gt("expires_at", now)
-    .select("id")
-    .maybeSingle();
+    } as Partial<typeof tables.oauth_device_authorizations.$inferInsert>;
+    await authorizeValues(adminDb(), tables.oauth_device_authorizations, "update", values);
+    return database.update(tables.oauth_device_authorizations).set(values).where(and(scope, eq(tables.oauth_device_authorizations.id, input.requestId), eq(tables.oauth_device_authorizations.status, "pending"), gt(tables.oauth_device_authorizations.expires_at, now))).returning({ id: tables.oauth_device_authorizations.id });
+  }).then(maybeOne);
   if (!data) return false;
   void recordAuditEvent({
     userId: input.userId,
@@ -165,7 +161,7 @@ export async function pollDeviceAuthorization(input: {
   deviceCode: string;
   clientId: string;
 }): Promise<DevicePollResult> {
-  const { data, error } = await rpcDb().rpc("consume_oauth_device_authorization", {
+  const { data, error } = await callProcedure(adminDb(), "consume_oauth_device_authorization", {
     p_device_code_hash: digestCredential(input.deviceCode),
     p_client_id: input.clientId,
   });

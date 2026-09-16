@@ -1,12 +1,15 @@
-import { NextResponse } from "next/server";
+import * as tables from "@/db/schema/application";
 import { requireApiAuth } from "@/lib/api-auth";
-import { getCreedRole } from "@/lib/strap-membership";
 import { recordAuditEvent } from "@/lib/audit-log";
-import { getSupabaseAdminClient } from "@/lib/supabase/admin";
-import type { SupabaseLikeClient } from "@/lib/supabase/types";
+import { authorizeValues } from "@/lib/authz/policies";
 import { readCompanyVersionControl } from "@/lib/company-version-control";
+import type { DatabaseContext } from "@/lib/db/context";
+import { conflictSet, query } from "@/lib/db/query";
+import { serviceContext } from "@/lib/db/service";
 import { STRAP_FILE_NAME } from "@/lib/profile-file";
 import { readStrapId } from "@/lib/strap-api";
+import { getCreedRole } from "@/lib/strap-membership";
+import { NextResponse } from "next/server";
 
 // The Company Strap's GitHub sync target (repo/branch). Owner/admin only.
 // Pushes run on the team's GitHub connection via /api/app/github/push; this
@@ -14,8 +17,8 @@ import { readStrapId } from "@/lib/strap-api";
 // branch resets the sync bookkeeping so status is re-derived against the new
 // target.
 
-function admin(): SupabaseLikeClient {
-  return getSupabaseAdminClient() as unknown as SupabaseLikeClient;
+function admin(): DatabaseContext {
+  return serviceContext("app/api/app/company/version-control/route.ts");
 }
 
 export async function POST(request: Request) {
@@ -46,7 +49,7 @@ export async function POST(request: Request) {
     }
   }
 
-  const role = await getCreedRole(auth.supabase, auth.user.id, strapId);
+  const role = await getCreedRole(auth.context, auth.user.id, strapId);
   if (role !== "owner" && role !== "admin") {
     return NextResponse.json({ error: "Only the owner or an admin can configure version control." }, { status: 403 });
   }
@@ -73,9 +76,11 @@ export async function POST(request: Request) {
     row.sync_status = "unknown";
   }
 
-  const { error } = await db
-    .from("creed_company_version_control")
-    .upsert(row, { onConflict: "creed_id" });
+  const { error } = await query(db, tables.creed_company_version_control, "insert", async (database, scope) => {
+    const values = row as typeof tables.creed_company_version_control.$inferInsert;
+    await authorizeValues(db, tables.creed_company_version_control, "insert", values);
+    return database.insert(tables.creed_company_version_control).values(values).onConflictDoUpdate({ target: [tables.creed_company_version_control.creed_id], set: conflictSet(tables.creed_company_version_control, values), setWhere: scope });
+  });
   if (error) {
     return NextResponse.json({ error: "Could not save version control settings." }, { status: 500 });
   }

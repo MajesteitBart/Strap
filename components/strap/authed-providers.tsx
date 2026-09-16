@@ -1,12 +1,12 @@
-import type { ReactNode } from "react";
 import { BackendSetupScreen } from "@/components/auth/backend-setup-screen";
 import { StrapProvider } from "@/components/strap/strap-provider";
-import { initialStrapState } from "@/lib/strap-data";
-import { loadActiveStrapState } from "@/lib/strap-backend";
-import { resolveActiveStrap } from "@/lib/strap-context";
-import { isSupabaseTableMissingError } from "@/lib/strap-backend-errors";
-import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { isDatabaseConfigured } from "@/lib/env";
 import { getRequestAuth } from "@/lib/request-auth";
+import { loadActiveStrapState } from "@/lib/strap-backend";
+import { isDatabaseTableMissingError } from "@/lib/strap-backend-errors";
+import { resolveActiveStrap } from "@/lib/strap-context";
+import { initialStrapState } from "@/lib/strap-data";
+import type { ReactNode } from "react";
 
 // Loads the signed-in user's Strap and wraps its subtree in <StrapProvider>.
 // This is the dynamic, user-specific boundary that used to live in the root
@@ -19,18 +19,18 @@ export async function AuthedProviders({ children }: { children: ReactNode }) {
   let persistenceEnabled = false;
   let missingSchemaMessage: string | null = null;
 
-  if (isSupabaseConfigured()) {
+  if (isDatabaseConfigured()) {
     // Shares the layout's cached client + getUser within this render.
-    const { supabase, user } = await getRequestAuth();
+    const { context, user } = await getRequestAuth();
 
     if (user) {
       try {
-        const active = await resolveActiveStrap(supabase, user);
-        const result = await loadActiveStrapState(supabase, user, active);
+        const active = await resolveActiveStrap(context, user);
+        const result = await loadActiveStrapState(context, user, active);
         initialState = result.state;
         persistenceEnabled = result.hasPersistedCreed;
       } catch (error) {
-        if (isSupabaseTableMissingError(error)) {
+        if (isDatabaseTableMissingError(error)) {
           missingSchemaMessage =
             error instanceof Error ? error.message : "Strap tables are missing.";
         } else {

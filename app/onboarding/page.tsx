@@ -1,9 +1,9 @@
-import { redirect } from "next/navigation";
 import { OnboardingScreen } from "@/components/strap/onboarding-screen";
+import { isDatabaseConfigured } from "@/lib/env";
+import { getRequestAuth, getRequestDatabaseContext } from "@/lib/request-auth";
 import { loadStrapState } from "@/lib/strap-backend";
-import { isSupabaseTableMissingError } from "@/lib/strap-backend-errors";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { isDatabaseTableMissingError } from "@/lib/strap-backend-errors";
+import { redirect } from "next/navigation";
 
 // Onboarding lives outside the (strap-app) route group. Anyone signed in can
 // run it (answer questions, build with their assistant via a copy-paste
@@ -15,11 +15,11 @@ import { isSupabaseConfigured } from "@/lib/supabase/env";
 export default async function OnboardingPage() {
   let initialStage: "prompt" | "preview" | undefined;
 
-  if (isSupabaseConfigured()) {
-    const supabase = await createSupabaseServerClient();
+  if (isDatabaseConfigured()) {
+    const context = await getRequestDatabaseContext();
     const {
       data: { user },
-    } = await supabase.auth.getUser();
+    } = await getRequestAuth().then(({ user }) => ({ data: { user } }));
 
     if (!user) {
       redirect("/home");
@@ -29,7 +29,7 @@ export default async function OnboardingPage() {
     // root layout already made this request. "Composed" == any section last
     // edited by an agent; "hasPersistedCreed" means the seed was claimed.
     try {
-      const result = await loadStrapState(supabase, user);
+      const result = await loadStrapState(context, user);
       const composed = result.state.sections.some(
         (section) => section.lastEditedType === "agent"
       );
@@ -39,7 +39,7 @@ export default async function OnboardingPage() {
         initialStage = "prompt";
       }
     } catch (error) {
-      if (!isSupabaseTableMissingError(error)) {
+      if (!isDatabaseTableMissingError(error)) {
         throw error;
       }
     }

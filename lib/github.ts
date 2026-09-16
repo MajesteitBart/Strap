@@ -124,7 +124,7 @@ export function buildGitHubAuthorizeUrl(args: {
 
 /**
  * Exchange an OAuth authorization code for a user access token. Used by the
- * team GitHub callback; the personal flow gets its token from Supabase instead.
+ * team GitHub callback; the personal flow uses its own saved integration token instead.
  */
 export async function exchangeGitHubOAuthCode(args: {
   credentials: GitHubOAuthCredentials;

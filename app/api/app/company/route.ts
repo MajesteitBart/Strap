@@ -1,10 +1,10 @@
-import { NextResponse } from "next/server";
 import { requireApiAuth } from "@/lib/api-auth";
+import { recordAuditEvent } from "@/lib/audit-log";
 import { deleteCompany } from "@/lib/company-admin";
 import { provisionCompany } from "@/lib/company-provision";
-import { setActiveCreed } from "@/lib/strap-context";
-import { recordAuditEvent } from "@/lib/audit-log";
 import { readStrapId } from "@/lib/strap-api";
+import { setActiveCreed } from "@/lib/strap-context";
+import { NextResponse } from "next/server";
 
 // POST /api/app/company - create (or resume) the caller's Company Strap and
 // make it active. Idempotent per owner: one owned company per user, so a
@@ -15,7 +15,7 @@ export async function POST(request: Request) {
 
   try {
     const creedId = await provisionCompany(auth.user.id);
-    await setActiveCreed(auth.supabase, auth.user, creedId);
+    await setActiveCreed(auth.context, auth.user, creedId);
     await recordAuditEvent({
       userId: auth.user.id,
       action: "company.provisioned",

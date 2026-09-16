@@ -1,13 +1,13 @@
-import Link from "next/link";
-import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { FaqSection } from "@/components/marketing/faq-section";
 import {
   StrapPageHero,
   StrapSiteFooter,
   StrapSiteHeader,
 } from "@/components/marketing/strap-site-shell";
-import { FaqSection } from "@/components/marketing/faq-section";
+import { isDatabaseConfigured } from "@/lib/env";
 import type { Article, ArticleBlock } from "@/lib/marketing/learn/types";
 import { CLUSTER_META } from "@/lib/marketing/learn/types";
+import Link from "next/link";
 
 // Server-rendered article view for /learn/[slug]. Everything ships in the
 // initial HTML: the lead answer, headings, tables, code, FAQ, and related
@@ -93,7 +93,7 @@ export function LearnArticle({ article }: { article: Article }) {
 
   return (
     <div className="strap-site">
-      <StrapSiteHeader configured={isSupabaseConfigured()} current="learn" />
+      <StrapSiteHeader configured={isDatabaseConfigured()} current="learn" />
 
       <main>
         <StrapPageHero

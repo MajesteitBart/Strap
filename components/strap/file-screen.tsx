@@ -1,16 +1,113 @@
 "use client";
 
+import { AgentIconStack } from "@/components/strap/agent-icon-stack";
+import { AnimatedMenuIconItem } from "@/components/strap/animated-icon-action";
+import { useAnimatedIconControls } from "@/components/strap/animated-icon-controls";
+import { normalizeStrapAttribution } from "@/components/strap/brand-attribution";
 import {
-  memo,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  useSyncExternalStore,
-  type ReactNode,
-} from "react";
-import Image from "next/image";
+  OverallQualityPopover,
+  QualityRing,
+  SectionQualityPopover,
+  type StrapQualityReport,
+} from "@/components/strap/file-quality-ui";
+import { StrapFindReplace } from "@/components/strap/find-replace";
+import {
+  DiffBadge,
+  InlineMetaProposal,
+  InlineNewSectionProposal,
+  InlineProposalDiff,
+  computeDiffParts,
+  htmlToText,
+  summarizeDiff,
+} from "@/components/strap/inline-proposal-diff";
+import { NexusView } from "@/components/strap/nexus-view";
+import { ReviewPill } from "@/components/strap/review-pill";
+import { RichTextEditor } from "@/components/strap/rich-text-editor";
+import { SectionHistorySheet } from "@/components/strap/section-history-sheet";
+import {
+  useStrapShellActiveSection,
+  useStrapShellFileActions,
+} from "@/components/strap/shell";
+import { ShortcutKey } from "@/components/strap/shortcut-key";
+import { useStrap } from "@/components/strap/strap-provider";
+import { StrapSwitcher } from "@/components/strap/strap-switcher";
+import { AlignLeftIcon } from "@/components/ui/align-left";
+import { AnimatedCheckmark } from "@/components/ui/animated-checkmark";
+import { ArchiveIcon } from "@/components/ui/archive";
+import { Button } from "@/components/ui/button";
+import { ClockIcon } from "@/components/ui/clock";
+import { CloudDownloadIcon } from "@/components/ui/cloud-download";
+import { CloudUploadIcon } from "@/components/ui/cloud-upload";
+import { CopyIcon } from "@/components/ui/copy";
+import { DeleteIcon } from "@/components/ui/delete";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { DownloadIcon } from "@/components/ui/download";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuPortal,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { FolderUpIcon } from "@/components/ui/folder-up";
+import { GripVerticalIcon } from "@/components/ui/grip-vertical";
+import { HistoryIcon } from "@/components/ui/history";
+import { Input } from "@/components/ui/input";
+import { LockIcon, type LockIconHandle } from "@/components/ui/lock";
+import {
+  LockOpenIcon,
+  type LockOpenIconHandle,
+} from "@/components/ui/lock-open";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { SquarePenIcon } from "@/components/ui/square-pen";
+import { StampIcon, type StampIconHandle } from "@/components/ui/stamp";
+import { SimpleTooltip } from "@/components/ui/tooltip";
+import { WaypointsIcon } from "@/components/ui/waypoints";
+import {
+  getInFlightFull,
+  getQualityRunnerServerSnapshot,
+  getQualityRunnerSnapshot,
+  runFullQuality,
+  runSectionQuality,
+  setBaselineReport,
+  subscribeQualityRunner,
+} from "@/lib/ai/quality-runner";
+import { fireConfetti } from "@/lib/confetti";
+import { STRAP_FILE_NAME } from "@/lib/profile-file";
+import { richTextContentEquivalent } from "@/lib/rich-text";
+import {
+  VISIBLE_ACCENT_KEYS,
+  accentColorMap,
+  accentLabelMap,
+  accentTintMap,
+  getProposalPreviewText,
+  getSectionSuggestions,
+  hasSectionName,
+  normalizeLegacyProposalDraft,
+  normalizeProposalForSection,
+  sectionToMarkdown,
+  type AccentKey,
+  type ActivityEntry,
+  type ActivityStatus,
+  type Proposal,
+  type StrapSection,
+} from "@/lib/strap-data";
+import { parseStrapMarkdown } from "@/lib/strap-markdown";
+import {
+  canProposeToSection,
+  resolveSectionPermission,
+} from "@/lib/strap-permissions";
+import { cn } from "@/lib/utils";
 import {
   AnimatePresence,
   Reorder,
@@ -28,115 +125,18 @@ import {
   Send,
   X,
 } from "lucide-react";
+import Image from "next/image";
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type ReactNode,
+} from "react";
 import { toast } from "sonner";
-import { fireConfetti } from "@/lib/confetti";
-import { AnimatedCheckmark } from "@/components/ui/animated-checkmark";
-import { SectionHistorySheet } from "@/components/strap/section-history-sheet";
-import { AlignLeftIcon } from "@/components/ui/align-left";
-import { ArchiveIcon } from "@/components/ui/archive";
-import { Button } from "@/components/ui/button";
-import { CloudDownloadIcon } from "@/components/ui/cloud-download";
-import { CloudUploadIcon } from "@/components/ui/cloud-upload";
-import { ClockIcon } from "@/components/ui/clock";
-import { CopyIcon } from "@/components/ui/copy";
-import { DeleteIcon } from "@/components/ui/delete";
-import { DownloadIcon } from "@/components/ui/download";
-import { FolderUpIcon } from "@/components/ui/folder-up";
-import { GripVerticalIcon } from "@/components/ui/grip-vertical";
-import { HistoryIcon } from "@/components/ui/history";
-import { LockIcon, type LockIconHandle } from "@/components/ui/lock";
-import {
-  LockOpenIcon,
-  type LockOpenIconHandle,
-} from "@/components/ui/lock-open";
-import { SquarePenIcon } from "@/components/ui/square-pen";
-import { StampIcon, type StampIconHandle } from "@/components/ui/stamp";
-import { WaypointsIcon } from "@/components/ui/waypoints";
-import { AnimatedMenuIconItem } from "@/components/strap/animated-icon-action";
-import { useAnimatedIconControls } from "@/components/strap/animated-icon-controls";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuPortal,
-  DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { SimpleTooltip } from "@/components/ui/tooltip";
-import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { AgentIconStack } from "@/components/strap/agent-icon-stack";
-import { normalizeStrapAttribution } from "@/components/strap/brand-attribution";
-import {
-  OverallQualityPopover,
-  QualityRing,
-  SectionQualityPopover,
-  type StrapQualityReport,
-} from "@/components/strap/file-quality-ui";
-import {
-  getInFlightFull,
-  getQualityRunnerServerSnapshot,
-  getQualityRunnerSnapshot,
-  runFullQuality,
-  runSectionQuality,
-  setBaselineReport,
-  subscribeQualityRunner,
-} from "@/lib/ai/quality-runner";
-import { RichTextEditor } from "@/components/strap/rich-text-editor";
-import { NexusView } from "@/components/strap/nexus-view";
-import { StrapFindReplace } from "@/components/strap/find-replace";
-import {
-  DiffBadge,
-  InlineMetaProposal,
-  InlineNewSectionProposal,
-  InlineProposalDiff,
-  computeDiffParts,
-  htmlToText,
-  summarizeDiff,
-} from "@/components/strap/inline-proposal-diff";
-import { ReviewPill } from "@/components/strap/review-pill";
-import {
-  useStrapShellFileActions,
-  useStrapShellActiveSection,
-} from "@/components/strap/shell";
-import { ShortcutKey } from "@/components/strap/shortcut-key";
-import { useStrap } from "@/components/strap/strap-provider";
-import { StrapSwitcher } from "@/components/strap/strap-switcher";
-import { parseStrapMarkdown } from "@/lib/strap-markdown";
-import {
-  accentColorMap,
-  accentLabelMap,
-  accentTintMap,
-  VISIBLE_ACCENT_KEYS,
-  getSectionSuggestions,
-  getProposalPreviewText,
-  hasSectionName,
-  normalizeLegacyProposalDraft,
-  normalizeProposalForSection,
-  sectionToMarkdown,
-  type AccentKey,
-  type ActivityEntry,
-  type ActivityStatus,
-  type StrapSection,
-  type Proposal,
-} from "@/lib/strap-data";
-import { richTextContentEquivalent } from "@/lib/rich-text";
-import {
-  canProposeToSection,
-  resolveSectionPermission,
-} from "@/lib/strap-permissions";
-import { cn } from "@/lib/utils";
-import { STRAP_FILE_NAME } from "@/lib/profile-file";
 
 const activityStatuses: Array<{
   label: string;
@@ -829,7 +829,6 @@ export function FileScreen() {
     importSections,
     exportMarkdown,
     refreshState,
-    sectionPresence,
     markGettingStartedStep,
   } = useStrap();
   // Company role gates. In personal mode the sole user is effectively the owner.
@@ -2879,7 +2878,6 @@ export function FileScreen() {
                         <SectionCardBound
                           key={section.id}
                           section={section}
-                          editingBy={sectionPresence[section.id]}
                           sectionTagTargets={visibleSectionTagTargets}
                           locked={sectionLocked}
                           proposeMode={proposeMode}

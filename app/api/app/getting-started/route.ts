@@ -1,10 +1,14 @@
-import { NextResponse } from "next/server";
+import * as tables from "@/db/schema/application";
 import { requireApiAuth } from "@/lib/api-auth";
+import { authorizeValues } from "@/lib/authz/policies";
+import { conflictSet, maybeOne, query } from "@/lib/db/query";
 import { log } from "@/lib/observability";
 import {
   GETTING_STARTED_STEPS,
   type GettingStartedStepKey,
 } from "@/lib/strap-data";
+import { and, eq } from "drizzle-orm";
+import { NextResponse } from "next/server";
 
 const STEP_KEYS = new Set<string>(GETTING_STARTED_STEPS.map((s) => s.key));
 
@@ -38,11 +42,7 @@ export async function POST(request: Request) {
   );
 
   try {
-    const existingResult = await auth.supabase
-      .from("creed_getting_started")
-      .select("steps, completed_at")
-      .eq("user_id", auth.user.id)
-      .maybeSingle();
+    const existingResult = await query(auth.context, tables.creed_getting_started, "select", (database, scope) => database.select({ steps: tables.creed_getting_started.steps, completed_at: tables.creed_getting_started.completed_at }).from(tables.creed_getting_started).where(and(scope, eq(tables.creed_getting_started.user_id, auth.user.id)))).then(maybeOne);
     if (existingResult.error) throw existingResult.error;
 
     const existing = existingResult.data as {
@@ -57,17 +57,16 @@ export async function POST(request: Request) {
     const completedAt =
       existing?.completed_at ?? (allDone ? new Date().toISOString() : null);
 
-    const upsertResult = await auth.supabase
-      .from("creed_getting_started")
-      .upsert(
-        {
+    const upsertResult = await query(auth.context, tables.creed_getting_started, "insert", async (database, scope) => {
+    const values = {
           user_id: auth.user.id,
           steps: merged,
           completed_at: completedAt,
           updated_at: new Date().toISOString(),
-        },
-        { onConflict: "user_id" },
-      );
+        } as typeof tables.creed_getting_started.$inferInsert;
+    await authorizeValues(auth.context, tables.creed_getting_started, "insert", values);
+    return database.insert(tables.creed_getting_started).values(values).onConflictDoUpdate({ target: [tables.creed_getting_started.user_id], set: conflictSet(tables.creed_getting_started, values), setWhere: scope });
+  });
     if (upsertResult.error) throw upsertResult.error;
 
     return NextResponse.json({

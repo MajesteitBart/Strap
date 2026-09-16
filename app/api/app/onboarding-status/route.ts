@@ -1,39 +1,20 @@
-import { NextResponse } from "next/server";
+import { requireApiAuth } from "@/lib/api-auth";
 import { NO_STORE_HEADERS } from "@/lib/http-headers";
 import { hasPersistedCreed } from "@/lib/strap-backend";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { NextResponse } from "next/server";
 
-// Lightweight "has this user started onboarding?" probe for marketing CTAs:
-// true once a Strap exists server-side (seed claimed or agent-composed), so a
-// button can offer "Resume" instead of "Get Started". Account-tied, so it's
-// correct on any device. An unauthed caller gets
-// { started: false } rather than a 401, since the chrome polls this on render.
+// A label hint for marketing CTAs. The client treats an unauthenticated
+// response as "Get started"; every app API still enforces session auth.
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-
 export async function GET() {
-  if (!isSupabaseConfigured()) {
-    return NextResponse.json({ started: false }, { headers: NO_STORE_HEADERS });
-  }
-
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ started: false }, { headers: NO_STORE_HEADERS });
-  }
-
+  const auth = await requireApiAuth();
+  if (auth instanceof NextResponse) return auth;
   try {
-    const started = await hasPersistedCreed(supabase, user.id);
+    const started = await hasPersistedCreed(auth.context, auth.user.id);
     return NextResponse.json({ started }, { headers: NO_STORE_HEADERS });
   } catch {
-    // Missing tables (fresh DB) or any transient failure: treat as not started
-    // so the CTA falls back to "Get Started" rather than erroring. This is just
-    // a label hint, never a gate, so failing closed is harmless.
     return NextResponse.json({ started: false }, { headers: NO_STORE_HEADERS });
   }
 }

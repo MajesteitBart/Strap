@@ -1,52 +1,43 @@
+import { BackendSetupScreen } from "@/components/auth/backend-setup-screen";
+import { isDatabaseConfigured } from "@/lib/env";
+import { log } from "@/lib/observability";
+import { getRequestAuth, getRequestDatabaseContext } from "@/lib/request-auth";
+import { hasPersistedStrap } from "@/lib/strap-backend";
+import { isDatabaseTableMissingError } from "@/lib/strap-backend-errors";
+import { hasCompanyMembership } from "@/lib/strap-membership";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { BackendSetupScreen } from "@/components/auth/backend-setup-screen";
-import { hasPersistedStrap } from "@/lib/strap-backend";
-import { isSupabaseTableMissingError } from "@/lib/strap-backend-errors";
-import { hasCompanyMembership } from "@/lib/strap-membership";
-import { isSupabaseConfigured } from "@/lib/supabase/env";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { log } from "@/lib/observability";
 
 export const dynamic = "force-dynamic";
 
-// Root-page router. Branches on two signals: Supabase configured?
-// (otherwise marketing-only) and signed in?. Only then do we ask
-// whether a personal Strap row exists to decide `/file` vs `/onboarding`
-// (the row, not the section count - an emptied Strap is still onboarded).
-//
-// We deliberately use the lightweight `hasPersistedStrap` probe rather
-// than the full `loadStrapState` fan-out - this route is a redirect, not
-// a render, so any extra round-trips are pure overhead and the
-// (strap-app) layout will load real state on the next request.
 export default async function Home() {
-  if (!isSupabaseConfigured()) {
+  if (!isDatabaseConfigured()) {
     redirect("/home");
   }
 
   // Fast path for signed-out visitors (and every crawler that hits `/`):
-  // no Supabase auth cookie means no session, so skip the client setup and
+  // No session cookie means we can skip authentication and
   // the auth/entitlement round-trips entirely. Anyone holding a cookie -
   // even an expired one - falls through to the real getUser() check below.
   const cookieStore = await cookies();
   const hasAuthCookie = cookieStore
     .getAll()
-    .some((c) => c.name.startsWith("sb-") && c.name.includes("-auth-token"));
+    .some((c) => c.name === "better-auth.session_token" || c.name === "__Secure-better-auth.session_token");
   if (!hasAuthCookie) {
     redirect("/home");
   }
 
-  let supabase;
+  let context;
   try {
-    supabase = await createSupabaseServerClient();
+    context = await getRequestDatabaseContext();
   } catch (error) {
-    log.error("home_supabase_client_init_failed", { route: "/" }, error);
+    log.error("home_database_context_init_failed", { route: "/" }, error);
     throw error;
   }
 
   let user;
   try {
-    const result = await supabase.auth.getUser();
+    const result = await getRequestAuth().then(({ user }) => ({ data: { user } }));
     user = result.data.user;
   } catch (error) {
     log.error("home_get_user_failed", { route: "/" }, error);
@@ -62,7 +53,7 @@ export default async function Home() {
   // setup - resumes company onboarding. They must never be routed through the
   // personal first-run flow. Only a personal-only user gets the section probe
   // below (personal onboarding when they have no sections yet).
-  if (await hasCompanyMembership(supabase, user.id)) {
+  if (await hasCompanyMembership(context, user.id)) {
     redirect("/file");
   }
 
@@ -74,9 +65,9 @@ export default async function Home() {
   // the redirect OUTSIDE the try; only the DB probe is wrapped.
   let hasCreed: boolean;
   try {
-    hasCreed = await hasPersistedStrap(supabase, user.id);
+    hasCreed = await hasPersistedStrap(context, user.id);
   } catch (error) {
-    if (isSupabaseTableMissingError(error)) {
+    if (isDatabaseTableMissingError(error)) {
       return (
         <BackendSetupScreen
           errorMessage={

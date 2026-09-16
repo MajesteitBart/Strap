@@ -1,16 +1,12 @@
 "use client";
 
-// Shared OAuth trigger for the marketing auth surface. Owns the one bit of
-// real OAuth logic (kick off Supabase OAuth, routing the result through
-// /auth/callback with an optional `next` destination) so the chrome button
-// and the /login + /signup screens don't each carry a copy.
+// Shared Better Auth OAuth trigger. X maps to the twitter provider callback.
 
+
+import { authClient } from "@/lib/auth/client";
 import { useState } from "react";
 import { toast } from "sonner";
-import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
-// "x" is Supabase's X / Twitter (OAuth 2.0) provider. The legacy OAuth 1.0a
-// provider is "twitter" and is not what we have enabled.
 export type OAuthProvider = "google" | "x";
 
 // Remember the last OAuth provider the user kicked off, so the auth screen can
@@ -42,15 +38,9 @@ export function useOAuthSignIn(configured: boolean = true, redirectTo?: string) 
     } catch {
       // Storage may be unavailable; the "Last used" hint is non-essential.
     }
-    const supabase = getSupabaseBrowserClient();
-    const callbackUrl = new URL("/auth/callback", window.location.origin);
-    if (redirectTo) {
-      callbackUrl.searchParams.set("next", redirectTo);
-    }
-
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: { redirectTo: callbackUrl.toString() },
+    const { error } = await authClient.signIn.social({
+      provider: provider === "x" ? "twitter" : "google",
+      callbackURL: new URL(redirectTo || "/", window.location.origin).toString(),
     });
 
     // On success the browser is already navigating to the provider, so this

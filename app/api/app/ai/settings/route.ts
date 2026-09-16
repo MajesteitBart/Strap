@@ -1,13 +1,13 @@
-import { NextResponse } from "next/server";
-import { readPublicAiSettings, readCompanyPublicAiSettings, upsertAiSettings } from "@/lib/ai/persistence";
+import { readCompanyPublicAiSettings, readPublicAiSettings, upsertAiSettings } from "@/lib/ai/persistence";
 import { requireApiAuth } from "@/lib/api-auth";
 import { recordAuditEvent } from "@/lib/audit-log";
+import { setCompanyAiMode, setCompanyByok } from "@/lib/company-admin";
 import {
-  resolveOwnedCompanyStrapId,
   resolveMemberCompanyStrap,
   resolveMemberCompanyStrapById,
+  resolveOwnedCompanyStrapId,
 } from "@/lib/strap-context";
-import { setCompanyByok, setCompanyAiMode } from "@/lib/company-admin";
+import { NextResponse } from "next/server";
 
 // The model is server-selected per feature and hidden from the user, so there
 // is no model catalog in either response and no modelId in the body: this route
@@ -28,11 +28,11 @@ export async function GET(request: Request) {
   const requestedCreedId =
     params.get("strapId")?.trim() || params.get("creedId")?.trim();
   const company = requestedCreedId
-    ? await resolveMemberCompanyStrapById(auth.supabase, auth.user, requestedCreedId)
-    : await resolveMemberCompanyStrap(auth.supabase, auth.user);
+    ? await resolveMemberCompanyStrapById(auth.context, auth.user, requestedCreedId)
+    : await resolveMemberCompanyStrap(auth.context, auth.user);
   const settings = company
     ? await readCompanyPublicAiSettings(company.creedId)
-    : await readPublicAiSettings(auth.supabase, auth.user.id);
+    : await readPublicAiSettings(auth.context, auth.user.id);
   return NextResponse.json({ settings });
 }
 
@@ -66,7 +66,7 @@ export async function PUT(request: Request) {
       params.get("strapId")?.trim() || params.get("creedId")?.trim();
     let companyId: string | null;
     if (requestedCreedId) {
-      const match = await resolveMemberCompanyStrapById(auth.supabase, auth.user, requestedCreedId);
+      const match = await resolveMemberCompanyStrapById(auth.context, auth.user, requestedCreedId);
       if (!match) {
         return NextResponse.json({ error: "Not a company you belong to." }, { status: 403 });
       }
@@ -75,7 +75,7 @@ export async function PUT(request: Request) {
       }
       companyId = match.creedId;
     } else {
-      companyId = await resolveOwnedCompanyStrapId(auth.supabase, auth.user);
+      companyId = await resolveOwnedCompanyStrapId(auth.context, auth.user);
     }
     if (companyId) {
       // Company: write to the company AI settings. Setting a key implies BYOK,
@@ -97,7 +97,7 @@ export async function PUT(request: Request) {
     }
 
     const settings = await upsertAiSettings({
-      client: auth.supabase,
+      client: auth.context,
       userId: auth.user.id,
       apiKey: body.apiKey,
       clearApiKey: body.clearApiKey === true,

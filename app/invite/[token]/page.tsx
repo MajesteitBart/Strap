@@ -1,11 +1,11 @@
-import { redirect } from "next/navigation";
-import Link from "next/link";
 import { ConsentMessage, ConsentShell } from "@/components/strap/consent-shell";
 import { InviteAcceptCard } from "@/components/strap/invite-accept-card";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { resolveInviteByToken } from "@/lib/company-invites";
-import { getUserName, getAvatarUrl, getAvatarInitials } from "@/lib/strap-backend";
+import { isDatabaseConfigured } from "@/lib/env";
+import { getRequestAuth } from "@/lib/request-auth";
+import { getAvatarInitials, getAvatarUrl, getUserName } from "@/lib/strap-backend";
+import Link from "next/link";
+import { redirect } from "next/navigation";
 
 // Company invite landing. Marketing-chrome-free, styled to match the MCP consent
 // screen (/authorize): wordmark above a framed, centred card. Resolves the
@@ -19,7 +19,7 @@ export const dynamic = "force-dynamic";
 export default async function InvitePage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
 
-  if (!isSupabaseConfigured()) {
+  if (!isDatabaseConfigured()) {
     return (
       <ConsentShell chip="Company invite" tone="warning">
         <ConsentMessage title="Invites unavailable" body="Invites are unavailable right now. Please try again later." />
@@ -49,11 +49,9 @@ export default async function InvitePage({ params }: { params: Promise<{ token: 
       </ConsentShell>
     );
   }
-
-  const supabase = await createSupabaseServerClient();
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await getRequestAuth().then(({ user }) => ({ data: { user } }));
 
   if (!user) {
     // Return here after signing in / creating an account.

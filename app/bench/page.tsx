@@ -1,13 +1,13 @@
-import type { Metadata } from "next";
-import Link from "next/link";
-import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { JsonLd } from "@/components/marketing/json-ld";
 import {
   StrapPageHero,
   StrapSiteFooter,
   StrapSiteHeader,
 } from "@/components/marketing/strap-site-shell";
-import { JsonLd } from "@/components/marketing/json-ld";
+import { isDatabaseConfigured } from "@/lib/env";
 import { breadcrumbSchema, graph, webPageSchema } from "@/lib/seo/structured-data";
+import type { Metadata } from "next";
+import Link from "next/link";
 
 const PATH = "/bench";
 const TITLE = "Benchmarks";
@@ -56,7 +56,7 @@ export default function BenchPage() {
         )}
       />
       <div className="strap-site">
-        <StrapSiteHeader configured={isSupabaseConfigured()} current="bench" />
+        <StrapSiteHeader configured={isDatabaseConfigured()} current="bench" />
 
         <main>
           <StrapPageHero

@@ -1,8 +1,10 @@
-import { NextResponse } from "next/server";
+import { creed_mcp_clients } from "@/db/schema/application";
 import { getAgentIconKind } from "@/lib/agent-icon";
+import { serviceContext } from "@/lib/db/service";
 import { getOAuthClient, revokeOAuthToken } from "@/lib/oauth";
 import { checkRateLimit } from "@/lib/rate-limit";
-import { getSupabaseAdminClient } from "@/lib/supabase/admin";
+import { and, eq, like, or } from "drizzle-orm";
+import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -51,11 +53,8 @@ export async function POST(request: Request) {
   if (result.userId && result.clientId) {
     const client = await getOAuthClient(result.clientId);
     if (client && getAgentIconKind(client.clientName) === "cli") {
-      await getSupabaseAdminClient()
-        .from("creed_mcp_clients")
-        .delete()
-        .eq("user_id", result.userId)
-        .or(`client_id.eq.cli,client_id.like.cli-${result.tokenId}-%`);
+      const context = serviceContext("revoke CLI roster after token verification");
+      await context.database.delete(creed_mcp_clients).where(and(eq(creed_mcp_clients.user_id, result.userId), or(eq(creed_mcp_clients.client_id, "cli"), like(creed_mcp_clients.client_id, `cli-${result.tokenId}-%`))));
     }
   }
 

@@ -1,7 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import type { ReactNode } from "react";
 import {
   StrapSiteFooter,
   StrapSiteNav,
@@ -9,6 +7,8 @@ import {
 } from "@/components/marketing/strap-site-shell";
 import { BRAND_TAGLINE } from "@/lib/marketing/brand";
 import { homeFaqItems } from "@/lib/marketing/faq";
+import Link from "next/link";
+import type { ReactNode } from "react";
 
 const resources = [
   {
@@ -131,7 +131,7 @@ function SecretsProof() {
   const secrets = [
     ["GITHUB_TOKEN", "github · prod", "resolved 4m ago", true],
     ["OPENAI_API_KEY", "openai · prod", "resolved 1h ago", true],
-    ["SUPABASE_SECRET", "supabase · dev", "resolved 3d ago", true],
+    ["DATABASE_URL", "postgres · dev", "resolved 3d ago", true],
     ["MONEYBIRD_API", "moneybird · prod", "never resolved", false],
   ] as const;
   return (

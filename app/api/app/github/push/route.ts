@@ -1,16 +1,16 @@
-import { NextResponse } from "next/server";
-import { loadCreedState, persistCreedState } from "@/lib/strap-backend";
+import { requireApiAuth } from "@/lib/api-auth";
+import { withCompanyGitHubAccess } from "@/lib/company-github";
+import { readCompanyVersionControl, updateCompanyVersionControlSync } from "@/lib/company-version-control";
 import { pushGitHubFile } from "@/lib/github";
 import {
   getConfiguredRepo,
-  requireAuthenticatedUser,
   resolveGitHubProfileSnapshot,
-  withAuthenticatedGitHubAccess,
+  withAuthenticatedGitHubAccess
 } from "@/lib/github-version-control";
-import { resolveManagedCompanyCreedId } from "@/lib/strap-context";
-import { withCompanyGitHubAccess } from "@/lib/company-github";
-import { readCompanyVersionControl, updateCompanyVersionControlSync } from "@/lib/company-version-control";
 import { hasProfilePathConflict, LEGACY_CREED_FILE_NAME } from "@/lib/profile-file";
+import { loadCreedState, persistCreedState } from "@/lib/strap-backend";
+import { resolveManagedCompanyCreedId } from "@/lib/strap-context";
+import { NextResponse } from "next/server";
 
 type PushBody = {
   markdown?: string;
@@ -32,6 +32,8 @@ function assertNoFallbackConflict(
 }
 
 export async function POST(request: Request) {
+  const auth = await requireApiAuth();
+  if (auth instanceof NextResponse) return auth;
   try {
     const body = (await request.json()) as PushBody;
     const markdown = body.markdown?.trim();
@@ -42,12 +44,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing markdown or local hash." }, { status: 400 });
     }
 
-    const { supabase, user } = await requireAuthenticatedUser();
+    const { context, user } = auth;
 
     // Company managers push the company file to the COMPANY target on the TEAM's
     // GitHub connection (never a personal token); the sync bookkeeping lands on
     // the company row. Personal Straps push on the user's own connection.
-    const companyId = await resolveManagedCompanyCreedId(supabase, user);
+    const companyId = await resolveManagedCompanyCreedId(context, user);
     if (companyId) {
       const companyVc = await readCompanyVersionControl(companyId);
       const companyRepo = getConfiguredRepo(companyVc);
@@ -90,7 +92,7 @@ export async function POST(request: Request) {
     }
 
     const result = await withAuthenticatedGitHubAccess(async ({
-      supabase: personalSupabase,
+      context: personalContext,
       user: personalUser,
       integration,
       versionControl,
@@ -118,7 +120,7 @@ export async function POST(request: Request) {
         currentSha: remoteFile?.snapshot.sha ?? null,
       });
 
-      const loaded = await loadCreedState(personalSupabase, personalUser);
+      const loaded = await loadCreedState(personalContext, personalUser);
       const nextState = {
         ...loaded.state,
         settings: {
@@ -138,7 +140,7 @@ export async function POST(request: Request) {
         },
       };
 
-      await persistCreedState(personalSupabase, personalUser.id, nextState);
+      await persistCreedState(personalContext, personalUser.id, nextState);
 
       return {
         ok: true,

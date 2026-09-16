@@ -1,6 +1,9 @@
-import "server-only";
-import type { SupabaseLikeClient } from "@/lib/supabase/types";
+import * as tables from "@/db/schema/application";
+import type { DatabaseContext } from "@/lib/db/context";
+import { query } from "@/lib/db/query";
 import { legacyDeletionBlocker } from "@/lib/legacy-subscriptions";
+import { and, eq, inArray } from "drizzle-orm";
+import "server-only";
 
 function rows(value: unknown): Record<string, unknown>[] {
   if (!Array.isArray(value) || value.some((item) =>
@@ -12,7 +15,7 @@ function rows(value: unknown): Record<string, unknown>[] {
 
 /** Inspect every billing record that the requested deletion would cascade away. */
 export async function checkLegacyDeletion(
-  db: SupabaseLikeClient,
+  db: DatabaseContext,
   target: { scope: "account"; userId: string } | { scope: "company"; strapId: string },
 ): Promise<{ error: string; status: number } | null> {
   try {
@@ -20,8 +23,8 @@ export async function checkLegacyDeletion(
     let billingRows: Record<string, unknown>[] = [];
     if (target.scope === "account") {
       const [personal, owned] = await Promise.all([
-        db.from("creed_entitlements").select("stripe_subscription_id, billing_mode").eq("user_id", target.userId),
-        db.from("creeds").select("id").eq("owner_user_id", target.userId).eq("type", "company"),
+        query(db, tables.creed_entitlements, "select", (database, scope) => database.select({ stripe_subscription_id: tables.creed_entitlements.stripe_subscription_id, billing_mode: tables.creed_entitlements.billing_mode }).from(tables.creed_entitlements).where(and(scope, eq(tables.creed_entitlements.user_id, target.userId)))),
+        query(db, tables.creeds, "select", (database, scope) => database.select({ id: tables.creeds.id }).from(tables.creeds).where(and(scope, eq(tables.creeds.owner_user_id, target.userId), eq(tables.creeds.type, "company")))),
       ]);
       if (personal.error || owned.error) throw new Error("Legacy billing lookup failed.");
       billingRows = rows(personal.data);
@@ -34,8 +37,7 @@ export async function checkLegacyDeletion(
     }
     if (companyIds.length) {
       // Match the cascading Company ids, even if old billing ownership is stale.
-      const company = await db.from("creed_company_billing")
-        .select("stripe_subscription_id, billing_mode").in("creed_id", companyIds);
+      const company = await query(db, tables.creed_company_billing, "select", (database, scope) => database.select({ stripe_subscription_id: tables.creed_company_billing.stripe_subscription_id, billing_mode: tables.creed_company_billing.billing_mode }).from(tables.creed_company_billing).where(and(scope, inArray(tables.creed_company_billing.creed_id, companyIds))));
       if (company.error) throw new Error("Legacy billing lookup failed.");
       billingRows.push(...rows(company.data));
     }

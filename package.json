@@ -7,13 +7,17 @@
     "build": "next build --webpack",
     "start": "node --max-http-header-size=65536 node_modules/next/dist/bin/next start",
     "lint": "eslint",
-    "test": "node --test --experimental-strip-types tests/**/*.test.ts",
+    "test": "node --test --experimental-strip-types tests/*.test.ts tests/db/*.test.ts",
     "audit:brand": "node --experimental-strip-types scripts/check-strap-rebrand.mts",
-    "indexnow": "node --experimental-strip-types scripts/indexnow-ping.ts"
+    "indexnow": "node --experimental-strip-types scripts/indexnow-ping.ts",
+    "db:up": "docker compose up -d --wait",
+    "db:ping": "node --experimental-strip-types scripts/db-ping.mts",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "node --experimental-strip-types scripts/db-migrate.mts",
+    "test:db": "node --import ./scripts/db-env.mts --test --experimental-strip-types tests/db/*.test.ts",
+    "verify:local": "node scripts/verify-local-runtime.mjs"
   },
   "dependencies": {
-    "@supabase/ssr": "^0.10.0",
-    "@supabase/supabase-js": "^2.101.1",
     "@tiptap/extension-bubble-menu": "^3.22.0",
     "@tiptap/extension-code-block-lowlight": "^3.22.5",
     "@tiptap/extension-highlight": "^3.22.0",
@@ -25,14 +29,18 @@
     "@tiptap/react": "^3.22.0",
     "@tiptap/starter-kit": "^3.22.0",
     "@tiptap/suggestion": "^3.22.0",
+    "bcryptjs": "3.0.3",
+    "better-auth": "1.7.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "diff": "^9.0.0",
+    "drizzle-orm": "0.45.2",
     "framer-motion": "^12.38.0",
     "lowlight": "^3.3.0",
     "lucide-react": "^1.7.0",
     "motion": "^12.38.0",
     "next": "16.3.5",
+    "postgres": "3.4.9",
     "radix-ui": "^1.4.3",
     "react": "19.2.4",
     "react-dom": "19.2.4",
@@ -49,6 +57,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "drizzle-kit": "0.31.10",
     "eslint": "^9",
     "eslint-config-next": "16.3.5",
     "tailwindcss": "^4",
@@ -71,5 +80,10 @@
   "bugs": {
     "url": "https://github.com/MajesteitBart/Strap/issues"
   },
-  "homepage": "https://strap.bvdm.ai"
+  "homepage": "https://strap.bvdm.ai",
+  "overrides": {
+    "@esbuild-kit/core-utils": {
+      "esbuild": "^0.25.0"
+    }
+  }
 }
