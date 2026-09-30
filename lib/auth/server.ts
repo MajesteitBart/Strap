@@ -1,3 +1,4 @@
+import { recordAuditEvent } from "@/lib/audit-log";
 import { sendEmail } from "@/lib/email";
 import { renderAuthEmail } from "@/lib/email-templates/auth";
 import { log } from "@/lib/observability";
@@ -36,6 +37,7 @@ function initializeAuth() {
       } : {}),
     },
     plugins: [nextCookies()],
+    onSecurityEvent: (event) => recordAuditEvent(event),
     logger: {
       level: "warn",
       log(level) {

@@ -56,7 +56,7 @@ test("Vault, avatars and retention preserve their access boundaries", { skip: !d
       await sql`insert into oauth_device_authorizations(device_code_hash,user_code_hash,client_id,expires_at) values (${String(offset)},${String(offset)},'retention',${expires})`;
       await sql`insert into oauth_authorization_codes(code_hash,client_id,user_id,redirect_uri,code_challenge,expires_at) values (${String(offset)},'retention',${owner},'http://localhost/callback','challenge',${expires})`;
     }
-    assert.deepEqual(await pruneExpiredAuthorizations(db, now), { device: 1, codes: 1 });
-    assert.deepEqual(await pruneExpiredAuthorizations(db, now), { device: 0, codes: 0 });
+    assert.deepEqual(await pruneExpiredAuthorizations(db, now), { device: 1, codes: 1, totpClaims: 0 });
+    assert.deepEqual(await pruneExpiredAuthorizations(db, now), { device: 0, codes: 0, totpClaims: 0 });
   });
 });

@@ -8,9 +8,11 @@ export async function pruneActivity(database: PostgresJsDatabase, now = new Date
 }
 
 export async function pruneExpiredAuthorizations(database: PostgresJsDatabase, now = new Date()) {
-  const [result] = await database.execute<{ device: number; codes: number }>(sql`
+  const [result] = await database.execute<{ device: number; codes: number; totpClaims: number }>(sql`
     with device as (delete from public.oauth_device_authorizations where expires_at < ${now.toISOString()}::timestamptz returning 1),
-    codes as (delete from public.oauth_authorization_codes where expires_at < ${now.toISOString()}::timestamptz returning 1)
-    select (select count(*)::int from device) as device, (select count(*)::int from codes) as codes`);
+    codes as (delete from public.oauth_authorization_codes where expires_at < ${now.toISOString()}::timestamptz returning 1),
+    totp_claims as (delete from public.auth_totp_replay_claims where expires_at < ${now.toISOString()}::timestamptz returning 1)
+    select (select count(*)::int from device) as device, (select count(*)::int from codes) as codes,
+      (select count(*)::int from totp_claims) as "totpClaims"`);
   return result;
 }

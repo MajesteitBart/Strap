@@ -9,7 +9,7 @@ test("plain Postgres baseline and retained atomic functions", { skip: !databaseT
   await t.test("migration reruns without data or schema changes", async () => {
     await migrate(db, { migrationsFolder: "db/migrations" });
     const [row] = await sql`select count(*)::int as count from information_schema.tables where table_schema='public'`;
-    assert.equal(row.count, 44);
+    assert.equal(row.count, 46);
     const [policies] = await sql`select count(*)::int as count from pg_policies where schemaname='public'`;
     assert.equal(policies.count, 0);
     const [references] = await sql`select count(*)::int as count from pg_constraint where contype='f' and confrelid in (select oid from pg_class where relnamespace in (select oid from pg_namespace where nspname in ('auth','vault','storage')))`;

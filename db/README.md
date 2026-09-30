@@ -25,7 +25,7 @@ STRAP_VAULT_SECRET is a dedicated key of at least 32 random characters. It is in
 
 ## Schema and checks
 
-db/schema/ defines 44 tables. db/migrations/0000_baseline.sql is the single squashed baseline; its final block contains eight retained atomic functions from db/functions/baseline.sql. Future schema changes use npm run db:generate -- --name=<change>. Review generated SQL before npm run db:migrate. Function edits require a SQL migration and an update to the reference file because Drizzle does not generate function migrations.
+db/schema/ defines 46 tables. db/migrations/0000_baseline.sql is the squashed baseline; its final block contains eight retained atomic functions from db/functions/baseline.sql. 0001_account_mfa.sql adds account MFA. Future schema changes use npm run db:generate -- --name=<change>. Review generated SQL before npm run db:migrate. Function edits require a SQL migration and an update to the reference file because Drizzle does not generate function migrations.
 
 Run migrations once per release. Hosted connections require verified TLS and a transaction pooler; the driver uses one connection and disables prepared statements. Railway hosts Postgres 18 and a transaction-mode PgBouncer service. Set DATABASE_SSL_CA to its trusted certificate when using the private CA; hostname and certificate verification remain mandatory. Rotate the pooler certificate before its September 2027 expiry. Credentials and the certificate/key pair are stored in BWS under STRAP_DATABASE_* keys.
 
@@ -35,7 +35,7 @@ The authorization inventory and negative test mapping are in .project/projects/r
 
 ## Retention
 
-POST /api/internal/maintenance requires Authorization: Bearer <STRAP_MAINTENANCE_SECRET>. It removes activity older than 90 days and expired device/authorization codes, returning and logging counts only. The daily GitHub Actions workflow needs repository variable STRAP_SITE_URL and secret STRAP_MAINTENANCE_SECRET after deployment. Local authorization and pruning tests pass; no hosted cron run is claimed.
+POST /api/internal/maintenance requires Authorization: Bearer <STRAP_MAINTENANCE_SECRET>. It removes activity older than 90 days, expired device/authorization codes and expired TOTP replay claims, returning and logging counts only. The daily GitHub Actions workflow needs repository variable STRAP_SITE_URL and secret STRAP_MAINTENANCE_SECRET after deployment. Local authorization and pruning tests pass; no hosted cron run is claimed.
 
 ## Import rehearsal and cutover
 

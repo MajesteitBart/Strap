@@ -1,5 +1,5 @@
 // Better Auth model properties map to explicit SQL column names.
-import { pgTable, uuid, text, timestamp, boolean, index, unique, bigint } from "drizzle-orm/pg-core";
+import { pgTable, uuid, text, timestamp, boolean, index, unique, bigint, integer, primaryKey } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
   id: uuid().defaultRandom().primaryKey(),
@@ -9,6 +9,7 @@ export const users = pgTable("users", {
   image: text(),
   displayName: text("display_name"),
   avatarUrl: text("avatar_url"),
+  twoFactorEnabled: boolean("two_factor_enabled").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
@@ -58,3 +59,23 @@ export const rateLimits = pgTable("auth_rate_limits", {
   count: bigint({ mode: "number" }).notNull(),
   lastRequest: bigint("last_request", { mode: "number" }).notNull(),
 });
+
+// Better Auth two-factor plugin. Secret and recovery codes are encrypted with
+// BETTER_AUTH_SECRET by the plugin; verified stays false until enrollment proof.
+export const twoFactors = pgTable("two_factors", {
+  id: uuid().defaultRandom().primaryKey(),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  secret: text().notNull(),
+  backupCodes: text("backup_codes").notNull(),
+  verified: boolean().notNull().default(false),
+  failedVerificationCount: integer("failed_verification_count").notNull().default(0),
+  lockedUntil: timestamp("locked_until", { withTimezone: true }),
+}, (table) => [unique("two_factors_user_id_key").on(table.userId)]);
+
+// Accepted TOTP codes, keyed by an HMAC of user and code, so a code cannot be
+// replayed inside its validity window. Rows expire after the window closes.
+export const totpReplayClaims = pgTable("auth_totp_replay_claims", {
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  codeHash: text("code_hash").notNull(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+}, (table) => [primaryKey({ columns: [table.userId, table.codeHash] })]);

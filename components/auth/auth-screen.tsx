@@ -174,13 +174,17 @@ export function AuthScreen({
 
     try {
       if (mode === "login") {
-        const { error } = await authClient.signIn.email({
+        const { data, error } = await authClient.signIn.email({
           email: trimmedEmail,
           password,
           rememberMe: remember,
         });
         if (error) {
           toast.error(authErrorMessage(error.message ?? "", mode));
+          return;
+        }
+        if (data && "twoFactorRedirect" in data && data.twoFactorRedirect) {
+          window.location.assign(`/login/two-factor?next=${encodeURIComponent(nextPath)}`);
           return;
         }
         // Full navigation so server components pick up the new session.
