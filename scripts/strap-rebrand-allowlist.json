@@ -740,10 +740,19 @@
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
     },
     {
+      "file": "components/strap/account-screen.tsx",
+      "kind": "content",
+      "occurrences": 5,
+      "fingerprint": "31458a0ffee939f1f07d158f0ade943c3ab6379e49e23322e30ea434326fedfe",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
       "file": "components/strap/api-key-vault-screen.tsx",
       "kind": "content",
-      "occurrences": 10,
-      "fingerprint": "e26c39c934f241ae27ec2e8278ca7b93e70049842b60e98f14c2a034ee9d2d4e",
+      "occurrences": 13,
+      "fingerprint": "4f68d4e9a6df2e44b82c515215307926246ae2a9330ea12035e74865a943525c",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -814,8 +823,8 @@
     {
       "file": "components/strap/company-settings.tsx",
       "kind": "content",
-      "occurrences": 31,
-      "fingerprint": "debc7844f3ab0df64e5c513f182d5533576b0dee5ab31d5881402afe48a70e38",
+      "occurrences": 32,
+      "fingerprint": "9404f9a783e20927fc929af113284a114a7122ddbe4ca8e5a06322c0cff47840",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -932,7 +941,7 @@
       "file": "components/strap/panel.tsx",
       "kind": "content",
       "occurrences": 6,
-      "fingerprint": "8d253633ac5c2776b2cd20bc599bac10c5be7375b6e4990c78d66329f544c666",
+      "fingerprint": "2a526baf963b5e254c81e8a0bf10cf6a4b64a8955ec612c7432a73d44aa88951",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -967,8 +976,8 @@
     {
       "file": "components/strap/settings-screen.tsx",
       "kind": "content",
-      "occurrences": 2,
-      "fingerprint": "c0fa6f99930582709b7a7a290989ac0b9d38dc06be335f79144b2f80bb5aee58",
+      "occurrences": 4,
+      "fingerprint": "57b9345024e941d12fa2dcad5d8e8cae81549d589bb8c3cf589171a2974362ce",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -976,8 +985,8 @@
     {
       "file": "components/strap/shell.tsx",
       "kind": "content",
-      "occurrences": 10,
-      "fingerprint": "3b99461d32266fcb13a96f523d9b90d0c273bc2cd8f9ec5997af116c53b93184",
+      "occurrences": 11,
+      "fingerprint": "a07e574f3af91d27cdd9cce54e41e117224960bfbe3c0e39a51aaa3824f1b025",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -986,7 +995,7 @@
       "file": "components/strap/skills-screen.tsx",
       "kind": "content",
       "occurrences": 4,
-      "fingerprint": "627c36ca2077bf72196210f4f65d9934bac9783fb979dfad2c1e13001644b2ab",
+      "fingerprint": "6fc3cc766adb57622ea2cf6db8c872a6e242c919b1a81b31967459dd5b615791",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -995,7 +1004,7 @@
       "file": "components/strap/strap-provider.tsx",
       "kind": "content",
       "occurrences": 120,
-      "fingerprint": "ed03c5c00c92c5a044878aa10e22c12038589ef5b9932b2a8d14f5951c0c096d",
+      "fingerprint": "58ef72fce345b54e86dd1ecf064c01e918c4f24be3ec50aeb850fa20f920f631",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -1003,8 +1012,8 @@
     {
       "file": "components/strap/strap-switcher.tsx",
       "kind": "content",
-      "occurrences": 59,
-      "fingerprint": "85e06e944f4cca51603bdfd4160429b65d07f650768df2a718318558a91389d4",
+      "occurrences": 69,
+      "fingerprint": "2ce1e324a071f478c369cb46dc001370e375365513d29df3f7a0206dc199d542",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -2417,7 +2426,7 @@
       "file": "tests/merge-readiness.test.ts",
       "kind": "content",
       "occurrences": 7,
-      "fingerprint": "865d5f526ed53632cdce69f1b9cd9c18deedbc985701c2b08bfee9731cf88dff",
+      "fingerprint": "88437b250514b56ffabfda548df828f2235634fa2d5991b1ea7c7081d705debb",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -2490,6 +2499,15 @@
       "kind": "content",
       "occurrences": 35,
       "fingerprint": "f337eb1c745f96a527e5134b3a430d2d48b9e474446d08be2edc4ea92b8e4da4",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "tests/strap-switch-scoping.test.ts",
+      "kind": "content",
+      "occurrences": 4,
+      "fingerprint": "9a37fb52c05564fc7ebd4693830dc41cf32a9657517d2e0de65fdd36d36ebe3a",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
