@@ -50,7 +50,7 @@
       "file": ".gitignore",
       "kind": "content",
       "occurrences": 1,
-      "fingerprint": "0bf310500dac10f7349074ee2647a640c79f7dfef626f5ce8d99fc176bd1facf",
+      "fingerprint": "0e89bc13d257961a2546fc19a6bfb5a4f9a54d2ac12e61ade193dc6889994d6b",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
