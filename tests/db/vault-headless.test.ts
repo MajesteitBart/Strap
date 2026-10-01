@@ -324,6 +324,23 @@ test("scoped Vault reveals enforce live Postgres permissions and audit before de
     assert.equal(allowed.strap_id, company);
     await sql`update creed_members set role='member' where creed_id=${company} and user_id=${member}`;
     await assert.rejects(repository.vaultFolderCreate(db, { userId: member }, { strapId: company, name: "after-demotion", description: "" }), { status: 403 });
+    await assert.rejects(repository.vaultFolderDelete(db, { userId: member }, allowed.id), { status: 403 });
+    assert.equal((await sql`select count(*)::int as count from strap_vault_folders where id=${allowed.id}`)[0].count, 1);
+  });
+
+  await t.test("a folder that grows mid-window raises the key's reveal budget", async () => {
+    const growing = await repository.vaultFolderCreate(db, { userId: owner }, { strapId: personal, name: "growing", description: "" });
+    const first = await repository.vaultCreate(db, { userId: owner }, { creedId: personal, name: "Growing 0", description: "", secret, folderId: growing.id });
+    const created = await createWith({ vaultFolderIds: [growing.id] });
+    // The first reveal opens a 200-request window for a one-secret folder.
+    assert.equal((await request(created.key, first.id)).status, 200);
+    const added = [first];
+    for (let index = 1; index < 150; index++) {
+      added.push(await repository.vaultCreate(db, { userId: owner }, { creedId: personal, name: `Growing ${index}`, description: "", secret, folderId: growing.id }));
+    }
+    // 150 secrets allow 300 reveals in this window, including the one already used.
+    for (let index = 1; index < 300; index++) assert.equal((await request(created.key, added[index % added.length].id)).status, 200);
+    assert.equal((await request(created.key, first.id)).status, 429);
   });
 
   await t.test("the reveal limit grows with the secrets a key can reveal", async () => {

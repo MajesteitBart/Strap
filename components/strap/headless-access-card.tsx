@@ -214,15 +214,16 @@ function HeadlessAccessForm({ creedId, canUseVault }: { creedId: string | undefi
     rotating.current = true;
     setBusy(true);
     setError(null);
+    // The server may have committed the rotation before the connection failed.
+    const lost = `The rotation response for ${key.name} did not arrive, so its value may already have changed. Rotate again to get a key you can use.`;
     try {
-      const response = await fetch(`/api/app/headless-access/${encodeURIComponent(key.id)}/rotate`, { method: "POST" });
+      const response = await fetch(`/api/app/headless-access/${encodeURIComponent(key.id)}/rotate`, { method: "POST" }).catch(() => null);
+      if (!response) return setError(lost);
       const payload = (await response.json().catch(() => ({}))) as { key?: string; error?: string };
-      if (!response.ok || !payload.key) {
-        setError(payload.error || "Could not rotate API key.");
-        return;
-      }
+      if (!response.ok) return setError(payload.error || "Could not rotate API key.");
+      if (!payload.key) return setError(lost);
       setCreatedKey({ key: payload.key, rotated: true });
-      await loadKeys();
+      await loadKeys().catch((loadError: unknown) => setError(loadError instanceof Error ? loadError.message : "Could not reload API keys."));
     } finally {
       rotating.current = false;
       setBusy(false);

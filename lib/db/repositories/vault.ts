@@ -110,6 +110,11 @@ export async function vaultFolderDelete(db: PostgresJsDatabase, viewer: Viewer, 
   return db.transaction(async tx => {
     const [folder] = await tx.select(folderMetadata).from(folders).where(and(eq(folders.id, id), scope(viewer, folders.strap_id))).for("update");
     if (!folder) throw new VaultRepositoryError("Folder not found or access denied.", 403);
+    // Hold the membership row as folder creation does, so a demotion or removal
+    // cannot commit between this check and the writes below.
+    const [access] = await tx.select({ id: creeds.id }).from(creeds).innerJoin(creed_members, eq(creed_members.creed_id, creeds.id))
+      .where(and(eq(creeds.id, folder.strap_id), eq(creed_members.user_id, viewer.userId), scope(viewer, creeds.id))).for("share");
+    if (!access) throw new VaultRepositoryError("Folder not found or access denied.", 403);
     const moved = await tx.update(items).set({ folder_id: null, updated_at: new Date().toISOString() })
       .where(and(eq(items.creed_id, folder.strap_id), eq(items.folder_id, folder.id))).returning({ id: items.id });
     await tx.delete(folders).where(eq(folders.id, folder.id));

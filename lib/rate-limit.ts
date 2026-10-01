@@ -5,6 +5,7 @@
 type Bucket = {
   tokens: number;
   refilledAt: number;
+  limit: number;
 };
 
 const BUCKETS = new Map<string, Bucket>();
@@ -53,14 +54,21 @@ export function checkRateLimit({
   const bucket = BUCKETS.get(key);
 
   if (!bucket) {
-    BUCKETS.set(key, { tokens: limit - 1, refilledAt: now });
+    BUCKETS.set(key, { tokens: limit - 1, refilledAt: now, limit });
     return { ok: true, remaining: limit - 1 };
   }
 
   const elapsed = now - bucket.refilledAt;
   if (elapsed >= windowMs) {
-    BUCKETS.set(key, { tokens: limit - 1, refilledAt: now });
+    BUCKETS.set(key, { tokens: limit - 1, refilledAt: now, limit });
     return { ok: true, remaining: limit - 1 };
+  }
+
+  // A caller whose limit changes mid-window (for example a key whose Vault
+  // coverage grew) keeps what it already used and gains or loses the difference.
+  if (limit !== bucket.limit) {
+    bucket.tokens = Math.max(0, bucket.tokens + limit - bucket.limit);
+    bucket.limit = limit;
   }
 
   if (bucket.tokens > 0) {
