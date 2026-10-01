@@ -16,6 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth/client";
 import { LoaderCircle, ShieldCheck } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -192,7 +193,7 @@ export function AccountSecuritySettings() {
       </div>
 
       <Dialog open={flow !== null} onOpenChange={(value) => (!value ? close() : undefined)}>
-        <DialogContent className="rounded-[var(--radius-xl)] border-[var(--strap-frame)] bg-[var(--strap-surface)]">
+        <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-[var(--radius-xl)] border-[var(--strap-frame)] bg-[var(--strap-surface)]">
           {flow === "enable" && !setup ? (
             <>
               <DialogHeader>
@@ -217,14 +218,20 @@ export function AccountSecuritySettings() {
               <DialogHeader>
                 <DialogTitle>Add Strap to your authenticator</DialogTitle>
                 <DialogDescription>
-                  Enter this setup key in your app, or open the link on the device that has the app. It is only shown now.
+                  Scan the QR code with your authenticator app, or enter the setup key. It is only shown now.
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
-                <div className="rounded-xl border border-[var(--strap-border)] p-4">
-                  <div className="text-[13px] text-[var(--strap-text-secondary)]">Setup key</div>
-                  <code className="mt-1 block break-all font-mono text-[15px] text-[var(--strap-text-primary)]" data-testid="mfa-setup-key">{setup.key}</code>
-                  <a href={setup.uri} className="mt-2 inline-block text-[14px] underline underline-offset-4">Open in authenticator app</a>
+                <div className="flex flex-col gap-4 rounded-xl border border-[var(--strap-border)] p-4 sm:flex-row sm:items-start">
+                  {/* Rendered locally so the secret stays in the browser; fixed dark-on-white stays scannable in dark mode. */}
+                  <div className="shrink-0 self-center overflow-hidden rounded-lg bg-white sm:self-start">
+                    <QRCodeSVG value={setup.uri} size={164} marginSize={4} bgColor="#ffffff" fgColor="#000000" role="img" title="QR code for your authenticator app" data-testid="mfa-setup-qr" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-[13px] text-[var(--strap-text-secondary)]">Setup key</div>
+                    <code className="mt-1 block font-mono text-[15px] wrap-break-word text-[var(--strap-text-primary)]" data-testid="mfa-setup-key">{setup.key}</code>
+                    <a href={setup.uri} className="mt-2 inline-block text-[14px] underline underline-offset-4">Open in authenticator app</a>
+                  </div>
                 </div>
                 <RecoveryCodes codes={setup.backupCodes} />
                 <label className="block">
