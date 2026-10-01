@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import * as grants from "../lib/vault-grants.ts";
-import { buildVaultListing, canListVault, isVaultListingBatch, vaultToolsFor, VaultListingError } from "../lib/vault-tools.ts";
+import { buildVaultListing, canListVault, isVaultListingBatch, MAX_REVEALABLE_BY, MAX_VAULT_FILTER_LENGTH, parseVaultListingArgs, vaultToolsFor, VaultListingError } from "../lib/vault-tools.ts";
 
 const itemId = "11111111-1111-4111-8111-111111111111";
 const otherItemId = "22222222-2222-4222-8222-222222222222";
@@ -94,4 +94,24 @@ test("listings index grants once and keep error text inert", () => {
   assert.deepEqual(listing.folders.map((folder) => folder.itemCount), [1, 0]);
   assert.throws(() => buildVaultListing({ folders, items, keys, caller: null, folder: "missing" }), (error: unknown) =>
     error instanceof VaultListingError && !/[\u0000-\u001f\u007f-\u009f]/.test(error.message) && error.message.includes('"ops"'));
+});
+
+test("folder lookup prefers IDs, filters are bounded and revealers are capped with a count", () => {
+  const realId = "55555555-5555-4555-8555-555555555555";
+  const decoyId = "66666666-6666-4666-8666-666666666666";
+  // The decoy is named like the real folder's ID and sorts first by name.
+  const folders = [{ id: decoyId, name: realId, description: "" }, { id: realId, name: "real", description: "" }];
+  const items = [
+    { id: itemId, folderId: realId, name: "REAL_SECRET", description: "", updatedAt: "2026-10-01T00:00:00.000Z" },
+    { id: otherItemId, folderId: decoyId, name: "DECOY_SECRET", description: "", updatedAt: "2026-10-01T00:00:00.000Z" },
+  ];
+  const keys = Array.from({ length: 25 }, (_, index) => ({ id: `k${index}`, name: `Key ${index}`, prefix: `p${index}`, vaultItemIds: index === 3 ? [itemId] : [], vaultFolderIds: [realId] }));
+  const listing = buildVaultListing({ folders, items, keys, caller: null, folder: realId });
+  assert.deepEqual(listing.items.map((item) => item.name), ["REAL_SECRET"]);
+  assert.equal(listing.items[0]?.revealableByCount, 25);
+  assert.equal(listing.items[0]?.revealableBy.length, MAX_REVEALABLE_BY);
+  assert.deepEqual(listing.items[0]?.revealableBy.slice(0, 5).map((key) => key.id), ["k0", "k1", "k2", "k3", "k4"]);
+  assert.throws(() => parseVaultListingArgs({ query: "x".repeat(MAX_VAULT_FILTER_LENGTH + 1) }), VaultListingError);
+  assert.throws(() => parseVaultListingArgs({ folder: "x".repeat(MAX_VAULT_FILTER_LENGTH + 1) }), VaultListingError);
+  assert.deepEqual(parseVaultListingArgs({ folder: " real ", query: 7 }), { folder: "real", query: "" });
 });

@@ -1,5 +1,5 @@
 // Vault discovery for connected agents: metadata and references only, never values.
-import { matchesVaultQuery, terminalText, vaultEnvName, vaultSchemaLine } from "../packages/strap/src/vault/schema.ts";
+import { terminalText, vaultEnvName, vaultQueryMatcher, vaultSchemaLine } from "../packages/strap/src/vault/schema.ts";
 
 export const VAULT_TOOLS = [
   {
@@ -46,6 +46,21 @@ export type VaultCallerGrant = { keyId: string; vaultItemIds: readonly string[];
 
 export class VaultListingError extends Error {}
 
+/** Longest accepted folder or query argument. Folder names are at most 120 characters. */
+export const MAX_VAULT_FILTER_LENGTH = 200;
+/** Keys listed per secret; revealableByCount carries the full number. */
+export const MAX_REVEALABLE_BY = 20;
+
+/** Validates filter arguments before any Vault data is loaded. */
+export function parseVaultListingArgs(args: { folder?: unknown; query?: unknown }): { folder: string; query: string } {
+  const folder = typeof args.folder === "string" ? args.folder.trim() : "";
+  const query = typeof args.query === "string" ? args.query.trim() : "";
+  if (folder.length > MAX_VAULT_FILTER_LENGTH || query.length > MAX_VAULT_FILTER_LENGTH) {
+    throw new VaultListingError(`folder and query are limited to ${MAX_VAULT_FILTER_LENGTH} characters.`);
+  }
+  return { folder, query };
+}
+
 export function buildVaultListing(input: {
   folders: Folder[];
   items: Item[];
@@ -54,10 +69,11 @@ export function buildVaultListing(input: {
   folder?: unknown;
   query?: unknown;
 }) {
-  const folderArg = typeof input.folder === "string" ? input.folder.trim() : "";
-  const queryArg = typeof input.query === "string" ? input.query.trim() : "";
+  const { folder: folderArg, query: queryArg } = parseVaultListingArgs(input);
+  // An exact ID wins over a folder that happens to be named like another folder's ID.
   const selected = folderArg
-    ? input.folders.find((folder) => folder.id === folderArg.toLowerCase() || folder.name.toLowerCase() === folderArg.toLowerCase())
+    ? input.folders.find((folder) => folder.id === folderArg.toLowerCase()) ??
+      input.folders.find((folder) => folder.name.toLowerCase() === folderArg.toLowerCase())
     : undefined;
   if (folderArg && !selected) {
     // Names come from other managers and may reach a terminal through generic tool errors.
@@ -82,14 +98,35 @@ export function buildVaultListing(input: {
   const callerFolders = new Set(input.caller?.vaultFolderIds ?? []);
   const itemCounts = new Map<string, number>();
   for (const item of input.items) if (item.folderId) itemCounts.set(item.folderId, (itemCounts.get(item.folderId) ?? 0) + 1);
+  const folderKeySets = new Map<string, Set<Key>>();
+  const folderKeySet = (id: string) => {
+    let set = folderKeySets.get(id);
+    if (!set) folderKeySets.set(id, set = new Set(keysByFolder.get(id) ?? []));
+    return set;
+  };
+  // Both lists are already in key order. Merge only as many as are shown, so
+  // the cost per item depends on its direct grants, not on every folder key.
+  const revealers = (item: Item) => {
+    const direct = keysByItem.get(item.id) ?? [];
+    const viaFolder = item.folderId ? keysByFolder.get(item.folderId) ?? [] : [];
+    const folderSet = item.folderId ? folderKeySet(item.folderId) : new Set<Key>();
+    const shown: Key[] = [];
+    let d = 0, f = 0;
+    while (shown.length < MAX_REVEALABLE_BY && (d < direct.length || f < viaFolder.length)) {
+      const next = f >= viaFolder.length || (d < direct.length && (keyOrder.get(direct[d]!) ?? 0) <= (keyOrder.get(viaFolder[f]!) ?? 0)) ? direct[d++]! : viaFolder[f++]!;
+      if (shown[shown.length - 1] !== next) shown.push(next);
+    }
+    return { shown, total: folderSet.size + direct.filter((key) => !folderSet.has(key)).length };
+  };
+  const matches = vaultQueryMatcher(queryArg);
   const items = input.items
     .filter((item) => !selected || item.folderId === selected.id)
-    .filter((item) => !queryArg || matchesVaultQuery(item, queryArg))
+    .filter((item) => !queryArg || matches(item))
     .map((item) => {
       const reference = `secret://${item.id}`;
       const envName = vaultEnvName(item.name);
       const folder = item.folderId ? folderById.get(item.folderId) : undefined;
-      const revealing = new Set([...(keysByItem.get(item.id) ?? []), ...(item.folderId ? keysByFolder.get(item.folderId) ?? [] : [])]);
+      const { shown, total } = revealers(item);
       return {
         id: item.id,
         reference,
@@ -99,8 +136,9 @@ export function buildVaultListing(input: {
         updatedAt: item.updatedAt,
         envName,
         schemaLine: vaultSchemaLine({ envName, reference }),
-        // Keep the keys' original order for stable output.
-        revealableBy: [...revealing].sort((a, b) => (keyOrder.get(a) ?? 0) - (keyOrder.get(b) ?? 0)).map((key) => ({ id: key.id, name: key.name, prefix: key.prefix })),
+        // Up to MAX_REVEALABLE_BY keys in their original order; the count covers all.
+        revealableBy: shown.map((key) => ({ id: key.id, name: key.name, prefix: key.prefix })),
+        revealableByCount: total,
         ...(input.caller ? { grantedToThisKey: callerItems.has(item.id) || (item.folderId !== null && callerFolders.has(item.folderId)) } : {}),
       };
     });

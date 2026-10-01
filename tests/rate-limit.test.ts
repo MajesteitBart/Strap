@@ -20,3 +20,11 @@ test("a limit that changes mid-window keeps usage and applies the difference", (
   // Shrinking below what was already used blocks the rest of the window.
   assert.equal(take("shrinks", 100).ok, false);
 });
+
+test("usage survives a shrink and regrowth within one window", () => {
+  for (let index = 0; index < 250; index++) assert.equal(take("oscillates", 300).ok, true);
+  assert.equal(take("oscillates", 200).ok, false);
+  // Back to 300: only the 50 unused requests remain, not a fresh 100.
+  for (let index = 0; index < 50; index++) assert.equal(take("oscillates", 300).ok, true);
+  assert.equal(take("oscillates", 300).ok, false);
+});

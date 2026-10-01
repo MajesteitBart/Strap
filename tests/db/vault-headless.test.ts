@@ -539,6 +539,21 @@ test("scoped Vault reveals enforce live Postgres permissions and audit before de
     await assert.rejects(reveal(beforeEdit), { status: 409 });
   });
 
+  await t.test("a refused reveal leaves no reveal audit", async () => {
+    const target = await repository.vaultCreate(db, { userId: owner }, { creedId: personal, name: "Audited target", description: "", secret });
+    const created = await createWith({ vaultItemIds: [target.id] });
+    const stale = { keyId: created.metadata.id, keyHash: shared.digestCredential(created.key), creedId: personal, vaultItemIds: [target.id], vaultFolderIds: [] };
+    assert.equal((await headless.rotateHeadlessAccessKey({ userId: owner, keyId: created.metadata.id })).status, "rotated");
+    const vault = dependencies["@/lib/api-key-vault"] as typeof import("../../lib/api-key-vault.ts");
+    const audits = async () => (await sql`select count(*)::int as count from creed_audit_log where action='vault.secret_revealed' and metadata->>'itemId'=${target.id}`)[0].count;
+    const before = await audits();
+    await assert.rejects(vault.revealVaultItem({ userId: owner, itemId: target.id, request: new Request("http://localhost/"), credential: stale }), { status: 409 });
+    assert.equal(await audits(), before);
+    // A successful session reveal still writes exactly one audit row.
+    assert.equal((await vault.revealVaultItem({ userId: owner, itemId: target.id, request: new Request("http://localhost/") })).secret, secret);
+    assert.equal(await audits(), before + 1);
+  });
+
   await t.test("malformed input and rate limits are uncached and never reveal secrets", async () => {
     const created = await create([item.id]);
     await expectDenied("oauth-token", 401);

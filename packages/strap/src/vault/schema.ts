@@ -30,11 +30,18 @@ function words(text: string): string[] {
 }
 
 /** True when every query word starts a word in the name or description. */
-export function matchesVaultQuery(item: { name: string; description: string }, query: string): boolean {
+/** Builds a matcher that tokenizes the query once; use it when filtering many items. */
+export function vaultQueryMatcher(query: string): (item: { name: string; description: string }) => boolean {
   const wanted = words(query);
-  if (wanted.length === 0) return true;
-  const available = [...words(item.name), ...words(item.description)];
-  return wanted.every((term) => available.some((word) => word.startsWith(term)));
+  if (wanted.length === 0) return () => true;
+  return (item) => {
+    const available = [...words(item.name), ...words(item.description)];
+    return wanted.every((term) => available.some((word) => word.startsWith(term)));
+  };
+}
+
+export function matchesVaultQuery(item: { name: string; description: string }, query: string): boolean {
+  return vaultQueryMatcher(query)(item);
 }
 
 export function isVaultInstanceId(value: string): boolean {

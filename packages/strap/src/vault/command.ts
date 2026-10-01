@@ -54,6 +54,8 @@ type Item = {
   folder: { id: string; name: string } | null;
   envName: string;
   revealableBy: Key[];
+  /** All keys that can reveal the secret; revealableBy may list only the first ones. */
+  revealableByCount: number;
 };
 
 function text(value: unknown): value is string {
@@ -71,7 +73,8 @@ function parseListing(data: unknown): { folders: Folder[]; items: Item[] } {
     if (!text(entry.reference) || !/^secret:\/\/[0-9a-f-]{36}$/.test(entry.reference)) throw new CliError("Strap returned an invalid secret reference.");
     const folder = isRecord(entry.folder) && text(entry.folder.id) && text(entry.folder.name) ? { id: entry.folder.id, name: entry.folder.name } : null;
     const revealableBy = entry.revealableBy.filter((key: unknown): key is Key => isRecord(key) && text(key.id) && text(key.name) && text(key.prefix));
-    return { id: entry.id, reference: entry.reference, name: entry.name, description: entry.description, folder, envName: entry.envName, revealableBy };
+    const revealableByCount = typeof entry.revealableByCount === "number" && entry.revealableByCount >= revealableBy.length ? entry.revealableByCount : revealableBy.length;
+    return { id: entry.id, reference: entry.reference, name: entry.name, description: entry.description, folder, envName: entry.envName, revealableBy, revealableByCount };
   });
   return { folders, items };
 }
@@ -112,7 +115,8 @@ export async function runVaultCommand(client: Client, command: VaultCommand, jso
     for (const entry of listing.items) {
       process.stdout.write(`${terminalText(entry.name)}\n  ${entry.reference}${entry.folder ? `  folder: ${terminalText(entry.folder.name)}` : ""}\n`);
       if (entry.description) process.stdout.write(`  ${terminalText(entry.description)}\n`);
-      const keys = entry.revealableBy.map((key) => `${terminalText(key.name)} (${terminalText(key.prefix)}…)`).join(", ");
+      const more = entry.revealableByCount - entry.revealableBy.length;
+      const keys = entry.revealableBy.map((key) => `${terminalText(key.name)} (${terminalText(key.prefix)}…)`).join(", ") + (more > 0 ? `, and ${more} more` : "");
       process.stdout.write(`  Revealable by: ${keys || "no API key yet"}\n`);
     }
     return;

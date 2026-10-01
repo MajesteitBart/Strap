@@ -140,7 +140,9 @@ export async function vaultFolderDelete(db: PostgresJsDatabase, viewer: Viewer, 
     return { folder, movedItemIds: moved.map(item => item.id) };
   });
 }
-export async function vaultReveal(db: PostgresJsDatabase, viewer: Viewer, id: string, audit: (profileId: string, grant: { folderId: string } | null) => Promise<void>, credential?: VaultCredential) {
+/** The reveal transaction. The required audit row is written on it, so it commits with the access record. */
+export type VaultTransaction = Parameters<Parameters<PostgresJsDatabase["transaction"]>[0]>[0];
+export async function vaultReveal(db: PostgresJsDatabase, viewer: Viewer, id: string, audit: (tx: VaultTransaction, profileId: string, grant: { folderId: string } | null) => Promise<void>, credential?: VaultCredential) {
   // A key with neither this item nor any folder grant never reads the item.
   if (credential && !credential.vaultItemIds.includes(id) && credential.vaultFolderIds.length === 0) {
     throw new VaultRepositoryError(NOT_GRANTED, 403);
@@ -151,8 +153,6 @@ export async function vaultReveal(db: PostgresJsDatabase, viewer: Viewer, id: st
   if (credential && !vaultGrantCovers(credential, { id: row.id, folderId: row.folder_id })) throw new VaultRepositoryError(NOT_GRANTED, 403);
   // A folder grant holds only while the item stays in that folder.
   const viaFolder = credential && !credential.vaultItemIds.includes(id) && row.folder_id ? row.folder_id : null;
-  // Do not decrypt or return plaintext if the required audit cannot persist.
-  try { await audit(row.creed_id, viaFolder ? { folderId: viaFolder } : null); } catch { throw new VaultRepositoryError("Vault reveal audit is unavailable.", 503); }
   const accessedAt = new Date().toISOString();
   // The key was resolved at the start of the request. Before decrypting,
   // confirm it was not rotated, revoked, expired or stripped of this grant
@@ -160,9 +160,15 @@ export async function vaultReveal(db: PostgresJsDatabase, viewer: Viewer, id: st
   const keyStillValid = credential
     ? sql`exists (select 1 from public.creed_headless_access_keys k where k.id = ${credential.keyId} and k.key_hash = ${credential.keyHash} and k.revoked_at is null and (k.expires_at is null or k.expires_at > now()) and (${items.id} = any(k.vault_item_ids) or ${items.folder_id} = any(k.vault_folder_ids)))`
     : undefined;
-  const [stillAuthorized] = await db.update(items).set({ last_accessed_at: accessedAt })
-    .where(and(eq(items.id, id), credentialScope, viaFolder ? eq(items.folder_id, viaFolder) : undefined, eq(items.secret_ciphertext, row.ciphertext), scope(viewer, items.creed_id), keyStillValid)).returning({ id: items.id });
-  if (!stillAuthorized) throw new VaultRepositoryError("Vault item changed or access was removed. Try again.", 409);
+  // The final authorization and the required audit commit together: a refused
+  // reveal leaves no audit row, and an audit failure leaves no access record.
+  // Plaintext is decrypted only after the commit.
+  await db.transaction(async (tx) => {
+    const [stillAuthorized] = await tx.update(items).set({ last_accessed_at: accessedAt })
+      .where(and(eq(items.id, id), credentialScope, viaFolder ? eq(items.folder_id, viaFolder) : undefined, eq(items.secret_ciphertext, row.ciphertext), scope(viewer, items.creed_id), keyStillValid)).returning({ id: items.id });
+    if (!stillAuthorized) throw new VaultRepositoryError("Vault item changed or access was removed. Try again.", 409);
+    try { await audit(tx, row.creed_id, viaFolder ? { folderId: viaFolder } : null); } catch { throw new VaultRepositoryError("Vault reveal audit is unavailable.", 503); }
+  });
   const { ciphertext, ...item } = row;
   return { item: { ...item, last_accessed_at: accessedAt }, secret: decryptVaultSecret(ciphertext, item.id, item.creed_id) };
 }

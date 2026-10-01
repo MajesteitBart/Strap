@@ -2466,6 +2466,12 @@ export async function POST(request: Request) {
       { status: 400, headers: MCP_CORS_HEADERS },
     );
   }
+  // The credential was resolved before the body arrived. A slowly streamed
+  // body must not let a key rotated, revoked or expired meanwhile dispatch tools.
+  const stillValid = await resolveMcpCredential(bearer);
+  if (!stillValid || stillValid.credentialId !== resolved.credentialId) {
+    return unauthorized();
+  }
   // Resolve which Strap this batch targets (Personal by default, or a Company
   // Strap named via the `creed` arg + granted to this token). Company Straps
   // load read-only. MCP only needs recent activity + a tight proposal cap.

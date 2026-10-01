@@ -1,4 +1,5 @@
-import { recordAuditEvent, recordRequiredAuditEvent } from "@/lib/audit-log";
+import * as tables from "@/db/schema/application";
+import { auditRow, recordAuditEvent } from "@/lib/audit-log";
 import { getDatabase } from "@/lib/db/client";
 import {
   vaultCreate, vaultDelete, vaultFolderCreate, vaultFolderDelete, vaultFolderList, vaultFolderUpdate, vaultGrantCoverage, vaultList, vaultReveal, vaultUpdate,
@@ -32,17 +33,21 @@ export async function revealVaultItem(input: {
   /** Headless reveals must supply the resolved key's explicit item and folder grants. */
   credential?: VaultCredential;
 }): Promise<{ item: VaultItem; secret: string }> {
-  const result = await vaultReveal(getDatabase(), { userId: input.userId }, input.itemId, (creedId, grant) => recordRequiredAuditEvent({
-    userId: input.userId,
-    action: "vault.secret_revealed",
-    metadata: {
-      itemId: input.itemId,
-      creedId,
-      ...(input.credential ? { keyId: input.credential.keyId, source: "headless" } : {}),
-      ...(grant ? { folderId: grant.folderId } : {}),
-    },
-    request: input.request,
-  }), input.credential);
+  // The audit row is inserted on the reveal transaction, so it exists exactly
+  // when the reveal was authorized and recorded.
+  const result = await vaultReveal(getDatabase(), { userId: input.userId }, input.itemId, async (tx, creedId, grant) => {
+    await tx.insert(tables.creed_audit_log).values(auditRow({
+      userId: input.userId,
+      action: "vault.secret_revealed",
+      metadata: {
+        itemId: input.itemId,
+        creedId,
+        ...(input.credential ? { keyId: input.credential.keyId, source: "headless" } : {}),
+        ...(grant ? { folderId: grant.folderId } : {}),
+      },
+      request: input.request,
+    }));
+  }, input.credential);
   return { item: toItem(result.item), secret: result.secret };
 }
 export async function updateVaultItem(input: { userId: string; itemId: string; name: string; description: string; secret: string | null; folderId?: string | null; expectedFolderId?: string | null; request: Request }): Promise<VaultItem> {

@@ -65,9 +65,11 @@ export function checkRateLimit({
   }
 
   // A caller whose limit changes mid-window (for example a key whose Vault
-  // coverage grew) keeps what it already used and gains or loses the difference.
+  // coverage grew) keeps what it already used and gains or loses the
+  // difference. The balance may go negative so usage survives a shrink and a
+  // later regrowth within the same window.
   if (limit !== bucket.limit) {
-    bucket.tokens = Math.max(0, bucket.tokens + limit - bucket.limit);
+    bucket.tokens += limit - bucket.limit;
     bucket.limit = limit;
   }
 
