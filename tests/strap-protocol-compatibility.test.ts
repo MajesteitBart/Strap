@@ -2,8 +2,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import {
-  createHeadlessKey,
-  isHeadlessKey,
+createHeadlessKey,
+isHeadlessKey,
 } from "../lib/headless-access-shared.ts";
 import { readStrapId } from "../lib/strap-api.ts";
 
@@ -21,7 +21,6 @@ const prompts = source("lib/strap-prompts.ts");
 const agentContract = source("lib/strap-data.ts");
 const backend = source("lib/strap-backend.ts");
 const secretCrypto = source("lib/secret-crypto.ts");
-const modelCatalog = source("lib/ai/model-catalog.ts");
 
 test("new headless keys are Strap-prefixed while legacy keys remain recognized", () => {
   const created = createHeadlessKey();
@@ -79,10 +78,7 @@ test("canonical configuration aliases precede legacy fallbacks", () => {
     secretCrypto,
     /process\.env\.STRAP_ENCRYPTION_SECRET \|\|\s+process\.env\.CREED_ENCRYPTION_SECRET/,
   );
-  assert.match(
-    modelCatalog,
-    /process\.env\.STRAP_AGENT_MODEL\?\.trim\(\) \|\|\s+process\.env\.CREED_AGENT_MODEL\?\.trim\(\)/,
-  );
+
 });
 
 test("agent guidance has no secret-bearing read URL and advertises Strap tools", () => {

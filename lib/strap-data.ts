@@ -98,7 +98,7 @@ export type StrapSection = {
   lastEditedType: ActorType;
   lastEditedLabel: string;
   // Archived sections are kept in state (so they survive persistence) but are
-  // hidden from the editor, the agent read payload, quality scoring, and the
+  // hidden from the editor, the agent read payload, and the
   // markdown export. Restorable from Settings -> Archived.
   archived?: boolean;
 };
@@ -817,7 +817,6 @@ export const GETTING_STARTED_STEPS = [
   { key: "edit", label: "Make an edit to your file" },
   { key: "connect", label: "Connect an agent" },
   { key: "review", label: "Review a proposal" },
-  { key: "analysis", label: "Run an analysis" },
   { key: "activity", label: "Check activity" },
 ] as const;
 
@@ -1662,7 +1661,7 @@ export function buildHiddenAgentGuidanceMarkdown(options?: {
       "- `strap_get_section({ sectionId })` - fetch ONE section in full (id, name, accent, contentHtml, lastEditedBy). Use this before update / append.",
       "- `strap_search({ query, limit? })` - locate where a fact lives. Returns ranked sections with snippets.",
       "- `strap_get_recent_activity({ limit?, sinceISO? })` - see what other agents recently did. Useful to avoid duplicate proposals.",
-      "- `strap_get_quality_report({ sectionId? })` - see auto-generated quality scores so you can target the weakest sections.",
+      "- `strap_get_quality_report({ sectionId? })` - read a historical quality report if available.",
       "",
       "All mutation tools take flat parameters, do NOT ask you to pick a mode, and route to direct-edit or proposal automatically based on the user's approval setting. Errors include the list of valid section IDs and accents so you can self-correct without re-reading docs.",
       "",
@@ -1799,7 +1798,7 @@ export function buildHiddenAgentGuidanceMarkdown(options?: {
       "  Syntax: a line of text with a blank line above and below.",
       "  When: a single durable fact or context that doesn't fit a list or callout. A paragraph should be one idea.",
       "",
-      "Quality rules (the user's quality popover scores against these):",
+      "Quality rules:",
       "- Pick the block that matches the meaning. A list of three rules is a list. A warning is a callout. Related sections are graph tags. A command is a code block.",
       "- One block per idea. Don't cram three rules into one bullet.",
       "- Group related material under a `### subheading` instead of leaving a flat list of 8+ bullets.",

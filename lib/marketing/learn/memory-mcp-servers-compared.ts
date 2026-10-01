@@ -121,7 +121,7 @@ export const memoryMcpServersCompared: Article = {
     },
     {
       type: "p",
-      text: "Strap keeps one profile with five always-on core sections, Identity, Goals, Work, Preferences, and Routines, plus optional Beliefs, Constraints, People, Health, and Context. Every agent you connect over MCP reads it before answering, then proposes narrow updates you approve, or edits directly if you trust it to. It is plain Markdown you own with BYOK, export, and delete, and it integrates with GitHub for version control. Strap is free, both self-hosted and hosted, and a Company Strap adds one shared file for a team at no charge.",
+      text: "Strap keeps one profile with five always-on core sections, Identity, Goals, Work, Preferences, and Routines, plus optional Beliefs, Constraints, People, Health, and Context. Every agent you connect over MCP reads it before answering, then proposes narrow updates you approve, or edits directly if you trust it to. It is plain Markdown you own with export and delete, and it integrates with GitHub for version control. Strap is free, both self-hosted and hosted, and a Company Strap adds one shared file for a team at no charge.",
     },
     { type: "h2", text: "The short version" },
     {
@@ -153,7 +153,7 @@ export const memoryMcpServersCompared: Article = {
     {
       question: "How much does Strap cost?",
       answer:
-        "Nothing. Self-hosting is free, and the hosted app with Personal and Company Straps is free too. AI runs on an included key or on your own OpenRouter key (BYOK).",
+        "Nothing. Self-hosting is free, and the hosted app with Personal and Company Straps is free too. Use the agents you already connect. Strap runs no in-app LLM calls and needs no model API key.",
     },
   ],
   related: [

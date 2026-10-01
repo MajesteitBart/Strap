@@ -1,29 +1,42 @@
 "use client";
 
-import type { ComponentType, CSSProperties, ReactNode } from "react";
 import {
-  startTransition,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import { createPortal } from "react-dom";
+  InlineTagMark,
+  type SectionTagTarget,
+} from "@/components/strap/extensions/inline-tag";
+import {
+  SECTION_REFERENCE_PICKER_GAP,
+  SECTION_REFERENCE_PICKER_MAX_ROWS,
+  SECTION_REFERENCE_PICKER_PADDING,
+  SECTION_REFERENCE_PICKER_ROW_HEIGHT,
+  SectionReferencePicker,
+} from "@/components/strap/section-reference-picker";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { rankMentionSections } from "@/lib/panel/mentions";
+import { cn } from "@/lib/utils";
 import { Extension, type Editor, type Range } from "@tiptap/core";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
 import Placeholder from "@tiptap/extension-placeholder";
+import { NodeSelection, PluginKey } from "@tiptap/pm/state";
+import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { common, createLowlight } from "lowlight";
 import Suggestion, {
   exitSuggestion,
   type SuggestionKeyDownProps,
   type SuggestionMatch,
   type SuggestionProps,
 } from "@tiptap/suggestion";
-import { EditorContent, useEditor } from "@tiptap/react";
-import { NodeSelection, PluginKey } from "@tiptap/pm/state";
 import { AnimatePresence, motion } from "framer-motion";
+import { common, createLowlight } from "lowlight";
 import {
   Bold,
   Code2,
@@ -40,30 +53,16 @@ import {
   PlusSquare,
   Strikethrough,
 } from "lucide-react";
+import type { ComponentType, CSSProperties, ReactNode } from "react";
 import {
-  InlineTagMark,
-  type SectionTagTarget,
-} from "@/components/strap/extensions/inline-tag";
-import { TabComplete } from "@/components/strap/extensions/tab-complete";
-import {
-  SECTION_REFERENCE_PICKER_GAP,
-  SECTION_REFERENCE_PICKER_MAX_ROWS,
-  SECTION_REFERENCE_PICKER_PADDING,
-  SECTION_REFERENCE_PICKER_ROW_HEIGHT,
-  SectionReferencePicker,
-} from "@/components/strap/section-reference-picker";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { rankMentionSections } from "@/lib/panel/mentions";
-import { cn } from "@/lib/utils";
+  startTransition,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { createPortal } from "react-dom";
 
 const slashPluginKey = new PluginKey("creedSlashCommand");
 const sectionTagPluginKey = new PluginKey("creedSectionTag");
@@ -501,21 +500,6 @@ export function RichTextEditor({
     sectionIdRef.current = sectionId;
   }, [sectionId]);
 
-  const tabCompleteExtension = useMemo(
-    () =>
-      TabComplete.configure({
-        getSectionId: () => sectionIdRef.current,
-        // The slash menu and # picker own Tab while their popover is open;
-        // the ghost never fights them for the key.
-        shouldDeferKey: (state) =>
-          Boolean(
-            slashPluginKey.getState(state)?.active ||
-              sectionTagPluginKey.getState(state)?.active,
-          ),
-      }),
-    [],
-  );
-
   // We mirror the slash items + active index into refs *synchronously*
   // inside `updateSlashMenu` (below) and the index setters, instead of via
   // a useEffect. The previous version was racing: if you typed `/h` and
@@ -581,10 +565,7 @@ export function RichTextEditor({
         placeAbove,
         top: placeAbove ? undefined : clientRect.bottom + 10,
         bottomOffset: placeAbove
-          ? Math.max(
-              window.innerHeight - clientRect.top + 10,
-              0,
-            )
+          ? Math.max(window.innerHeight - clientRect.top + 10, 0)
           : undefined,
       });
     },
@@ -973,7 +954,6 @@ export function RichTextEditor({
       inlineTagExtension,
       slashCommandExtension,
       sectionTagExtension,
-      tabCompleteExtension,
     ],
     content,
     editorProps: {
@@ -1228,8 +1208,9 @@ export function RichTextEditor({
     } catch {
       const domSelection = window.getSelection();
       if (domSelection && domSelection.rangeCount > 0) {
-        const domRects = Array.from(domSelection.getRangeAt(0).getClientRects())
-          .filter((item) => item.width > 0 || item.height > 0);
+        const domRects = Array.from(
+          domSelection.getRangeAt(0).getClientRects(),
+        ).filter((item) => item.width > 0 || item.height > 0);
         rect = domRects[0] ?? null;
       }
     }

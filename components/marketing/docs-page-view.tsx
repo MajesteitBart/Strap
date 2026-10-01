@@ -150,14 +150,13 @@ const sections: DocsSection[] = [
   },
   {
     id: "graph-tags-nexus",
-    label: "Graph Tags and Nexus",
+    label: "Section references",
     group: "Start here",
-    title: "Graph Tags and Nexus",
+    title: "Section references",
     paragraphs: [
-      "Graph Tags are section references. They tell agents which other sections are nearby context, and they power Nexus, the graph view in the file header.",
+      "Graph Tags are section references. They tell agents which other sections provide related context.",
       "Typing # in the editor opens a section picker. It becomes a styled chip only when it matches a real visible section, case-insensitively. If it does not match a section, it stays plain hashtag text.",
       "Use a short Graph Tags subsection near the end of each section when it helps. Two to four related sections is usually enough. Do not use Graph Tags for tools, apps, brands, themes, clients, or random labels unless those are actual section names.",
-      "Nexus is read-only in v1. It shows visible sections as draggable nodes, colours each node with the section accent, draws tethers from valid section references, ignores fake tags, and shows the section name plus quality score on hover.",
     ],
   },
   {
@@ -168,7 +167,7 @@ const sections: DocsSection[] = [
     paragraphs: [
       "The Company plan adds one shared Company Strap on top of your personal one. It is the same structured file, owned by the team instead of a person, so every member's agents read the same company context before they act: how the team works, what it is building, the conventions and constraints that apply to everyone.",
       "Members switch between their personal Strap and any Company Strap they belong to from the workspace dropdown. Roles decide what each person and their agents can do. Owners manage members and company settings, admins manage members and content, and members read and propose. Section permissions can loosen or tighten who edits what, and every change is attributed and visible in the team activity view.",
-      "A Company Strap is free. Invite as many members as you need, and run AI on the deployment's included key or on your company's own OpenRouter key (BYOK).",
+      "A Company Strap is free. Invite as many members as you need and connect your existing agents to propose improvements.",
     ],
     bullets: [
       "Create one from the pricing page. You do not need a personal Strap first, only a Strap account.",
@@ -388,12 +387,12 @@ const sections: DocsSection[] = [
   },
   {
     id: "quality",
-    label: "Quality scoring",
+    label: "Profile feedback",
     group: "Keep it sharp",
-    title: "How Strap measures quality",
+    title: "Ask your connected agent for feedback",
     paragraphs: [
-      "Strap can score how good your profile is, section by section, and surface where to sharpen it. Quality analysis runs on the deployment's included OpenRouter key, or on your own OpenRouter key (BYOK).",
-      "It judges how context is written, never what it is about. A section on work and a section on LEGO are held to the same bar. The only question is whether it helps the next AI know you better.",
+      "Ask a connected agent to review your profile and propose focused improvements. Review each proposal in Strap and approve or decline it. Strap does not run an in-app model.",
+      "Useful feedback concerns how context is written, not what it is about. A section on work and a section on LEGO are held to the same bar. The only question is whether it helps the next AI know you better.",
     ],
   },
   {
@@ -425,7 +424,7 @@ const sections: DocsSection[] = [
     ],
     bullets: [
       "One file, plain Markdown. It stays portable, and you can push or pull it to your own GitHub repo from Settings.",
-      "Your call on AI spend. AI features run on the deployment's included OpenRouter key or on your own key (BYOK). Your context is sent to the model only for the feature you requested.",
+      "Your connected agents use your existing agent service. Strap does not send your profile to an LLM provider itself.",
       "Credentials use purpose-specific protection. Capability and headless keys are verified by hash, provider tokens are encrypted, and Vault values remain server-side behind authorized operations.",
       "Personal and Company access is enforced through authentication, membership, roles, section permissions, RLS, and explicit checks before service-role operations.",
       "Hidden sections never leave the app. Set a section to hidden and it is dropped from the agent payload entirely.",
@@ -648,12 +647,6 @@ const qualityPractices: QualityPractice[] = [
   },
 ];
 
-const overallRules: string[] = [
-  "The five core sections are the backbone. A flawless core alone tops out around 90.",
-  "Every well-written optional or custom section lifts the score toward 100, with diminishing returns.",
-  "A weak optional section never drags the total down. Trying new context is never punished.",
-  "If a core section is nearly empty, the whole file is capped at 70.",
-];
 
 const toolGroups: ToolGroup[] = [
   {
@@ -684,7 +677,7 @@ const toolGroups: ToolGroup[] = [
       {
         name: "strap_get_quality_report",
         description:
-          "Read the latest quality report to target the weakest sections.",
+          "Read a historical quality report if available. New reports are no longer generated.",
       },
       {
         name: "get_write_policy",
@@ -1958,16 +1951,7 @@ export function DocsPageView({ configured }: { configured: boolean }) {
                         </div>
                       ))}
                     </div>
-                    <p className="mt-8 text-[15px] leading-8 text-[var(--strap-text-secondary)] md:text-[16px]">
-                      The overall score is computed from the sections, not asked
-                      of the model, so the headline never drifts from what it
-                      summarizes.
-                    </p>
-                    <ul className="strap-bullets mt-4 space-y-3 text-[15px] leading-8 text-[var(--strap-text-secondary)] [--strap-bullet:var(--strap-accent)] md:text-[16px]">
-                      {overallRules.map((rule) => (
-                        <li key={rule}>{rule}</li>
-                      ))}
-                    </ul>
+
                   </>
                 ) : null}
 

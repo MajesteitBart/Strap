@@ -1,5 +1,5 @@
 {
-  "id": "682d1f9e-9d33-4025-8ea0-dbe0c98f1aee",
+  "id": "60c3df38-e201-431f-bb73-0ecc44f6d378",
   "prevId": "67567050-6b52-4145-a493-0ab9d82c325d",
   "version": "7",
   "dialect": "postgresql",
@@ -1946,6 +1946,13 @@
           "primaryKey": false,
           "notNull": true
         },
+        "vault_item_ids": {
+          "name": "vault_item_ids",
+          "type": "uuid[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::uuid[]"
+        },
         "mode": {
           "name": "mode",
           "type": "text",
@@ -2055,6 +2062,10 @@
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {
+        "creed_headless_access_keys_vault_item_ids_check": {
+          "name": "creed_headless_access_keys_vault_item_ids_check",
+          "value": "cardinality(\"creed_headless_access_keys\".\"vault_item_ids\") <= 100 AND array_position(\"creed_headless_access_keys\".\"vault_item_ids\", NULL) IS NULL"
+        },
         "creed_headless_access_keys_key_prefix_check": {
           "name": "creed_headless_access_keys_key_prefix_check",
           "value": "(char_length(key_prefix) >= 8) AND (char_length(key_prefix) <= 32)"
@@ -5431,139 +5442,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.auth_totp_replay_claims": {
-      "name": "auth_totp_replay_claims",
-      "schema": "",
-      "columns": {
-        "user_id": {
-          "name": "user_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "code_hash": {
-          "name": "code_hash",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "expires_at": {
-          "name": "expires_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "auth_totp_replay_claims_user_id_users_id_fk": {
-          "name": "auth_totp_replay_claims_user_id_users_id_fk",
-          "tableFrom": "auth_totp_replay_claims",
-          "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "auth_totp_replay_claims_user_id_code_hash_pk": {
-          "name": "auth_totp_replay_claims_user_id_code_hash_pk",
-          "columns": [
-            "user_id",
-            "code_hash"
-          ]
-        }
-      },
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.two_factors": {
-      "name": "two_factors",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "secret": {
-          "name": "secret",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "backup_codes": {
-          "name": "backup_codes",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "verified": {
-          "name": "verified",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "failed_verification_count": {
-          "name": "failed_verification_count",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "locked_until": {
-          "name": "locked_until",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "two_factors_user_id_users_id_fk": {
-          "name": "two_factors_user_id_users_id_fk",
-          "tableFrom": "two_factors",
-          "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "two_factors_user_id_key": {
-          "name": "two_factors_user_id_key",
-          "nullsNotDistinct": false,
-          "columns": [
-            "user_id"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.users": {
       "name": "users",
       "schema": "",
@@ -5611,13 +5489,6 @@
           "type": "text",
           "primaryKey": false,
           "notNull": false
-        },
-        "two_factor_enabled": {
-          "name": "two_factor_enabled",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
         },
         "created_at": {
           "name": "created_at",

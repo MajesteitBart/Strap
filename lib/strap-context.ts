@@ -66,10 +66,7 @@ export const resolveActiveStrap = cache(async function resolveActiveStrap(
 /**
  * The active Strap's id if it is a Company Strap the caller OWNS, else null.
  *
- * Company AI billing (credits, usage, BYOK) is owner-only, and the personal AI
- * routes reuse this to decide whether to serve company data: a null result means
- * "treat this request as personal" (Personal Strap, a non-owner member, or no
- * Strap), which preserves the exact personal behaviour for everyone else.
+ * Used by owner-only Company flows such as welcome acknowledgement.
  */
 export async function resolveOwnedCompanyStrapId(
   client: DatabaseContext,

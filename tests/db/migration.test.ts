@@ -14,6 +14,7 @@ test("import is atomic, preserves identity and agent credentials, and refuses a 
   snapshot.tables.creeds = [{ id: profile, type: "personal", name: "Personal", owner_user_id: id }];
   snapshot.tables.creed_members = [{ creed_id: profile, user_id: id, role: "owner" }];
   snapshot.tables.creed_tokens = [{ user_id: id, read_token_hash: "existing-agent-hash", encrypted_read_token: "existing-agent-ciphertext" }];
+  snapshot.tables.creed_headless_access_keys = [{ creed_id: profile, user_id: id, name: "Imported key", key_prefix: "strap_key_imported", key_hash: "imported-headless-hash" }];
   snapshot.tables.creed_vault_items = [{ id: item, creed_id: profile, name: "Key", description: "", secret_ciphertext: ciphertext, created_by: id }];
   snapshot.tables.strap_skills = [{ strap_id: profile, name: "imported-skill", description: "Imported fixture", revision: 1, digest: "a".repeat(64), files: [{ path: "SKILL.md", content: "fixture" }], byte_count: 7, file_count: 1, storage_bytes: 999 }];
   const broken = structuredClone(snapshot);
@@ -31,6 +32,8 @@ test("import is atomic, preserves identity and agent credentials, and refuses a 
   assert.equal(accounts[0].password, "$2a$10$fixture-hash"); assert.equal(accounts[1].account_id, "provider-subject");
   const [token] = await target`select read_token_hash,encrypted_read_token from creed_tokens`;
   assert.equal(token.read_token_hash, "existing-agent-hash"); assert.equal(token.encrypted_read_token, "existing-agent-ciphertext");
+  const [headless] = await target`select key_hash,vault_item_ids from creed_headless_access_keys`;
+  assert.equal(headless.key_hash, "imported-headless-hash"); assert.deepEqual(headless.vault_item_ids, []);
   const [secret] = await target`select secret_ciphertext from creed_vault_items`;
   assert.equal(decryptVaultSecret(secret.secret_ciphertext, item, profile, "import-fixture-vault-key-at-least-32-characters"), "fixture");
   const [skill] = await target`select file_count,storage_bytes,octet_length(files::text) as expected from strap_skills`;

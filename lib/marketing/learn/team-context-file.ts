@@ -71,7 +71,7 @@ export const teamContextFile: Article = {
     { type: "h2", text: "What it costs" },
     {
       type: "p",
-      text: "Nothing. Strap's Company Strap is a team context file with roles, an activity view, and admin controls, free for as many members as you need. AI features run on the deployment's included key or on the company's own OpenRouter key (BYOK).",
+      text: "Nothing. Strap's Company Strap is a team context file with roles, an activity view, and admin controls, free for as many members as you need. Use the agents you already connect. Strap runs no in-app LLM calls and needs no model API key.",
     },
     {
       type: "p",
@@ -97,7 +97,7 @@ export const teamContextFile: Article = {
     {
       question: "How much does a team context file cost with Strap?",
       answer:
-        "Nothing. A Company Strap is free, with as many members as you need. AI features run on the deployment's included key or on the company's own OpenRouter key (BYOK).",
+        "Nothing. A Company Strap is free, with as many members as you need. Use the agents you already connect. Strap runs no in-app LLM calls and needs no model API key.",
     },
     {
       question: "Does it work for teams that are not engineering teams?",

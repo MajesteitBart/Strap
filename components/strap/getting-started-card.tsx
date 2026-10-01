@@ -13,9 +13,9 @@ import { cn } from "@/lib/utils";
 // where toasts spawn, shaped exactly like a toast: same width, radius,
 // shadow, and collapsed height, but surfaced as the app canvas colour
 // (--strap-surface) with a plain border. The chevron sits where a toast's
-// close button sits and expands the five steps; each checks itself off the
+// close button sits and expands the steps; each checks itself off the
 // first time the user does the thing (see markGettingStartedStep call
-// sites). Once all five are done the card turns into a toast-like
+// sites). Once all steps are done the card turns into a toast-like
 // confirmation (the chevron becomes an X) that auto-dismisses on the toast
 // timer, or the X closes it early; either way it never renders again.
 //

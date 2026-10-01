@@ -1,0 +1,2 @@
+ALTER TABLE "creed_headless_access_keys" ADD COLUMN "vault_item_ids" uuid[] DEFAULT '{}'::uuid[] NOT NULL;--> statement-breakpoint
+ALTER TABLE "creed_headless_access_keys" ADD CONSTRAINT "creed_headless_access_keys_vault_item_ids_check" CHECK (cardinality("creed_headless_access_keys"."vault_item_ids") <= 100 AND array_position("creed_headless_access_keys"."vault_item_ids", NULL) IS NULL);

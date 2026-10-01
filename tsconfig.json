@@ -60,6 +60,7 @@
   "exclude": [
     "node_modules",
     "packages/creed-cli",
-    "packages/strap"
+    "packages/strap",
+    "packages/varlock-strap-plugin"
   ]
 }

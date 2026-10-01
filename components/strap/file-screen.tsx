@@ -4,12 +4,6 @@ import { AgentIconStack } from "@/components/strap/agent-icon-stack";
 import { AnimatedMenuIconItem } from "@/components/strap/animated-icon-action";
 import { useAnimatedIconControls } from "@/components/strap/animated-icon-controls";
 import { normalizeStrapAttribution } from "@/components/strap/brand-attribution";
-import {
-  OverallQualityPopover,
-  QualityRing,
-  SectionQualityPopover,
-  type StrapQualityReport,
-} from "@/components/strap/file-quality-ui";
 import { StrapFindReplace } from "@/components/strap/find-replace";
 import {
   DiffBadge,
@@ -20,7 +14,6 @@ import {
   htmlToText,
   summarizeDiff,
 } from "@/components/strap/inline-proposal-diff";
-import { NexusView } from "@/components/strap/nexus-view";
 import { ReviewPill } from "@/components/strap/review-pill";
 import { RichTextEditor } from "@/components/strap/rich-text-editor";
 import { SectionHistorySheet } from "@/components/strap/section-history-sheet";
@@ -31,7 +24,6 @@ import {
 import { ShortcutKey } from "@/components/strap/shortcut-key";
 import { useStrap } from "@/components/strap/strap-provider";
 import { StrapSwitcher } from "@/components/strap/strap-switcher";
-import { AlignLeftIcon } from "@/components/ui/align-left";
 import { AnimatedCheckmark } from "@/components/ui/animated-checkmark";
 import { ArchiveIcon } from "@/components/ui/archive";
 import { Button } from "@/components/ui/button";
@@ -72,16 +64,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { SquarePenIcon } from "@/components/ui/square-pen";
 import { StampIcon, type StampIconHandle } from "@/components/ui/stamp";
 import { SimpleTooltip } from "@/components/ui/tooltip";
-import { WaypointsIcon } from "@/components/ui/waypoints";
-import {
-  getInFlightFull,
-  getQualityRunnerServerSnapshot,
-  getQualityRunnerSnapshot,
-  runFullQuality,
-  runSectionQuality,
-  setBaselineReport,
-  subscribeQualityRunner,
-} from "@/lib/ai/quality-runner";
 import { fireConfetti } from "@/lib/confetti";
 import { STRAP_FILE_NAME } from "@/lib/profile-file";
 import { richTextContentEquivalent } from "@/lib/rich-text";
@@ -103,10 +85,6 @@ import {
   type StrapSection,
 } from "@/lib/strap-data";
 import { parseStrapMarkdown } from "@/lib/strap-markdown";
-import {
-  canProposeToSection,
-  resolveSectionPermission,
-} from "@/lib/strap-permissions";
 import { cn } from "@/lib/utils";
 import {
   AnimatePresence,
@@ -133,7 +111,6 @@ import {
   useMemo,
   useRef,
   useState,
-  useSyncExternalStore,
   type ReactNode,
 } from "react";
 import { toast } from "sonner";
@@ -157,35 +134,9 @@ const activityStatusLabelMap: Record<ActivityStatus, string> = {
 };
 
 const FILE_NAV_INTENT_KEY = "creed:file-nav-intent";
-const QUALITY_FINGERPRINT_IGNORED_KEYS = new Set([
-  "lastEditedAt",
-  "lastEditedBy",
-  "lastEditedLabel",
-  "lastEditedType",
-  "revision",
-]);
 
 type FileRevealTarget =
   { type: "section"; id: string } | { type: "proposal"; id: string };
-
-function qualityFingerprint(value: unknown) {
-  return JSON.stringify(value, (key, nestedValue) =>
-    QUALITY_FINGERPRINT_IGNORED_KEYS.has(key) ? undefined : nestedValue,
-  );
-}
-
-// Per-section fingerprints keyed by object identity. Unchanged sections keep
-// their references across commits and sync polls, so a keystroke re-stringifies
-// only the edited section instead of the whole file.
-const sectionFingerprintCache = new WeakMap<StrapSection, string>();
-function cachedSectionFingerprint(section: StrapSection) {
-  let fingerprint = sectionFingerprintCache.get(section);
-  if (fingerprint === undefined) {
-    fingerprint = qualityFingerprint(section);
-    sectionFingerprintCache.set(section, fingerprint);
-  }
-  return fingerprint;
-}
 
 // Returns the previous value while the new one is deep-equal, so derived
 // arrays/objects keep a stable identity across unrelated re-renders (they'd
@@ -383,10 +334,7 @@ function scrollFileElementIntoView(
   container.scrollTo({ top: targetTop, behavior });
 }
 
-function getFileElementScrollTop(
-  container: HTMLElement,
-  element: HTMLElement,
-) {
+function getFileElementScrollTop(container: HTMLElement, element: HTMLElement) {
   const stickyHeader = container.querySelector<HTMLElement>(
     "[data-file-sticky-header]",
   );
@@ -547,7 +495,9 @@ function SectionChangeRow({ change }: { change: SectionChange }) {
     const toneClass = added
       ? "text-[var(--strap-success)]"
       : "text-[var(--strap-danger)]";
-    const dividerClass = added ? "border-[var(--strap-success)]/20" : "border-[var(--strap-danger)]/20";
+    const dividerClass = added
+      ? "border-[var(--strap-success)]/20"
+      : "border-[var(--strap-danger)]/20";
 
     return (
       <div
@@ -840,11 +790,6 @@ export function FileScreen() {
   const canCreateSections = state.creedType !== "company" || isCompanyManager;
   // Reordering (drag) is owner/admin-only in company mode - members can't drag.
   const canReorderSections = state.creedType !== "company" || isCompanyManager;
-  // Analysis runs: owners/admins can trigger a full-file analysis; members can
-  // only refresh individual sections they have propose or direct access to.
-  // Every member can SEE quality scores (the shared report is loaded as a
-  // baseline for everyone).
-  const canRunQuality = state.creedType !== "company" || isCompanyManager;
   // Archived sections stay in state (so they persist) but are hidden from the
   // editor; the section list renders from this live set.
   const visibleSections = useMemo(
@@ -929,23 +874,6 @@ export function FileScreen() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
-  const qualitySnapshot = useSyncExternalStore(
-    subscribeQualityRunner,
-    getQualityRunnerSnapshot,
-    getQualityRunnerServerSnapshot,
-  );
-  const qualityReport = qualitySnapshot.report;
-  const qualityLoading = qualitySnapshot.fullRunning;
-  const qualitySectionLoading = useMemo(() => {
-    const first = qualitySnapshot.sectionRunning.values().next();
-    return first.done ? null : first.value;
-  }, [qualitySnapshot.sectionRunning]);
-  const [qualityEnabled, setQualityEnabled] = useState(false);
-  const [analyzedFullFingerprint, setAnalyzedFullFingerprint] = useState<
-    string | null
-  >(null);
-  const [analyzedSectionFingerprints, setAnalyzedSectionFingerprints] =
-    useState<Record<string, string>>({});
   const [composerOpen, setComposerOpen] = useState(false);
   const [composerRevealed, setComposerRevealed] = useState(false);
   const [composerName, setComposerName] = useState("");
@@ -976,9 +904,6 @@ export function FileScreen() {
   const [selectedVersionAction, setSelectedVersionAction] = useState<
     "push" | "pull"
   >("push");
-  const [fileViewMode, setFileViewMode] = useState<"editor" | "nexus">(
-    "editor",
-  );
   // Version-history sheet target (company owner/admin only).
   const [historySectionState, setHistorySectionState] = useState<{
     id: string;
@@ -1007,139 +932,14 @@ export function FileScreen() {
   const composerAreaRef = useRef<HTMLDivElement | null>(null);
   const composerCardRef = useRef<HTMLDivElement | null>(null);
   const cancelComposerRevealRef = useRef<() => void>(() => {});
-  const qualityBaselineLoadedRef = useRef(false);
-  // Tracks which Strap the quality state belongs to, so a Strap switch can drop
-  // the previous Strap's report (the runner store is module-global).
-  const qualityCreedRef = useRef(state.creedId);
-  const currentFullFingerprintRef = useRef<string | null>(null);
-  const sectionFingerprintByIdRef = useRef<Map<string, string>>(new Map());
-  // Latest sections, for the company baseline re-fetch (keeps that effect off
-  // the per-edit dependency churn while still reading the current file).
-  const sectionsRef = useRef(state.sections);
-  sectionsRef.current = state.sections;
   const versionIcon = useAnimatedIconControls();
-  const nexusIcon = useAnimatedIconControls();
   const activityIcon = useAnimatedIconControls();
   // `exportMarkdown` is identity-stable now (the provider hands out proxy
   // actions), so the content dependency must be explicit: rebuild only when
   // the sections actually change, not on every render.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const localMarkdown = useMemo(() => exportMarkdown(), [state.sections]);
-  const sectionQualityById = useMemo(
-    () =>
-      new Map(
-        (qualityReport?.sections ?? []).map((section) => [
-          section.sectionId,
-          section,
-        ]),
-      ),
-    [qualityReport],
-  );
-  const nexusScoresBySectionId = useMemo(
-    () =>
-      new Map(
-        (qualityReport?.sections ?? []).map((section) => [
-          section.sectionId,
-          section.score,
-        ]),
-      ),
-    [qualityReport],
-  );
-  const currentFullFingerprint = useMemo(
-    () => qualityFingerprint(state.sections),
-    [state.sections],
-  );
-  const sectionFingerprintById = useMemo(
-    () =>
-      new Map(
-        state.sections.map(
-          // WeakMap-cached: only sections whose object identity changed
-          // (i.e. the one being edited) get re-stringified.
-          (section) => [section.id, cachedSectionFingerprint(section)] as const,
-        ),
-      ),
-    [state.sections],
-  );
-  const qualityHasReport = Boolean(qualityReport);
-  const fullQualityDirty =
-    qualityEnabled &&
-    state.sections.length > 0 &&
-    qualityHasReport &&
-    (!analyzedFullFingerprint ||
-      analyzedFullFingerprint !== currentFullFingerprint);
-  const qualityCanRunInitialAnalysis =
-    qualityEnabled && state.sections.length > 0 && !qualityHasReport;
 
-  useEffect(() => {
-    currentFullFingerprintRef.current = currentFullFingerprint;
-    sectionFingerprintByIdRef.current = sectionFingerprintById;
-  }, [currentFullFingerprint, sectionFingerprintById]);
-
-  // Record a read-only baseline payload into the report + drift fingerprints.
-  // Shared by the initial baseline load and the company sync so both stamp the
-  // analyzed fingerprints identically - a section is "dirty" (shows the refresh
-  // button) only when its content changed since it was scored, never just
-  // because the report was (re)loaded. Any writer that sets the report WITHOUT
-  // these fingerprints would make every scored section look dirty.
-  const applyBaselinePayload = useCallback(
-    (
-      payload: Awaited<ReturnType<typeof runFullQuality>>,
-      sectionsSnapshot: StrapSection[],
-      fingerprintSnapshot: string,
-    ) => {
-      if (!payload.report) return;
-      // The shared-report poll usually returns exactly what we already hold.
-      // Keep the previous object when the payload is value-identical so the
-      // 60s sync doesn't re-render the whole screen for nothing.
-      const keepIfEqual = <T,>(previous: T, next: T): T =>
-        previous !== next && JSON.stringify(previous) === JSON.stringify(next)
-          ? previous
-          : next;
-      // setBaselineReport bails on identity, so handing back the previous
-      // report object when the payload is value-identical makes it a no-op.
-      setBaselineReport(
-        keepIfEqual(getQualityRunnerSnapshot().report, payload.report),
-      );
-      setAnalyzedFullFingerprint(
-        payload.current
-          ? fingerprintSnapshot
-          : `stored:${payload.storedContentHash ?? payload.report.contentHash}`,
-      );
-      const nextSectionFingerprints = Object.fromEntries(
-          sectionsSnapshot.flatMap((section) => {
-            const currentSectionFingerprint = qualityFingerprint(section);
-            const storedSectionHash = payload.storedSectionHashes?.[section.id];
-            const currentSectionHash = payload.sectionHashes?.[section.id];
-            const hasLegacySectionReport = payload.report?.sections.some(
-              (sectionReport) => sectionReport.sectionId === section.id,
-            );
-
-            if (
-              payload.current ||
-              (storedSectionHash && storedSectionHash === currentSectionHash)
-            ) {
-              return [[section.id, currentSectionFingerprint] as const];
-            }
-            if (storedSectionHash) {
-              return [[section.id, `stored:${storedSectionHash}`] as const];
-            }
-            if (hasLegacySectionReport) {
-              return [
-                [
-                  section.id,
-                  `stored:legacy:${payload.storedContentHash ?? payload.report?.contentHash ?? "unknown"}:${section.id}`,
-                ] as const,
-              ];
-            }
-            return [];
-          }),
-      );
-      setAnalyzedSectionFingerprints((previous) =>
-        keepIfEqual(previous, nextSectionFingerprints),
-      );
-    },
-    [],
-  );
   // True only while a section drag is in progress; gates the Reorder layout
   // animation so framer doesn't measure every section on every height change
   // (see the layout prop on Reorder.Item).
@@ -1165,8 +965,6 @@ export function FileScreen() {
     submitProposal: (sectionId: string, content: string) =>
       fileProposalEdit(sectionId, content),
     toggleLock: (sectionId: string) => toggleSectionLock(sectionId),
-    refreshQuality: (section: StrapSection) =>
-      void refreshSectionQuality(section),
     acceptProposal: (proposalId: string) => void acceptProposal(proposalId),
     rejectProposal: (proposalId: string) => rejectProposal(proposalId),
     withdrawProposal: (proposalId: string) => withdrawProposal(proposalId),
@@ -1320,298 +1118,6 @@ export function FileScreen() {
     state.settings.versionControl.lastSyncedContentHash,
   ]);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadAiReadiness() {
-      try {
-        const response = await fetch("/api/app/ai/settings", {
-          method: "GET",
-          cache: "no-store",
-        });
-        if (!response.ok) {
-          return;
-        }
-        const payload = (await response.json()) as {
-          settings?: {
-            keyStatus?: "missing" | "valid" | "invalid";
-            aiMode?: "credits" | "byok";
-          };
-        };
-        if (!cancelled) {
-          const mode = payload.settings?.aiMode ?? "credits";
-          const keyOk = payload.settings?.keyStatus === "valid";
-          // BYOK needs a valid key; credits mode is always enabled (the actual
-          // credit balance check happens at analysis time on the server).
-          const enabled = mode === "byok" ? keyOk : true;
-          setQualityEnabled(enabled);
-        }
-      } catch {
-        if (!cancelled) {
-          setQualityEnabled(false);
-        }
-      }
-    }
-
-    void loadAiReadiness();
-
-    // Focus and visibilitychange both fire on a tab switch; collapse the
-    // pair (and any other burst) into one request.
-    let lastCheckAt = Date.now();
-    function recheck() {
-      const now = Date.now();
-      if (now - lastCheckAt < 2_000) return;
-      lastCheckAt = now;
-      void loadAiReadiness();
-    }
-
-    function onWindowFocus() {
-      recheck();
-    }
-
-    function onVisibilityChange() {
-      if (document.visibilityState === "visible") {
-        recheck();
-      }
-    }
-
-    window.addEventListener("focus", onWindowFocus);
-    document.addEventListener("visibilitychange", onVisibilityChange);
-
-    return () => {
-      cancelled = true;
-      window.removeEventListener("focus", onWindowFocus);
-      document.removeEventListener("visibilitychange", onVisibilityChange);
-    };
-    // Re-check per Strap: the AI-key gate is creed-scoped (a company owner's key
-    // differs from their personal one), so readiness must be recomputed on switch.
-  }, [state.creedId]);
-
-  // A Strap switch keeps this component mounted while the module-global quality
-  // runner still holds the previous Strap's report. Drop that report + the
-  // analyzed baselines so scores never bleed across Straps (e.g. a personal
-  // report showing on an empty company Strap).
-  useEffect(() => {
-    if (qualityCreedRef.current === state.creedId) return;
-    qualityCreedRef.current = state.creedId;
-    setBaselineReport(null);
-    qualityBaselineLoadedRef.current = false;
-    setAnalyzedFullFingerprint(null);
-    setAnalyzedSectionFingerprints({});
-  }, [state.creedId]);
-
-  useEffect(() => {
-    if (
-      !qualityEnabled ||
-      state.sections.length === 0 ||
-      qualityBaselineLoadedRef.current
-    ) {
-      return;
-    }
-
-    // Re-mount after navigation: if the runner already has a report cached,
-    // skip the baseline read entirely. Likewise skip if a force refresh for
-    // the same fingerprint is still in flight - we'll see its result via the
-    // runner snapshot when it lands.
-    if (qualityReport) {
-      qualityBaselineLoadedRef.current = true;
-      return;
-    }
-    if (getInFlightFull(`full:${currentFullFingerprint}`)) {
-      qualityBaselineLoadedRef.current = true;
-      return;
-    }
-
-    let cancelled = false;
-    const sectionsSnapshot = state.sections;
-    const fingerprintSnapshot = currentFullFingerprint;
-
-    async function loadQualityBaseline() {
-      try {
-        qualityBaselineLoadedRef.current = true;
-        // Reuse the runner so a navigate-away + return reattaches to any
-        // in-flight baseline read instead of issuing a duplicate request.
-        const payload = await runFullQuality({
-          sections: sectionsSnapshot,
-          fingerprint: `baseline:${fingerprintSnapshot}`,
-          readOnly: true,
-        });
-
-        if (cancelled || !payload.report) {
-          return;
-        }
-
-        applyBaselinePayload(payload, sectionsSnapshot, fingerprintSnapshot);
-      } catch {
-        if (!cancelled) {
-          qualityBaselineLoadedRef.current = false;
-        }
-      }
-    }
-
-    void loadQualityBaseline();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [
-    currentFullFingerprint,
-    qualityEnabled,
-    qualityReport,
-    state.sections,
-    applyBaselinePayload,
-  ]);
-
-  // Company mode: the report is shared, so another member's (or the owner's)
-  // analysis needs to reach everyone else without a manual refresh. Re-read the
-  // baseline on a light interval and on tab focus. Personal mode is single-user,
-  // so it never runs this. Uses sectionsRef to read the current file without
-  // re-arming the interval on every keystroke.
-  useEffect(() => {
-    if (state.creedType !== "company" || !qualityEnabled) return;
-    let cancelled = false;
-    async function syncSharedReport() {
-      try {
-        const payload = await runFullQuality({
-          sections: sectionsRef.current,
-          fingerprint: `baseline:${currentFullFingerprintRef.current ?? ""}`,
-          readOnly: true,
-        });
-        // Record through the shared path so the drift fingerprints are stamped
-        // too - otherwise a refreshed report with no fingerprints makes every
-        // scored section look dirty.
-        if (!cancelled) {
-          applyBaselinePayload(
-            payload,
-            sectionsRef.current,
-            currentFullFingerprintRef.current ?? "",
-          );
-        }
-      } catch {
-        // A transient read failure just leaves the current report in place.
-      }
-    }
-    // 60s cadence, visible tabs only - a shared report refresh isn't
-    // latency-sensitive, and the focus refetch covers "just switched back".
-    const interval = window.setInterval(() => {
-      if (document.visibilityState !== "visible") return;
-      void syncSharedReport();
-    }, 60000);
-    const onFocus = () => void syncSharedReport();
-    window.addEventListener("focus", onFocus);
-    return () => {
-      cancelled = true;
-      window.clearInterval(interval);
-      window.removeEventListener("focus", onFocus);
-    };
-  }, [state.creedType, qualityEnabled, applyBaselinePayload]);
-
-  async function refreshFullQuality() {
-    if (
-      !qualityEnabled ||
-      !canRunQuality ||
-      qualityLoading ||
-      state.sections.length === 0
-    ) {
-      return;
-    }
-
-    const sectionFingerprints = Object.fromEntries(
-      state.sections.map((section) => [
-        section.id,
-        qualityFingerprint(section),
-      ]),
-    );
-
-    // Members can only analyse sections they have propose or direct access to.
-    const myPermissions = state.company?.myPermissions;
-    const isMember = state.creedType === "company" && !isCompanyManager;
-    const sectionsToSend = isMember
-      ? state.sections.filter((section) => {
-          const permission = resolveSectionPermission(
-            "member",
-            myPermissions?.[section.id],
-          );
-          return canProposeToSection(permission);
-        })
-      : state.sections;
-
-    if (sectionsToSend.length === 0) {
-      return;
-    }
-
-    try {
-      // One whole-file pass. The server re-scores only the sections that
-      // drifted since the last analysis, carries the rest forward, and
-      // recomputes the overall - so a single call does what the old
-      // stale-section fan-out did, without the redundant per-section requests.
-      const fingerprint =
-        currentFullFingerprintRef.current ?? currentFullFingerprint;
-      const payload = await runFullQuality({
-        sections: sectionsToSend,
-        fingerprint: `full:${fingerprint}`,
-        force: true,
-      });
-
-      if (payload.report) {
-        setAnalyzedFullFingerprint(fingerprint);
-        setAnalyzedSectionFingerprints(
-          Object.fromEntries(
-            sectionsToSend.map((section) => [
-              section.id,
-              sectionFingerprintByIdRef.current.get(section.id) ??
-                sectionFingerprints[section.id],
-            ]),
-          ),
-        );
-        markGettingStartedStep("analysis");
-      }
-    } catch {
-      // Full-analysis failures surface as a toast via the shell QualityToasts
-      // subscriber.
-    }
-  }
-
-  async function refreshSectionQuality(section: StrapSection) {
-    if (!qualityEnabled || qualitySectionLoading === section.id) {
-      return;
-    }
-
-    // Members can only analyse sections they have propose or direct access to.
-    const myPermissions = state.company?.myPermissions;
-    const isMember = state.creedType === "company" && !isCompanyManager;
-    if (isMember) {
-      const permission = resolveSectionPermission(
-        "member",
-        myPermissions?.[section.id],
-      );
-      if (!canProposeToSection(permission)) {
-        return;
-      }
-    }
-
-    try {
-      const sectionFingerprint =
-        sectionFingerprintByIdRef.current.get(section.id) ??
-        qualityFingerprint(section);
-      const nextSectionReport = await runSectionQuality({
-        sections: state.sections,
-        section,
-        fingerprint: sectionFingerprint,
-      });
-      if (nextSectionReport) {
-        setAnalyzedSectionFingerprints((current) => ({
-          ...current,
-          [section.id]: sectionFingerprint,
-        }));
-        markGettingStartedStep("analysis");
-      }
-    } catch {
-      // The failure surfaces as a toast via the shell QualityToasts subscriber
-      // (the runner records the outcome).
-    }
-  }
-
   const openComposer = useCallback((afterSectionId?: string) => {
     setInsertAfterId(afterSectionId ?? null);
     setComposerOpen(true);
@@ -1638,7 +1144,6 @@ export function FileScreen() {
   const openComposerAndReveal = useCallback(
     (afterSectionId?: string) => {
       cancelComposerRevealRef.current();
-      setFileViewMode("editor");
 
       if (composerOpen) {
         openComposer(afterSectionId);
@@ -1985,7 +1490,6 @@ export function FileScreen() {
 
   const revealEditorTarget = useCallback(
     (target: FileRevealTarget, behavior: ScrollBehavior = "smooth") => {
-      setFileViewMode("editor");
 
       if (revealFrameRef.current !== null) {
         window.cancelAnimationFrame(revealFrameRef.current);
@@ -2331,38 +1835,6 @@ export function FileScreen() {
                   </div>
 
                   <div className="flex items-center gap-2 self-start">
-                    <div className="inline-flex h-7 items-center gap-1">
-                      <OverallQualityPopover
-                        report={qualityReport}
-                        loading={qualityLoading}
-                        actionAvailable={
-                          canRunQuality &&
-                          (fullQualityDirty || qualityCanRunInitialAnalysis)
-                        }
-                        onAction={() => void refreshFullQuality()}
-                      >
-                        <button
-                          type="button"
-                          className="inline-flex h-7 w-7 items-center justify-center rounded-[var(--radius-md)] text-[var(--strap-text-primary)] transition-colors duration-150 hover:bg-[var(--strap-surface-raised)] data-[state=open]:bg-[var(--strap-surface-raised)]"
-                          aria-label={
-                            canRunQuality &&
-                            (fullQualityDirty || qualityCanRunInitialAnalysis)
-                              ? "Run Strap quality analysis"
-                              : "Show Strap quality"
-                          }
-                        >
-                          <QualityRing
-                            score={qualityReport?.overall.score ?? 0}
-                            color="var(--strap-accent)"
-                            loading={qualityLoading}
-                            actionable={
-                              canRunQuality &&
-                              (fullQualityDirty || qualityCanRunInitialAnalysis)
-                            }
-                          />
-                        </button>
-                      </OverallQualityPopover>
-                    </div>
                     <input
                       ref={importInputRef}
                       type="file"
@@ -2493,85 +1965,6 @@ export function FileScreen() {
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
-
-                    {/* Desktop: labelled pill. Mobile: icon-only circle that
-                        matches the Activity button beside it. */}
-                    <Button
-                      variant="outline"
-                      size="icon-sm"
-                      aria-label={
-                        fileViewMode === "nexus"
-                          ? "Show Tabula view"
-                          : "Show Nexus view"
-                      }
-                      aria-pressed={fileViewMode === "nexus"}
-                      style={{
-                        borderRadius: 4,
-                        height: 32,
-                        width: 32,
-                        minHeight: 32,
-                        minWidth: 32,
-                      }}
-                      className={cn(
-                        "border-[var(--strap-border)] bg-[var(--strap-surface)] md:hidden",
-                        fileViewMode === "nexus" &&
-                          "bg-[var(--strap-surface-raised)] text-[var(--strap-text-primary)]",
-                      )}
-                      onMouseEnter={nexusIcon.start}
-                      onMouseLeave={nexusIcon.settle}
-                      onClick={() => {
-                        setFileViewMode((current) =>
-                          current === "nexus" ? "editor" : "nexus",
-                        );
-                      }}
-                    >
-                      {fileViewMode === "nexus" ? (
-                        <AlignLeftIcon
-                          ref={nexusIcon.iconRef}
-                          size={14}
-                          className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center leading-none"
-                        />
-                      ) : (
-                        <WaypointsIcon
-                          ref={nexusIcon.iconRef}
-                          size={14}
-                          className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center leading-none"
-                        />
-                      )}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      aria-pressed={fileViewMode === "nexus"}
-                      style={{ borderRadius: 4, height: 32, minHeight: 32 }}
-                      className={cn(
-                        "hidden border-[var(--strap-border)] bg-[var(--strap-surface)] px-3 text-[12px] md:inline-flex md:px-3.5 md:text-sm",
-                        fileViewMode === "nexus" &&
-                          "bg-[var(--strap-surface-raised)] text-[var(--strap-text-primary)]",
-                      )}
-                      onMouseEnter={nexusIcon.start}
-                      onMouseLeave={nexusIcon.settle}
-                      onClick={() => {
-                        setFileViewMode((current) =>
-                          current === "nexus" ? "editor" : "nexus",
-                        );
-                      }}
-                    >
-                      {fileViewMode === "nexus" ? (
-                        <AlignLeftIcon
-                          ref={nexusIcon.iconRef}
-                          size={14}
-                          className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center leading-none"
-                        />
-                      ) : (
-                        <WaypointsIcon
-                          ref={nexusIcon.iconRef}
-                          size={14}
-                          className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center leading-none"
-                        />
-                      )}
-                      {fileViewMode === "nexus" ? "Tabula" : "Nexus"}
-                    </Button>
 
                     {/* Desktop: labelled pill. Mobile: icon-only circle that
                         matches the Lock button next to it. */}
@@ -2816,12 +2209,7 @@ export function FileScreen() {
                 ) : null}
               </div>
 
-              {fileViewMode === "nexus" ? (
-                <NexusView
-                  sections={visibleSections}
-                  scoresBySectionId={nexusScoresBySectionId}
-                />
-              ) : (
+              {
                 <>
                   <Reorder.Group
                     axis="y"
@@ -2830,13 +2218,6 @@ export function FileScreen() {
                     className="space-y-10 md:space-y-16"
                   >
                     {visibleSections.map((section) => {
-                      const quality = sectionQualityById.get(section.id);
-                      const analyzedFingerprint =
-                        analyzedSectionFingerprints[section.id];
-                      const currentFingerprint = sectionFingerprintById.get(
-                        section.id,
-                      );
-
                       const isOverridden = state.sectionLockOverrides.includes(
                         section.id,
                       );
@@ -2891,17 +2272,6 @@ export function FileScreen() {
                               : null
                           }
                           globalLocked={state.locked}
-                          quality={quality}
-                          qualityLoading={qualitySectionLoading === section.id}
-                          qualityDirty={
-                            qualityEnabled &&
-                            // Members can only refresh sections they have propose or direct access to.
-                            (state.creedType !== "company" ||
-                              canProposeToSection(myPerm)) &&
-                            (!quality ||
-                              !analyzedFingerprint ||
-                              analyzedFingerprint !== currentFingerprint)
-                          }
                           proposals={
                             proposalsBySectionId.get(section.id) ??
                             EMPTY_PROPOSALS
@@ -2920,7 +2290,9 @@ export function FileScreen() {
                   {visibleSections.length === 0 ? (
                     <div className="flex flex-col items-center justify-center gap-2 rounded-[var(--radius-xl)] border border-dashed border-[var(--strap-border)] px-4 py-16 text-center">
                       <div className="text-[15px] font-medium text-[var(--strap-text-primary)]">
-                        {state.sections.length > 0 ? "Every section is archived" : "Your Strap is empty"}
+                        {state.sections.length > 0
+                          ? "Every section is archived"
+                          : "Your Strap is empty"}
                       </div>
                       <div className="max-w-sm text-[13px] leading-6 text-[var(--strap-text-secondary)]">
                         {state.sections.length > 0
@@ -3077,7 +2449,7 @@ export function FileScreen() {
                     </div>
                   ) : null}
                 </>
-              )}
+              }
             </div>
           </div>
         </div>
@@ -3170,10 +2542,11 @@ export function FileScreen() {
             <DialogDescription>
               Review the remote{" "}
               <span className="font-mono text-[13px]">
-                {pullPreview?.path || state.settings.versionControl.path || STRAP_FILE_NAME}
+                {pullPreview?.path ||
+                  state.settings.versionControl.path ||
+                  STRAP_FILE_NAME}
               </span>{" "}
-              before it
-              replaces your local file.
+              before it replaces your local file.
             </DialogDescription>
           </DialogHeader>
           {pullBusy && !pullPreview ? (
@@ -3394,7 +2767,6 @@ type SectionCardHandlers = {
     content: string,
   ) => Promise<boolean> | boolean | void;
   toggleLock: (sectionId: string) => void;
-  refreshQuality: (section: StrapSection) => void;
   acceptProposal: (proposalId: string) => void;
   rejectProposal: (proposalId: string) => void;
   withdrawProposal: (proposalId: string) => void;
@@ -3427,9 +2799,6 @@ const SectionCardBound = memo(function SectionCardBound({
   dragActive,
   reopenDraft,
   globalLocked,
-  quality,
-  qualityLoading,
-  qualityDirty,
   proposals,
   canHistory,
   canArchive,
@@ -3447,9 +2816,6 @@ const SectionCardBound = memo(function SectionCardBound({
   dragActive: boolean;
   reopenDraft: string | null;
   globalLocked: boolean;
-  quality?: StrapQualityReport["sections"][number];
-  qualityLoading: boolean;
-  qualityDirty: boolean;
   proposals: Proposal[];
   canHistory: boolean;
   canArchive: boolean;
@@ -3475,10 +2841,6 @@ const SectionCardBound = memo(function SectionCardBound({
       }
       globalLocked={globalLocked}
       onToggleLock={() => handlers.toggleLock(section.id)}
-      quality={quality}
-      qualityLoading={qualityLoading}
-      qualityDirty={qualityDirty}
-      onRefreshQuality={() => handlers.refreshQuality(section)}
       proposals={proposals}
       onAcceptProposal={handlers.acceptProposal}
       onRejectProposal={handlers.rejectProposal}
@@ -3523,10 +2885,6 @@ function SectionCard({
   onSubmitProposal,
   globalLocked,
   onToggleLock,
-  quality,
-  qualityLoading,
-  qualityDirty,
-  onRefreshQuality,
   proposals,
   onAcceptProposal,
   onRejectProposal,
@@ -3569,10 +2927,6 @@ function SectionCard({
   onSubmitProposal?: (content: string) => Promise<boolean> | boolean | void;
   globalLocked: boolean;
   onToggleLock: () => void;
-  quality?: StrapQualityReport["sections"][number];
-  qualityLoading?: boolean;
-  qualityDirty?: boolean;
-  onRefreshQuality: () => void;
   proposals: Proposal[];
   onAcceptProposal: (proposalId: string) => void;
   onRejectProposal: (proposalId: string) => void;
@@ -3680,14 +3034,7 @@ function SectionCard({
                 >
                   {section.name}
                 </span>
-                <SectionQualityPopover
-                  quality={quality}
-                  color={accent}
-                  loading={qualityLoading}
-                  sectionName={section.name}
-                  actionAvailable={Boolean(qualityDirty)}
-                  onAction={onRefreshQuality}
-                />
+
                 {editingBy && editingBy.length > 0 ? (
                   <span
                     className="inline-flex items-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--strap-border)] bg-[var(--strap-surface-raised)] px-2 py-1 text-[11px] leading-none text-[var(--strap-text-secondary)]"

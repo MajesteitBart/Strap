@@ -12,8 +12,15 @@
     {
       "idx": 1,
       "version": "7",
-      "when": 1790775068406,
-      "tag": "0001_account_mfa",
+      "when": 1789536582836,
+      "tag": "0001_headless_vault_item_grants",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790841787528,
+      "tag": "0002_account_mfa",
       "breakpoints": true
     }
   ]

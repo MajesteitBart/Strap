@@ -1,3 +1,5 @@
+import { listVaultItems, VaultAccessError } from "@/lib/api-key-vault";
+import { parseVaultItemGrants } from "@/lib/vault-grants";
 import * as tables from "@/db/schema/application";
 import { authorizeValues } from "@/lib/authz/policies";
 import type { DatabaseContext } from "@/lib/db/context";
@@ -24,6 +26,7 @@ type HeadlessKeyRow = {
   revoked_at: string | null;
   last_used_at: string | null;
   created_at: string;
+  vault_item_ids: string[];
 };
 
 export type HeadlessKeyMetadata = {
@@ -36,6 +39,7 @@ export type HeadlessKeyMetadata = {
   revokedAt: string | null;
   lastUsedAt: string | null;
   createdAt: string;
+  vaultItemIds: string[];
 };
 
 export type ResolvedHeadlessKey = {
@@ -44,6 +48,7 @@ export type ResolvedHeadlessKey = {
   creedId: string;
   clientName: string;
   mode: HeadlessKeyMode;
+  vaultItemIds: string[];
 };
 
 function adminDb(): DatabaseContext {
@@ -61,11 +66,12 @@ function toMetadata(row: HeadlessKeyRow): HeadlessKeyMetadata {
     revokedAt: row.revoked_at,
     lastUsedAt: row.last_used_at,
     createdAt: row.created_at,
+    vaultItemIds: row.vault_item_ids,
   };
 }
 
 export async function listHeadlessKeys(userId: string, creedId: string): Promise<HeadlessKeyMetadata[]> {
-  const { data, error } = await query(adminDb(), tables.creed_headless_access_keys, "select", (database, scope) => database.select({ id: tables.creed_headless_access_keys.id, creed_id: tables.creed_headless_access_keys.creed_id, user_id: tables.creed_headless_access_keys.user_id, name: tables.creed_headless_access_keys.name, key_prefix: tables.creed_headless_access_keys.key_prefix, mode: tables.creed_headless_access_keys.mode, expires_at: tables.creed_headless_access_keys.expires_at, revoked_at: tables.creed_headless_access_keys.revoked_at, last_used_at: tables.creed_headless_access_keys.last_used_at, created_at: tables.creed_headless_access_keys.created_at }).from(tables.creed_headless_access_keys).where(and(scope, eq(tables.creed_headless_access_keys.user_id, userId), eq(tables.creed_headless_access_keys.creed_id, creedId))).orderBy(desc(tables.creed_headless_access_keys.created_at)));
+  const { data, error } = await query(adminDb(), tables.creed_headless_access_keys, "select", (database, scope) => database.select({ id: tables.creed_headless_access_keys.id, creed_id: tables.creed_headless_access_keys.creed_id, user_id: tables.creed_headless_access_keys.user_id, name: tables.creed_headless_access_keys.name, key_prefix: tables.creed_headless_access_keys.key_prefix, mode: tables.creed_headless_access_keys.mode, expires_at: tables.creed_headless_access_keys.expires_at, revoked_at: tables.creed_headless_access_keys.revoked_at, last_used_at: tables.creed_headless_access_keys.last_used_at, created_at: tables.creed_headless_access_keys.created_at, vault_item_ids: tables.creed_headless_access_keys.vault_item_ids }).from(tables.creed_headless_access_keys).where(and(scope, eq(tables.creed_headless_access_keys.user_id, userId), eq(tables.creed_headless_access_keys.creed_id, creedId))).orderBy(desc(tables.creed_headless_access_keys.created_at)));
   if (error) throw new Error("Could not list headless access keys.");
   return ((data as HeadlessKeyRow[] | null) ?? []).map(toMetadata);
 }
@@ -76,7 +82,18 @@ export async function createHeadlessAccessKey(input: {
   name: string;
   mode: HeadlessKeyMode;
   expiresAt: string | null;
+  vaultItemIds?: string[];
 }): Promise<{ key: string; metadata: HeadlessKeyMetadata }> {
+  const vaultItemIds = parseVaultItemGrants(input.vaultItemIds);
+  if (!vaultItemIds) throw new VaultAccessError("Invalid Vault item grants.", 400);
+  if (vaultItemIds.length) {
+    // Recheck live Vault permissions, including the Company admin gate.
+    const items = await listVaultItems(input.userId, input.creedId);
+    const allowed = new Set(items.map((item) => item.id));
+    if (vaultItemIds.some((id) => !allowed.has(id))) {
+      throw new VaultAccessError("Vault items must belong to the selected Strap.", 403);
+    }
+  }
   const generated = createHeadlessKey();
   const { data, error } = await query(adminDb(), tables.creed_headless_access_keys, "insert", async (database, _scope) => {
     const values = {
@@ -87,9 +104,10 @@ export async function createHeadlessAccessKey(input: {
       key_hash: generated.hash,
       mode: input.mode,
       expires_at: input.expiresAt,
+      vault_item_ids: vaultItemIds,
     } as typeof tables.creed_headless_access_keys.$inferInsert;
     await authorizeValues(adminDb(), tables.creed_headless_access_keys, "insert", values);
-    return database.insert(tables.creed_headless_access_keys).values(values).returning({ id: tables.creed_headless_access_keys.id, creed_id: tables.creed_headless_access_keys.creed_id, user_id: tables.creed_headless_access_keys.user_id, name: tables.creed_headless_access_keys.name, key_prefix: tables.creed_headless_access_keys.key_prefix, mode: tables.creed_headless_access_keys.mode, expires_at: tables.creed_headless_access_keys.expires_at, revoked_at: tables.creed_headless_access_keys.revoked_at, last_used_at: tables.creed_headless_access_keys.last_used_at, created_at: tables.creed_headless_access_keys.created_at });
+    return database.insert(tables.creed_headless_access_keys).values(values).returning({ id: tables.creed_headless_access_keys.id, creed_id: tables.creed_headless_access_keys.creed_id, user_id: tables.creed_headless_access_keys.user_id, name: tables.creed_headless_access_keys.name, key_prefix: tables.creed_headless_access_keys.key_prefix, mode: tables.creed_headless_access_keys.mode, expires_at: tables.creed_headless_access_keys.expires_at, revoked_at: tables.creed_headless_access_keys.revoked_at, last_used_at: tables.creed_headless_access_keys.last_used_at, created_at: tables.creed_headless_access_keys.created_at, vault_item_ids: tables.creed_headless_access_keys.vault_item_ids });
   }).then(exactlyOne);
   if (error || !data) throw new Error("Could not create headless access key.");
   return { key: generated.key, metadata: toMetadata(data as HeadlessKeyRow) };
@@ -111,7 +129,7 @@ export async function revokeHeadlessAccessKey(input: {
 export async function resolveHeadlessAccessKey(token: string): Promise<ResolvedHeadlessKey | null> {
   if (!isHeadlessKey(token)) return null;
   const admin = adminDb();
-  const { data, error } = await query(admin, tables.creed_headless_access_keys, "select", (database, scope) => database.select({ id: tables.creed_headless_access_keys.id, creed_id: tables.creed_headless_access_keys.creed_id, user_id: tables.creed_headless_access_keys.user_id, name: tables.creed_headless_access_keys.name, key_prefix: tables.creed_headless_access_keys.key_prefix, mode: tables.creed_headless_access_keys.mode, expires_at: tables.creed_headless_access_keys.expires_at, revoked_at: tables.creed_headless_access_keys.revoked_at, last_used_at: tables.creed_headless_access_keys.last_used_at, created_at: tables.creed_headless_access_keys.created_at }).from(tables.creed_headless_access_keys).where(and(scope, eq(tables.creed_headless_access_keys.key_hash, digestCredential(token))))).then(maybeOne);
+  const { data, error } = await query(admin, tables.creed_headless_access_keys, "select", (database, scope) => database.select({ id: tables.creed_headless_access_keys.id, creed_id: tables.creed_headless_access_keys.creed_id, user_id: tables.creed_headless_access_keys.user_id, name: tables.creed_headless_access_keys.name, key_prefix: tables.creed_headless_access_keys.key_prefix, mode: tables.creed_headless_access_keys.mode, expires_at: tables.creed_headless_access_keys.expires_at, revoked_at: tables.creed_headless_access_keys.revoked_at, last_used_at: tables.creed_headless_access_keys.last_used_at, created_at: tables.creed_headless_access_keys.created_at, vault_item_ids: tables.creed_headless_access_keys.vault_item_ids }).from(tables.creed_headless_access_keys).where(and(scope, eq(tables.creed_headless_access_keys.key_hash, digestCredential(token))))).then(maybeOne);
   if (error || !data) return null;
   const row = data as HeadlessKeyRow;
   if (row.revoked_at || (row.expires_at && new Date(row.expires_at).getTime() <= Date.now())) {
@@ -128,5 +146,6 @@ export async function resolveHeadlessAccessKey(token: string): Promise<ResolvedH
     creedId: row.creed_id,
     clientName: row.name,
     mode: row.mode,
+    vaultItemIds: row.vault_item_ids,
   };
 }

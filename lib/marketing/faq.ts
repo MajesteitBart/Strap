@@ -48,22 +48,22 @@ export const pricingFaqItems: FaqItem[] = [
   {
     question: "Is Strap free?",
     answer:
-      "Yes, all of it. Strap is open source and free to self-host, with the full editor, every MCP connection, and quality scoring. The hosted app is free too, and adds cross-device sync, backups, and managed auth and storage.",
+      "Yes, all of it. Strap is open source and free to self-host, with the full editor, every MCP connection, and proposal review. The hosted app is free too, and adds cross-device sync, backups, and managed auth and storage.",
   },
   {
-    question: "How do AI features run?",
+    question: "How do agents improve my Strap?",
     answer:
-      "AI features like quality analysis and agent work run on the deployment's included OpenRouter key, or on your own key (BYOK) when you want model spend on your own account.",
+      "Use the agents you already connect. Strap runs no in-app LLM calls and needs no model API key.",
   },
   {
-    question: "What is BYOK?",
+    question: "Do I need an API key for AI features?",
     answer:
-      "BYOK means bring your own key. You connect your own OpenRouter key so AI spend runs on your account and Strap never owns your model bill.",
+      "No. Your connected agents read your Strap and propose updates using your existing agent service. You approve or decline their proposals in Strap.",
   },
   {
     question: "How much does a Company Strap cost?",
     answer:
-      "Nothing. A Company Strap is free, with as many members as you need, roles and section permissions, a team activity view, and BYOK support.",
+      "Nothing. A Company Strap is free, with as many members as you need, roles and section permissions, a team activity view, and proposal review.",
   },
   {
     question: "Do I own my data?",
@@ -98,7 +98,7 @@ export const companyFaqItems: FaqItem[] = [
   {
     question: "How much does a Company Strap cost?",
     answer:
-      "Nothing. It is free, with as many members as you need, and every company supports BYOK so model spend can run on the company's own key.",
+      "Nothing. It is free, with as many members as you need, and members use their existing connected agents.",
   },
 ];
 
@@ -133,6 +133,6 @@ export const contextFileFaqItems: FaqItem[] = [
   {
     question: "Do I own my personal context file?",
     answer:
-      "Yes. Strap is portable Markdown you control and can export. AI can run on the included key or your own key, and account deletion removes active product data subject to the retention periods in the Privacy Policy.",
+      "Yes. Strap is portable Markdown you control and can export. Account deletion removes active product data subject to the retention periods in the Privacy Policy.",
   },
 ];

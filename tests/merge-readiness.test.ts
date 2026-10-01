@@ -2,7 +2,6 @@ import { strict as assert } from "node:assert";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
-const quotaSource = readFileSync(new URL("../lib/ai/credits.ts", import.meta.url), "utf8");
 const legacySubscriptionRoute = readFileSync(
   new URL("../app/api/app/legacy-subscriptions/route.ts", import.meta.url),
   "utf8",
@@ -20,13 +19,6 @@ const inviteSource = readFileSync(
   "utf8",
 );
 
-test("included AI is protected by burst and daily per-user limits", () => {
-  assert.match(quotaSource, /scope: "included-ai"/);
-  assert.match(quotaSource, /identifier: userId/);
-  assert.match(quotaSource, /eq\(tables.creed_ai_usage.user_id, userId\)/);
-  assert.match(quotaSource, /eq\(tables.creed_ai_usage.ai_mode, "credits"\)/);
-  assert.match(quotaSource, /INCLUDED_AI_DAILY_LIMIT_USD/);
-});
 
 
 test("legacy Stripe subscribers retain a self-service cancellation path", () => {

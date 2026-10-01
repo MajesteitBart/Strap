@@ -99,9 +99,8 @@ custom agent that speaks MCP.
 
 ## Ownership and privacy
 
-Your Strap is portable Markdown you can export. AI features can use the
-deployment's included OpenRouter key or your own encrypted OpenRouter key
-(BYOK). OAuth credentials are hashed or encrypted according to their purpose.
+Your Strap is portable Markdown you can export. Connected agents propose
+improvements for your review; Strap makes no LLM provider calls. OAuth credentials are hashed or encrypted according to their purpose.
 External API keys stored in Vault remain server-side and are revealed only
 through an explicit authorized action. Hidden sections do not enter agent
 payloads. Account deletion removes active product records, while qualified
@@ -138,7 +137,7 @@ not a personal Strap first.
 
 ${pricing}
 
-All hosted plans are free and support the deployment's included key or BYOK.
+All hosted plans are free. Use your existing connected agents for feedback.
 
 ## How to write a good context file
 

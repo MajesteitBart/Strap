@@ -23,44 +23,42 @@
 // shows the company tour inside a company space and the personal tour elsewhere.
 // A dev-preview open never marks the tour seen.
 
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react";
-import {
-  AnimatePresence,
-  motion,
-  useReducedMotion,
-  type Variants,
-} from "motion/react";
-import {
-  Command,
-  FileText,
-  Gauge,
-  Plug,
-  TextCursorInput,
-  Users,
-  type LucideIcon,
-} from "lucide-react";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { CommandIcon } from "@/components/ui/command";
 import { ConnectIcon } from "@/components/ui/connect";
+import { Dialog,DialogContent,DialogTitle } from "@/components/ui/dialog";
 import { FileTextIcon } from "@/components/ui/file-text";
 import { GaugeIcon } from "@/components/ui/gauge";
 import { TextCursorInputIcon } from "@/components/ui/text-cursor-input";
 import { UsersIcon } from "@/components/ui/users";
 import { DISCORD_URL } from "@/lib/branding";
 import { fireWelcomeConfetti } from "@/lib/confetti";
-import {
-  getWelcomePreviewVariant,
-  WELCOME_MEDIA_VERSION,
-  type WelcomeVariant,
-} from "@/lib/welcome-preview";
 import { cn } from "@/lib/utils";
+import {
+getWelcomePreviewVariant,
+WELCOME_MEDIA_VERSION,
+type WelcomeVariant,
+} from "@/lib/welcome-preview";
+import {
+Command,
+FileText,
+Plug,
+Users,
+type LucideIcon
+} from "lucide-react";
+import {
+AnimatePresence,
+motion,
+useReducedMotion,
+type Variants,
+} from "motion/react";
+import {
+useCallback,
+useEffect,
+useRef,
+useState,
+type ReactNode,
+} from "react";
 
 const STORAGE_KEY = "creed:welcomed";
 const OPEN_DELAY_MS = 450;
@@ -96,27 +94,15 @@ const PERSONAL_SLIDES: Slide[] = [
     body: "Paste your MCP URL into any agent. They read your Strap and propose edits you approve.",
     hasVideo: true,
   },
-  {
-    key: "analysis",
-    icon: Gauge,
-    title: "Analysis keeps it sharp",
-    body: "Every save gets scored, and vague, stale, or contradictory lines get flagged.",
-    hasVideo: true,
-  },
+
   {
     key: "panel",
     icon: Command,
     title: "Press K for anything",
-    body: "Search your Strap, ask a question, or run the agent from anywhere. Tab switches modes.",
-    hasVideo: true,
+    body: "Search sections, review proposals, and jump to pages or actions from anywhere.",
+    hasVideo: false,
   },
-  {
-    key: "tab",
-    icon: TextCursorInput,
-    title: "Tab finishes the thought",
-    body: "Press Tab in any section and it completes the line in your voice, drawn from your whole Strap.",
-    hasVideo: true,
-  },
+
   {
     key: "discord",
     title: "Join the Discord",

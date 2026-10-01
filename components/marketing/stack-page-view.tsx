@@ -32,12 +32,6 @@ const stackRows = [
     tone: "environments",
   },
   {
-    name: "OpenRouter",
-    purpose: "Included-key and bring-your-own-key AI model access",
-    website: "https://openrouter.ai",
-    tone: "agents",
-  },
-  {
     name: "MCP and OAuth 2.1",
     purpose: "Browser, device, CLI, and scoped headless agent connections",
     website: "https://modelcontextprotocol.io",

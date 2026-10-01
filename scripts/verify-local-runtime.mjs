@@ -50,9 +50,22 @@ try {
  const vault=await request('/api/app/vault','POST',{strapId:profileId,name:'Rehearsal key',description:'Local synthetic fixture',secret:'local-vault-fixture'});ok(vault,201,'Vault create');
  const listed=await request('/api/app/vault?strapId='+profileId);ok(listed,200,'Vault metadata list');assert.equal(JSON.stringify(listed.data).includes('local-vault-fixture'),false);
  const reveal=await request('/api/app/vault/'+vault.data.item.id);ok(reveal,200,'Vault audited reveal');assert.equal(reveal.data.secret,'local-vault-fixture');
- ok(await request('/api/app/vault/'+vault.data.item.id,'DELETE'),200,'Vault delete');
  const created=await request('/api/app/headless-access','POST',{strapId:profileId,name:'Local read rehearsal',mode:'read-only'});ok(created,201,'create scoped read key');
  const key=created.data.key;
+ const revealHeadless=async credential=>{
+   const response=await fetch(origin+'/api/strap/vault/reveal',{method:'POST',headers:{Authorization:'Bearer '+credential,'Content-Type':'application/json'},body:JSON.stringify({reference:'secret://'+vault.data.item.id})});
+   assert.match(response.headers.get('cache-control')??'',/no-store/);
+   return {response,data:await response.json()};
+ };
+ ok(await revealHeadless(key),403,'ordinary scoped key has no secret grants');
+ const secretKey=await request('/api/app/headless-access','POST',{strapId:profileId,name:'Local Varlock rehearsal',mode:'read-only',vaultItemIds:[vault.data.item.id]});ok(secretKey,201,'create individually granted secret key');
+ assert.deepEqual(secretKey.data.metadata.vaultItemIds,[vault.data.item.id]);
+ const headlessReveal=await revealHeadless(secretKey.data.key);ok(headlessReveal,200,'headless secret reveal without session cookies');assert.deepEqual(headlessReveal.data,{secret:'local-vault-fixture'});
+ const [audit]=await connection`select metadata from creed_audit_log where action='vault.secret_revealed' and metadata->>'keyId'=${secretKey.data.metadata.id}`;
+ assert.deepEqual(audit.metadata,{itemId:vault.data.item.id,creedId:profileId,keyId:secretKey.data.metadata.id,source:'headless'});
+ ok(await request('/api/app/headless-access/'+secretKey.data.metadata.id,'DELETE'),200,'revoke secret key');
+ ok(await revealHeadless(secretKey.data.key),401,'revoked secret key cannot reveal');
+ ok(await request('/api/app/vault/'+vault.data.item.id,'DELETE'),200,'Vault delete');
  const mcpHeaders={Authorization:'Bearer '+key,Accept:'application/json, text/event-stream'};
  const read=await request('/mcp','POST',{jsonrpc:'2.0',id:1,method:'tools/call',params:{name:'read_strap',arguments:{}}},mcpHeaders);ok(read,200,'MCP read through scoped key');assert.equal(Boolean(read.data.error),false);assert.equal(Boolean(read.data.result?.isError),false);assert.ok(JSON.stringify(read.data).includes('Local migration edit persisted'));
  const tools=await request('/mcp','POST',{jsonrpc:'2.0',id:2,method:'tools/list'},mcpHeaders);ok(tools,200,'MCP read-only tool list');assert.equal(tools.data.result.tools.some(tool=>/propose|direct_edit|publish|update_section|create_section/.test(tool.name)),false);

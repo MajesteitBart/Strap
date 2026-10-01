@@ -25,13 +25,13 @@ STRAP_VAULT_SECRET is a dedicated key of at least 32 random characters. It is in
 
 ## Schema and checks
 
-db/schema/ defines 46 tables. db/migrations/0000_baseline.sql is the squashed baseline; its final block contains eight retained atomic functions from db/functions/baseline.sql. 0001_account_mfa.sql adds account MFA. Future schema changes use npm run db:generate -- --name=<change>. Review generated SQL before npm run db:migrate. Function edits require a SQL migration and an update to the reference file because Drizzle does not generate function migrations.
+db/schema/ defines 46 tables. db/migrations/0000_baseline.sql is the squashed baseline; its final block contains eight retained atomic functions from db/functions/baseline.sql. Later migrations add headless Vault item grants (0001) and account MFA (0002). Future schema changes use npm run db:generate -- --name=<change>. Review generated SQL before npm run db:migrate. Function edits require a SQL migration and an update to the reference file because Drizzle does not generate function migrations.
 
 Run migrations once per release. Hosted connections require verified TLS and a transaction pooler; the driver uses one connection and disables prepared statements. Railway hosts Postgres 18 and a transaction-mode PgBouncer service. Set DATABASE_SSL_CA to its trusted certificate when using the private CA; hostname and certificate verification remain mandatory. Rotate the pooler certificate before its September 2027 expiry. Credentials and the certificate/key pair are stored in BWS under STRAP_DATABASE_* keys.
 
 Local database scripts load this checkout's .env.local; CI uses explicit job variables. npm test skips database suites without DATABASE_URL. npm run test:db creates a random strap_test_<id> database per suite and drops only that database afterward. The local role needs CREATEDB. Existing application data is never truncated by these tests. npm run verify:local checks a running localhost app with a fresh synthetic account and cleans up its own account afterward.
 
-The authorization inventory and negative test mapping are in .project/projects/remove-supabase/research/authorization/. The browser/API/MCP contracts and both CLI packages remain compatible.
+The authorization inventory and negative test mapping are in [db/authorization/](authorization/matrix.md). The browser/API/MCP contracts and both CLI packages remain compatible.
 
 ## Retention
 
@@ -48,4 +48,12 @@ node scripts/migrate-from-supabase.mts --apply
 
 The default prints counts without importing. --apply requires an empty target; a hosted target also requires --target host:port/database matching its connection string exactly. Use STRAP_SOURCE_DATABASE_SSL_CA for the source CA independently of DATABASE_SSL_CA. The importer imports in one transaction, reconciles every table and resets identity sequences. There is deliberately no force/overwrite flag. Sessions are not migrated. IDs, agent hashes and existing encrypted credentials are preserved. Generated stored columns are recomputed. Missing destination fields use baseline defaults. Unsupported source schema changes must be resolved before cutover.
 
-Local and hosted source-copy rehearsals passed. The Railway rehearsal reconciled 2 users, 3 profiles and all 37 application tables. The PR preview uses the isolated rehearsal database; production still uses Supabase. Production import, live Google/X sign-in, real delivered emails, final authorization review, and the scheduled cutover remain release gates. The production rollback plan is to retain the old project for 30 days; it has not been paused or modified here. See .project/projects/remove-supabase/ for current task evidence and the cutover checklist.
+Local and hosted source-copy rehearsals passed. The Railway rehearsal reconciled 2 users, 3 profiles and all 37 application tables. The PR preview uses the isolated rehearsal database; production still uses Supabase. Production import, live Google/X sign-in, real delivered emails, final authorization review, and the scheduled cutover remain release gates. The production rollback plan is to retain the old project for 30 days; it has not been paused or modified here.
+
+
+Before production cutover:
+
+- Complete live Google/X sign-in, delivered verification/reset email checks, and an independent authorization review using the [policy matrix](authorization/matrix.md).
+- Approve a maintenance window, back up the source and encryption keys, then import into an empty destination and reconcile every table.
+- Switch the application environment and deploy. Verify sign-in, onboarding, editor, proposals, Vault, Company invites, both CLI packages, and MCP read/propose/direct-write flows.
+- Retain the old backend for 30 days. Rollback requires restoring its environment and pre-cutover build; writes made after cutover would be lost. Decommission only after explicit approval.

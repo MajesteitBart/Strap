@@ -15,7 +15,7 @@ const csp = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
-  "connect-src 'self' https://api.openrouter.ai https://openrouter.ai https://api.github.com",
+  "connect-src 'self' https://api.github.com",
   "frame-src 'self'",
   "frame-ancestors 'self'",
   "base-uri 'self'",
