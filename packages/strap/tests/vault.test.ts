@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { parseVaultCommand } from "../src/vault/command.js";
-import { formatVaultSchema, matchesVaultQuery, vaultEnvName } from "../src/vault/schema.js";
+import { formatVaultSchema, matchesVaultQuery, terminalText, vaultEnvName } from "../src/vault/schema.js";
 
 const reference = "secret://11111111-1111-4111-8111-111111111111";
 
@@ -57,4 +57,19 @@ test("schema output never turns free text into active schema lines", () => {
   assert.equal(output.includes("\u0000"), false);
   assert.throws(() => formatVaultSchema([{ name: "x", envName: "BAD\nNAME", reference }]), /Invalid variable name/);
   assert.throws(() => formatVaultSchema([{ name: "x", envName: "OK", reference: `${reference}")\nX=("` }]), /Invalid variable name or secret reference/);
+});
+
+test("terminal output neutralizes escape sequences from Vault metadata", () => {
+  const osc52 = "Deploy\u001b]52;c;ZXZpbA==\u0007 key";
+  const csi = "Name\u009b31mred\nFAKE ENTRY";
+  assert.equal(terminalText(osc52), "Deploy?]52;c;ZXZpbA==? key");
+  assert.equal(terminalText(csi), "Name?31mred?FAKE ENTRY");
+  assert.equal(terminalText("Plain name, één 🔑"), "Plain name, één 🔑");
+  assert.throws(
+    () => formatVaultSchema([
+      { name: "A\u001b[2J", envName: "SAME", reference: "secret://11111111-1111-4111-8111-111111111111" },
+      { name: "B", envName: "SAME", reference: "secret://22222222-2222-4222-8222-222222222222" },
+    ]),
+    (error: unknown) => error instanceof Error && !error.message.includes("\u001b"),
+  );
 });

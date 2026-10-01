@@ -4,6 +4,15 @@ const INSTANCE_ID = /^[A-Za-z_][A-Za-z0-9_-]{0,63}$/;
 
 export type VaultSchemaEntry = { name: string; reference: string; envName: string };
 
+/**
+ * Makes Vault text safe for a terminal. Names and descriptions come from other
+ * profile managers, so C0, DEL and C1 controls (escape sequences, OSC, CSI) are
+ * replaced with "?" before display. JSON output keeps the exact text.
+ */
+export function terminalText(text: string): string {
+  return text.replace(/[\u0000-\u001f\u007f-\u009f]/g, "?");
+}
+
 /** Suggests an environment variable name: "Deployment API" and "deploymentApi" both become DEPLOYMENT_API. */
 export function vaultEnvName(name: string): string {
   const words = name
@@ -56,7 +65,7 @@ export function formatVaultSchema(entries: VaultSchemaEntry[], options: { instan
   const seen = new Map<string, string>();
   for (const entry of entries) {
     const previous = seen.get(entry.envName);
-    if (previous) throw new Error(`"${previous}" and "${entry.name}" would both become ${entry.envName}. Rename one or narrow the selection.`);
+    if (previous) throw new Error(`"${terminalText(previous)}" and "${terminalText(entry.name)}" would both become ${entry.envName}. Rename one or narrow the selection.`);
     seen.set(entry.envName, entry.name);
   }
   const lines = entries.map((entry) => vaultSchemaLine(entry, options.instance));

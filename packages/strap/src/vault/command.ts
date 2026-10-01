@@ -2,7 +2,7 @@ import type { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { CliError } from "../errors.js";
 import { writeJson } from "../terminal/output.js";
 import { isRecord } from "../skills/bundle.js";
-import { formatVaultSchema, isVaultInstanceId } from "./schema.js";
+import { formatVaultSchema, isVaultInstanceId, terminalText } from "./schema.js";
 
 export const VAULT_USAGE = `Usage: strap vault folders
        strap vault list [--folder NAME] [--query TEXT]
@@ -86,7 +86,7 @@ async function listVault(client: Client, command: VaultCommand) {
   } catch (error) {
     // Tool errors carry Strap's own message, such as an unknown folder or a missing role.
     const message = error instanceof Error ? error.message.replace(/^MCP error -?\d+:\s*/, "") : "";
-    throw new CliError(message || "Strap rejected the Vault request.", 3);
+    throw new CliError(terminalText(message) || "Strap rejected the Vault request.", 3);
   }
   if (result.isError) throw new CliError("Strap rejected the Vault request.", 3);
   const content = Array.isArray(result.content) ? result.content : [];
@@ -100,8 +100,9 @@ export async function runVaultCommand(client: Client, command: VaultCommand, jso
   if (command.action === "folders") {
     if (json) return writeJson(listing.folders);
     if (!listing.folders.length) return void process.stdout.write("No Vault folders.\n");
+    // Human-readable output passes every server-supplied field through terminalText.
     for (const folder of listing.folders) {
-      process.stdout.write(`${folder.name.padEnd(28)} ${String(folder.itemCount).padStart(3)} secret${folder.itemCount === 1 ? " " : "s"}  ${folder.description}\n`);
+      process.stdout.write(`${terminalText(folder.name).padEnd(28)} ${String(folder.itemCount).padStart(3)} secret${folder.itemCount === 1 ? " " : "s"}  ${terminalText(folder.description)}\n`);
     }
     return;
   }
@@ -109,9 +110,9 @@ export async function runVaultCommand(client: Client, command: VaultCommand, jso
     if (json) return writeJson(listing.items);
     if (!listing.items.length) return void process.stdout.write("No matching Vault secrets.\n");
     for (const entry of listing.items) {
-      process.stdout.write(`${entry.name}\n  ${entry.reference}${entry.folder ? `  folder: ${entry.folder.name}` : ""}\n`);
-      if (entry.description) process.stdout.write(`  ${entry.description}\n`);
-      const keys = entry.revealableBy.map((key) => `${key.name} (${key.prefix}…)`).join(", ");
+      process.stdout.write(`${terminalText(entry.name)}\n  ${entry.reference}${entry.folder ? `  folder: ${terminalText(entry.folder.name)}` : ""}\n`);
+      if (entry.description) process.stdout.write(`  ${terminalText(entry.description)}\n`);
+      const keys = entry.revealableBy.map((key) => `${terminalText(key.name)} (${terminalText(key.prefix)}…)`).join(", ");
       process.stdout.write(`  Revealable by: ${keys || "no API key yet"}\n`);
     }
     return;

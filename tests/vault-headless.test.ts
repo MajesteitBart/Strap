@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import * as grants from "../lib/vault-grants.ts";
-import { buildVaultListing, canListVault, vaultToolsFor, VaultListingError } from "../lib/vault-tools.ts";
+import { buildVaultListing, canListVault, isVaultListingBatch, vaultToolsFor, VaultListingError } from "../lib/vault-tools.ts";
 
 const itemId = "11111111-1111-4111-8111-111111111111";
 const otherItemId = "22222222-2222-4222-8222-222222222222";
@@ -69,4 +69,13 @@ test("Vault discovery lists metadata for managers only and never carries values"
   assert.deepEqual(buildVaultListing({ folders, items, keys, caller: null, query: "artifact server" }).items.map((item) => item.name), ["SHARE_ARTIFACT_SERVER"]);
   assert.throws(() => buildVaultListing({ folders, items, keys, caller: null, folder: "missing" }), (error: unknown) =>
     error instanceof VaultListingError && /Available folders: share-artifact/.test(error.message));
+});
+
+test("Vault listings are rejected inside JSON-RPC batches", () => {
+  const call = (name: string) => ({ jsonrpc: "2.0", id: 1, method: "tools/call", params: { name, arguments: {} } });
+  assert.equal(isVaultListingBatch([call("strap_list_vault_items")]), false);
+  assert.equal(isVaultListingBatch([call("strap_list_vault_items"), call("strap_list_vault_items")]), true);
+  assert.equal(isVaultListingBatch([call("read_strap"), call("strap_list_vault_items")]), true);
+  assert.equal(isVaultListingBatch([call("read_strap"), call("strap_search")]), false);
+  assert.equal(isVaultListingBatch([null, "x", call("strap_list_vault_items")]), true);
 });

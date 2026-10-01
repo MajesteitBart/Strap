@@ -1,4 +1,5 @@
 import { listVaultFolders, listVaultItems, VaultAccessError } from "@/lib/api-key-vault";
+import { vaultScope } from "@/lib/db/repositories/vault";
 import { parseVaultFolderGrants, parseVaultItemGrants } from "@/lib/vault-grants";
 import * as tables from "@/db/schema/application";
 import { authorizeValues } from "@/lib/authz/policies";
@@ -191,15 +192,28 @@ export async function updateHeadlessKeyGrants(input: {
   if (!current) return { status: "not-found" };
   if (!sameIds(expectedItems, current.vault_item_ids) || !sameIds(expectedFolders, current.vault_folder_ids)) return { status: "conflict" };
   const grants = await authorizeVaultGrants({ ...input, creedId: current.creed_id });
+  // Granting anything also requires the Vault role at write time, so a demotion
+  // between the checks above and this update cannot slip a grant through.
+  // Clearing all grants only reduces access and stays allowed.
+  const grantsAccess = grants.vaultItemIds.length > 0 || grants.vaultFolderIds.length > 0;
   const { data, error } = await query(adminDb(), keys, "update", async (database, scope) => {
     const values = { vault_item_ids: grants.vaultItemIds, vault_folder_ids: grants.vaultFolderIds } as Partial<typeof keys.$inferInsert>;
     await authorizeValues(adminDb(), keys, "update", values);
     return database.update(keys).set(values)
       .where(and(scope, eq(keys.id, current.id), eq(keys.user_id, input.userId), usable(),
-        eq(keys.vault_item_ids, current.vault_item_ids), eq(keys.vault_folder_ids, current.vault_folder_ids))).returning(KEY_COLUMNS);
+        eq(keys.vault_item_ids, current.vault_item_ids), eq(keys.vault_folder_ids, current.vault_folder_ids),
+        grantsAccess ? vaultScope({ userId: input.userId }, keys.creed_id) : undefined)).returning(KEY_COLUMNS);
   }).then(maybeOne);
   if (error) throw new Error("Could not update headless access key.");
-  return data ? { status: "updated", previous: toMetadata(current), metadata: toMetadata(data as HeadlessKeyRow) } : { status: "conflict" };
+  if (data) return { status: "updated", previous: toMetadata(current), metadata: toMetadata(data as HeadlessKeyRow) };
+  // Nothing matched: the grants changed (conflict), the key stopped being
+  // usable, or the Vault role was lost.
+  const after = await findActiveKey(input.userId, input.keyId);
+  if (!after) return { status: "not-found" };
+  if (sameIds(after.vault_item_ids, current.vault_item_ids) && sameIds(after.vault_folder_ids, current.vault_folder_ids)) {
+    throw new VaultAccessError("Granting secrets requires Vault access to this Strap.", 403);
+  }
+  return { status: "conflict" };
 }
 
 export type KeyRotation =

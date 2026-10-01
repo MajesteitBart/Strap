@@ -21,7 +21,7 @@ import { markdownToRichHtml } from "@/lib/rich-text";
 import { callSkillTool } from "@/lib/skill-mcp";
 import { isSkillPayloadBatch,SKILL_TOOLS,skillToolsFor } from "@/lib/skill-tools";
 import { callVaultTool } from "@/lib/vault-mcp";
-import { VAULT_TOOLS,vaultToolsFor,type VaultCallerGrant } from "@/lib/vault-tools";
+import { isVaultListingBatch,VAULT_TOOLS,vaultToolsFor,type VaultCallerGrant } from "@/lib/vault-tools";
 import {
 createBlankStrapState,
 getAvatarInitials,
@@ -2457,6 +2457,12 @@ export async function POST(request: Request) {
   if (isSkillPayloadBatch(requests)) {
     return NextResponse.json(
       { jsonrpc: "2.0", id: null, error: { code: -32600, message: "Skill reads, exports, and publications require an individual request. Send each skill call separately." } },
+      { status: 400, headers: MCP_CORS_HEADERS },
+    );
+  }
+  if (isVaultListingBatch(requests)) {
+    return NextResponse.json(
+      { jsonrpc: "2.0", id: null, error: { code: -32600, message: "Vault listings require an individual request. Send strap_list_vault_items on its own." } },
       { status: 400, headers: MCP_CORS_HEADERS },
     );
   }

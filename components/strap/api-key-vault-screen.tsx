@@ -30,6 +30,8 @@ type EditorState = {
   description: string;
   secret: string;
   folderId: string;
+  // The folder when the editor opened; a move is rejected if another session moved the secret since.
+  originalFolderId: string;
 };
 
 type FolderEditorState = {
@@ -38,7 +40,7 @@ type FolderEditorState = {
   description: string;
 };
 
-const EMPTY_EDITOR: EditorState = { id: null, name: "", description: "", secret: "", folderId: "" };
+const EMPTY_EDITOR: EditorState = { id: null, name: "", description: "", secret: "", folderId: "", originalFolderId: "" };
 const EMPTY_FOLDER_EDITOR: FolderEditorState = { id: null, name: "", description: "" };
 
 // Keyed by Strap so items, the editor and any in-flight request from the
@@ -100,7 +102,7 @@ function StrapVault() {
   }
 
   function openEdit(item: VaultItem) {
-    setEditor({ id: item.id, name: item.name, description: item.description, secret: "", folderId: item.folderId ?? "" });
+    setEditor({ id: item.id, name: item.name, description: item.description, secret: "", folderId: item.folderId ?? "", originalFolderId: item.folderId ?? "" });
     setEditorOpen(true);
     setFolderEditorOpen(false);
     setError(null);
@@ -126,10 +128,16 @@ function StrapVault() {
           name: editor.name.trim(),
           description: editor.description.trim(),
           secret: editor.id && !editor.secret ? null : editor.secret,
-          folderId: editor.folderId || null,
+          // Edits send the folder only when the user changed it, with the folder they started from.
+          ...(!editor.id
+            ? { folderId: editor.folderId || null }
+            : editor.folderId !== editor.originalFolderId
+              ? { folderId: editor.folderId || null, expectedFolderId: editor.originalFolderId || null }
+              : {}),
         }),
       });
       const payload = (await response.json().catch(() => ({}))) as { error?: string };
+      if (response.status === 409) await loadItems().catch(() => undefined);
       if (!response.ok) throw new Error(payload.error || "Could not save the Vault item.");
       setEditor(EMPTY_EDITOR);
       setEditorOpen(false);

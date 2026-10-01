@@ -45,7 +45,7 @@ export async function revealVaultItem(input: {
   }), input.credential);
   return { item: toItem(result.item), secret: result.secret };
 }
-export async function updateVaultItem(input: { userId: string; itemId: string; name: string; description: string; secret: string | null; folderId?: string | null; request: Request }): Promise<VaultItem> {
+export async function updateVaultItem(input: { userId: string; itemId: string; name: string; description: string; secret: string | null; folderId?: string | null; expectedFolderId?: string | null; request: Request }): Promise<VaultItem> {
   const { previous, updated } = await vaultUpdate(getDatabase(), { userId: input.userId }, input);
   const moved = previous.folder_id !== updated.folder_id;
   await recordAuditEvent({
@@ -76,6 +76,6 @@ export async function deleteVaultFolder(input: { userId: string; folderId: strin
   return { movedItemIds };
 }
 /** Number of items a headless key can reveal right now. Never returns item data. */
-export async function countRevealableVaultItems(credential: Pick<VaultCredential, "creedId" | "vaultItemIds" | "vaultFolderIds">): Promise<number> {
-  return vaultGrantCoverage(getDatabase(), credential);
+export async function countRevealableVaultItems(userId: string, credential: Pick<VaultCredential, "creedId" | "vaultItemIds" | "vaultFolderIds">): Promise<number> {
+  return vaultGrantCoverage(getDatabase(), { userId }, credential);
 }

@@ -17,6 +17,19 @@ export const VAULT_TOOLS = [
   },
 ] as const;
 
+/**
+ * A listing loads every folder, item and key in the profile. Batches would
+ * multiply that work behind one rate-limit token, so listings go alone.
+ */
+export function isVaultListingBatch(requests: unknown[]): boolean {
+  return requests.length > 1 && requests.some((request) => {
+    if (!request || typeof request !== "object") return false;
+    const { method, params } = request as { method?: unknown; params?: unknown };
+    return method === "tools/call" && !!params && typeof params === "object" &&
+      VAULT_TOOLS.some((tool) => tool.name === (params as { name?: unknown }).name);
+  });
+}
+
 /** The Vault is limited to personal owners and Company owners/admins. */
 export function canListVault(role: string | undefined): boolean {
   return role === "owner" || role === "admin";

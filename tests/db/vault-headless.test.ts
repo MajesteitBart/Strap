@@ -229,11 +229,11 @@ test("scoped Vault reveals enforce live Postgres permissions and audit before de
     // Items added to the folder later are covered without changing the key.
     const added = await repository.vaultCreate(db, { userId: owner }, { creedId: personal, name: "Added later", description: "", secret });
     await expectDenied(created.key, 403, added.id);
-    await repository.vaultUpdate(db, { userId: owner }, { itemId: added.id, name: added.name, description: "", secret: null, folderId: folder.id });
+    await repository.vaultUpdate(db, { userId: owner }, { itemId: added.id, name: added.name, description: "", secret: null, folderId: folder.id, expectedFolderId: null });
     assert.equal((await request(created.key, added.id)).status, 200);
     // Leaving the folder removes folder-based access; a direct grant is unaffected.
     const direct = await createWith({ vaultItemIds: [added.id] });
-    await repository.vaultUpdate(db, { userId: owner }, { itemId: added.id, name: added.name, description: "", secret: null, folderId: null });
+    await repository.vaultUpdate(db, { userId: owner }, { itemId: added.id, name: added.name, description: "", secret: null, folderId: null, expectedFolderId: folder.id });
     await expectDenied(created.key, 403, added.id);
     assert.equal((await request(direct.key, added.id)).status, 200);
     // Keeping the folder when folderId is omitted.
@@ -244,7 +244,7 @@ test("scoped Vault reveals enforce live Postgres permissions and audit before de
   await t.test("folders, items and grants cannot cross profiles", async () => {
     const companyFolder = await repository.vaultFolderCreate(db, { userId: owner }, { strapId: company, name: "company-ci", description: "" });
     await assert.rejects(repository.vaultCreate(db, { userId: owner }, { creedId: personal, name: "Cross", description: "", secret, folderId: companyFolder.id }), { status: 400 });
-    await assert.rejects(repository.vaultUpdate(db, { userId: owner }, { itemId: item.id, name: item.name, description: "", secret: null, folderId: companyFolder.id }), { status: 400 });
+    await assert.rejects(repository.vaultUpdate(db, { userId: owner }, { itemId: item.id, name: item.name, description: "", secret: null, folderId: companyFolder.id, expectedFolderId: item.folder_id }), { status: 400 });
     await assert.rejects(createWith({ vaultFolderIds: [companyFolder.id] }), { status: 403 });
     await assert.rejects(sql`update creed_vault_items set folder_id=${companyFolder.id} where id=${item.id}`, sqlState("23503"));
     // A stale folder grant from another profile never matches a personal item.
@@ -377,7 +377,7 @@ test("scoped Vault reveals enforce live Postgres permissions and audit before de
       filed.push(await repository.vaultCreate(db, { userId: owner }, { creedId: personal, name: `Big ${index}`, description: "", secret, folderId: big.id }));
     }
     const created = await createWith({ vaultFolderIds: [big.id] });
-    assert.equal(await repository.vaultGrantCoverage(db, { creedId: personal, vaultItemIds: [], vaultFolderIds: [big.id] }), 150);
+    assert.equal(await repository.vaultGrantCoverage(db, { userId: owner }, { creedId: personal, vaultItemIds: [], vaultFolderIds: [big.id] }), 150);
     // A schema load followed by a run of all 150 secrets fits in one window.
     for (let pass = 0; pass < 2; pass++) {
       for (const entry of filed) assert.equal((await request(created.key, entry.id)).status, 200);
@@ -452,6 +452,52 @@ test("scoped Vault reveals enforce live Postgres permissions and audit before de
     await sql`delete from creeds where id=${profile}`;
     assert.equal((await sql`select count(*)::int as count from strap_vault_folders where strap_id=${profile}`)[0].count, 0);
     assert.equal((await sql`select count(*)::int as count from creed_vault_items where creed_id=${profile}`)[0].count, 0);
+  });
+
+  await t.test("a stale folder move cannot undo another session's move", async () => {
+    const granted = await repository.vaultFolderCreate(db, { userId: owner }, { strapId: personal, name: "granted", description: "" });
+    const moved = await repository.vaultCreate(db, { userId: owner }, { creedId: personal, name: "Moved secret", description: "", secret, folderId: granted.id });
+    const key = await createWith({ vaultFolderIds: [granted.id] });
+    const edit = (changes: { description?: string; folderId?: string | null; expectedFolderId?: string | null }) =>
+      repository.vaultUpdate(db, { userId: owner }, { itemId: moved.id, name: moved.name, description: changes.description ?? "", secret: null, ...changes });
+    // Session A moves the secret out of the folder to revoke folder-based access.
+    await edit({ folderId: null, expectedFolderId: granted.id });
+    await expectDenied(key.key, 403, moved.id);
+    // Session B's form still shows the folder; its move is rejected.
+    await assert.rejects(edit({ folderId: granted.id, expectedFolderId: granted.id }), { status: 409 });
+    // Edits that leave the folder alone keep A's move, and moves must name the expected folder.
+    await edit({ description: "Edited in session B" });
+    await assert.rejects(edit({ folderId: granted.id }), { status: 400 });
+    assert.equal((await sql`select folder_id from creed_vault_items where id=${moved.id}`)[0].folder_id, null);
+    await expectDenied(key.key, 403, moved.id);
+  });
+
+  await t.test("coverage counts only secrets the key's user can still access", async () => {
+    await sql`update creed_members set role='admin' where creed_id=${company} and user_id=${member}`;
+    const counted = await repository.vaultFolderCreate(db, { userId: member }, { strapId: company, name: "counted", description: "" });
+    await repository.vaultCreate(db, { userId: member }, { creedId: company, name: "Counted", description: "", secret, folderId: counted.id });
+    const grant = { creedId: company, vaultItemIds: [], vaultFolderIds: [counted.id] };
+    assert.equal(await repository.vaultGrantCoverage(db, { userId: member }, grant), 1);
+    await sql`update creed_members set role='member' where creed_id=${company} and user_id=${member}`;
+    assert.equal(await repository.vaultGrantCoverage(db, { userId: member }, grant), 0);
+  });
+
+  await t.test("granting re-checks the Vault role at write time", async () => {
+    await sql`update creed_members set role='admin' where creed_id=${company} and user_id=${member}`;
+    const late = await repository.vaultFolderCreate(db, { userId: owner }, { strapId: company, name: "late", description: "" });
+    const key = await create([], company, member);
+    // These reads approve the grant as if they ran just before a demotion.
+    const vault = dependencies["@/lib/api-key-vault"] as Record<string, unknown>;
+    const stale = loadModule<typeof import("../../lib/headless-access.ts")>("../../lib/headless-access.ts", {
+      ...dependencies,
+      "@/lib/api-key-vault": { ...vault, listVaultItems: async () => [], listVaultFolders: async () => [{ id: late.id }] },
+    });
+    await sql`update creed_members set role='member' where creed_id=${company} and user_id=${member}`;
+    const none = { vaultItemIds: [], vaultFolderIds: [] };
+    await assert.rejects(stale.updateHeadlessKeyGrants({ userId: member, keyId: key.metadata.id, vaultItemIds: [], vaultFolderIds: [late.id], expected: none }), { status: 403 });
+    assert.deepEqual((await sql`select vault_folder_ids from creed_headless_access_keys where id=${key.metadata.id}`)[0].vault_folder_ids, []);
+    // Removing access needs no Vault role.
+    assert.equal((await stale.updateHeadlessKeyGrants({ userId: member, keyId: key.metadata.id, ...none, expected: none })).status, "updated");
   });
 
   await t.test("malformed input and rate limits are uncached and never reveal secrets", async () => {

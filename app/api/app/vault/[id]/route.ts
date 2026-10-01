@@ -46,12 +46,14 @@ export async function PATCH(request: Request, context: Context) {
     : typeof body.secret === "string" ? body.secret : "";
   // Absent keeps the current folder; null moves the item out of its folder.
   const folderId = parseVaultFolderId(body.folderId);
-  if (!name || name.length > 120 || description.length > 500 || secret === "" || (secret?.length ?? 0) > 16_384 || folderId === false) {
-    return NextResponse.json({ error: "Valid name, description, optional replacement secret, and optional folderId are required." }, { status: 400, headers: NO_STORE });
+  // A move names the folder the editor saw, so a stale form cannot undo another move.
+  const expectedFolderId = parseVaultFolderId(body.expectedFolderId);
+  if (!name || name.length > 120 || description.length > 500 || secret === "" || (secret?.length ?? 0) > 16_384 || folderId === false || expectedFolderId === false || (folderId !== undefined && expectedFolderId === undefined)) {
+    return NextResponse.json({ error: "Valid name, description, optional replacement secret, and optional folderId with expectedFolderId are required." }, { status: 400, headers: NO_STORE });
   }
   try {
     return NextResponse.json(
-      { item: await updateVaultItem({ userId: auth.user.id, itemId: id, name, description, secret, folderId, request }) },
+      { item: await updateVaultItem({ userId: auth.user.id, itemId: id, name, description, secret, folderId, expectedFolderId, request }) },
       { headers: NO_STORE },
     );
   } catch (error) {

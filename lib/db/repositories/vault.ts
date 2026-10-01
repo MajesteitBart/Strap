@@ -14,6 +14,10 @@ export type VaultCredential = { keyId: string; creedId: string; vaultItemIds: re
 const NOT_GRANTED = "Secret access was not granted to this key.";
 const metadata = { id: items.id, creed_id: items.creed_id, folder_id: items.folder_id, name: items.name, description: items.description, created_by: items.created_by, created_at: items.created_at, updated_at: items.updated_at, last_accessed_at: items.last_accessed_at };
 const folderMetadata = { id: folders.id, strap_id: folders.strap_id, name: folders.name, description: folders.description, created_at: folders.created_at, updated_at: folders.updated_at };
+/** Vault access: a personal profile's owner, or a Company owner or admin. */
+export function vaultScope(viewer: Viewer, profile: SQLWrapper) {
+  return scope(viewer, profile);
+}
 function scope(viewer: Viewer, profile: SQLWrapper) {
   return sql`exists (select 1 from public.creed_members member join public.creeds profile on profile.id = member.creed_id where member.creed_id = ${profile} and member.user_id = ${viewer.userId} and ((profile.type = 'personal' and profile.owner_user_id = ${viewer.userId} and member.role = 'owner') or (profile.type = 'company' and member.role in ('owner', 'admin'))))`;
 }
@@ -59,14 +63,24 @@ export async function vaultCreate(db: PostgresJsDatabase, viewer: Viewer, input:
     return row;
   }));
 }
-/** folderId: undefined keeps the current folder, null moves the item out of any folder. */
-export async function vaultUpdate(db: PostgresJsDatabase, viewer: Viewer, input: { itemId: string; name: string; description: string; secret: string | null; folderId?: string | null }) {
+const FOLDER_MOVED = "This secret was moved to another folder in another session. Reload and try again.";
+/**
+ * folderId: undefined keeps the current folder, null moves the item out of any
+ * folder. A move must name the folder the caller expected the item to be in,
+ * because folder membership grants key access: a stale move must not restore
+ * access another session just removed.
+ */
+export async function vaultUpdate(db: PostgresJsDatabase, viewer: Viewer, input: { itemId: string; name: string; description: string; secret: string | null; folderId?: string | null; expectedFolderId?: string | null }) {
+  const moving = input.folderId !== undefined;
+  if (moving && input.expectedFolderId === undefined) throw new VaultRepositoryError("expectedFolderId is required when changing the folder.", 400);
   const row = await vaultMetadata(db, viewer, input.itemId);
+  if (moving && row.folder_id !== input.expectedFolderId) throw new VaultRepositoryError(FOLDER_MOVED, 409);
   const [updated] = await mapConstraints(() => db.update(items).set({ name: input.name, description: input.description, updated_at: new Date().toISOString(),
-    ...(input.folderId !== undefined ? { folder_id: input.folderId } : {}),
+    ...(moving ? { folder_id: input.folderId } : {}),
     ...(input.secret !== null ? { secret_ciphertext: encryptVaultSecret(input.secret, row.id, row.creed_id) } : {}) })
-    .where(and(eq(items.id, row.id), scope(viewer, items.creed_id))).returning(metadata));
-  if (!updated) throw new VaultRepositoryError("Forbidden", 403);
+    .where(and(eq(items.id, row.id), scope(viewer, items.creed_id),
+      moving ? sql`${items.folder_id} is not distinct from ${input.expectedFolderId ?? null}::uuid` : undefined)).returning(metadata));
+  if (!updated) throw new VaultRepositoryError(moving ? FOLDER_MOVED : "Forbidden", moving ? 409 : 403);
   return { previous: row, updated };
 }
 export async function vaultDelete(db: PostgresJsDatabase, viewer: Viewer, id: string) {
@@ -89,14 +103,18 @@ export async function vaultFolderCreate(db: PostgresJsDatabase, viewer: Viewer, 
     return row;
   }));
 }
-/** Counts the items a key can reveal now, directly or through its folders. Sizes the reveal rate limit. */
-export async function vaultGrantCoverage(db: PostgresJsDatabase, credential: Pick<VaultCredential, "creedId" | "vaultItemIds" | "vaultFolderIds">) {
+/**
+ * Counts the items a key can reveal now, directly or through its folders, and
+ * that its user may still access. Sizes the reveal rate limit without telling a
+ * demoted user anything about secrets they can no longer see.
+ */
+export async function vaultGrantCoverage(db: PostgresJsDatabase, viewer: Viewer, credential: Pick<VaultCredential, "creedId" | "vaultItemIds" | "vaultFolderIds">) {
   const grants = [
     ...(credential.vaultItemIds.length ? [inArray(items.id, [...credential.vaultItemIds])] : []),
     ...(credential.vaultFolderIds.length ? [inArray(items.folder_id, [...credential.vaultFolderIds])] : []),
   ];
   if (!grants.length) return 0;
-  const [row] = await db.select({ count: sql<number>`count(*)::int` }).from(items).where(and(eq(items.creed_id, credential.creedId), or(...grants)));
+  const [row] = await db.select({ count: sql<number>`count(*)::int` }).from(items).where(and(eq(items.creed_id, credential.creedId), or(...grants), scope(viewer, items.creed_id)));
   return row?.count ?? 0;
 }
 export async function vaultFolderUpdate(db: PostgresJsDatabase, viewer: Viewer, input: { folderId: string; name: string; description: string }) {

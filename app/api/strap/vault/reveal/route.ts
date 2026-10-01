@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     if (!credential) return respond({ error: "Invalid or expired Strap API key." }, 401);
     // Allow one full schema load followed by a run of everything this key can
     // reveal. Folder grants grow as secrets are added, so size the limit on use.
-    const coverage = await countRevealableVaultItems(credential);
+    const coverage = await countRevealableVaultItems(credential.userId, credential);
     const limit = checkRateLimit({
       scope: "vault-reveal",
       identifier: credential.keyId,
