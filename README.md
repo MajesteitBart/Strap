@@ -42,7 +42,7 @@ Strap is built on [Creed](https://creed.md), the foundation for its curated pers
 - `/connections` supports browser OAuth and device authorization. Headless workflows can create a scoped `strap_key_` key whose plaintext is shown once; each key is bound to one Personal or Company profile and a maximum access mode. Existing `creed_key_` credentials remain accepted.
 - `/vault` stores secret values encrypted in Postgres. Ordinary lists, logs, and agent context expose metadata or `secret://` references only; plaintext is returned solely through an explicit, audited reveal.
 - The [Varlock provider](packages/varlock-strap-plugin/README.md) resolves selected Vault items into an application's environment. New API keys can opt into individual secret grants; existing keys have no secret access.
-- `@bvdm/strap` is the primary terminal client. It discovers the live MCP contract and supports interactive browser login, device login, and scoped API-key authentication.
+- `@bvdm/strap` is the primary terminal client. It discovers the live MCP contract and uses browser OAuth login. Device authorization and scoped API-key authentication are server capabilities; the CLI does not yet implement those login paths.
 - The current product has no paid plans. Self-hosted operation still requires Postgres and Better Auth and any optional provider credentials used by enabled integrations.
 
 Live product and protocol guidance is available in [Docs](https://strap.bvdm.ai/docs).
@@ -130,6 +130,7 @@ lib/                    domain, persistence, authorization and integrations
 packages/strap/         @bvdm/strap CLI package
 packages/varlock-strap-plugin/  Varlock provider for explicitly granted Vault secrets
 packages/creed-cli/     legacy CLI compatibility package
+skills/use-strap/        portable agent skill for connecting to and using Strap
 db/schema/              Drizzle application and auth schema
 db/migrations/          squashed baseline and future forward-only migrations
 tests/                  Node contract and logic tests
@@ -158,6 +159,8 @@ Read [`CONTRIBUTING.md`](./CONTRIBUTING.md) before opening a pull request. Codin
 Report vulnerabilities privately using the process in [`SECURITY.md`](./SECURITY.md).
 
 ## Shared skills
+
+Install the portable [`use-strap` skill](skills/use-strap/SKILL.md) to teach an agent how to read Personal and Company context, use shared skills, configure Varlock, and update Strap. See [installation and setup gaps](skills/README.md) for distribution commands and the remaining work toward managed `AGENTS.md` files across devices.
 
 Open `/skills` to create or import a standard SKILL.md folder, edit its files, publish a version, and restore earlier versions. Skills belong to the active Personal or Company profile. Company members can use them; owners and admins publish. Connected agents discover skills through `strap_list_skills` and read relevant instructions with `strap_get_skill`. Each profile has 64 MiB for current bundles and saved versions; oldest history is removed first, with up to 20 versions per skill. Browser folder imports require you to check executable file settings before publishing.
 
