@@ -129,19 +129,22 @@ function HeadlessAccessForm({ creedId, canUseVault }: { creedId: string | undefi
   const [vaultLoaded, setVaultLoaded] = useState(false);
   const rotating = useRef(false);
 
+  const fetchVault = useCallback(async (signal?: AbortSignal) => {
+    const response = await fetch(`/api/app/vault?strapId=${encodeURIComponent(creedId ?? "")}`, { cache: "no-store", signal });
+    if (!response.ok) throw new Error("Could not load Vault items.");
+    const payload = await response.json() as { items: VaultOption[]; folders?: FolderOption[] };
+    return { items: payload.items, folders: payload.folders ?? [] };
+  }, [creedId]);
+
   useEffect(() => {
     if (!creedId || !canUseVault) return;
     const controller = new AbortController();
     void (async () => {
       try {
-        const response = await fetch(`/api/app/vault?strapId=${encodeURIComponent(creedId)}`, {
-          cache: "no-store", signal: controller.signal,
-        });
-        if (!response.ok) throw new Error();
-        const payload = await response.json() as { items: VaultOption[]; folders?: FolderOption[] };
+        const vault = await fetchVault(controller.signal);
         if (!controller.signal.aborted) {
-          setVaultItems(payload.items);
-          setVaultFolders(payload.folders ?? []);
+          setVaultItems(vault.items);
+          setVaultFolders(vault.folders);
           setVaultLoaded(true);
         }
       } catch {
@@ -149,15 +152,19 @@ function HeadlessAccessForm({ creedId, canUseVault }: { creedId: string | undefi
       }
     })();
     return () => controller.abort();
-  }, [creedId, canUseVault]);
+  }, [creedId, canUseVault, fetchVault]);
+
+  const fetchKeys = useCallback(async () => {
+    const response = await fetch(`/api/app/headless-access?creedId=${encodeURIComponent(creedId ?? "")}`, { cache: "no-store" });
+    const payload = (await response.json().catch(() => ({}))) as { keys?: KeyMetadata[]; error?: string };
+    if (!response.ok) throw new Error(payload.error || "Could not load API keys.");
+    return payload.keys ?? [];
+  }, [creedId]);
 
   const loadKeys = useCallback(async () => {
     if (!creedId) return;
-    const response = await fetch(`/api/app/headless-access?creedId=${encodeURIComponent(creedId)}`, { cache: "no-store" });
-    const payload = (await response.json().catch(() => ({}))) as { keys?: KeyMetadata[]; error?: string };
-    if (!response.ok) throw new Error(payload.error || "Could not load API keys.");
-    setKeys(payload.keys ?? []);
-  }, [creedId]);
+    setKeys(await fetchKeys());
+  }, [creedId, fetchKeys]);
 
   useEffect(() => {
     setCreatedKey(null);
@@ -243,20 +250,37 @@ function HeadlessAccessForm({ creedId, canUseVault }: { creedId: string | undefi
     }
   }
 
-  function editGrants(key: KeyMetadata) {
+  async function editGrants(key: KeyMetadata) {
     if (editing?.keyId === key.id) return setEditing(null);
-    // Grants can outlive deleted folders and secrets. Drop those IDs here so the
-    // editor saves only what it shows; the server still rejects unknown IDs.
-    const folderIds = new Set(vaultFolders.map((folder) => folder.id));
-    const itemIds = new Set(vaultItems.map((item) => item.id));
-    setEditing({
-      keyId: key.id,
-      base: { vaultItemIds: key.vaultItemIds ?? [], vaultFolderIds: key.vaultFolderIds ?? [] },
-      grants: {
-        vaultItemIds: (key.vaultItemIds ?? []).filter((id) => itemIds.has(id)),
-        vaultFolderIds: (key.vaultFolderIds ?? []).filter((id) => folderIds.has(id)),
-      },
-    });
+    if (!creedId) return;
+    setBusy(true);
+    setError(null);
+    try {
+      // Load the key and the Vault together and fresh, so a folder or secret
+      // granted from another tab is shown instead of being dropped unseen.
+      const [vault, freshKeys] = await Promise.all([fetchVault(), fetchKeys()]);
+      setVaultItems(vault.items);
+      setVaultFolders(vault.folders);
+      setKeys(freshKeys);
+      const current = freshKeys.find((entry) => entry.id === key.id);
+      if (!current || current.revokedAt) return setError("This key was revoked or no longer exists.");
+      // Grants can outlive deleted folders and secrets. Drop those IDs here so the
+      // editor saves only what it shows; the server still rejects unknown IDs.
+      const folderIds = new Set(vault.folders.map((folder) => folder.id));
+      const itemIds = new Set(vault.items.map((item) => item.id));
+      setEditing({
+        keyId: current.id,
+        base: { vaultItemIds: current.vaultItemIds ?? [], vaultFolderIds: current.vaultFolderIds ?? [] },
+        grants: {
+          vaultItemIds: (current.vaultItemIds ?? []).filter((id) => itemIds.has(id)),
+          vaultFolderIds: (current.vaultFolderIds ?? []).filter((id) => folderIds.has(id)),
+        },
+      });
+    } catch {
+      setError("Could not load the current secret access. Try again.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function revokeKey(id: string) {
@@ -360,7 +384,7 @@ function HeadlessAccessForm({ creedId, canUseVault }: { creedId: string | undefi
                   <Button size="icon" variant="ghost" aria-label={`Revoke ${key.name}`} title="Revoke key" onClick={() => void revokeKey(key.id)}><Trash2 className="h-4 w-4" /></Button>
                 ) : !key.revokedAt ? (
                   <div className="flex items-center gap-1">
-                    {canUseVault && vaultLoaded ? <Button size="icon" variant="ghost" aria-label={`Edit secret access for ${key.name}`} title="Edit secret access" onClick={() => editGrants(key)}><ShieldCheck className="h-4 w-4" /></Button> : null}
+                    {canUseVault && vaultLoaded ? <Button size="icon" variant="ghost" aria-label={`Edit secret access for ${key.name}`} title="Edit secret access" disabled={busy} onClick={() => void editGrants(key)}><ShieldCheck className="h-4 w-4" /></Button> : null}
                     <Button size="icon" variant="ghost" aria-label={`Rotate ${key.name}`} title="Rotate key value" disabled={busy} onClick={() => void rotateKey(key)}><RefreshCw className="h-4 w-4" /></Button>
                     <Button size="icon" variant="ghost" aria-label={`Revoke ${key.name}`} title="Revoke key" onClick={() => void revokeKey(key.id)}><Trash2 className="h-4 w-4" /></Button>
                   </div>

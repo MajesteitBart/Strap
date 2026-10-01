@@ -5,7 +5,7 @@ export const VAULT_TOOLS = [
   {
     name: "strap_list_vault_items",
     description:
-      "List Vault folders and secret metadata in the connected profile: names, descriptions, folders, secret:// references, a suggested .env.schema line for Varlock, and which of your API keys can reveal each secret. Never returns secret values. Filter by folder (name or id) or by words from the name or description.",
+      "List Vault folders and secret metadata in the connected profile: names, descriptions, folders, secret:// references, a suggested .env.schema line for Varlock, and which of your API keys can reveal each secret. Never returns secret values. schemaLine is null when two listed secrets map to the same variable name (envNameConflict); pick distinct names for those. Filter by folder (name or id) or by words from the name or description. Call it on its own, not in a batch.",
     inputSchema: {
       type: "object",
       properties: {
@@ -119,12 +119,18 @@ export function buildVaultListing(input: {
     return { shown, total: folderSet.size + direct.filter((key) => !folderSet.has(key)).length };
   };
   const matches = vaultQueryMatcher(queryArg);
-  const items = input.items
+  const listed = input.items
     .filter((item) => !selected || item.folderId === selected.id)
-    .filter((item) => !queryArg || matches(item))
+    .filter((item) => !queryArg || matches(item));
+  // Names like "deploy-key" and "deploy key" share one variable name. Copying
+  // both suggestions would define it twice, so colliding items get no line.
+  const envNameUses = new Map<string, number>();
+  for (const item of listed) envNameUses.set(vaultEnvName(item.name), (envNameUses.get(vaultEnvName(item.name)) ?? 0) + 1);
+  const items = listed
     .map((item) => {
       const reference = `secret://${item.id}`;
       const envName = vaultEnvName(item.name);
+      const envNameConflict = (envNameUses.get(envName) ?? 0) > 1;
       const folder = item.folderId ? folderById.get(item.folderId) : undefined;
       const { shown, total } = revealers(item);
       return {
@@ -135,7 +141,9 @@ export function buildVaultListing(input: {
         folder: folder ? { id: folder.id, name: folder.name } : null,
         updatedAt: item.updatedAt,
         envName,
-        schemaLine: vaultSchemaLine({ envName, reference }),
+        // null when another listed secret maps to the same variable name; choose distinct names.
+        schemaLine: envNameConflict ? null : vaultSchemaLine({ envName, reference }),
+        envNameConflict,
         // Up to MAX_REVEALABLE_BY keys in their original order; the count covers all.
         revealableBy: shown.map((key) => ({ id: key.id, name: key.name, prefix: key.prefix })),
         revealableByCount: total,

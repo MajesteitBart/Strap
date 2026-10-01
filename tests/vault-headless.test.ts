@@ -115,3 +115,21 @@ test("folder lookup prefers IDs, filters are bounded and revealers are capped wi
   assert.throws(() => parseVaultListingArgs({ folder: "x".repeat(MAX_VAULT_FILTER_LENGTH + 1) }), VaultListingError);
   assert.deepEqual(parseVaultListingArgs({ folder: " real ", query: 7 }), { folder: "real", query: "" });
 });
+
+test("colliding variable names get no schema line", () => {
+  const items = [
+    { id: itemId, folderId: null, name: "deploy-key", description: "", updatedAt: "2026-10-01T00:00:00.000Z" },
+    { id: otherItemId, folderId: null, name: "deploy key", description: "", updatedAt: "2026-10-01T00:00:00.000Z" },
+    { id: "77777777-7777-4777-8777-777777777777", folderId: null, name: "Other", description: "", updatedAt: "2026-10-01T00:00:00.000Z" },
+  ];
+  const listing = buildVaultListing({ folders: [], items, keys: [], caller: null });
+  assert.deepEqual(listing.items.map((item) => [item.envName, item.envNameConflict, item.schemaLine === null]), [
+    ["DEPLOY_KEY", true, true],
+    ["DEPLOY_KEY", true, true],
+    ["OTHER", false, false],
+  ]);
+  // Without the colliding sibling the suggestion is usable again.
+  const alone = buildVaultListing({ folders: [], items: [items[0]!, items[2]!], keys: [], caller: null });
+  assert.equal(alone.items[0]?.envNameConflict, false);
+  assert.equal(alone.items[0]?.schemaLine, `# @sensitive @required\nDEPLOY_KEY=strap("secret://${itemId}")`);
+});

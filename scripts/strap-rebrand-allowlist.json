@@ -913,8 +913,8 @@
     {
       "file": "components/strap/headless-access-card.tsx",
       "kind": "content",
-      "occurrences": 15,
-      "fingerprint": "4fd68b96cb9abcd8481583b917ccc1dbbfba0351a7c15af7a5d63078b1b883dd",
+      "occurrences": 18,
+      "fingerprint": "b9ec99552cfd262237d8596eed15bb33217afb8b480e8e11438d7dc1930d53d3",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."

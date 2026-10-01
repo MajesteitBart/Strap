@@ -190,27 +190,41 @@ function StrapVault() {
   async function deleteItem(item: VaultItem) {
     if (!window.confirm(`Delete ${item.name}? This removes the encrypted secret permanently.`)) return;
     setError(null);
-    const response = await fetch(`/api/app/vault/${encodeURIComponent(item.id)}`, { method: "DELETE" });
+    const response = await fetch(`/api/app/vault/${encodeURIComponent(item.id)}`, { method: "DELETE" }).catch(() => null);
+    if (!response) return reloadAfterUncertainDelete(`The delete request for ${item.name} did not complete.`);
     if (!response.ok) {
       const payload = (await response.json().catch(() => ({}))) as { error?: string };
       setError(payload.error || "Could not delete the Vault item.");
       return;
     }
     if (revealed?.itemId === item.id) setRevealed(null);
-    await loadItems();
+    await loadItems().catch(() => setError("Deleted. Reload to see the current Vault."));
+  }
+
+  // The server may have committed the delete before the connection failed, so
+  // show the current Vault instead of inviting a blind retry.
+  async function reloadAfterUncertainDelete(message: string) {
+    setRevealed(null);
+    try {
+      await loadItems();
+      setError(`${message} The Vault below is current; check it before trying again.`);
+    } catch {
+      setError(`${message} Reload the page to see whether it was deleted.`);
+    }
   }
 
   async function deleteFolder(folder: VaultFolder, count: number) {
     const contents = count ? ` Its ${count} secret${count === 1 ? "" : "s"} stay in the Vault without a folder, and API keys that reach them through this folder lose access.` : "";
     if (!window.confirm(`Delete the folder ${folder.name}?${contents}`)) return;
     setError(null);
-    const response = await fetch(`/api/app/vault/folders/${encodeURIComponent(folder.id)}`, { method: "DELETE" });
+    const response = await fetch(`/api/app/vault/folders/${encodeURIComponent(folder.id)}`, { method: "DELETE" }).catch(() => null);
+    if (!response) return reloadAfterUncertainDelete(`The delete request for the folder ${folder.name} did not complete.`);
     if (!response.ok) {
       const payload = (await response.json().catch(() => ({}))) as { error?: string };
       setError(payload.error || "Could not delete the folder.");
       return;
     }
-    await loadItems();
+    await loadItems().catch(() => setError("Deleted. Reload to see the current Vault."));
   }
 
   if (companyMember) {
