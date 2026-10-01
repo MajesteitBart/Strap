@@ -73,3 +73,18 @@ test("terminal output neutralizes escape sequences from Vault metadata", () => {
     (error: unknown) => error instanceof Error && !error.message.includes("\u001b"),
   );
 });
+
+test("queries keep non-ASCII words instead of dropping them", () => {
+  assert.equal(matchesVaultQuery({ name: "Cloud token", description: "" }, "clé"), false);
+  assert.equal(matchesVaultQuery({ name: "clé API", description: "" }, "clé"), true);
+  assert.equal(matchesVaultQuery({ name: "Deploy key", description: "" }, "秘密"), false);
+  assert.equal(matchesVaultQuery({ name: "秘密キー", description: "" }, "秘密"), true);
+  assert.equal(matchesVaultQuery({ name: "ÜberToken", description: "" }, "über token"), true);
+});
+
+test("CLI error output strips escape sequences but keeps usage line breaks", async () => {
+  const { errorMessage } = await import("../src/errors.js");
+  const echoed = new Error("MCP error -32000: Folder not found. Available folders: \"evil\u009d52;c;ZXZpbA==\u009c\", \"x\u001b[2Jy\".");
+  assert.equal(/[\u001b\u0080-\u009f]/.test(errorMessage(echoed)), false);
+  assert.equal(errorMessage(new Error("Usage: strap vault folders\n       strap vault list\tok")), "Usage: strap vault folders\n       strap vault list\tok");
+});

@@ -24,9 +24,9 @@ export function vaultEnvName(name: string): string {
   return /^[0-9]/.test(words) ? `_${words}` : words;
 }
 
-/** Splits text into lowercase alphanumeric words so "share artifact" matches SHARE_ARTIFACT_SERVER. */
+/** Splits text into lowercase letter-and-digit words in any script, so "share artifact" matches SHARE_ARTIFACT_SERVER and "clé" stays "clé". */
 function words(text: string): string[] {
-  return text.replace(/([a-z0-9])([A-Z])/g, "$1 $2").toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
+  return text.normalize("NFKC").replace(/([\p{Ll}\p{N}])(\p{Lu})/gu, "$1 $2").toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(Boolean);
 }
 
 /** True when every query word starts a word in the name or description. */

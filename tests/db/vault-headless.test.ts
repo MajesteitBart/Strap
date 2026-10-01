@@ -500,6 +500,45 @@ test("scoped Vault reveals enforce live Postgres permissions and audit before de
     assert.equal((await stale.updateHeadlessKeyGrants({ userId: member, keyId: key.metadata.id, ...none, expected: none })).status, "updated");
   });
 
+  await t.test("creating a key with grants re-checks the Vault role at write time", async () => {
+    await sql`update creed_members set role='admin' where creed_id=${company} and user_id=${member}`;
+    const pending = await repository.vaultFolderCreate(db, { userId: owner }, { strapId: company, name: "pending", description: "" });
+    const vault = dependencies["@/lib/api-key-vault"] as Record<string, unknown>;
+    const stale = loadModule<typeof import("../../lib/headless-access.ts")>("../../lib/headless-access.ts", {
+      ...dependencies,
+      "@/lib/api-key-vault": { ...vault, listVaultItems: async () => [], listVaultFolders: async () => [{ id: pending.id }] },
+    });
+    await sql`update creed_members set role='member' where creed_id=${company} and user_id=${member}`;
+    const [{ count: before }] = await sql`select count(*)::int as count from creed_headless_access_keys where user_id=${member}`;
+    await assert.rejects(stale.createHeadlessAccessKey({ userId: member, creedId: company, name: "Late grant", mode: "read-only", expiresAt: null, vaultFolderIds: [pending.id] }), { status: 403 });
+    const [{ count: after }] = await sql`select count(*)::int as count from creed_headless_access_keys where user_id=${member}`;
+    assert.equal(after, before);
+    // A key without grants needs no Vault role.
+    assert.ok((await stale.createHeadlessAccessKey({ userId: member, creedId: company, name: "Plain", mode: "read-only", expiresAt: null })).key);
+  });
+
+  await t.test("a reveal that resolved before rotation, revocation or grant removal is refused", async () => {
+    const target = await repository.vaultCreate(db, { userId: owner }, { creedId: personal, name: "Stalled target", description: "", secret });
+    const reveal = (credential: { keyId: string; keyHash: string; vaultItemIds: string[] }) =>
+      repository.vaultReveal(db, { userId: owner }, target.id, async () => {}, { ...credential, creedId: personal, vaultFolderIds: [] });
+    // Each case resolves the key first, then changes it before the reveal finishes.
+    const rotatedKey = await createWith({ vaultItemIds: [target.id] });
+    const resolved = { keyId: rotatedKey.metadata.id, keyHash: shared.digestCredential(rotatedKey.key), vaultItemIds: [target.id] };
+    assert.equal((await reveal(resolved)).secret, secret);
+    assert.equal((await headless.rotateHeadlessAccessKey({ userId: owner, keyId: rotatedKey.metadata.id })).status, "rotated");
+    await assert.rejects(reveal(resolved), { status: 409 });
+
+    const revokedKey = await createWith({ vaultItemIds: [target.id] });
+    const beforeRevoke = { keyId: revokedKey.metadata.id, keyHash: shared.digestCredential(revokedKey.key), vaultItemIds: [target.id] };
+    await headless.revokeHeadlessAccessKey({ userId: owner, keyId: revokedKey.metadata.id });
+    await assert.rejects(reveal(beforeRevoke), { status: 409 });
+
+    const narrowedKey = await createWith({ vaultItemIds: [target.id] });
+    const beforeEdit = { keyId: narrowedKey.metadata.id, keyHash: shared.digestCredential(narrowedKey.key), vaultItemIds: [target.id] };
+    assert.equal((await editGrants(narrowedKey.metadata.id, { vaultItemIds: [], vaultFolderIds: [] }, { vaultItemIds: [target.id], vaultFolderIds: [] })).status, "updated");
+    await assert.rejects(reveal(beforeEdit), { status: 409 });
+  });
+
   await t.test("malformed input and rate limits are uncached and never reveal secrets", async () => {
     const created = await create([item.id]);
     await expectDenied("oauth-token", 401);

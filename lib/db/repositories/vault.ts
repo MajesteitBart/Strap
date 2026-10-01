@@ -10,7 +10,8 @@ export class VaultRepositoryError extends Error {
   readonly status: number;
   constructor(message: string, status: number) { super(message); this.status = status; }
 }
-export type VaultCredential = { keyId: string; creedId: string; vaultItemIds: readonly string[]; vaultFolderIds: readonly string[] };
+/** keyHash is the digest the request authenticated with; reveal rechecks it before decrypting. */
+export type VaultCredential = { keyId: string; keyHash: string; creedId: string; vaultItemIds: readonly string[]; vaultFolderIds: readonly string[] };
 const NOT_GRANTED = "Secret access was not granted to this key.";
 const metadata = { id: items.id, creed_id: items.creed_id, folder_id: items.folder_id, name: items.name, description: items.description, created_by: items.created_by, created_at: items.created_at, updated_at: items.updated_at, last_accessed_at: items.last_accessed_at };
 const folderMetadata = { id: folders.id, strap_id: folders.strap_id, name: folders.name, description: folders.description, created_at: folders.created_at, updated_at: folders.updated_at };
@@ -153,8 +154,14 @@ export async function vaultReveal(db: PostgresJsDatabase, viewer: Viewer, id: st
   // Do not decrypt or return plaintext if the required audit cannot persist.
   try { await audit(row.creed_id, viaFolder ? { folderId: viaFolder } : null); } catch { throw new VaultRepositoryError("Vault reveal audit is unavailable.", 503); }
   const accessedAt = new Date().toISOString();
+  // The key was resolved at the start of the request. Before decrypting,
+  // confirm it was not rotated, revoked, expired or stripped of this grant
+  // meanwhile, in the same statement that records the access.
+  const keyStillValid = credential
+    ? sql`exists (select 1 from public.creed_headless_access_keys k where k.id = ${credential.keyId} and k.key_hash = ${credential.keyHash} and k.revoked_at is null and (k.expires_at is null or k.expires_at > now()) and (${items.id} = any(k.vault_item_ids) or ${items.folder_id} = any(k.vault_folder_ids)))`
+    : undefined;
   const [stillAuthorized] = await db.update(items).set({ last_accessed_at: accessedAt })
-    .where(and(eq(items.id, id), credentialScope, viaFolder ? eq(items.folder_id, viaFolder) : undefined, eq(items.secret_ciphertext, row.ciphertext), scope(viewer, items.creed_id))).returning({ id: items.id });
+    .where(and(eq(items.id, id), credentialScope, viaFolder ? eq(items.folder_id, viaFolder) : undefined, eq(items.secret_ciphertext, row.ciphertext), scope(viewer, items.creed_id), keyStillValid)).returning({ id: items.id });
   if (!stillAuthorized) throw new VaultRepositoryError("Vault item changed or access was removed. Try again.", 409);
   const { ciphertext, ...item } = row;
   return { item: { ...item, last_accessed_at: accessedAt }, secret: decryptVaultSecret(ciphertext, item.id, item.creed_id) };

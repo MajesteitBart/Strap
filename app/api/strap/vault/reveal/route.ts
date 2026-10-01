@@ -61,7 +61,7 @@ export async function POST(request: Request) {
         ? (payload as Record<string, unknown>).reference : null,
     );
     if (!itemId) return respond({ error: "Use a Vault item UUID or secret://UUID reference." }, 400);
-    const { secret } = await revealVaultItem({ userId: credential.userId, itemId, request, credential });
+    const { secret } = await revealVaultItem({ userId: credential.userId, itemId, request, credential: { ...credential, keyHash: digestCredential(token) } });
     return respond({ secret }, 200);
   } catch (error) {
     return respond(

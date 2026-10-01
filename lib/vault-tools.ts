@@ -1,6 +1,5 @@
 // Vault discovery for connected agents: metadata and references only, never values.
-import { matchesVaultQuery, vaultEnvName, vaultSchemaLine } from "../packages/strap/src/vault/schema.ts";
-import { vaultGrantCovers } from "./vault-grants.ts";
+import { matchesVaultQuery, terminalText, vaultEnvName, vaultSchemaLine } from "../packages/strap/src/vault/schema.ts";
 
 export const VAULT_TOOLS = [
   {
@@ -61,10 +60,28 @@ export function buildVaultListing(input: {
     ? input.folders.find((folder) => folder.id === folderArg.toLowerCase() || folder.name.toLowerCase() === folderArg.toLowerCase())
     : undefined;
   if (folderArg && !selected) {
-    const names = input.folders.map((folder) => folder.name);
+    // Names come from other managers and may reach a terminal through generic tool errors.
+    const names = input.folders.map((folder) => JSON.stringify(terminalText(folder.name)));
     throw new VaultListingError(`Folder not found. Available folders: ${names.length ? names.join(", ") : "none"}.`);
   }
   const folderById = new Map(input.folders.map((folder) => [folder.id, folder]));
+  // Index grants once, so a listing is linear in items plus grants rather
+  // than items times keys.
+  const keysByItem = new Map<string, Key[]>();
+  const keysByFolder = new Map<string, Key[]>();
+  const add = (index: Map<string, Key[]>, id: string, key: Key) => {
+    const list = index.get(id);
+    if (list) list.push(key); else index.set(id, [key]);
+  };
+  const keyOrder = new Map(input.keys.map((key, position) => [key, position]));
+  for (const key of input.keys) {
+    for (const id of new Set(key.vaultItemIds)) add(keysByItem, id, key);
+    for (const id of new Set(key.vaultFolderIds)) add(keysByFolder, id, key);
+  }
+  const callerItems = new Set(input.caller?.vaultItemIds ?? []);
+  const callerFolders = new Set(input.caller?.vaultFolderIds ?? []);
+  const itemCounts = new Map<string, number>();
+  for (const item of input.items) if (item.folderId) itemCounts.set(item.folderId, (itemCounts.get(item.folderId) ?? 0) + 1);
   const items = input.items
     .filter((item) => !selected || item.folderId === selected.id)
     .filter((item) => !queryArg || matchesVaultQuery(item, queryArg))
@@ -72,7 +89,7 @@ export function buildVaultListing(input: {
       const reference = `secret://${item.id}`;
       const envName = vaultEnvName(item.name);
       const folder = item.folderId ? folderById.get(item.folderId) : undefined;
-      const covered = { id: item.id, folderId: item.folderId };
+      const revealing = new Set([...(keysByItem.get(item.id) ?? []), ...(item.folderId ? keysByFolder.get(item.folderId) ?? [] : [])]);
       return {
         id: item.id,
         reference,
@@ -82,8 +99,9 @@ export function buildVaultListing(input: {
         updatedAt: item.updatedAt,
         envName,
         schemaLine: vaultSchemaLine({ envName, reference }),
-        revealableBy: input.keys.filter((key) => vaultGrantCovers(key, covered)).map((key) => ({ id: key.id, name: key.name, prefix: key.prefix })),
-        ...(input.caller ? { grantedToThisKey: vaultGrantCovers(input.caller, covered) } : {}),
+        // Keep the keys' original order for stable output.
+        revealableBy: [...revealing].sort((a, b) => (keyOrder.get(a) ?? 0) - (keyOrder.get(b) ?? 0)).map((key) => ({ id: key.id, name: key.name, prefix: key.prefix })),
+        ...(input.caller ? { grantedToThisKey: callerItems.has(item.id) || (item.folderId !== null && callerFolders.has(item.folderId)) } : {}),
       };
     });
   const folders = input.folders
@@ -92,8 +110,8 @@ export function buildVaultListing(input: {
       id: folder.id,
       name: folder.name,
       description: folder.description,
-      itemCount: input.items.filter((item) => item.folderId === folder.id).length,
-      ...(input.caller ? { grantedToThisKey: input.caller.vaultFolderIds.includes(folder.id) } : {}),
+      itemCount: itemCounts.get(folder.id) ?? 0,
+      ...(input.caller ? { grantedToThisKey: callerFolders.has(folder.id) } : {}),
     }));
   return {
     folders,

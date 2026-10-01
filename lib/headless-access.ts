@@ -4,7 +4,7 @@ import { parseVaultFolderGrants, parseVaultItemGrants } from "@/lib/vault-grants
 import * as tables from "@/db/schema/application";
 import { authorizeValues } from "@/lib/authz/policies";
 import type { DatabaseContext } from "@/lib/db/context";
-import { exactlyOne, maybeOne, query } from "@/lib/db/query";
+import { maybeOne, query } from "@/lib/db/query";
 import { serviceContext } from "@/lib/db/service";
 import {
   createHeadlessKey,
@@ -141,6 +141,7 @@ export async function createHeadlessAccessKey(input: {
   vaultFolderIds?: string[];
 }): Promise<{ key: string; metadata: HeadlessKeyMetadata }> {
   const grants = await authorizeVaultGrants(input);
+  const grantsAccess = grants.vaultItemIds.length > 0 || grants.vaultFolderIds.length > 0;
   const generated = createHeadlessKey();
   const { data, error } = await query(adminDb(), keys, "insert", async (database, _scope) => {
     const values = {
@@ -155,9 +156,21 @@ export async function createHeadlessAccessKey(input: {
       vault_folder_ids: grants.vaultFolderIds,
     } as typeof keys.$inferInsert;
     await authorizeValues(adminDb(), keys, "insert", values);
-    return database.insert(keys).values(values).returning(KEY_COLUMNS);
-  }).then(exactlyOne);
-  if (error || !data) throw new Error("Could not create headless access key.");
+    return database.transaction(async (tx) => {
+      // A key with grants needs the Vault role while it is written: the
+      // membership row stays locked until the insert commits, as in vaultCreate.
+      if (grantsAccess) {
+        const [access] = await tx.select({ id: tables.creeds.id }).from(tables.creeds)
+          .innerJoin(tables.creed_members, eq(tables.creed_members.creed_id, tables.creeds.id))
+          .where(and(eq(tables.creeds.id, input.creedId), eq(tables.creed_members.user_id, input.userId), vaultScope({ userId: input.userId }, tables.creeds.id)))
+          .for("share");
+        if (!access) return [];
+      }
+      return tx.insert(keys).values(values).returning(KEY_COLUMNS);
+    });
+  }).then(maybeOne);
+  if (error) throw new Error("Could not create headless access key.");
+  if (!data) throw new VaultAccessError("Granting secrets requires Vault access to this Strap.", 403);
   return { key: generated.key, metadata: toMetadata(data as HeadlessKeyRow) };
 }
 

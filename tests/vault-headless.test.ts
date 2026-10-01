@@ -68,7 +68,7 @@ test("Vault discovery lists metadata for managers only and never carries values"
   assert.equal(filtered.folders[0]?.grantedToThisKey, true);
   assert.deepEqual(buildVaultListing({ folders, items, keys, caller: null, query: "artifact server" }).items.map((item) => item.name), ["SHARE_ARTIFACT_SERVER"]);
   assert.throws(() => buildVaultListing({ folders, items, keys, caller: null, folder: "missing" }), (error: unknown) =>
-    error instanceof VaultListingError && /Available folders: share-artifact/.test(error.message));
+    error instanceof VaultListingError && /Available folders: "share-artifact"/.test(error.message));
 });
 
 test("Vault listings are rejected inside JSON-RPC batches", () => {
@@ -78,4 +78,20 @@ test("Vault listings are rejected inside JSON-RPC batches", () => {
   assert.equal(isVaultListingBatch([call("read_strap"), call("strap_list_vault_items")]), true);
   assert.equal(isVaultListingBatch([call("read_strap"), call("strap_search")]), false);
   assert.equal(isVaultListingBatch([null, "x", call("strap_list_vault_items")]), true);
+});
+
+test("listings index grants once and keep error text inert", () => {
+  const folders = [{ id: folderId, name: "ops", description: "" }, { id: "44444444-4444-4444-8444-444444444444", name: "evil\u001b]52;c;eA==\u0007", description: "" }];
+  const items = [{ id: itemId, folderId, name: "OPS_TOKEN", description: "", updatedAt: "2026-10-01T00:00:00.000Z" }];
+  const keys = [
+    { id: "k1", name: "Both", prefix: "p1", vaultItemIds: [itemId, itemId], vaultFolderIds: [folderId] },
+    { id: "k2", name: "None", prefix: "p2", vaultItemIds: [], vaultFolderIds: [] },
+    { id: "k3", name: "Folder", prefix: "p3", vaultItemIds: [], vaultFolderIds: [folderId] },
+  ];
+  const listing = buildVaultListing({ folders, items, keys, caller: { keyId: "k3", vaultItemIds: [], vaultFolderIds: [folderId] } });
+  assert.deepEqual(listing.items[0]?.revealableBy.map((key) => key.id), ["k1", "k3"]);
+  assert.equal(listing.items[0]?.grantedToThisKey, true);
+  assert.deepEqual(listing.folders.map((folder) => folder.itemCount), [1, 0]);
+  assert.throws(() => buildVaultListing({ folders, items, keys, caller: null, folder: "missing" }), (error: unknown) =>
+    error instanceof VaultListingError && !/[\u0000-\u001f\u007f-\u009f]/.test(error.message) && error.message.includes('"ops"'));
 });
