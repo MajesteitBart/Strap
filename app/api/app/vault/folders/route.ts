@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireApiAuth } from "@/lib/api-auth";
 import { createVaultFolder, VaultAccessError } from "@/lib/api-key-vault";
-import { readStrapId } from "@/lib/strap-api";
+import { readJsonObject, readStrapId } from "@/lib/strap-api";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -10,7 +10,8 @@ const NO_STORE = { "Cache-Control": "no-store" } as const;
 export async function POST(request: Request) {
   const auth = await requireApiAuth();
   if (auth instanceof NextResponse) return auth;
-  const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
+  const body = await readJsonObject(request);
+  if (!body) return NextResponse.json({ error: "Expected a JSON object." }, { status: 400, headers: NO_STORE });
   const strapId = readStrapId(body) ?? "";
   const name = typeof body.name === "string" ? body.name.trim() : "";
   const description = typeof body.description === "string" ? body.description.trim() : "";

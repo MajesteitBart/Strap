@@ -328,17 +328,22 @@ function HeadlessAccessForm({ creedId, canUseVault }: { creedId: string | undefi
 
       {keys.length ? (
         <div className="mt-5 divide-y divide-[var(--strap-border)] rounded-xl border border-[var(--strap-border)]">
-          {keys.map((key) => (
+          {keys.map((key) => {
+            // Keys load client-side, so reading the clock here cannot mismatch server HTML.
+            const expired = key.expiresAt !== null && new Date(key.expiresAt).getTime() <= Date.now();
+            return (
             <div key={key.id} className="p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <div className="text-[14px] font-medium">{key.name}</div>
                   <div className="mt-1 text-[12px] text-[var(--strap-text-tertiary)]">
-                    <span className="font-mono">{key.prefix}…</span> · {MODE_LABEL[key.mode]} · {key.revokedAt ? "Revoked" : key.expiresAt ? `Expires ${new Date(key.expiresAt).toLocaleDateString()}` : "No expiry"}
+                    <span className="font-mono">{key.prefix}…</span> · {MODE_LABEL[key.mode]} · {key.revokedAt ? "Revoked" : expired ? "Expired" : key.expiresAt ? `Expires ${new Date(key.expiresAt).toLocaleDateString()}` : "No expiry"}
                   </div>
                   <p className="mt-1 text-xs text-[var(--strap-text-secondary)]">{grantSummary(key)}</p>
                 </div>
-                {!key.revokedAt ? (
+                {!key.revokedAt && expired ? (
+                  <Button size="icon" variant="ghost" aria-label={`Revoke ${key.name}`} title="Revoke key" onClick={() => void revokeKey(key.id)}><Trash2 className="h-4 w-4" /></Button>
+                ) : !key.revokedAt ? (
                   <div className="flex items-center gap-1">
                     {canUseVault && vaultLoaded ? <Button size="icon" variant="ghost" aria-label={`Edit secret access for ${key.name}`} title="Edit secret access" onClick={() => editGrants(key)}><ShieldCheck className="h-4 w-4" /></Button> : null}
                     <Button size="icon" variant="ghost" aria-label={`Rotate ${key.name}`} title="Rotate key value" disabled={busy} onClick={() => void rotateKey(key)}><RefreshCw className="h-4 w-4" /></Button>
@@ -355,7 +360,8 @@ function HeadlessAccessForm({ creedId, canUseVault }: { creedId: string | undefi
                 </fieldset>
               ) : null}
             </div>
-          ))}
+            );
+          })}
         </div>
       ) : null}
     </section>

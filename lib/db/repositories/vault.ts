@@ -1,4 +1,4 @@
-import { and, asc, eq, sql, type SQLWrapper } from "drizzle-orm";
+import { and, asc, eq, inArray, or, sql, type SQLWrapper } from "drizzle-orm";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { randomUUID } from "node:crypto";
 import { creed_members, creeds, strap_vault_folders as folders, creed_vault_items as items } from "../../../db/schema/application.ts";
@@ -79,9 +79,25 @@ export async function vaultFolderList(db: PostgresJsDatabase, viewer: Viewer, pr
   return db.select(folderMetadata).from(folders).where(and(eq(folders.strap_id, profileId), scope(viewer, folders.strap_id))).orderBy(asc(folders.name));
 }
 export async function vaultFolderCreate(db: PostgresJsDatabase, viewer: Viewer, input: { strapId: string; name: string; description: string }) {
-  await requireVaultAccess(db, viewer, input.strapId);
-  const [row] = await mapConstraints(() => db.insert(folders).values({ strap_id: input.strapId, name: input.name, description: input.description }).returning(folderMetadata));
-  return row;
+  // Like vaultCreate: the membership row stays locked until the insert commits,
+  // so a concurrent demotion or removal cannot interleave.
+  return mapConstraints(() => db.transaction(async tx => {
+    const [access] = await tx.select({ id: creeds.id }).from(creeds).innerJoin(creed_members, eq(creed_members.creed_id, creeds.id))
+      .where(and(eq(creeds.id, input.strapId), eq(creed_members.user_id, viewer.userId), scope(viewer, creeds.id))).for("share");
+    if (!access) throw new VaultRepositoryError("Forbidden", 403);
+    const [row] = await tx.insert(folders).values({ strap_id: input.strapId, name: input.name, description: input.description }).returning(folderMetadata);
+    return row;
+  }));
+}
+/** Counts the items a key can reveal now, directly or through its folders. Sizes the reveal rate limit. */
+export async function vaultGrantCoverage(db: PostgresJsDatabase, credential: Pick<VaultCredential, "creedId" | "vaultItemIds" | "vaultFolderIds">) {
+  const grants = [
+    ...(credential.vaultItemIds.length ? [inArray(items.id, [...credential.vaultItemIds])] : []),
+    ...(credential.vaultFolderIds.length ? [inArray(items.folder_id, [...credential.vaultFolderIds])] : []),
+  ];
+  if (!grants.length) return 0;
+  const [row] = await db.select({ count: sql<number>`count(*)::int` }).from(items).where(and(eq(items.creed_id, credential.creedId), or(...grants)));
+  return row?.count ?? 0;
 }
 export async function vaultFolderUpdate(db: PostgresJsDatabase, viewer: Viewer, input: { folderId: string; name: string; description: string }) {
   const [row] = await mapConstraints(() => db.update(folders).set({ name: input.name, description: input.description, updated_at: new Date().toISOString() })

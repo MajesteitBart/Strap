@@ -27,7 +27,7 @@ export async function PATCH(request: Request, context: Context) {
       vaultItemIds: body.vaultItemIds,
       vaultFolderIds: body.vaultFolderIds,
     });
-    if (!updated) return NextResponse.json({ error: "Key not found." }, { status: 404, headers: NO_STORE });
+    if (!updated) return NextResponse.json({ error: "Key not found, revoked, or expired." }, { status: 404, headers: NO_STORE });
     void recordAuditEvent({
       userId: auth.user.id,
       action: "headless.key_grants_updated",

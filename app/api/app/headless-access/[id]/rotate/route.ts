@@ -17,12 +17,17 @@ export async function POST(request: Request, context: Context) {
   if (!id) return NextResponse.json({ error: "Key id is required." }, { status: 400, headers: NO_STORE });
   const rotated = await rotateHeadlessAccessKey({ userId: auth.user.id, keyId: id }).catch(() => undefined);
   if (rotated === undefined) return NextResponse.json({ error: "Could not rotate API key." }, { status: 500, headers: NO_STORE });
-  if (!rotated) return NextResponse.json({ error: "Key not found." }, { status: 404, headers: NO_STORE });
+  if (rotated.status === "not-found") {
+    return NextResponse.json({ error: "Key not found, revoked, or expired." }, { status: 404, headers: NO_STORE });
+  }
+  if (rotated.status === "conflict") {
+    return NextResponse.json({ error: "This key was rotated by another request. Reload to see its current state." }, { status: 409, headers: NO_STORE });
+  }
   void recordAuditEvent({
     userId: auth.user.id,
     action: "headless.key_rotated",
     metadata: { keyId: id, creedId: rotated.metadata.creedId },
     request,
   });
-  return NextResponse.json(rotated, { headers: NO_STORE });
+  return NextResponse.json({ key: rotated.key, metadata: rotated.metadata }, { headers: NO_STORE });
 }

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireApiAuth } from "@/lib/api-auth";
+import { readJsonObject } from "@/lib/strap-api";
 import { deleteVaultFolder, updateVaultFolder, VaultAccessError } from "@/lib/api-key-vault";
 
 type Context = { params: Promise<{ id: string }> };
@@ -16,7 +17,8 @@ export async function PATCH(request: Request, context: Context) {
   const auth = await requireApiAuth();
   if (auth instanceof NextResponse) return auth;
   const { id } = await context.params;
-  const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
+  const body = await readJsonObject(request);
+  if (!body) return NextResponse.json({ error: "Expected a JSON object." }, { status: 400, headers: NO_STORE });
   const name = typeof body.name === "string" ? body.name.trim() : "";
   const description = typeof body.description === "string" ? body.description.trim() : "";
   if (!name || name.length > 120 || description.length > 500) {

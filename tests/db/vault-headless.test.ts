@@ -11,6 +11,7 @@ import { viewerContext, type DatabaseContext } from "../../lib/db/context.ts";
 import * as queries from "../../lib/db/query.ts";
 import * as repository from "../../lib/db/repositories/vault.ts";
 import * as shared from "../../lib/headless-access-shared.ts";
+import * as strapApi from "../../lib/strap-api.ts";
 import * as grants from "../../lib/vault-grants.ts";
 import { checkRateLimit } from "../../lib/rate-limit.ts";
 import { createTestDatabase, databaseTestsEnabled, sqlState } from "./harness.ts";
@@ -281,22 +282,70 @@ test("scoped Vault reveals enforce live Postgres permissions and audit before de
     assert.equal(await headless.updateHeadlessKeyGrants({ userId: member, keyId: created.metadata.id, vaultItemIds: [], vaultFolderIds: [] }), null);
 
     const rotated = await headless.rotateHeadlessAccessKey({ userId: owner, keyId: created.metadata.id });
-    assert.ok(rotated);
+    assert.ok(rotated.status === "rotated");
     assert.notEqual(rotated.key, created.key);
     assert.equal(rotated.metadata.id, created.metadata.id);
     assert.deepEqual(rotated.metadata.vaultFolderIds, [folder.id]);
     await expectDenied(created.key, 401, target.id);
     assert.equal((await request(rotated.key, target.id)).status, 200);
-    assert.equal(await headless.rotateHeadlessAccessKey({ userId: member, keyId: created.metadata.id }), null);
+    assert.deepEqual(await headless.rotateHeadlessAccessKey({ userId: member, keyId: created.metadata.id }), { status: "not-found" });
 
     await headless.revokeHeadlessAccessKey({ userId: owner, keyId: created.metadata.id });
-    assert.equal(await headless.rotateHeadlessAccessKey({ userId: owner, keyId: created.metadata.id }), null);
+    assert.deepEqual(await headless.rotateHeadlessAccessKey({ userId: owner, keyId: created.metadata.id }), { status: "not-found" });
     assert.equal(await headless.updateHeadlessKeyGrants({ userId: owner, keyId: created.metadata.id, vaultItemIds: [], vaultFolderIds: [] }), null);
+  });
+
+  await t.test("expired keys cannot be rotated or edited", async () => {
+    const expiring = await createWith({ vaultItemIds: [item.id] });
+    await sql`update creed_headless_access_keys set expires_at=now()-interval '1 minute' where id=${expiring.metadata.id}`;
+    assert.deepEqual(await headless.rotateHeadlessAccessKey({ userId: owner, keyId: expiring.metadata.id }), { status: "not-found" });
+    assert.equal(await headless.updateHeadlessKeyGrants({ userId: owner, keyId: expiring.metadata.id, vaultItemIds: [], vaultFolderIds: [] }), null);
+    const [row] = await sql`select key_hash, vault_item_ids from creed_headless_access_keys where id=${expiring.metadata.id}`;
+    assert.equal(row.key_hash, shared.digestCredential(expiring.key));
+    assert.deepEqual(row.vault_item_ids, [item.id]);
+  });
+
+  await t.test("of two concurrent rotations exactly one returns a working key", async () => {
+    const contested = await createWith({ vaultItemIds: [item.id] });
+    const results = await Promise.all([
+      headless.rotateHeadlessAccessKey({ userId: owner, keyId: contested.metadata.id }),
+      headless.rotateHeadlessAccessKey({ userId: owner, keyId: contested.metadata.id }),
+    ]);
+    assert.deepEqual(results.map(result => result.status).sort(), ["conflict", "rotated"]);
+    const winner = results.find(result => result.status === "rotated");
+    assert.ok(winner?.status === "rotated");
+    assert.equal((await request(winner.key, item.id)).status, 200);
+    await expectDenied(contested.key, 401, item.id);
+  });
+
+  await t.test("folder creation rechecks the current Company role", async () => {
+    await sql`update creed_members set role='admin' where creed_id=${company} and user_id=${member}`;
+    const allowed = await repository.vaultFolderCreate(db, { userId: member }, { strapId: company, name: "admin-folder", description: "" });
+    assert.equal(allowed.strap_id, company);
+    await sql`update creed_members set role='member' where creed_id=${company} and user_id=${member}`;
+    await assert.rejects(repository.vaultFolderCreate(db, { userId: member }, { strapId: company, name: "after-demotion", description: "" }), { status: 403 });
+  });
+
+  await t.test("the reveal limit grows with the secrets a key can reveal", async () => {
+    const big = await repository.vaultFolderCreate(db, { userId: owner }, { strapId: personal, name: "big", description: "" });
+    const filed = [];
+    for (let index = 0; index < 150; index++) {
+      filed.push(await repository.vaultCreate(db, { userId: owner }, { creedId: personal, name: `Big ${index}`, description: "", secret, folderId: big.id }));
+    }
+    const created = await createWith({ vaultFolderIds: [big.id] });
+    assert.equal(await repository.vaultGrantCoverage(db, { creedId: personal, vaultItemIds: [], vaultFolderIds: [big.id] }), 150);
+    // A schema load followed by a run of all 150 secrets fits in one window.
+    for (let pass = 0; pass < 2; pass++) {
+      for (const entry of filed) assert.equal((await request(created.key, entry.id)).status, 200);
+    }
+    const throttled = await request(created.key, filed[0].id);
+    assert.equal(throttled.status, 429);
+    assert.ok(throttled.headers.get("retry-after"));
   });
 
   await t.test("session routes edit grants, rotate keys and manage folders", async () => {
     dependencies["@/lib/api-auth"] = { requireApiAuth: async () => ({ user: { id: owner }, context: viewerContext(db, { userId: owner }) }) };
-    dependencies["@/lib/strap-api"] = { readStrapId: (body: Record<string, unknown>) => typeof body.strapId === "string" ? body.strapId : null };
+    dependencies["@/lib/strap-api"] = strapApi;
     const keyRoute = loadModule<typeof import("../../app/api/app/headless-access/[id]/route.ts")>("../../app/api/app/headless-access/[id]/route.ts", dependencies);
     const rotateRoute = loadModule<typeof import("../../app/api/app/headless-access/[id]/rotate/route.ts")>("../../app/api/app/headless-access/[id]/rotate/route.ts", dependencies);
     const foldersRoute = loadModule<typeof import("../../app/api/app/vault/folders/route.ts")>("../../app/api/app/vault/folders/route.ts", dependencies);
@@ -309,6 +358,11 @@ test("scoped Vault reveals enforce live Postgres permissions and audit before de
     const { folder } = await createdFolder.json() as { folder: { id: string } };
     assert.equal((await foldersRoute.POST(json("POST", { strapId: personal, name: "ROUTES", description: "" }))).status, 409);
     assert.equal((await folderRoute.PATCH(json("PATCH", { name: "routes-renamed", description: "" }), params(folder.id))).status, 200);
+    // Valid JSON that is not an object is a client error, not a server error.
+    for (const body of [null, [], "text", 7]) {
+      assert.equal((await foldersRoute.POST(json("POST", body))).status, 400);
+      assert.equal((await folderRoute.PATCH(json("PATCH", body), params(folder.id))).status, 400);
+    }
     const target = await repository.vaultCreate(db, { userId: owner }, { creedId: personal, name: "Route target", description: "", secret, folderId: folder.id });
 
     const created = await createWith({});

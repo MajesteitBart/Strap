@@ -1,7 +1,7 @@
 import { resolveHeadlessAccessKey } from "@/lib/headless-access";
 import { digestCredential, isHeadlessKey } from "@/lib/headless-access-shared";
-import { revealVaultItem, VaultAccessError } from "@/lib/api-key-vault";
-import { MAX_VAULT_ITEM_GRANTS, parseVaultReference } from "@/lib/vault-grants";
+import { countRevealableVaultItems, revealVaultItem, VaultAccessError } from "@/lib/api-key-vault";
+import { MAX_VAULT_ITEM_GRANTS, MAX_VAULT_REVEALS_PER_MINUTE, parseVaultReference } from "@/lib/vault-grants";
 import { checkRateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
@@ -17,15 +17,27 @@ export async function POST(request: Request) {
   if (!token || token.length > 256 || !isHeadlessKey(token)) {
     return respond({ error: "A scoped Strap API key is required." }, 401);
   }
-  const limit = checkRateLimit({
-    // Allow one full schema load followed by a run, even at the grant limit.
-    scope: "vault-reveal", identifier: digestCredential(token), limit: MAX_VAULT_ITEM_GRANTS * 2, windowMs: 60_000,
+  const tooMany = (retryAfterSeconds: number) =>
+    respond({ error: "Too many requests." }, 429, { "Retry-After": String(retryAfterSeconds) });
+  // Flood guard before any database work; the per-key limit below is tighter.
+  const flood = checkRateLimit({
+    scope: "vault-reveal-flood", identifier: digestCredential(token), limit: MAX_VAULT_REVEALS_PER_MINUTE, windowMs: 60_000,
   });
-  if (!limit.ok) return respond({ error: "Too many requests." }, 429, { "Retry-After": String(limit.retryAfterSeconds) });
+  if (!flood.ok) return tooMany(flood.retryAfterSeconds);
 
   try {
     const credential = await resolveHeadlessAccessKey(token);
     if (!credential) return respond({ error: "Invalid or expired Strap API key." }, 401);
+    // Allow one full schema load followed by a run of everything this key can
+    // reveal. Folder grants grow as secrets are added, so size the limit on use.
+    const coverage = await countRevealableVaultItems(credential);
+    const limit = checkRateLimit({
+      scope: "vault-reveal",
+      identifier: credential.keyId,
+      limit: Math.min(MAX_VAULT_REVEALS_PER_MINUTE, 2 * Math.max(MAX_VAULT_ITEM_GRANTS, coverage)),
+      windowMs: 60_000,
+    });
+    if (!limit.ok) return tooMany(limit.retryAfterSeconds);
     // The body contains a single public item reference. Bound it before parsing.
     const reader = request.body?.getReader();
     if (!reader) return respond({ error: "A secret reference is required." }, 400);

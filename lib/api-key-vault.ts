@@ -1,7 +1,7 @@
 import { recordAuditEvent, recordRequiredAuditEvent } from "@/lib/audit-log";
 import { getDatabase } from "@/lib/db/client";
 import {
-  vaultCreate, vaultDelete, vaultFolderCreate, vaultFolderDelete, vaultFolderList, vaultFolderUpdate, vaultList, vaultReveal, vaultUpdate,
+  vaultCreate, vaultDelete, vaultFolderCreate, vaultFolderDelete, vaultFolderList, vaultFolderUpdate, vaultGrantCoverage, vaultList, vaultReveal, vaultUpdate,
   type VaultCredential,
 } from "@/lib/db/repositories/vault";
 import "server-only";
@@ -74,4 +74,8 @@ export async function deleteVaultFolder(input: { userId: string; folderId: strin
   const { folder, movedItemIds } = await vaultFolderDelete(getDatabase(), { userId: input.userId }, input.folderId);
   await recordAuditEvent({ userId: input.userId, action: "vault.folder_deleted", metadata: { folderId: folder.id, creedId: folder.strap_id, movedItemIds }, request: input.request });
   return { movedItemIds };
+}
+/** Number of items a headless key can reveal right now. Never returns item data. */
+export async function countRevealableVaultItems(credential: Pick<VaultCredential, "creedId" | "vaultItemIds" | "vaultFolderIds">): Promise<number> {
+  return vaultGrantCoverage(getDatabase(), credential);
 }

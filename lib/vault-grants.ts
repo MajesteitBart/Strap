@@ -1,6 +1,8 @@
 /** Explicit item and folder grants are independent of a key's context-editing mode. */
 export const MAX_VAULT_ITEM_GRANTS = 100;
 export const MAX_VAULT_FOLDER_GRANTS = 100;
+/** Per-key reveal ceiling. A key covering up to 1,000 secrets can load and run within a minute. */
+export const MAX_VAULT_REVEALS_PER_MINUTE = 2_000;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function parseIdList(value: unknown, max: number): string[] | undefined {
