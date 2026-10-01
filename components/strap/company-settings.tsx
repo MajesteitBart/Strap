@@ -9,6 +9,7 @@ import {
 } from "@/components/strap/profile-avatar";
 import { RichTextEditor } from "@/components/strap/rich-text-editor";
 import { SearchableSelect } from "@/components/strap/searchable-select";
+import { SettingsHeading } from "@/components/strap/settings-heading";
 import {
   GLOBAL_PERMISSION_OPTIONS,
   PERMISSION_OPTIONS,
@@ -759,7 +760,7 @@ export function CompanySettings() {
   // them. For a plain member the fields render disabled (view-only), matching
   // the greyed-out read-only treatment across the rest of settings.
   blocks.push(
-    <Section key="profile" title="Profile">
+    <Section key="profile" title="Company profile">
       <div className="grid grid-cols-[calc(1.25rem+0.5rem+2.75rem)_minmax(0,1fr)] items-start gap-x-4 gap-y-4 md:flex md:gap-5">
         <EditableProfileAvatar
           kind="company"
@@ -1538,9 +1539,9 @@ export function CompanySettings() {
   return (
     <div className="h-full overflow-y-auto bg-[var(--strap-surface)] strap-scrollbar">
       <div className="mx-auto max-w-3xl px-8 py-10 md:px-14">
-        <h1 className="font-heading text-[1.75rem] font-semibold tracking-[-0.03em] text-[var(--strap-text-primary)]">
-          Settings
-        </h1>
+        <SettingsHeading
+          scope={`These settings apply to ${company.creedName}.`}
+        />
 
         {blocks.map((block, index) => (
           <div key={index} className={index === 0 ? "mt-10" : undefined}>

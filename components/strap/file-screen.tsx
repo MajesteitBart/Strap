@@ -23,7 +23,7 @@ import {
 } from "@/components/strap/shell";
 import { ShortcutKey } from "@/components/strap/shortcut-key";
 import { useStrap } from "@/components/strap/strap-provider";
-import { StrapSwitcher } from "@/components/strap/strap-switcher";
+import { StrapTitle } from "@/components/strap/strap-switcher";
 import { AnimatedCheckmark } from "@/components/ui/animated-checkmark";
 import { ArchiveIcon } from "@/components/ui/archive";
 import { Button } from "@/components/ui/button";
@@ -1827,7 +1827,7 @@ export function FileScreen() {
               >
                 <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
                   <div>
-                    <StrapSwitcher />
+                    <StrapTitle />
                     <SaveStatus
                       saving={state.saving}
                       lastSavedAt={state.lastSavedAt}

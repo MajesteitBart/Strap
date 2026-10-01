@@ -153,7 +153,7 @@ export function AccountSecuritySettings() {
   ) : null;
 
   return (
-    <section id="settings-security" className="scroll-mt-6">
+    <section id="account-security" className="scroll-mt-6">
       <h2 className="text-[16px] font-medium text-[var(--strap-text-primary)]">Security</h2>
       <div className="mt-4 rounded-[var(--radius-xl)] border border-[var(--strap-border)] bg-[var(--strap-surface)] p-5">
         <div className="flex flex-wrap items-center justify-between gap-4">

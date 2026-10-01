@@ -26,10 +26,24 @@ type EditorState = {
 
 const EMPTY_EDITOR: EditorState = { id: null, name: "", description: "", secret: "" };
 
+// Keyed by Strap so items, the editor and any in-flight request from the
+// previously active Strap never render, or act, under the new Strap's heading.
 export function ApiKeyVaultScreen() {
+  const { state } = useStrap();
+  return <StrapVault key={state.creedId ?? "none"} />;
+}
+
+function StrapVault() {
   const { state } = useStrap();
   const creedId = state.creedId;
   const companyMember = state.creedType === "company" && state.company?.myRole === "member";
+  // Vault items belong to the active Strap, so the header names it: a personal
+  // Vault is readable by its owner only, a company Vault by every owner and admin.
+  const companyName = state.creedType === "company" ? (state.company?.creedName ?? "Company") : null;
+  const vaultTitle = companyName ? `${companyName} Vault` : "Personal Vault";
+  const vaultScope = companyName
+    ? `API keys stored in ${companyName}. Every owner and admin of ${companyName} can reveal them.`
+    : "API keys stored in your personal Strap. Values stay hidden until you reveal them.";
   const [items, setItems] = useState<VaultItem[]>([]);
   const [editor, setEditor] = useState<EditorState>(EMPTY_EDITOR);
   const [editorOpen, setEditorOpen] = useState(false);
@@ -130,7 +144,7 @@ export function ApiKeyVaultScreen() {
     return (
       <div className="h-full overflow-y-auto bg-[var(--strap-surface)] p-8 md:p-12">
         <div className="mx-auto max-w-3xl">
-          <h1 className="font-heading text-[1.75rem] font-semibold tracking-[-0.03em]">API key Vault</h1>
+          <h1 className="font-heading text-[1.75rem] font-semibold tracking-[-0.03em]">{vaultTitle}</h1>
           <div className="mt-8 rounded-xl border border-[var(--strap-border)] p-6">
             <h2 className="text-[15px] font-medium">Manager access required</h2>
             <p className="mt-2 text-[14px] leading-7 text-[var(--strap-text-secondary)]">Company Vault secrets are available only to owners and admins.</p>
@@ -145,8 +159,8 @@ export function ApiKeyVaultScreen() {
       <div className="mx-auto max-w-[960px] px-4 py-8 md:px-12 md:py-10">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h1 className="font-heading text-[1.75rem] font-semibold tracking-[-0.03em] text-[var(--strap-text-primary)]">API key Vault</h1>
-            <p className="mt-2 max-w-2xl text-[14px] leading-7 text-[var(--strap-text-secondary)]">Store external API keys in your Vault. Secret values stay hidden until you explicitly reveal them.</p>
+            <h1 className="font-heading text-[1.75rem] font-semibold tracking-[-0.03em] text-[var(--strap-text-primary)]">{vaultTitle}</h1>
+            <p className="mt-2 max-w-2xl text-[14px] leading-7 text-[var(--strap-text-secondary)]">{vaultScope}</p>
           </div>
           <Button onClick={openCreate}><Plus className="h-4 w-4" /> Add secret</Button>
         </div>

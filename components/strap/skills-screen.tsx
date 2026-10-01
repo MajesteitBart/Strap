@@ -20,7 +20,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useStrap } from "@/components/strap/strap-provider";
-import { StrapSwitcher } from "@/components/strap/strap-switcher";
+import {
+  StrapTitle,
+  useStrapSwitchGuard,
+} from "@/components/strap/strap-switcher";
 import { cn } from "@/lib/utils";
 import {
   encodeSkillFile,
@@ -289,6 +292,7 @@ function SkillLibrary({
   function mayLeave() {
     return !dirty || window.confirm("Discard the changes in this draft?");
   }
+  useStrapSwitchGuard(() => !busy && mayLeave());
   function fail(reason: unknown) {
     if (mounted.current)
       setError(
@@ -507,7 +511,7 @@ function SkillLibrary({
     <div className="h-full overflow-y-auto bg-[var(--strap-surface-muted)] p-4 sm:p-6 lg:p-10">
       <div className="mx-auto max-w-6xl pb-10">
         <div className="mb-6">
-          <StrapSwitcher beforeSwitch={() => !busy && mayLeave()} />
+          <StrapTitle />
         </div>
         <header className="flex flex-wrap items-start justify-between gap-5">
           <div>

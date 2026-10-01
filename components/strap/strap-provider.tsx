@@ -2409,28 +2409,29 @@ export function StrapProvider({
       }),
     );
 
-    if (persistenceEnabled) {
-      try {
-        const response = await fetch("/api/app/profile", {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ name: trimmedName }),
-        });
+    // Account-level: saved on the user row whichever Strap is active, so this
+    // does not follow the personal autosave flag (persistenceEnabled), which is
+    // off while a Company Strap is active.
+    try {
+      const response = await fetch("/api/app/profile", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name: trimmedName }),
+      });
 
-        if (!response.ok) {
-          throw new Error("Could not update profile.");
-        }
-      } catch {
-        commitState((current) =>
-          nextMutationTick({
-            ...current,
-            user: previousUser,
-          }),
-        );
-        return false;
+      if (!response.ok) {
+        throw new Error("Could not update profile.");
       }
+    } catch {
+      commitState((current) =>
+        nextMutationTick({
+          ...current,
+          user: previousUser,
+        }),
+      );
+      return false;
     }
 
     return true;
@@ -2471,10 +2472,8 @@ export function StrapProvider({
   }
 
   async function deleteAccount() {
-    if (!persistenceEnabled) {
-      return;
-    }
-
+    // Account-level, like setDisplayName: must work while a Company Strap is
+    // active, so it is not gated on the personal autosave flag.
     const response = await fetch("/api/app/account", {
       method: "DELETE",
     });

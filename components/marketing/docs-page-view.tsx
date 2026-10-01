@@ -166,7 +166,7 @@ const sections: DocsSection[] = [
     title: "Company Strap",
     paragraphs: [
       "The Company plan adds one shared Company Strap on top of your personal one. It is the same structured file, owned by the team instead of a person, so every member's agents read the same company context before they act: how the team works, what it is building, the conventions and constraints that apply to everyone.",
-      "Members switch between their personal Strap and any Company Strap they belong to from the workspace dropdown. Roles decide what each person and their agents can do. Owners manage members and company settings, admins manage members and content, and members read and propose. Section permissions can loosen or tighten who edits what, and every change is attributed and visible in the team activity view.",
+      "Members switch between their personal Strap and any Company Strap they belong to from the Strap switcher at the top of the sidebar. Roles decide what each person and their agents can do. Owners manage members and company settings, admins manage members and content, and members read and propose. Section permissions can loosen or tighten who edits what, and every change is attributed and visible in the team activity view.",
       "A Company Strap is free. Invite as many members as you need and connect your existing agents to propose improvements.",
     ],
     bullets: [

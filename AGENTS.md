@@ -46,7 +46,7 @@ Postgres 17 + Drizzle + Better Auth
 
 ```
 app/                Next routes
-├── (strap-app)/    signed-in product: /file, /connections, /vault, /settings
+├── (strap-app)/    signed-in product: /file, /skills, /connections, /vault, /settings (active Strap), /account (user)
 ├── api/app/        session-authed APIs (requireApiAuth)
 │   ├── headless-access/  one-time-visible scoped agent keys
 │   └── vault/      metadata, create, update, reveal, and delete operations

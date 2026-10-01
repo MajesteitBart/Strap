@@ -82,7 +82,7 @@ Every optional variable is documented in [`.env.example`](./.env.example). Never
 
 Apply reviewed Drizzle migrations before deploying application changes. Existing installations moving from the previous backend require the scripted import rehearsal and a separate cutover window; this branch has only been exercised locally.
 
-Installations with subscriptions from the retired paid plans can keep `STRIPE_SECRET_KEY` configured for owner-only status and cancellation in Settings. This schedules cancellation at the end of the billing period and preserves profile data. Without the key, affected users receive a support link. Checkout and billing webhooks remain retired.
+Installations with subscriptions from the retired paid plans can keep `STRIPE_SECRET_KEY` configured for owner-only status and cancellation in Account settings (personal plans) and Company Strap settings (company plans). This schedules cancellation at the end of the billing period and preserves profile data. Without the key, affected users receive a support link. Checkout and billing webhooks remain retired.
 Account and Company deletion require live confirmation that any recorded legacy subscription has ended or is scheduled to cancel, so deletion cannot discard a subscription that may still renew.
 
 ## Connect an agent

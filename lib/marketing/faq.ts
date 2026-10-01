@@ -93,7 +93,7 @@ export const companyFaqItems: FaqItem[] = [
   {
     question: "Do team members need their own personal Strap?",
     answer:
-      "No. A member needs a Strap account to join, but not a personal Strap. They connect their own agents over MCP and read the shared Company Strap. They can keep a personal Strap too, and switch between them from the workspace dropdown.",
+      "No. A member needs a Strap account to join, but not a personal Strap. They connect their own agents over MCP and read the shared Company Strap. They can keep a personal Strap too, and switch between them from the Strap switcher at the top of the sidebar.",
   },
   {
     question: "How much does a Company Strap cost?",

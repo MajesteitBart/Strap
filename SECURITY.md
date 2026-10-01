@@ -38,7 +38,7 @@ Strap must support MFA for user accounts protecting personal context, Company re
 
 Acceptance criteria:
 
-- Secure second-factor enrollment with proof before activation and visible MFA status in Settings.
+- Secure second-factor enrollment with proof before activation and visible MFA status in Account settings.
 - Once enabled, no authenticated new sign-in before MFA completion. Alternate sign-in methods must not bypass it.
 - Secure lost-factor recovery with protected, single-use recovery credentials.
 - Disabling/replacing factors or regenerating recovery credentials requires recent authentication plus the current factor or an approved recovery flow.

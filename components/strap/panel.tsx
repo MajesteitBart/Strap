@@ -16,8 +16,12 @@ import { LogoutIcon } from "@/components/ui/logout";
 import { PlusIcon } from "@/components/ui/plus";
 import { SearchIcon } from "@/components/ui/search";
 import { SettingsIcon } from "@/components/ui/settings";
+import { UserIcon } from "@/components/ui/user";
 import { fuzzyScore } from "@/lib/panel/fuzzy";
-import { SETTINGS_SEARCH_COMMANDS } from "@/lib/panel/settings-search";
+import {
+  ACCOUNT_SEARCH_COMMANDS,
+  SETTINGS_SEARCH_COMMANDS,
+} from "@/lib/panel/settings-search";
 import { STRAP_FILE_NAME } from "@/lib/profile-file";
 import { accentColorMap } from "@/lib/strap-data";
 import { cn } from "@/lib/utils";
@@ -181,6 +185,14 @@ export function StrapPanel({
         icon: SettingsIcon as AnimatedIconComponent,
         run: () => router.push("/settings"),
       },
+      {
+        id: "page:account",
+        label: "Account settings",
+        group: "Pages",
+        keywords: ["account", "profile", "security", "two-factor"],
+        icon: UserIcon as AnimatedIconComponent,
+        run: () => router.push("/account"),
+      },
       ...liveSections.map<Command>((section) => ({
         id: `section:${section.id}`,
         label: section.name,
@@ -196,6 +208,14 @@ export function StrapPanel({
         keywords: [proposal.reason],
         dot: "var(--strap-success)",
         run: () => onFileProposal(proposal.id),
+      })),
+      ...ACCOUNT_SEARCH_COMMANDS.map<Command>(({ key, label, keywords }) => ({
+        id: `account:${key}`,
+        label,
+        group: "Settings",
+        keywords: ["account", "settings", ...keywords],
+        icon: UserIcon as AnimatedIconComponent,
+        run: () => router.push(`/account#account-${key}`),
       })),
       ...(state.creedType !== "company"
         ? SETTINGS_SEARCH_COMMANDS.map<Command>(({ key, label, keywords }) => ({

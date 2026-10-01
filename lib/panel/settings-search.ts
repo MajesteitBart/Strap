@@ -1,10 +1,25 @@
-// Personal settings destinations and their local command-search aliases.
-export const SETTINGS_SEARCH_COMMANDS = [
+// Command-search destinations and their local aliases. Account entries open
+// /account and apply in every Strap; settings entries open the personal
+// /settings screen.
+export const ACCOUNT_SEARCH_COMMANDS = [
   {
     key: "profile",
     label: "Profile",
-    keywords: ["name", "email", "account", "display name"],
+    keywords: ["name", "email", "account", "display name", "avatar", "picture"],
   },
+  {
+    key: "security",
+    label: "Two-factor authentication",
+    keywords: ["2fa", "mfa", "security", "authenticator", "recovery codes"],
+  },
+  {
+    key: "danger",
+    label: "Delete account",
+    keywords: ["delete account", "remove account"],
+  },
+];
+
+export const SETTINGS_SEARCH_COMMANDS = [
   {
     key: "agent-edits",
     label: "Agent edit behaviour",
@@ -29,10 +44,5 @@ export const SETTINGS_SEARCH_COMMANDS = [
     key: "data",
     label: "Export data",
     keywords: ["export", "download", "backup", "markdown", "word count"],
-  },
-  {
-    key: "danger",
-    label: "Delete account",
-    keywords: ["delete account", "remove account"],
   },
 ];

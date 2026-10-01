@@ -9,6 +9,7 @@ import { PANEL_OPEN_EVENT, StrapPanel } from "@/components/strap/panel";
 import { preloadSettingsData } from "@/components/strap/settings-preload";
 import { ShortcutKey } from "@/components/strap/shortcut-key";
 import { useStrap } from "@/components/strap/strap-provider";
+import { StrapSwitcher } from "@/components/strap/strap-switcher";
 import { useTheme } from "@/components/strap/theme-provider";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { BookTextIcon } from "@/components/ui/book-text";
@@ -31,6 +32,7 @@ import { LogoutIcon } from "@/components/ui/logout";
 import { SearchIcon, type SearchIconHandle } from "@/components/ui/search";
 import { Separator } from "@/components/ui/separator";
 import { SettingsIcon } from "@/components/ui/settings";
+import { UserIcon } from "@/components/ui/user";
 import { accentColorMap, type StrapSection } from "@/lib/strap-data";
 import { cn } from "@/lib/utils";
 import { Plus } from "lucide-react";
@@ -205,6 +207,7 @@ export function StrapShell({
     [registerFileActions],
   );
   const showAvatarImage = Boolean(avatarUrl) && failedAvatarUrl !== avatarUrl;
+  const hasStrapSwitcher = (state.creeds?.length ?? 0) > 1;
   const pendingProposalCountBySection = useMemo(() => {
     const counts = new Map<string, number>();
     for (const proposal of state.proposals) {
@@ -250,6 +253,7 @@ export function StrapShell({
     navItems.forEach((item) => {
       router.prefetch(item.href);
     });
+    router.prefetch("/account");
   }, [router]);
 
   useEffect(() => {
@@ -406,7 +410,19 @@ export function StrapShell({
               <ShortcutKey>S</ShortcutKey>
             </div>
 
-            <nav className={cn("mt-5 space-y-1", !collapsed && "lg:mt-8")}>
+            {hasStrapSwitcher ? (
+              <div className={cn("mt-4", !collapsed && "lg:mt-6")}>
+                <StrapSwitcher collapsed={collapsed} />
+              </div>
+            ) : null}
+
+            <nav
+              className={cn(
+                "space-y-1",
+                hasStrapSwitcher ? "mt-3" : "mt-5",
+                !collapsed && (hasStrapSwitcher ? "lg:mt-4" : "lg:mt-8"),
+              )}
+            >
               <button
                 type="button"
                 onClick={() =>
@@ -680,6 +696,15 @@ export function StrapShell({
                       : "w-(--radix-dropdown-menu-trigger-width)",
                   )}
                 >
+                  <AnimatedMenuIconItem
+                    icon={UserIcon}
+                    className="text-[13px]"
+                    onSelect={() => {
+                      router.push("/account");
+                    }}
+                  >
+                    Account settings
+                  </AnimatedMenuIconItem>
                   <AnimatedMenuIconItem
                     icon={LinkIcon}
                     className="text-[13px]"

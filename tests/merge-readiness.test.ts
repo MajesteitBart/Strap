@@ -29,8 +29,12 @@ test("legacy Stripe subscribers retain a self-service cancellation path", () => 
 
 test("persisted profiles can manage subscriptions even with no sections", () => {
   const settings = readFileSync(new URL("../components/strap/settings-screen.tsx", import.meta.url), "utf8");
-  assert.doesNotMatch(settings, /sections\.length === 0[\s\S]{0,80}router\.replace/);
-  assert.match(settings, /LegacySubscriptionNotice scope="personal"/);
+  const account = readFileSync(new URL("../components/strap/account-screen.tsx", import.meta.url), "utf8");
+  for (const screen of [settings, account]) {
+    assert.doesNotMatch(screen, /sections\.length === 0[\s\S]{0,80}router\.replace/);
+  }
+  // The personal subscription belongs to the account, so it sits beside account deletion.
+  assert.match(account, /LegacySubscriptionNotice scope="personal"/);
 });
 
 test("OAuth never issues an authorization code without a Creed grant", () => {
