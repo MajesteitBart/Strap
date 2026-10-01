@@ -1,5 +1,6 @@
 "use client";
 
+import { AccountSecuritySettings } from "@/components/strap/account-security-settings";
 import { AnimatedIconButton } from "@/components/strap/animated-icon-action";
 import {
   useAnimatedIconControls,
@@ -550,6 +551,10 @@ function PersonalSettingsScreen() {
               </div>
             </div>
           </section>
+
+          <Separator className="my-10 bg-[var(--strap-border)]" />
+
+          <AccountSecuritySettings />
 
           <Separator className="my-10 bg-[var(--strap-border)]" />
 

@@ -86,7 +86,7 @@
       "file": "SECURITY.md",
       "kind": "content",
       "occurrences": 5,
-      "fingerprint": "3b7d040904f2e01b71e91111c2a43e4592546d87abcfe7de851f00b98f17ffe9",
+      "fingerprint": "09eac650344ba511c89699b00bc259da9b89eb2241286026d70252603beda081",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -968,7 +968,7 @@
       "file": "components/strap/settings-screen.tsx",
       "kind": "content",
       "occurrences": 2,
-      "fingerprint": "ba4c5f032cd5640e3a732fd4a1a1f1db5f46162373f5a83c3e5bb77bb12a6659",
+      "fingerprint": "c0fa6f99930582709b7a7a290989ac0b9d38dc06be335f79144b2f80bb5aee58",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -1091,6 +1091,15 @@
       "rationale": "Preserved forward-only schema history; rewriting would falsify repository history."
     },
     {
+      "file": "db/migrations/meta/0002_snapshot.json",
+      "kind": "content",
+      "occurrences": 636,
+      "fingerprint": "fb647fb3c5bdc9ea0b4a838fc00eac5cbd2e12b004b21c0bd4eeada8e3f740c7",
+      "decision": "history",
+      "category": "historical-schema",
+      "rationale": "Preserved forward-only schema history; rewriting would falsify repository history."
+    },
+    {
       "file": "db/schema/application.ts",
       "kind": "content",
       "occurrences": 356,
@@ -1130,7 +1139,7 @@
       "file": "lib/audit-log.ts",
       "kind": "content",
       "occurrences": 11,
-      "fingerprint": "23174e5fde7ef7af87e6a9162196e77b2cc43fdf8203be2ccc34d8a7d8c3d0b0",
+      "fingerprint": "7c83f0ad8605e0753ece1a91ef0d376fd08941839c54ec7b3b652811c1530aad",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -2354,7 +2363,7 @@
       "file": "tests/db/vault-headless.test.ts",
       "kind": "content",
       "occurrences": 39,
-      "fingerprint": "4b67d30d8ac5d56fc1c01fe56e1d06a0c21363d841ac5e620b014f0ba5d5d9eb",
+      "fingerprint": "e6950612d1ea54f676ca4b08f67555a7588fa6a8964d473935dbf17901009101",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."

@@ -42,7 +42,17 @@ export type AuditAction =
   | "company.version_control_updated"
   | "company.github_connected"
   | "company.github_disconnected"
-  | "company.deleted";
+  | "company.deleted"
+  // Account MFA (lib/auth/mfa.ts); metadata never contains codes or secrets
+  | "mfa.enrollment_started"
+  | "mfa.enabled"
+  | "mfa.disabled"
+  | "mfa.recovery_codes_regenerated"
+  | "mfa.challenge_issued"
+  | "mfa.challenge_passed"
+  | "mfa.challenge_failed"
+  | "mfa.replay_rejected"
+  | "mfa.step_up_failed";
 
 export type AuditLogInput = {
   userId: string;
