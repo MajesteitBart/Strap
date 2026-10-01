@@ -1,11 +1,11 @@
 // Vault discovery for connected agents: metadata and references only, never values.
-import { terminalText, vaultEnvName, vaultQueryMatcher, vaultSchemaLine } from "../packages/strap/src/vault/schema.ts";
+import { isProcessControlEnvName, terminalText, vaultEnvName, vaultQueryMatcher, vaultSchemaLine } from "../packages/strap/src/vault/schema.ts";
 
 export const VAULT_TOOLS = [
   {
     name: "strap_list_vault_items",
     description:
-      "List Vault folders and secret metadata in the connected profile: names, descriptions, folders, secret:// references, a suggested .env.schema line for Varlock, and which of your API keys can reveal each secret. Never returns secret values. schemaLine is null when two listed secrets map to the same variable name (envNameConflict); pick distinct names for those. Filter by folder (name or id) or by words from the name or description. Call it on its own, not in a batch.",
+      "List Vault folders and secret metadata in the connected profile: names, descriptions, folders, secret:// references, a suggested .env.schema line for Varlock, and which of your API keys can reveal each secret. Never returns secret values. schemaLine is null when two listed secrets map to the same variable name (envNameConflict) or when the name controls process startup, such as NODE_OPTIONS or PATH (envNameReserved); do not write such lines without the user's review. Filter by folder (name or id) or by words from the name or description. Call it on its own, not in a batch.",
     inputSchema: {
       type: "object",
       properties: {
@@ -131,6 +131,8 @@ export function buildVaultListing(input: {
       const reference = `secret://${item.id}`;
       const envName = vaultEnvName(item.name);
       const envNameConflict = (envNameUses.get(envName) ?? 0) > 1;
+      // Names that control process startup are never suggested; see isProcessControlEnvName.
+      const envNameReserved = isProcessControlEnvName(envName);
       const folder = item.folderId ? folderById.get(item.folderId) : undefined;
       const { shown, total } = revealers(item);
       return {
@@ -142,8 +144,9 @@ export function buildVaultListing(input: {
         updatedAt: item.updatedAt,
         envName,
         // null when another listed secret maps to the same variable name; choose distinct names.
-        schemaLine: envNameConflict ? null : vaultSchemaLine({ envName, reference }),
+        schemaLine: envNameConflict || envNameReserved ? null : vaultSchemaLine({ envName, reference }),
         envNameConflict,
+        envNameReserved,
         // Up to MAX_REVEALABLE_BY keys in their original order; the count covers all.
         revealableBy: shown.map((key) => ({ id: key.id, name: key.name, prefix: key.prefix })),
         revealableByCount: total,

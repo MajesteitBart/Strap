@@ -133,3 +133,15 @@ test("colliding variable names get no schema line", () => {
   assert.equal(alone.items[0]?.envNameConflict, false);
   assert.equal(alone.items[0]?.schemaLine, `# @sensitive @required\nDEPLOY_KEY=strap("secret://${itemId}")`);
 });
+
+test("listings never suggest process-control variable names", () => {
+  const items = [
+    { id: itemId, folderId: null, name: "NODE_OPTIONS", description: "", updatedAt: "2026-10-01T00:00:00.000Z" },
+    { id: otherItemId, folderId: null, name: "NODE_ENV", description: "", updatedAt: "2026-10-01T00:00:00.000Z" },
+  ];
+  const listing = buildVaultListing({ folders: [], items, keys: [], caller: null });
+  assert.deepEqual(listing.items.map((item) => [item.envName, item.envNameReserved, item.schemaLine === null]), [
+    ["NODE_OPTIONS", true, true],
+    ["NODE_ENV", false, false],
+  ]);
+});

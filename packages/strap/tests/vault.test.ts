@@ -97,3 +97,15 @@ test("generic tool output escapes C1 controls in JSON and sanitizes plain text",
   assert.deepEqual(JSON.parse(json), value);
   assert.equal(terminalPlainText("line one\n\tline two\u001b]52;c;x\u0007\u009b"), "line one\n\tline two?]52;c;x??");
 });
+
+test("process-control variable names are never generated", async () => {
+  const { isProcessControlEnvName } = await import("../src/vault/schema.js");
+  for (const name of ["NODE_OPTIONS", "PATH", "LD_PRELOAD", "DYLD_INSERT_LIBRARIES", "NPM_CONFIG_SCRIPT_SHELL", "HTTPS_PROXY", "STRAP_API_KEY", "path"]) {
+    assert.equal(isProcessControlEnvName(name), true, name);
+  }
+  for (const name of ["NODE_ENV", "SHARE_ARTIFACT_SERVER", "DATABASE_URL", "PATHWAY_TOKEN"]) {
+    assert.equal(isProcessControlEnvName(name), false, name);
+  }
+  assert.equal(vaultEnvName("node options"), "NODE_OPTIONS");
+  assert.throws(() => formatVaultSchema([{ name: "node options", envName: "NODE_OPTIONS", reference }]), /NODE_OPTIONS controls how programs start/);
+});

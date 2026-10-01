@@ -49,11 +49,38 @@ export function isVaultInstanceId(value: string): boolean {
 }
 
 const ENV_NAME = /^[A-Z_][A-Z0-9_]*$/;
+
+// Variables that change how a runtime, shell, loader or network client starts.
+// A secret mapped to one of these could run code or redirect traffic on the
+// machine of whoever resolves the schema, which may be a different manager
+// than the one who named the secret. They are never generated automatically.
+const PROCESS_CONTROL_NAMES = new Set([
+  "STRAP_API_KEY",
+  "NODE_OPTIONS", "NODE_PATH", "NODE_EXTRA_CA_CERTS", "NODE_TLS_REJECT_UNAUTHORIZED", "NODE_REPL_EXTERNAL_MODULE",
+  "PATH", "PATHEXT", "COMSPEC", "SHELL", "BASH_ENV", "ENV", "SHELLOPTS", "BASHOPTS", "PS4", "IFS", "PROMPT_COMMAND",
+  "PYTHONPATH", "PYTHONSTARTUP", "PYTHONHOME", "PYTHONINSPECT", "PYTHONUSERBASE",
+  "PERL5OPT", "PERL5LIB", "PERLLIB", "RUBYOPT", "RUBYLIB",
+  "JAVA_TOOL_OPTIONS", "_JAVA_OPTIONS", "JDK_JAVA_OPTIONS", "CLASSPATH", "DOTNET_STARTUP_HOOKS",
+  "GIT_SSH", "GIT_SSH_COMMAND", "GIT_EXEC_PATH", "GIT_ASKPASS", "SSH_ASKPASS", "EDITOR", "VISUAL", "PAGER", "BROWSER",
+  "SSL_CERT_FILE", "SSL_CERT_DIR", "CURL_CA_BUNDLE", "REQUESTS_CA_BUNDLE",
+  "HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "NO_PROXY",
+  "HOME", "USERPROFILE", "APPDATA", "LOCALAPPDATA", "TMPDIR", "TEMP", "TMP",
+]);
+const PROCESS_CONTROL_PREFIXES = ["LD_", "DYLD_", "NPM_CONFIG_", "GIT_CONFIG", "COR_", "CORECLR_"];
+
+/** True for variable names that control process startup and are never suggested. */
+export function isProcessControlEnvName(name: string): boolean {
+  const upper = name.toUpperCase();
+  return PROCESS_CONTROL_NAMES.has(upper) || PROCESS_CONTROL_PREFIXES.some((prefix) => upper.startsWith(prefix));
+}
 const REFERENCE = /^secret:\/\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
 export function vaultSchemaLine(entry: Pick<VaultSchemaEntry, "envName" | "reference">, instance?: string): string {
   // Output is appended to .env.schema, so only emit shapes that cannot inject lines.
   if (!ENV_NAME.test(entry.envName) || !REFERENCE.test(entry.reference)) throw new Error("Invalid variable name or secret reference.");
+  if (isProcessControlEnvName(entry.envName)) {
+    throw new Error(`${entry.envName} controls how programs start or connect, so it is not generated. Rename the secret, or write that line yourself after review.`);
+  }
   if (instance !== undefined && !isVaultInstanceId(instance)) throw new Error("Invalid instance id.");
   const call = instance ? `strap(${instance}, "${entry.reference}")` : `strap("${entry.reference}")`;
   return `# @sensitive @required\n${entry.envName}=${call}`;

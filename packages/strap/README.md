@@ -98,7 +98,7 @@ strap vault schema --folder share-artifact >> .env.schema
 strap vault schema --query stripe --instance company
 ```
 
-`list` shows each secret's `secret://` reference, its folder and which of your API keys can reveal it. `--query` matches words from names and descriptions, so `share artifact` finds `SHARE_ARTIFACT_SERVER`. `schema` prints `.env.schema` lines with a suggested variable name per secret, such as `SHARE_ARTIFACT_SERVER=strap("secret://…")`, and refuses to print two secrets that would share a variable name. `--instance` targets a named `@initStrap(id=…)` when a schema uses several profiles.
+`list` shows each secret's `secret://` reference, its folder and which of your API keys can reveal it. `--query` matches words from names and descriptions, so `share artifact` finds `SHARE_ARTIFACT_SERVER`. `schema` prints `.env.schema` lines with a suggested variable name per secret, such as `SHARE_ARTIFACT_SERVER=strap("secret://…")`, and refuses to print two secrets that would share a variable name. It also refuses names that control how programs start or connect, such as `NODE_OPTIONS`, `PATH`, `LD_PRELOAD` or proxy settings, because a secret another manager named that way would run on your machine; rename the secret instead. `--instance` targets a named `@initStrap(id=…)` when a schema uses several profiles.
 
 The schema references a stable ID, so renaming a secret never breaks a committed schema. Resolving the values still requires a Strap API key that has been granted the secret or its folder in Connections; see the [Varlock provider](../varlock-strap-plugin/README.md). The Vault is available to personal profile owners and Company owners and admins. Connected agents can call the `strap_list_vault_items` MCP tool for the same metadata.
 
