@@ -75,10 +75,10 @@ export async function updateVaultFolder(input: { userId: string; folderId: strin
   await recordAuditEvent({ userId: input.userId, action: "vault.folder_updated", metadata: { folderId: row.id, creedId: row.strap_id }, request: input.request });
   return toFolder(row);
 }
-export async function deleteVaultFolder(input: { userId: string; folderId: string; request: Request }): Promise<{ movedItemIds: string[] }> {
-  const { folder, movedItemIds } = await vaultFolderDelete(getDatabase(), { userId: input.userId }, input.folderId);
-  await recordAuditEvent({ userId: input.userId, action: "vault.folder_deleted", metadata: { folderId: folder.id, creedId: folder.strap_id, movedItemIds }, request: input.request });
-  return { movedItemIds };
+export async function deleteVaultFolder(input: { userId: string; folderId: string; request: Request }): Promise<{ movedItemCount: number }> {
+  const { folder, movedItemCount } = await vaultFolderDelete(getDatabase(), { userId: input.userId }, input.folderId);
+  await recordAuditEvent({ userId: input.userId, action: "vault.folder_deleted", metadata: { folderId: folder.id, creedId: folder.strap_id, movedItemCount }, request: input.request });
+  return { movedItemCount };
 }
 /** Number of items a headless key can reveal right now. Never returns item data. */
 export async function countRevealableVaultItems(userId: string, credential: Pick<VaultCredential, "creedId" | "vaultItemIds" | "vaultFolderIds">): Promise<number> {

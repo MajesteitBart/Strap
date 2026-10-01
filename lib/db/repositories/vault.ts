@@ -134,10 +134,12 @@ export async function vaultFolderDelete(db: PostgresJsDatabase, viewer: Viewer, 
     const [access] = await tx.select({ id: creeds.id }).from(creeds).innerJoin(creed_members, eq(creed_members.creed_id, creeds.id))
       .where(and(eq(creeds.id, folder.strap_id), eq(creed_members.user_id, viewer.userId), scope(viewer, creeds.id))).for("share");
     if (!access) throw new VaultRepositoryError("Folder not found or access denied.", 403);
+    // Only the number of moved items is kept: a large folder must not produce
+    // an unbounded response or audit payload.
     const moved = await tx.update(items).set({ folder_id: null, updated_at: new Date().toISOString() })
-      .where(and(eq(items.creed_id, folder.strap_id), eq(items.folder_id, folder.id))).returning({ id: items.id });
+      .where(and(eq(items.creed_id, folder.strap_id), eq(items.folder_id, folder.id)));
     await tx.delete(folders).where(eq(folders.id, folder.id));
-    return { folder, movedItemIds: moved.map(item => item.id) };
+    return { folder, movedItemCount: moved.count };
   });
 }
 /** The reveal transaction. The required audit row is written on it, so it commits with the access record. */

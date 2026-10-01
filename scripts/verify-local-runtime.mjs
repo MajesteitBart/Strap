@@ -84,7 +84,7 @@ try {
  const rotatedKey=await request('/api/app/headless-access/'+folderKey.data.metadata.id+'/rotate','POST');ok(rotatedKey,200,'rotate key');
  ok(await revealHeadless(folderKey.data.key,filed.data.item.id),401,'previous key value rejected');
  ok(await revealHeadless(rotatedKey.data.key,filed.data.item.id),200,'rotated key keeps folder access');
- const removedFolder=await request('/api/app/vault/folders/'+folderId,'DELETE');ok(removedFolder,200,'Vault folder delete');assert.deepEqual(removedFolder.data.movedItemIds,[filed.data.item.id]);
+ const removedFolder=await request('/api/app/vault/folders/'+folderId,'DELETE');ok(removedFolder,200,'Vault folder delete');assert.equal(removedFolder.data.movedItemCount,1);
  ok(await revealHeadless(rotatedKey.data.key,filed.data.item.id),403,'deleted folder removes folder access');
  ok(await request('/api/app/vault/'+filed.data.item.id,'DELETE'),200,'filed secret delete');
  const mcpHeaders={Authorization:'Bearer '+key,Accept:'application/json, text/event-stream'};

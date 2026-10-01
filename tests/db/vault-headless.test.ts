@@ -265,7 +265,7 @@ test("scoped Vault reveals enforce live Postgres permissions and audit before de
     const created = await createWith({ vaultFolderIds: [folder.id] });
     assert.equal((await request(created.key, kept.id)).status, 200);
     const deleted = await repository.vaultFolderDelete(db, { userId: owner }, folder.id);
-    assert.deepEqual(deleted.movedItemIds, [kept.id]);
+    assert.equal(deleted.movedItemCount, 1);
     assert.equal((await sql`select folder_id from creed_vault_items where id=${kept.id}`)[0].folder_id, null);
     await expectDenied(created.key, 403, kept.id);
     await assert.rejects(repository.vaultFolderDelete(db, { userId: owner }, folder.id), { status: 403 });
@@ -439,7 +439,7 @@ test("scoped Vault reveals enforce live Postgres permissions and audit before de
     assert.equal((await request(key, target.id)).status, 200);
 
     const removed = await folderRoute.DELETE(new Request("http://localhost/api/app", { method: "DELETE" }), params(folder.id));
-    assert.deepEqual(await removed.json(), { ok: true, movedItemIds: [target.id] });
+    assert.deepEqual(await removed.json(), { ok: true, movedItemCount: 1 });
     await expectDenied(key, 403, target.id);
   });
 

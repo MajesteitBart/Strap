@@ -1175,7 +1175,7 @@
       "file": "lib/api-key-vault.ts",
       "kind": "content",
       "occurrences": 21,
-      "fingerprint": "125a7c9477c59654b3dff20c861459afc7802917b83ecc7bee2e0bf68836941c",
+      "fingerprint": "c61c08968f738018a0df4c3939b016ea7ffdb262d2cab8db7831bc02f0dadb07",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -1418,7 +1418,7 @@
       "file": "lib/db/repositories/vault.ts",
       "kind": "content",
       "occurrences": 66,
-      "fingerprint": "a2f4fee9b30c00f0511024d0490728073eaab398c65f64775bd61467dacf51f8",
+      "fingerprint": "6a4f37ab23211862fce10e57c617c5072998c7f6398cc9f65e5bef1db8116287",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
