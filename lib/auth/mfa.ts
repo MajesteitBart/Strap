@@ -2,7 +2,7 @@
 // authenticator-app TOTP plus encrypted, single-use recovery codes. Enrollment
 // is optional; once enabled, every new session for the account needs the factor.
 import type { GenericEndpointContext } from "@better-auth/core";
-import { APIError, getSessionFromCtx, isAPIError } from "better-auth/api";
+import { APIError, getAuthoritativeSessionFromCtx, getSessionFromCtx, isAPIError } from "better-auth/api";
 import { deleteSessionCookie } from "better-auth/cookies";
 import { generateRandomString } from "better-auth/crypto";
 import { twoFactor } from "better-auth/plugins/two-factor";
@@ -31,6 +31,7 @@ export type SecurityEvent = {
 };
 
 type Context = GenericEndpointContext;
+type Session = NonNullable<Awaited<ReturnType<typeof getSessionFromCtx>>>;
 type VerifyApi = {
   verifyTOTP: (input: { headers: Headers; body: { code: string } }) => Promise<unknown>;
   verifyBackupCode: (input: { headers: Headers; body: { code: string; disableSession: boolean } }) => Promise<unknown>;
@@ -106,11 +107,20 @@ export function createMfaPolicy(input: {
     throw APIError.from("UNAUTHORIZED", { message: "Invalid code", code: "INVALID_CODE" });
   }
 
-  // Disabling MFA or regenerating recovery codes needs a recent session, the
-  // password when the account has one (plugin) and a current factor (here).
-  async function requireCurrentFactor(ctx: Context) {
-    // Bypass the cookie cache so revoked sessions cannot manage factors.
-    const session = await getSessionFromCtx(ctx, { disableCookieCache: true });
+  // The 60s cookie cache can outlive a revoked session. A two-factor endpoint
+  // must not act on one: it could activate a factor or mint a replacement
+  // session. Returns the live session, or null when the request carries none.
+  async function liveSessionIfPresent(ctx: Context) {
+    if (!await getSessionFromCtx(ctx)) return null;
+    // Clears the cached value so the plugin's own later reads see the database.
+    const live = await getAuthoritativeSessionFromCtx(ctx);
+    if (!live) throw APIError.from("UNAUTHORIZED", { message: "Sign in again.", code: "UNAUTHORIZED" });
+    return live;
+  }
+
+  // Disabling MFA or regenerating recovery codes needs a recent live session,
+  // the password when the account has one and a current factor.
+  async function requireCurrentFactor(ctx: Context, session: Session | null) {
     if (!session) throw APIError.from("UNAUTHORIZED", { message: "Sign in again.", code: "UNAUTHORIZED" });
     const freshAgeMs = (ctx.context.sessionConfig.freshAge ?? 0) * 1000;
     if (freshAgeMs > 0 && Date.now() - new Date(session.session.createdAt).getTime() > freshAgeMs) {
@@ -119,6 +129,17 @@ export function createMfaPolicy(input: {
     const [account] = await db.select({ enabled: users.twoFactorEnabled }).from(users).where(eq(users.id, session.user.id)).limit(1);
     // A pending, unverified enrollment protects nothing yet and can be cancelled.
     if (!account?.enabled) return;
+    // Check the password before spending a single-use recovery code; the
+    // plugin checks it again inside the endpoint.
+    const credential = await ctx.context.internalAdapter.findCredentialAccount(session.user.id);
+    if (credential?.password) {
+      try {
+        await ctx.context.password.checkPassword(session.user.id, ctx);
+      } catch (error) {
+        await emit(ctx, { userId: session.user.id, action: "mfa.step_up_failed", metadata: { operation: ctx.path ?? "unknown" } });
+        throw error;
+      }
+    }
     const code = typeof ctx.body?.code === "string" ? ctx.body.code.trim() : "";
     const headers = ctx.headers ?? new Headers();
     try {
@@ -134,7 +155,7 @@ export function createMfaPolicy(input: {
     } catch {
       // Fall through to one generic rejection.
     }
-    await emit(ctx, { userId: session.user.id, action: "mfa.step_up_failed", metadata: { operation: ctx.path } });
+    await emit(ctx, { userId: session.user.id, action: "mfa.step_up_failed", metadata: { operation: ctx.path ?? "unknown" } });
     throw APIError.from("FORBIDDEN", {
       message: "Enter a current authenticator code or an unused recovery code.",
       code: "MFA_STEP_UP_REQUIRED",
@@ -152,17 +173,13 @@ export function createMfaPolicy(input: {
       // Trusted devices would let a later sign-in skip the factor.
       throw APIError.from("BAD_REQUEST", { message: "Trusted devices are not supported.", code: "TRUST_DEVICE_UNSUPPORTED" });
     }
+    const session = await liveSessionIfPresent(ctx);
     if (path === "/two-factor/verify-totp" && typeof ctx.body?.code === "string") {
-      const session = await getSessionFromCtx(ctx);
       const userId = session?.user.id ?? await challengeUserId(ctx);
       if (userId) await rejectReplay(ctx, userId, ctx.body.code.trim());
       return;
     }
-    if (path === "/two-factor/enable" && !await getSessionFromCtx(ctx, { disableCookieCache: true })) {
-      // Revoked sessions stay in the cookie cache briefly; they must not enroll a factor.
-      throw APIError.from("UNAUTHORIZED", { message: "Sign in again.", code: "UNAUTHORIZED" });
-    }
-    if (STEP_UP_PATHS.has(path)) await requireCurrentFactor(ctx);
+    if (STEP_UP_PATHS.has(path)) await requireCurrentFactor(ctx, session);
   };
 
   // Better Auth's plugin only guards credential sign-in paths. This converts a

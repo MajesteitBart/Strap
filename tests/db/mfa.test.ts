@@ -132,6 +132,24 @@ test("account MFA on local Postgres", { skip: !databaseTestsEnabled }, async (t)
     assert.equal((await db.select().from(twoFactors).where(eq(twoFactors.userId, userId))).length, 0);
   });
 
+  await t.test("a session revoked during enrollment cannot activate the factor", async () => {
+    const enrolling = await signIn();
+    await resetRateLimits();
+    const enabled = await request("/two-factor/enable", { body: { password: PASSWORD }, jar: enrolling.jar });
+    assert.equal(enabled.status, 200);
+    const pendingSecret = new TextDecoder().decode(base32.decode(new URL((await enabled.json() as { totpURI: string }).totpURI).searchParams.get("secret")!));
+    const token = decodeURIComponent([...enrolling.jar.values].find(([name]) => name.endsWith("session_token"))![1]).split(".")[0];
+    await sql`delete from sessions where token=${token}`;
+    const before = await sessionCount();
+    assert.ok(enrolling.jar.has("session_data"), "the cookie cache still vouches for the revoked session");
+    await resetRateLimits();
+    const code = await createOTP(pendingSecret, { period: 30, digits: 6 }).totp();
+    assert.equal((await request("/two-factor/verify-totp", { body: { code }, jar: enrolling.jar })).status, 401);
+    assert.equal((await db.select().from(users).where(eq(users.id, userId)))[0].twoFactorEnabled, false);
+    assert.equal(await sessionCount(), before, "no replacement session was minted");
+    assert.equal(await currentUser(enrolling.jar), null);
+  });
+
   await t.test("enrollment needs the password and proof before activation", async () => {
     await resetRateLimits();
     assert.equal((await request("/two-factor/enable", { body: { password: "Wrong password" }, jar: primary.jar })).status, 400);
@@ -338,7 +356,8 @@ test("account MFA on local Postgres", { skip: !databaseTestsEnabled }, async (t)
     await resetRateLimits();
     assert.equal((await request("/two-factor/disable", { body: { password: "Wrong password", code: backupCodes[0] }, jar })).status, 400);
     await resetRateLimits();
-    const disabled = await request("/two-factor/disable", { body: { password: PASSWORD, code: backupCodes[1] }, jar });
+    // The wrong-password attempt must not have spent the recovery code.
+    const disabled = await request("/two-factor/disable", { body: { password: PASSWORD, code: backupCodes[0] }, jar });
     assert.equal(disabled.status, 200);
     assert.equal((await db.select().from(users).where(eq(users.id, userId)))[0].twoFactorEnabled, false);
     assert.equal((await db.select().from(twoFactors).where(eq(twoFactors.userId, userId))).length, 0);

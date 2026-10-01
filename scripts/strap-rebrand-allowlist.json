@@ -86,7 +86,7 @@
       "file": "SECURITY.md",
       "kind": "content",
       "occurrences": 5,
-      "fingerprint": "065e6ea6aaef0924292b242d714945fa537435234cdf8025b03962dd2e88b48b",
+      "fingerprint": "09eac650344ba511c89699b00bc259da9b89eb2241286026d70252603beda081",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."

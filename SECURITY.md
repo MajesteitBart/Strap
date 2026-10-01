@@ -51,9 +51,10 @@ Implementation decisions:
 - Enrollment is optional per account. Nothing forces MFA on all users or on Company roles; that needs an owner decision.
 - `lib/auth/mfa.ts` holds any new session for an MFA-enabled account, whether it comes from email and password, a Google/X callback, a Google ID token or an email verification link. The session is deleted and a 10-minute challenge is issued instead. Trusted devices are rejected, so every new sign-in needs the factor.
 - Recovery codes are encrypted, shown once and consumed atomically. Accepted TOTP codes are claimed per user until their validity window closes, so a code works once.
-- Turning MFA off and regenerating recovery codes need a live session younger than Better Auth's `freshAge` (1 day), the password when the account has one, and a current TOTP or recovery code. The setup key is never shown after enrollment.
+- Turning MFA off and regenerating recovery codes need a live session younger than Better Auth's `freshAge` (1 day), the password when the account has one, and a current TOTP or recovery code. The password is checked before a recovery code is spent. The setup key is never shown after enrollment.
+- Every two-factor endpoint re-reads the session from the database. A session revoked within the 60-second cookie cache cannot enroll, verify or manage a factor.
 - Activating MFA revokes the account's other sessions. Turning it off keeps existing sessions, which were already MFA-verified. Existing agent keys and OAuth tokens are unaffected.
-- Challenges allow 5 attempts, `/two-factor/*` is limited to 3 requests per 10 seconds per client, and 10 consecutive failures lock the factor for 15 minutes.
+- Each sign-in challenge allows 5 attempts, and 10 consecutive sign-in failures lock the factor for 15 minutes. `/two-factor/*` is limited to 3 requests per 10 seconds per client. Step-up attempts from a signed-in session do not count toward the lockout; they rely on that rate limit plus the session and password checks.
 - `mfa.*` audit events record outcomes only, never codes, secrets or tokens.
 
 ## Self-hosting hardening
