@@ -1,11 +1,11 @@
 // Vault discovery for connected agents: metadata and references only, never values.
-import { envNameNeedsReview as envNameNeedsReviewFor, isProcessControlEnvName, terminalText, vaultEnvName, vaultQueryMatcher, vaultSchemaLine } from "../packages/strap/src/vault/schema.ts";
+import { isProcessControlEnvName, terminalText, vaultEnvName, vaultQueryMatcher, vaultSchemaLine } from "../packages/strap/src/vault/schema.ts";
 
 export const VAULT_TOOLS = [
   {
     name: "strap_list_vault_items",
     description:
-      "List Vault folders and secret metadata in the connected profile: names, descriptions, folders, secret:// references, a suggested .env.schema line for Varlock, and which of your API keys can reveal each secret. Never returns secret values. schemaLine is null when two listed secrets map to the same variable name (envNameConflict) or when the name controls process startup, such as NODE_OPTIONS or PATH (envNameReserved), or when the name does not end in a credential-like word such as KEY, TOKEN, SECRET or URL (envNameNeedsReview). Never write those lines without the user's explicit approval of the variable name. Filter by folder (name or id) or by words from the name or description. Call it on its own, not in a batch.",
+      "List Vault folders and secret metadata in the connected profile: names, descriptions, folders, secret:// references, a suggested .env.schema line for Varlock, and which of your API keys can reveal each secret. Never returns secret values. schemaLine is null when two listed secrets map to the same variable name (envNameConflict) or when the name controls process startup, such as NODE_OPTIONS or PATH (envNameReserved), or, in a Company profile, because another owner or admin may have chosen the name (envNameNeedsReview). Never write those lines without the user's explicit approval of the variable name. Filter by folder (name or id) or by words from the name or description. Call it on its own, not in a batch.",
     inputSchema: {
       type: "object",
       properties: {
@@ -71,10 +71,13 @@ export function buildVaultListing(input: {
   items: Item[];
   keys: Key[];
   caller: VaultCallerGrant | null;
+  /** Personal profiles have a single author of secret names; anything else needs review. */
+  profileType?: string;
   folder?: unknown;
   query?: unknown;
 }) {
   const { folder: folderArg, query: queryArg } = parseVaultListingArgs(input);
+  const namesNeedReview = input.profileType !== "personal";
   // An exact ID wins over a folder that happens to be named like another folder's ID.
   const selected = folderArg
     ? input.folders.find((folder) => folder.id === folderArg.toLowerCase()) ??
@@ -138,8 +141,8 @@ export function buildVaultListing(input: {
       const envNameConflict = (envNameUses.get(envName) ?? 0) > 1;
       // Names that control process startup are never suggested; see isProcessControlEnvName.
       const envNameReserved = isProcessControlEnvName(envName);
-      // Names that do not end in a credential-like word need a person to approve them.
-      const envNameNeedsReview = !envNameReserved && envNameNeedsReviewFor(envName);
+      // In a Company Vault another owner or admin may have chosen this name.
+      const envNameNeedsReview = !envNameReserved && namesNeedReview;
       const folder = item.folderId ? folderById.get(item.folderId) : undefined;
       const { shown, total } = revealers(item);
       return {

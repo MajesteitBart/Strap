@@ -76,7 +76,12 @@ try {
  const discovery=await request('/mcp','POST',{jsonrpc:'2.0',id:10,method:'tools/call',params:{name:'strap_list_vault_items',arguments:{folder:'rehearsal folder'}}},{Authorization:'Bearer '+folderKey.data.key,Accept:'application/json, text/event-stream'});ok(discovery,200,'MCP Vault discovery');
  const listing=JSON.parse(discovery.data.result.content[0].text);
  assert.equal(JSON.stringify(discovery.data).includes('local-folder-fixture'),false);
- assert.deepEqual(listing.items.map(item=>[item.name,item.reference,item.grantedToThisKey]),[['REHEARSAL_FOLDER_SECRET','secret://'+filed.data.item.id,true]]);process.stdout.write('PASS discovery lists references without values\n');
+ assert.deepEqual(listing.items.map(item=>[item.name,item.reference,item.grantedToThisKey]),[['REHEARSAL_FOLDER_SECRET','secret://'+filed.data.item.id,true]]);assert.equal(listing.items[0].envNameNeedsReview,false);assert.ok(listing.items[0].schemaLine);process.stdout.write('PASS discovery lists references without values\n');
+ for (const bad of [[],null,'folder']) {
+   const rejected=await request('/mcp','POST',{jsonrpc:'2.0',id:12,method:'tools/call',params:{name:'strap_list_vault_items',arguments:bad}},{Authorization:'Bearer '+folderKey.data.key,Accept:'application/json, text/event-stream'});
+   assert.ok(rejected.data.error,'non-object Vault arguments must be rejected');assert.equal(JSON.stringify(rejected.data).includes('REHEARSAL_FOLDER_SECRET'),false);
+ }
+ process.stdout.write('PASS malformed Vault arguments are rejected\n');
  ok(await request('/api/app/headless-access/'+folderKey.data.metadata.id,'PATCH',{vaultItemIds:[],vaultFolderIds:[],expected:{vaultItemIds:[],vaultFolderIds:[folderId]}}),200,'remove key grants');
  ok(await request('/api/app/headless-access/'+folderKey.data.metadata.id,'PATCH',{vaultItemIds:[],vaultFolderIds:[folderId],expected:{vaultItemIds:[],vaultFolderIds:[folderId]}}),409,'stale grant edit conflicts');
  ok(await revealHeadless(folderKey.data.key,filed.data.item.id),403,'removed grant blocks reveal');

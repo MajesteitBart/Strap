@@ -36,7 +36,7 @@ test("queries match word prefixes in names and descriptions", () => {
 });
 
 test("schema output uses references, optional instances and rejects name collisions", () => {
-  const entries = [{ name: "SHARE_ARTIFACT_SERVER", envName: "SHARE_ARTIFACT_SERVER", reference }];
+  const entries = [{ name: "SHARE_ARTIFACT_SERVER", envName: "SHARE_ARTIFACT_SERVER", reference, needsReview: false }];
   assert.equal(
     formatVaultSchema(entries, { heading: "Strap Vault, folder share-artifact" }),
     `# Strap Vault, folder share-artifact\n# @sensitive @required\nSHARE_ARTIFACT_SERVER=strap("${reference}")\n`,
@@ -44,19 +44,19 @@ test("schema output uses references, optional instances and rejects name collisi
   assert.match(formatVaultSchema(entries, { instance: "company" }), /=strap\(company, "secret:\/\/[0-9a-f-]{36}"\)\n$/);
   assert.throws(() => formatVaultSchema(entries, { instance: "company\"); evil(" }), /Instance ids/);
   assert.throws(
-    () => formatVaultSchema([...entries, { name: "share artifact server", envName: "SHARE_ARTIFACT_SERVER", reference }]),
+    () => formatVaultSchema([...entries, { name: "share artifact server", envName: "SHARE_ARTIFACT_SERVER", reference, needsReview: false }]),
     /would both become SHARE_ARTIFACT_SERVER/,
   );
 });
 
 test("schema output never turns free text into active schema lines", () => {
-  const entries = [{ name: "SHARE_ARTIFACT_SERVER", envName: "SHARE_ARTIFACT_SERVER", reference }];
+  const entries = [{ name: "SHARE_ARTIFACT_SERVER", envName: "SHARE_ARTIFACT_SERVER", reference, needsReview: false }];
   const output = formatVaultSchema(entries, { heading: "Strap Vault, folder prod\nINJECTED=value\r\nOTHER=x\u0000" });
   const active = output.split("\n").filter((line) => line && !line.startsWith("#"));
   assert.deepEqual(active, [`SHARE_ARTIFACT_SERVER=strap("${reference}")`]);
   assert.equal(output.includes("\u0000"), false);
-  assert.throws(() => formatVaultSchema([{ name: "x", envName: "BAD\nNAME", reference }]), /Invalid variable name/);
-  assert.throws(() => formatVaultSchema([{ name: "x", envName: "OK", reference: `${reference}")\nX=("` }]), /Invalid variable name or secret reference/);
+  assert.throws(() => formatVaultSchema([{ name: "x", envName: "BAD\nNAME", reference, needsReview: false }]), /Invalid variable name/);
+  assert.throws(() => formatVaultSchema([{ name: "x", envName: "OK", reference: `${reference}")\nX=("`, needsReview: false }]), /Invalid variable name or secret reference/);
 });
 
 test("terminal output neutralizes escape sequences from Vault metadata", () => {
@@ -67,8 +67,8 @@ test("terminal output neutralizes escape sequences from Vault metadata", () => {
   assert.equal(terminalText("Plain name, één 🔑"), "Plain name, één 🔑");
   assert.throws(
     () => formatVaultSchema([
-      { name: "A\u001b[2J", envName: "SAME", reference: "secret://11111111-1111-4111-8111-111111111111" },
-      { name: "B", envName: "SAME", reference: "secret://22222222-2222-4222-8222-222222222222" },
+      { name: "A\u001b[2J", envName: "SAME", reference: "secret://11111111-1111-4111-8111-111111111111", needsReview: false },
+      { name: "B", envName: "SAME", reference: "secret://22222222-2222-4222-8222-222222222222", needsReview: false },
     ]),
     (error: unknown) => error instanceof Error && !error.message.includes("\u001b"),
   );
@@ -107,22 +107,22 @@ test("process-control variable names are never generated", async () => {
     assert.equal(isProcessControlEnvName(name), false, name);
   }
   assert.equal(vaultEnvName("node options"), "NODE_OPTIONS");
-  assert.throws(() => formatVaultSchema([{ name: "node options", envName: "NODE_OPTIONS", reference }]), /NODE_OPTIONS controls how programs start/);
+  assert.throws(() => formatVaultSchema([{ name: "node options", envName: "NODE_OPTIONS", reference, needsReview: false }]), /NODE_OPTIONS controls how programs start/);
 });
 
-test("unusual variable names are printed commented out for review", async () => {
-  const { envNameNeedsReview, isProcessControlEnvName } = await import("../src/vault/schema.js");
-  assert.equal(isProcessControlEnvName("GIT_EXTERNAL_DIFF"), true);
-  assert.equal(isProcessControlEnvName("NODE_ENV"), true);
-  for (const name of ["STRIPE_KEY", "DATABASE_URL", "SHARE_ARTIFACT_SERVER", "API_TOKEN", "DB_PASSWORD"]) assert.equal(envNameNeedsReview(name), false, name);
-  for (const name of ["DEPLOYMENT_API", "OTHER", "KEY", "MY_EXTERNAL_DIFF", "PROMPT"]) assert.equal(envNameNeedsReview(name), true, name);
+test("names another manager may have chosen are printed commented out", async () => {
+  const { isProcessControlEnvName } = await import("../src/vault/schema.js");
+  for (const name of ["GIT_EXTERNAL_DIFF", "NODE_ENV", "DOCKER_HOST", "KUBECONFIG", "COMPOSE_FILE", "AWS_ENDPOINT_URL"]) {
+    assert.equal(isProcessControlEnvName(name), true, name);
+  }
   const output = formatVaultSchema([
-    { name: "Deployment API", envName: "DEPLOYMENT_API", reference },
-    { name: "Stripe key", envName: "STRIPE_KEY", reference: "secret://22222222-2222-4222-8222-222222222222" },
+    { name: "Deployment API", envName: "DEPLOYMENT_API", reference, needsReview: true },
+    { name: "Stripe key", envName: "STRIPE_KEY", reference: "secret://22222222-2222-4222-8222-222222222222", needsReview: false },
   ]);
   const active = output.split("\n").filter((line) => line && !line.startsWith("#"));
   assert.deepEqual(active, ['STRIPE_KEY=strap("secret://22222222-2222-4222-8222-222222222222")']);
-  assert.match(output, /# Review DEPLOYMENT_API before enabling/);
+  assert.match(output, /# Review DEPLOYMENT_API before enabling: another manager may have named this secret\./);
   assert.match(output, new RegExp(`# DEPLOYMENT_API=strap\\("${reference}"\\)`));
-  assert.throws(() => formatVaultSchema([{ name: "git external diff", envName: "GIT_EXTERNAL_DIFF", reference }]), /GIT_EXTERNAL_DIFF controls how programs start/);
+  // Reserved names are refused even when the user named them.
+  assert.throws(() => formatVaultSchema([{ name: "docker host", envName: "DOCKER_HOST", reference, needsReview: false }]), /DOCKER_HOST controls how programs start/);
 });

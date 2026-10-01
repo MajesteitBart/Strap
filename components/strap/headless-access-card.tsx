@@ -38,11 +38,15 @@ function plural(count: number, noun: string) {
   return `${count} ${noun}${count === 1 ? "" : "s"}`;
 }
 
-function grantSummary(key: KeyMetadata) {
-  const parts = [
-    key.vaultFolderIds?.length ? plural(key.vaultFolderIds.length, "folder") : "",
-    key.vaultItemIds?.length ? plural(key.vaultItemIds.length, "secret") : "",
-  ].filter(Boolean);
+/**
+ * Grants can outlive deleted folders and secrets. Once Vault metadata is
+ * loaded, count only those that still exist, so a key that can no longer
+ * reveal anything does not look configured.
+ */
+function grantSummary(key: KeyMetadata, live: { folderIds: Set<string>; itemIds: Set<string> } | null) {
+  const folders = (key.vaultFolderIds ?? []).filter((id) => !live || live.folderIds.has(id)).length;
+  const secrets = (key.vaultItemIds ?? []).filter((id) => !live || live.itemIds.has(id)).length;
+  const parts = [folders ? plural(folders, "folder") : "", secrets ? plural(secrets, "secret") : ""].filter(Boolean);
   return parts.length ? `Secret access: ${parts.join(", ")}` : "No secret access";
 }
 
@@ -128,6 +132,7 @@ function HeadlessAccessForm({ creedId, canUseVault }: { creedId: string | undefi
   // load can never be saved as "no access".
   const [vaultLoaded, setVaultLoaded] = useState(false);
   const rotating = useRef(false);
+  const liveGrants = vaultLoaded ? { folderIds: new Set(vaultFolders.map((folder) => folder.id)), itemIds: new Set(vaultItems.map((item) => item.id)) } : null;
 
   const fetchVault = useCallback(async (signal?: AbortSignal) => {
     const response = await fetch(`/api/app/vault?strapId=${encodeURIComponent(creedId ?? "")}`, { cache: "no-store", signal });
@@ -286,6 +291,8 @@ function HeadlessAccessForm({ creedId, canUseVault }: { creedId: string | undefi
   }
 
   async function revokeKey(id: string) {
+    // A revoke landing during a rotation would leave a dead value on screen.
+    if (rotating.current) return;
     if (!window.confirm("Revoke this API key? Headless clients using it will disconnect immediately.")) return;
     setError(null);
     const response = await fetch(`/api/app/headless-access/${encodeURIComponent(id)}`, { method: "DELETE" });
@@ -380,15 +387,15 @@ function HeadlessAccessForm({ creedId, canUseVault }: { creedId: string | undefi
                   <div className="mt-1 text-[12px] text-[var(--strap-text-tertiary)]">
                     <span className="font-mono">{key.prefix}…</span> · {MODE_LABEL[key.mode]} · {key.revokedAt ? "Revoked" : expired ? "Expired" : key.expiresAt ? `Expires ${new Date(key.expiresAt).toLocaleDateString()}` : "No expiry"}
                   </div>
-                  <p className="mt-1 text-xs text-[var(--strap-text-secondary)]">{grantSummary(key)}</p>
+                  <p className="mt-1 text-xs text-[var(--strap-text-secondary)]">{grantSummary(key, liveGrants)}</p>
                 </div>
                 {!key.revokedAt && expired ? (
-                  <Button size="icon" variant="ghost" aria-label={`Revoke ${key.name}`} title="Revoke key" onClick={() => void revokeKey(key.id)}><Trash2 className="h-4 w-4" /></Button>
+                  <Button size="icon" variant="ghost" aria-label={`Revoke ${key.name}`} title="Revoke key" disabled={busy} onClick={() => void revokeKey(key.id)}><Trash2 className="h-4 w-4" /></Button>
                 ) : !key.revokedAt ? (
                   <div className="flex items-center gap-1">
                     {canUseVault && vaultLoaded ? <Button size="icon" variant="ghost" aria-label={`Edit secret access for ${key.name}`} title="Edit secret access" disabled={busy} onClick={() => void editGrants(key)}><ShieldCheck className="h-4 w-4" /></Button> : null}
                     <Button size="icon" variant="ghost" aria-label={`Rotate ${key.name}`} title="Rotate key value" disabled={busy} onClick={() => void rotateKey(key)}><RefreshCw className="h-4 w-4" /></Button>
-                    <Button size="icon" variant="ghost" aria-label={`Revoke ${key.name}`} title="Revoke key" onClick={() => void revokeKey(key.id)}><Trash2 className="h-4 w-4" /></Button>
+                    <Button size="icon" variant="ghost" aria-label={`Revoke ${key.name}`} title="Revoke key" disabled={busy} onClick={() => void revokeKey(key.id)}><Trash2 className="h-4 w-4" /></Button>
                   </div>
                 ) : null}
               </div>

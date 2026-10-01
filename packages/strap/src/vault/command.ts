@@ -2,7 +2,7 @@ import type { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { CliError } from "../errors.js";
 import { writeJson } from "../terminal/output.js";
 import { isRecord } from "../skills/bundle.js";
-import { envNameNeedsReview, formatVaultSchema, isVaultInstanceId, terminalText } from "./schema.js";
+import { formatVaultSchema, isVaultInstanceId, terminalText } from "./schema.js";
 
 export const VAULT_USAGE = `Usage: strap vault folders
        strap vault list [--folder NAME] [--query TEXT]
@@ -56,6 +56,8 @@ type Item = {
   revealableBy: Key[];
   /** All keys that can reveal the secret; revealableBy may list only the first ones. */
   revealableByCount: number;
+  /** Someone else may have chosen this name, so its schema line starts commented out. */
+  needsReview: boolean;
 };
 
 function text(value: unknown): value is string {
@@ -74,7 +76,9 @@ function parseListing(data: unknown): { folders: Folder[]; items: Item[] } {
     const folder = isRecord(entry.folder) && text(entry.folder.id) && text(entry.folder.name) ? { id: entry.folder.id, name: entry.folder.name } : null;
     const revealableBy = entry.revealableBy.filter((key: unknown): key is Key => isRecord(key) && text(key.id) && text(key.name) && text(key.prefix));
     const revealableByCount = typeof entry.revealableByCount === "number" && entry.revealableByCount >= revealableBy.length ? entry.revealableByCount : revealableBy.length;
-    return { id: entry.id, reference: entry.reference, name: entry.name, description: entry.description, folder, envName: entry.envName, revealableBy, revealableByCount };
+    // Servers that do not send the flag get the safe default.
+    const needsReview = entry.envNameNeedsReview !== false;
+    return { id: entry.id, reference: entry.reference, name: entry.name, description: entry.description, folder, envName: entry.envName, revealableBy, revealableByCount, needsReview };
   });
   return { folders, items };
 }
@@ -129,10 +133,10 @@ export async function runVaultCommand(client: Client, command: VaultCommand, jso
   } catch (error) {
     throw new CliError(error instanceof Error ? error.message : "Could not format the schema.", 3);
   }
-  const needsReview = listing.items.filter((entry) => envNameNeedsReview(entry.envName)).map((entry) => entry.envName);
-  if (json) return writeJson({ schema, items: listing.items.map(({ name, envName, reference }) => ({ name, envName, reference, needsReview: envNameNeedsReview(envName) })) });
+  const needsReview = listing.items.filter((entry) => entry.needsReview).map((entry) => entry.envName);
+  if (json) return writeJson({ schema, items: listing.items.map(({ name, envName, reference, needsReview: review }) => ({ name, envName, reference, needsReview: review })) });
   process.stdout.write(schema);
   if (needsReview.length) {
-    process.stderr.write(`${needsReview.length} line${needsReview.length === 1 ? " is" : "s are"} commented out until you review the variable name: ${needsReview.join(", ")}. Uncomment only names you expect your application to read.\n`);
+    process.stderr.write(`${needsReview.length} line${needsReview.length === 1 ? " is" : "s are"} commented out until you review the variable name, because another owner or admin may have named these secrets: ${needsReview.join(", ")}. Uncomment only names you expect your application to read.\n`);
   }
 }

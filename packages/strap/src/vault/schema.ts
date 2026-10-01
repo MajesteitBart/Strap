@@ -2,7 +2,8 @@
 
 const INSTANCE_ID = /^[A-Za-z_][A-Za-z0-9_-]{0,63}$/;
 
-export type VaultSchemaEntry = { name: string; reference: string; envName: string };
+/** needsReview: the name may have been chosen by someone else, so the line starts commented out. */
+export type VaultSchemaEntry = { name: string; reference: string; envName: string; needsReview: boolean };
 
 /**
  * Makes Vault text safe for a terminal. Names and descriptions come from other
@@ -50,15 +51,16 @@ export function isVaultInstanceId(value: string): boolean {
 
 const ENV_NAME = /^[A-Z_][A-Z0-9_]*$/;
 
-// Variable names come from secret names, which other profile managers may
-// choose. Two rules keep a generated schema from running code or redirecting
-// traffic on the machine of whoever resolves it:
-// 1. Known startup, shell, loader, package-manager, VCS and proxy variables are
-//    never generated (isProcessControlEnvName).
-// 2. Any other name is only generated as an active line when it ends in a
-//    credential-like word; everything else needs a person to review it first
-//    (envNameNeedsReview). No list of dangerous names is complete, so the
-//    second rule is what bounds the risk.
+// Variable names come from secret names. Two rules keep a generated schema
+// from running code or redirecting traffic on the machine of whoever
+// resolves it:
+// 1. Known startup, shell, loader, package-manager, VCS, container and proxy
+//    variables are never generated (isProcessControlEnvName).
+// 2. Where someone else can name secrets (a Company Vault), every generated
+//    line starts commented out until a person approves the name
+//    (VaultSchemaEntry.needsReview). No list of dangerous names is complete;
+//    any name, even one that looks like a credential, can steer a tool, so
+//    the review rule is what bounds the risk.
 const PROCESS_CONTROL_NAMES = new Set([
   "STRAP_API_KEY",
   "PATH", "PATHEXT", "COMSPEC", "SHELL", "ENV", "SHELLOPTS", "PS4", "IFS", "PROMPT_COMMAND", "CDPATH",
@@ -67,17 +69,14 @@ const PROCESS_CONTROL_NAMES = new Set([
   "SSL_CERT_FILE", "SSL_CERT_DIR", "CURL_CA_BUNDLE", "REQUESTS_CA_BUNDLE",
   "HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "NO_PROXY", "FTP_PROXY",
   "GOPROXY", "GOFLAGS", "GONOSUMDB", "GOPRIVATE", "GOSUMDB", "GOINSECURE",
+  "AWS_ENDPOINT_URL", "AWS_CONFIG_FILE", "AWS_SHARED_CREDENTIALS_FILE", "AWS_CA_BUNDLE",
   "HOME", "USERPROFILE", "APPDATA", "LOCALAPPDATA", "TMPDIR", "TEMP", "TMP", "XDG_CONFIG_HOME", "XDG_DATA_HOME",
 ]);
 const PROCESS_CONTROL_PREFIXES = [
   "LD_", "DYLD_", "NODE_", "NPM_CONFIG_", "YARN_", "PNPM_", "BUN_", "DENO_", "GIT_", "BASH", "ZSH", "PYTHON", "PIP_", "UV_",
   "PERL", "RUBY", "GEM_", "BUNDLE_", "JAVA_", "MAVEN_", "GRADLE_", "DOTNET_", "COR_", "CORECLR_", "CARGO_", "RUSTC", "RUSTFLAGS",
+  "DOCKER_", "COMPOSE_", "BUILDKIT_", "KUBE", "HELM_", "TF_CLI_",
 ];
-// Last word of a generated name that marks it as an ordinary credential or address.
-const CREDENTIAL_SUFFIXES = new Set([
-  "KEY", "KEYS", "TOKEN", "TOKENS", "SECRET", "SECRETS", "PASSWORD", "PASS", "PWD", "PASSPHRASE", "CREDENTIALS", "AUTH",
-  "URL", "URI", "DSN", "HOST", "SERVER", "ENDPOINT", "USER", "USERNAME", "ID", "ACCOUNT", "SALT", "WEBHOOK",
-]);
 
 /** True for variable names that control process startup and are never suggested. */
 export function isProcessControlEnvName(name: string): boolean {
@@ -85,11 +84,6 @@ export function isProcessControlEnvName(name: string): boolean {
   return PROCESS_CONTROL_NAMES.has(upper) || PROCESS_CONTROL_PREFIXES.some((prefix) => upper.startsWith(prefix));
 }
 
-/** True when a generated name does not end in a credential-like word and needs a person to review it. */
-export function envNameNeedsReview(name: string): boolean {
-  const words = name.toUpperCase().split("_").filter(Boolean);
-  return words.length < 2 || !CREDENTIAL_SUFFIXES.has(words[words.length - 1]!);
-}
 const REFERENCE = /^secret:\/\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
 export function vaultSchemaLine(entry: Pick<VaultSchemaEntry, "envName" | "reference">, instance?: string): string {
@@ -119,12 +113,12 @@ export function formatVaultSchema(entries: VaultSchemaEntry[], options: { instan
     if (previous) throw new Error(`"${terminalText(previous)}" and "${terminalText(entry.name)}" would both become ${entry.envName}. Rename one or narrow the selection.`);
     seen.set(entry.envName, entry.name);
   }
-  // Names that are not clearly credentials are emitted commented out, so they
-  // take effect only after someone reads and uncomments them.
+  // Names someone else may have chosen are emitted commented out, so they
+  // take effect only after a person reads and uncomments them.
   const lines = entries.map((entry) => {
     const line = vaultSchemaLine(entry, options.instance);
-    if (!envNameNeedsReview(entry.envName)) return line;
-    return [`# Review ${entry.envName} before enabling: it does not end in KEY, TOKEN, SECRET, URL or a similar word.`, ...line.split("\n").map((part) => `# ${part}`)].join("\n");
+    if (!entry.needsReview) return line;
+    return [`# Review ${entry.envName} before enabling: another manager may have named this secret.`, ...line.split("\n").map((part) => `# ${part}`)].join("\n");
   });
   return [...(options.heading ? commentLines(options.heading) : []), ...lines].join("\n") + "\n";
 }

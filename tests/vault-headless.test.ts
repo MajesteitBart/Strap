@@ -55,7 +55,7 @@ test("Vault discovery lists metadata for managers only and never carries values"
     { id: "k1", name: "Artifact CI", prefix: "strap_key_abc", vaultItemIds: [], vaultFolderIds: [folderId] },
     { id: "k2", name: "Billing", prefix: "strap_key_def", vaultItemIds: [otherItemId], vaultFolderIds: [] },
   ];
-  const listing = buildVaultListing({ folders, items, keys, caller: null });
+  const listing = buildVaultListing({ profileType: "personal", folders, items, keys, caller: null });
   assert.deepEqual(listing.folders, [{ id: folderId, name: "share-artifact", description: "Artifact uploads", itemCount: 1 }]);
   assert.deepEqual(listing.items.map((item) => item.revealableBy.map((key) => key.name)), [["Artifact CI"], ["Billing"]]);
   assert.equal(listing.items[0]?.schemaLine, `# @sensitive @required\nSHARE_ARTIFACT_SERVER=strap("secret://${itemId}")`);
@@ -63,11 +63,11 @@ test("Vault discovery lists metadata for managers only and never carries values"
   assert.equal("grantedToThisKey" in listing.items[0]!, false);
   assert.equal(JSON.stringify(listing).includes("ciphertext"), false);
 
-  const filtered = buildVaultListing({ folders, items, keys, caller: { keyId: "k1", vaultItemIds: [], vaultFolderIds: [folderId] }, folder: "SHARE-ARTIFACT", query: "upload" });
+  const filtered = buildVaultListing({ profileType: "personal", folders, items, keys, caller: { keyId: "k1", vaultItemIds: [], vaultFolderIds: [folderId] }, folder: "SHARE-ARTIFACT", query: "upload" });
   assert.deepEqual(filtered.items.map((item) => [item.name, item.grantedToThisKey]), [["SHARE_ARTIFACT_SERVER", true]]);
   assert.equal(filtered.folders[0]?.grantedToThisKey, true);
-  assert.deepEqual(buildVaultListing({ folders, items, keys, caller: null, query: "artifact server" }).items.map((item) => item.name), ["SHARE_ARTIFACT_SERVER"]);
-  assert.throws(() => buildVaultListing({ folders, items, keys, caller: null, folder: "missing" }), (error: unknown) =>
+  assert.deepEqual(buildVaultListing({ profileType: "personal", folders, items, keys, caller: null, query: "artifact server" }).items.map((item) => item.name), ["SHARE_ARTIFACT_SERVER"]);
+  assert.throws(() => buildVaultListing({ profileType: "personal", folders, items, keys, caller: null, folder: "missing" }), (error: unknown) =>
     error instanceof VaultListingError && /Available folders: "share-artifact"/.test(error.message));
 });
 
@@ -88,11 +88,11 @@ test("listings index grants once and keep error text inert", () => {
     { id: "k2", name: "None", prefix: "p2", vaultItemIds: [], vaultFolderIds: [] },
     { id: "k3", name: "Folder", prefix: "p3", vaultItemIds: [], vaultFolderIds: [folderId] },
   ];
-  const listing = buildVaultListing({ folders, items, keys, caller: { keyId: "k3", vaultItemIds: [], vaultFolderIds: [folderId] } });
+  const listing = buildVaultListing({ profileType: "personal", folders, items, keys, caller: { keyId: "k3", vaultItemIds: [], vaultFolderIds: [folderId] } });
   assert.deepEqual(listing.items[0]?.revealableBy.map((key) => key.id), ["k1", "k3"]);
   assert.equal(listing.items[0]?.grantedToThisKey, true);
   assert.deepEqual(listing.folders.map((folder) => folder.itemCount), [1, 0]);
-  assert.throws(() => buildVaultListing({ folders, items, keys, caller: null, folder: "missing" }), (error: unknown) =>
+  assert.throws(() => buildVaultListing({ profileType: "personal", folders, items, keys, caller: null, folder: "missing" }), (error: unknown) =>
     error instanceof VaultListingError && !/[\u0000-\u001f\u007f-\u009f]/.test(error.message) && error.message.includes('"ops"'));
 });
 
@@ -106,7 +106,7 @@ test("folder lookup prefers IDs, filters are bounded and revealers are capped wi
     { id: otherItemId, folderId: decoyId, name: "DECOY_SECRET", description: "", updatedAt: "2026-10-01T00:00:00.000Z" },
   ];
   const keys = Array.from({ length: 25 }, (_, index) => ({ id: `k${index}`, name: `Key ${index}`, prefix: `p${index}`, vaultItemIds: index === 3 ? [itemId] : [], vaultFolderIds: [realId] }));
-  const listing = buildVaultListing({ folders, items, keys, caller: null, folder: realId });
+  const listing = buildVaultListing({ profileType: "personal", folders, items, keys, caller: null, folder: realId });
   assert.deepEqual(listing.items.map((item) => item.name), ["REAL_SECRET"]);
   assert.equal(listing.items[0]?.revealableByCount, 25);
   assert.equal(listing.items[0]?.revealableBy.length, MAX_REVEALABLE_BY);
@@ -122,14 +122,14 @@ test("colliding variable names get no schema line", () => {
     { id: otherItemId, folderId: null, name: "deploy key", description: "", updatedAt: "2026-10-01T00:00:00.000Z" },
     { id: "77777777-7777-4777-8777-777777777777", folderId: null, name: "Other token", description: "", updatedAt: "2026-10-01T00:00:00.000Z" },
   ];
-  const listing = buildVaultListing({ folders: [], items, keys: [], caller: null });
+  const listing = buildVaultListing({ profileType: "personal", folders: [], items, keys: [], caller: null });
   assert.deepEqual(listing.items.map((item) => [item.envName, item.envNameConflict, item.schemaLine === null]), [
     ["DEPLOY_KEY", true, true],
     ["DEPLOY_KEY", true, true],
     ["OTHER_TOKEN", false, false],
   ]);
   // Without the colliding sibling the suggestion is usable again.
-  const alone = buildVaultListing({ folders: [], items: [items[0]!, items[2]!], keys: [], caller: null });
+  const alone = buildVaultListing({ profileType: "personal", folders: [], items: [items[0]!, items[2]!], keys: [], caller: null });
   assert.equal(alone.items[0]?.envNameConflict, false);
   assert.equal(alone.items[0]?.schemaLine, `# @sensitive @required\nDEPLOY_KEY=strap("secret://${itemId}")`);
 });
@@ -139,7 +139,7 @@ test("listings never suggest process-control variable names", () => {
     { id: itemId, folderId: null, name: "NODE_OPTIONS", description: "", updatedAt: "2026-10-01T00:00:00.000Z" },
     { id: otherItemId, folderId: null, name: "STRIPE_KEY", description: "", updatedAt: "2026-10-01T00:00:00.000Z" },
   ];
-  const listing = buildVaultListing({ folders: [], items, keys: [], caller: null });
+  const listing = buildVaultListing({ profileType: "personal", folders: [], items, keys: [], caller: null });
   assert.deepEqual(listing.items.map((item) => [item.envName, item.envNameReserved, item.schemaLine === null]), [
     ["NODE_OPTIONS", true, true],
     ["STRIPE_KEY", false, false],
@@ -155,9 +155,15 @@ test("filters must be strings and unusual names need review", () => {
     { id: itemId, folderId: null, name: "Deployment API", description: "", updatedAt: "2026-10-01T00:00:00.000Z" },
     { id: otherItemId, folderId: null, name: "Deployment token", description: "", updatedAt: "2026-10-01T00:00:00.000Z" },
   ];
-  const listing = buildVaultListing({ folders: [], items, keys: [], caller: null });
-  assert.deepEqual(listing.items.map((item) => [item.envName, item.envNameNeedsReview, item.schemaLine === null]), [
-    ["DEPLOYMENT_API", true, true],
+  // Personal profile: only the owner names secrets, so lines are offered.
+  const personal = buildVaultListing({ profileType: "personal", folders: [], items, keys: [], caller: null });
+  assert.deepEqual(personal.items.map((item) => [item.envName, item.envNameNeedsReview, item.schemaLine === null]), [
+    ["DEPLOYMENT_API", false, false],
     ["DEPLOYMENT_TOKEN", false, false],
   ]);
+  // Company profile, or an unknown type: another manager may have chosen the names.
+  for (const profileType of ["company", undefined]) {
+    const shared = buildVaultListing({ profileType, folders: [], items, keys: [], caller: null });
+    assert.deepEqual(shared.items.map((item) => [item.envNameNeedsReview, item.schemaLine]), [[true, null], [true, null]]);
+  }
 });

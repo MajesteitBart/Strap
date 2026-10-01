@@ -999,10 +999,12 @@ async function handleToolCall(
   }
 
   if (VAULT_TOOLS.some((tool) => tool.name === name)) {
-    return jsonToolResult(await callVaultTool(args, {
+    const profile = state.creeds?.find((entry) => entry.id === state.creedId);
+    return jsonToolResult(await callVaultTool(params.arguments, {
       userId,
       strapId: state.creedId,
-      role: state.creeds?.find((entry) => entry.id === state.creedId)?.role,
+      role: profile?.role,
+      profileType: profile?.type,
       caller: vaultCaller,
     }));
   }

@@ -671,7 +671,7 @@
       "file": "app/mcp/route.ts",
       "kind": "content",
       "occurrences": 145,
-      "fingerprint": "73d18d7658bbf022099c229fef5f607e051daf041b29fd1c8edbeacf9c58d4ef",
+      "fingerprint": "7758b8ba64adf2a612401c270a0f0a8188b05507c6e073189686eb945e1e7790",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -914,7 +914,7 @@
       "file": "components/strap/headless-access-card.tsx",
       "kind": "content",
       "occurrences": 18,
-      "fingerprint": "b9ec99552cfd262237d8596eed15bb33217afb8b480e8e11438d7dc1930d53d3",
+      "fingerprint": "181aea13ce7964169fb23609d8ada4f1c8752f0e6659b52a7fb3cf13aa9144f2",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -2309,7 +2309,7 @@
       "file": "scripts/verify-local-runtime.mjs",
       "kind": "content",
       "occurrences": 24,
-      "fingerprint": "51643a99484a9e409a806ff42eb94f214520bff1930fa265e39591b4ab820367",
+      "fingerprint": "72895a1a0c768c17cd7e5e4364fd52505c1d799be6285329ffb9ec7e050c7033",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
