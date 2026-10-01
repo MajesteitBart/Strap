@@ -223,6 +223,8 @@ function HeadlessAccessForm({ creedId, canUseVault }: { creedId: string | undefi
     if (rotating.current) return;
     if (!window.confirm(`Rotate ${key.name}? The current value stops working immediately. Its mode, expiry and secret access stay the same.`)) return;
     rotating.current = true;
+    // Any value still on screen may stop working once this rotation commits.
+    setCreatedKey(null);
     setBusy(true);
     setError(null);
     // The server may have committed the rotation before the connection failed.

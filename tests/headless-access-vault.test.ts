@@ -87,7 +87,8 @@ test("MCP enforcement has no explicit-grant fallback and strips mutation tokens"
   assert.match(mcpRoute, /identifier: digestCredential\(bearer\)/);
   assert.match(
     mcpRoute,
-    /resolved\.credentialType === "oauth" && state\.creedId/,
+    // The request uses the credential re-resolved after the body was read.
+    /credential\.credentialType === "oauth" && state\.creedId/,
   );
   assert.match(
     mcpRoute,

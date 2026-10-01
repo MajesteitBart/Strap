@@ -671,7 +671,7 @@
       "file": "app/mcp/route.ts",
       "kind": "content",
       "occurrences": 145,
-      "fingerprint": "e4fbfd8e0790a87cd8cfa08e78f65846831dc720a5e0a13b8611ef50fa748809",
+      "fingerprint": "73d18d7658bbf022099c229fef5f607e051daf041b29fd1c8edbeacf9c58d4ef",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -1418,7 +1418,7 @@
       "file": "lib/db/repositories/vault.ts",
       "kind": "content",
       "occurrences": 66,
-      "fingerprint": "6a4f37ab23211862fce10e57c617c5072998c7f6398cc9f65e5bef1db8116287",
+      "fingerprint": "9cfa3c92fd664235bdc864762708345f027f01b9ff11d8f9e69f33d9a09b582d",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -2407,8 +2407,8 @@
     {
       "file": "tests/db/vault-headless.test.ts",
       "kind": "content",
-      "occurrences": 105,
-      "fingerprint": "2e547f9480885a3de9ffb485d752d7f96075248ba5920662738f7e429883d839",
+      "occurrences": 107,
+      "fingerprint": "4d3c0dc805e81aa756f78dc64f44dab81e31737134e9012168e74d8ac3b8cbc1",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -2426,7 +2426,7 @@
       "file": "tests/headless-access-vault.test.ts",
       "kind": "content",
       "occurrences": 9,
-      "fingerprint": "0af3fe2973ae6bd4562656b174172d4c38c1e122470f1e87bdc35a3e6dab02d1",
+      "fingerprint": "5bfcbd3ebc8a9d88406b066912ada935780f499696d7f9d02a42251c4e6b1fb0",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."

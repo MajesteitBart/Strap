@@ -88,3 +88,12 @@ test("CLI error output strips escape sequences but keeps usage line breaks", asy
   assert.equal(/[\u001b\u0080-\u009f]/.test(errorMessage(echoed)), false);
   assert.equal(errorMessage(new Error("Usage: strap vault folders\n       strap vault list\tok")), "Usage: strap vault folders\n       strap vault list\tok");
 });
+
+test("generic tool output escapes C1 controls in JSON and sanitizes plain text", async () => {
+  const { terminalJson, terminalPlainText } = await import("../src/terminal/output.js");
+  const value = { name: "evil\u009d52;c;ZXZpbA==\u009c", note: "del\u007f", esc: "\u001b[2J" };
+  const json = terminalJson(value);
+  assert.equal(/[\u001b\u007f-\u009f]/.test(json), false);
+  assert.deepEqual(JSON.parse(json), value);
+  assert.equal(terminalPlainText("line one\n\tline two\u001b]52;c;x\u0007\u009b"), "line one\n\tline two?]52;c;x??");
+});

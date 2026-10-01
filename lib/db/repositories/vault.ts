@@ -1,7 +1,7 @@
 import { and, asc, eq, inArray, or, sql, type SQLWrapper } from "drizzle-orm";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { randomUUID } from "node:crypto";
-import { creed_members, creeds, strap_vault_folders as folders, creed_vault_items as items } from "../../../db/schema/application.ts";
+import { creed_headless_access_keys as headlessKeys, creed_members, creeds, strap_vault_folders as folders, creed_vault_items as items } from "../../../db/schema/application.ts";
 import type { Viewer } from "../../authz/viewer.ts";
 import { decryptVaultSecret, encryptVaultSecret } from "../../vault-crypto.ts";
 import { vaultGrantCovers } from "../../vault-grants.ts";
@@ -153,23 +153,34 @@ export async function vaultReveal(db: PostgresJsDatabase, viewer: Viewer, id: st
   const [row] = await db.select({ ...metadata, ciphertext: items.secret_ciphertext }).from(items).where(and(eq(items.id, id), credentialScope, scope(viewer, items.creed_id))).limit(1);
   if (!row) throw new VaultRepositoryError(credential ? NOT_GRANTED : "Forbidden", 403);
   if (credential && !vaultGrantCovers(credential, { id: row.id, folderId: row.folder_id })) throw new VaultRepositoryError(NOT_GRANTED, 403);
-  // A folder grant holds only while the item stays in that folder.
-  const viaFolder = credential && !credential.vaultItemIds.includes(id) && row.folder_id ? row.folder_id : null;
   const accessedAt = new Date().toISOString();
-  // The key was resolved at the start of the request. Before decrypting,
-  // confirm it was not rotated, revoked, expired or stripped of this grant
-  // meanwhile, in the same statement that records the access.
-  const keyStillValid = credential
-    ? sql`exists (select 1 from public.creed_headless_access_keys k where k.id = ${credential.keyId} and k.key_hash = ${credential.keyHash} and k.revoked_at is null and (k.expires_at is null or k.expires_at > now()) and (${items.id} = any(k.vault_item_ids) or ${items.folder_id} = any(k.vault_folder_ids)))`
-    : undefined;
+  const changed = () => new VaultRepositoryError("Vault item changed or access was removed. Try again.", 409);
   // The final authorization and the required audit commit together: a refused
   // reveal leaves no audit row, and an audit failure leaves no access record.
   // Plaintext is decrypted only after the commit.
   await db.transaction(async (tx) => {
+    // The key was resolved at the start of the request. Lock its row and use
+    // the live state: it must still have the hash it authenticated with, be
+    // unrevoked and unexpired, and grant this item. The audit then names the
+    // grant that actually authorized the reveal.
+    let grant: { folderId: string } | null = null;
+    if (credential) {
+      const [key] = await tx.select({
+        itemIds: headlessKeys.vault_item_ids,
+        folderIds: headlessKeys.vault_folder_ids,
+        usable: sql<boolean>`${headlessKeys.revoked_at} is null and (${headlessKeys.expires_at} is null or ${headlessKeys.expires_at} > now())`,
+      }).from(headlessKeys).where(and(eq(headlessKeys.id, credential.keyId), eq(headlessKeys.key_hash, credential.keyHash))).for("share");
+      if (!key?.usable) throw changed();
+      if (!key.itemIds.includes(row.id)) {
+        if (!row.folder_id || !key.folderIds.includes(row.folder_id)) throw changed();
+        grant = { folderId: row.folder_id };
+      }
+    }
+    // A folder grant holds only while the item stays in that folder.
     const [stillAuthorized] = await tx.update(items).set({ last_accessed_at: accessedAt })
-      .where(and(eq(items.id, id), credentialScope, viaFolder ? eq(items.folder_id, viaFolder) : undefined, eq(items.secret_ciphertext, row.ciphertext), scope(viewer, items.creed_id), keyStillValid)).returning({ id: items.id });
-    if (!stillAuthorized) throw new VaultRepositoryError("Vault item changed or access was removed. Try again.", 409);
-    try { await audit(tx, row.creed_id, viaFolder ? { folderId: viaFolder } : null); } catch { throw new VaultRepositoryError("Vault reveal audit is unavailable.", 503); }
+      .where(and(eq(items.id, id), credentialScope, grant ? eq(items.folder_id, grant.folderId) : undefined, eq(items.secret_ciphertext, row.ciphertext), scope(viewer, items.creed_id))).returning({ id: items.id });
+    if (!stillAuthorized) throw changed();
+    try { await audit(tx, row.creed_id, grant); } catch { throw new VaultRepositoryError("Vault reveal audit is unavailable.", 503); }
   });
   const { ciphertext, ...item } = row;
   return { item: { ...item, last_accessed_at: accessedAt }, secret: decryptVaultSecret(ciphertext, item.id, item.creed_id) };

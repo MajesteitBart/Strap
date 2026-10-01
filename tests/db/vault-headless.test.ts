@@ -554,6 +554,18 @@ test("scoped Vault reveals enforce live Postgres permissions and audit before de
     assert.equal(await audits(), before + 1);
   });
 
+  await t.test("the reveal audit names the grant that authorized it at commit time", async () => {
+    const both = await repository.vaultFolderCreate(db, { userId: owner }, { strapId: personal, name: "provenance", description: "" });
+    const target = await repository.vaultCreate(db, { userId: owner }, { creedId: personal, name: "Provenance target", description: "", secret, folderId: both.id });
+    const created = await createWith({ vaultItemIds: [target.id], vaultFolderIds: [both.id] });
+    // Resolved while the key granted the item directly and through its folder.
+    const resolved = { keyId: created.metadata.id, keyHash: shared.digestCredential(created.key), creedId: personal, vaultItemIds: [target.id], vaultFolderIds: [both.id] };
+    assert.equal((await editGrants(created.metadata.id, { vaultItemIds: [], vaultFolderIds: [both.id] }, { vaultItemIds: [target.id], vaultFolderIds: [both.id] })).status, "updated");
+    const vault = dependencies["@/lib/api-key-vault"] as typeof import("../../lib/api-key-vault.ts");
+    assert.equal((await vault.revealVaultItem({ userId: owner, itemId: target.id, request: new Request("http://localhost/"), credential: resolved })).secret, secret);
+    assert.equal((await auditFor(created.metadata.id)).folderId, both.id);
+  });
+
   await t.test("malformed input and rate limits are uncached and never reveal secrets", async () => {
     const created = await create([item.id]);
     await expectDenied("oauth-token", 401);

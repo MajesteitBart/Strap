@@ -2472,13 +2472,16 @@ export async function POST(request: Request) {
   if (!stillValid || stillValid.credentialId !== resolved.credentialId) {
     return unauthorized();
   }
+  // From here on use the fresh credential, so profile grants, mode and Vault
+  // grants changed while the body streamed take effect for this request.
+  const credential = stillValid;
   // Resolve which Strap this batch targets (Personal by default, or a Company
   // Strap named via the `creed` arg + granted to this token). Company Straps
   // load read-only. MCP only needs recent activity + a tight proposal cap.
   const { state, credentialMode } = await resolveMcpState(
     admin as unknown as DatabaseContext,
     userData.user as unknown as { id: string } & Record<string, unknown>,
-    resolved,
+    credential,
     requests
   );
   const firstRequest = requests[0];
@@ -2488,8 +2491,8 @@ export async function POST(request: Request) {
       : undefined;
 
   const clientName =
-    resolveMcpAgentName(firstRequest ?? {}, firstToolArgs, resolved.clientName) ??
-    resolved.clientName;
+    resolveMcpAgentName(firstRequest ?? {}, firstToolArgs, credential.clientName) ??
+    credential.clientName;
   // An explicit grant can become inaccessible after issuance (for example,
   // when company membership is removed). resolveMcpState intentionally returns
   // an empty state in that case. Do not let the usage helper interpret a
@@ -2498,7 +2501,7 @@ export async function POST(request: Request) {
   // their OAuth Disconnect action. Headless keys have their own lifecycle UI;
   // putting them in this roster would make Disconnect appear to revoke a key
   // when it only removed OAuth state.
-  if (resolved.credentialType === "oauth" && state.creedId) {
+  if (credential.credentialType === "oauth" && state.creedId) {
     await recordMcpClientUsage(admin as never, userId, clientName, state.creedId);
   }
   const cliAgentHeader = (request.headers.get("x-strap-cli-agent") ??
@@ -2506,8 +2509,8 @@ export async function POST(request: Request) {
     ?.trim()
     .toLowerCase();
   if (
-    resolved.credentialType === "oauth" &&
-    getAgentIconKind(resolved.clientName) === "cli" &&
+    credential.credentialType === "oauth" &&
+    getAgentIconKind(credential.clientName) === "cli" &&
     cliAgentHeader &&
     state.creedId &&
     isCliAttributableAgentId(cliAgentHeader)
@@ -2515,7 +2518,7 @@ export async function POST(request: Request) {
     await recordCliAgentUsage(
       admin as never,
       userId,
-      resolved.credentialId,
+      credential.credentialId,
       cliAgentHeader,
       state.creedId,
     );
@@ -2531,7 +2534,7 @@ export async function POST(request: Request) {
           userData.user as User,
           clientName,
           credentialMode,
-          resolved.vaultGrant,
+          credential.vaultGrant,
         ),
       ),
     )
