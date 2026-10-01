@@ -103,9 +103,26 @@ test("process-control variable names are never generated", async () => {
   for (const name of ["NODE_OPTIONS", "PATH", "LD_PRELOAD", "DYLD_INSERT_LIBRARIES", "NPM_CONFIG_SCRIPT_SHELL", "HTTPS_PROXY", "STRAP_API_KEY", "path"]) {
     assert.equal(isProcessControlEnvName(name), true, name);
   }
-  for (const name of ["NODE_ENV", "SHARE_ARTIFACT_SERVER", "DATABASE_URL", "PATHWAY_TOKEN"]) {
+  for (const name of ["SHARE_ARTIFACT_SERVER", "DATABASE_URL", "PATHWAY_TOKEN", "GITHUB_TOKEN"]) {
     assert.equal(isProcessControlEnvName(name), false, name);
   }
   assert.equal(vaultEnvName("node options"), "NODE_OPTIONS");
   assert.throws(() => formatVaultSchema([{ name: "node options", envName: "NODE_OPTIONS", reference }]), /NODE_OPTIONS controls how programs start/);
+});
+
+test("unusual variable names are printed commented out for review", async () => {
+  const { envNameNeedsReview, isProcessControlEnvName } = await import("../src/vault/schema.js");
+  assert.equal(isProcessControlEnvName("GIT_EXTERNAL_DIFF"), true);
+  assert.equal(isProcessControlEnvName("NODE_ENV"), true);
+  for (const name of ["STRIPE_KEY", "DATABASE_URL", "SHARE_ARTIFACT_SERVER", "API_TOKEN", "DB_PASSWORD"]) assert.equal(envNameNeedsReview(name), false, name);
+  for (const name of ["DEPLOYMENT_API", "OTHER", "KEY", "MY_EXTERNAL_DIFF", "PROMPT"]) assert.equal(envNameNeedsReview(name), true, name);
+  const output = formatVaultSchema([
+    { name: "Deployment API", envName: "DEPLOYMENT_API", reference },
+    { name: "Stripe key", envName: "STRIPE_KEY", reference: "secret://22222222-2222-4222-8222-222222222222" },
+  ]);
+  const active = output.split("\n").filter((line) => line && !line.startsWith("#"));
+  assert.deepEqual(active, ['STRIPE_KEY=strap("secret://22222222-2222-4222-8222-222222222222")']);
+  assert.match(output, /# Review DEPLOYMENT_API before enabling/);
+  assert.match(output, new RegExp(`# DEPLOYMENT_API=strap\\("${reference}"\\)`));
+  assert.throws(() => formatVaultSchema([{ name: "git external diff", envName: "GIT_EXTERNAL_DIFF", reference }]), /GIT_EXTERNAL_DIFF controls how programs start/);
 });

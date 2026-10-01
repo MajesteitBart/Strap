@@ -113,20 +113,20 @@ test("folder lookup prefers IDs, filters are bounded and revealers are capped wi
   assert.deepEqual(listing.items[0]?.revealableBy.slice(0, 5).map((key) => key.id), ["k0", "k1", "k2", "k3", "k4"]);
   assert.throws(() => parseVaultListingArgs({ query: "x".repeat(MAX_VAULT_FILTER_LENGTH + 1) }), VaultListingError);
   assert.throws(() => parseVaultListingArgs({ folder: "x".repeat(MAX_VAULT_FILTER_LENGTH + 1) }), VaultListingError);
-  assert.deepEqual(parseVaultListingArgs({ folder: " real ", query: 7 }), { folder: "real", query: "" });
+  assert.deepEqual(parseVaultListingArgs({ folder: " real ", query: null }), { folder: "real", query: "" });
 });
 
 test("colliding variable names get no schema line", () => {
   const items = [
     { id: itemId, folderId: null, name: "deploy-key", description: "", updatedAt: "2026-10-01T00:00:00.000Z" },
     { id: otherItemId, folderId: null, name: "deploy key", description: "", updatedAt: "2026-10-01T00:00:00.000Z" },
-    { id: "77777777-7777-4777-8777-777777777777", folderId: null, name: "Other", description: "", updatedAt: "2026-10-01T00:00:00.000Z" },
+    { id: "77777777-7777-4777-8777-777777777777", folderId: null, name: "Other token", description: "", updatedAt: "2026-10-01T00:00:00.000Z" },
   ];
   const listing = buildVaultListing({ folders: [], items, keys: [], caller: null });
   assert.deepEqual(listing.items.map((item) => [item.envName, item.envNameConflict, item.schemaLine === null]), [
     ["DEPLOY_KEY", true, true],
     ["DEPLOY_KEY", true, true],
-    ["OTHER", false, false],
+    ["OTHER_TOKEN", false, false],
   ]);
   // Without the colliding sibling the suggestion is usable again.
   const alone = buildVaultListing({ folders: [], items: [items[0]!, items[2]!], keys: [], caller: null });
@@ -137,11 +137,27 @@ test("colliding variable names get no schema line", () => {
 test("listings never suggest process-control variable names", () => {
   const items = [
     { id: itemId, folderId: null, name: "NODE_OPTIONS", description: "", updatedAt: "2026-10-01T00:00:00.000Z" },
-    { id: otherItemId, folderId: null, name: "NODE_ENV", description: "", updatedAt: "2026-10-01T00:00:00.000Z" },
+    { id: otherItemId, folderId: null, name: "STRIPE_KEY", description: "", updatedAt: "2026-10-01T00:00:00.000Z" },
   ];
   const listing = buildVaultListing({ folders: [], items, keys: [], caller: null });
   assert.deepEqual(listing.items.map((item) => [item.envName, item.envNameReserved, item.schemaLine === null]), [
     ["NODE_OPTIONS", true, true],
-    ["NODE_ENV", false, false],
+    ["STRIPE_KEY", false, false],
+  ]);
+});
+
+test("filters must be strings and unusual names need review", () => {
+  assert.throws(() => parseVaultListingArgs({ folder: 17 }), /folder must be a string/);
+  assert.throws(() => parseVaultListingArgs({ query: [] }), /query must be a string/);
+  assert.throws(() => parseVaultListingArgs({ query: { words: "x" } }), VaultListingError);
+  assert.deepEqual(parseVaultListingArgs({ folder: null, query: "" }), { folder: "", query: "" });
+  const items = [
+    { id: itemId, folderId: null, name: "Deployment API", description: "", updatedAt: "2026-10-01T00:00:00.000Z" },
+    { id: otherItemId, folderId: null, name: "Deployment token", description: "", updatedAt: "2026-10-01T00:00:00.000Z" },
+  ];
+  const listing = buildVaultListing({ folders: [], items, keys: [], caller: null });
+  assert.deepEqual(listing.items.map((item) => [item.envName, item.envNameNeedsReview, item.schemaLine === null]), [
+    ["DEPLOYMENT_API", true, true],
+    ["DEPLOYMENT_TOKEN", false, false],
   ]);
 });

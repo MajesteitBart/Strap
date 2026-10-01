@@ -566,6 +566,23 @@ test("scoped Vault reveals enforce live Postgres permissions and audit before de
     assert.equal((await auditFor(created.metadata.id)).folderId, both.id);
   });
 
+  await t.test("slow reveal bodies time out and open reveals per key are capped", async () => {
+    const created = await create([item.id]);
+    const stalled = () => route.POST(new Request("http://localhost/api/strap/vault/reveal", {
+      method: "POST", headers: { authorization: `Bearer ${created.key}`, "Content-Type": "application/json" },
+      body: new ReadableStream({ start() {} }), duplex: "half",
+    } as RequestInit));
+    const pending = Array.from({ length: 20 }, stalled);
+    // The cap applies before any database work, so the 21st request is refused at once.
+    const refused = await request(created.key, item.id);
+    assert.equal(refused.status, 429);
+    const results = await Promise.all(pending);
+    assert.deepEqual([...new Set(results.map((response) => response.status))], [408]);
+    for (const response of results) assert.equal((await response.text()).includes(secret), false);
+    // Finished requests free their slots.
+    assert.equal((await request(created.key, item.id)).status, 200);
+  });
+
   await t.test("malformed input and rate limits are uncached and never reveal secrets", async () => {
     const created = await create([item.id]);
     await expectDenied("oauth-token", 401);

@@ -7,6 +7,22 @@ import { checkRateLimit } from "@/lib/rate-limit";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 const NO_STORE = { "Cache-Control": "private, no-store", "Vary": "Authorization" };
+// A reveal body is one short reference. Requests that hold it open would let a
+// key with a large budget keep many connections waiting, so each token gets a
+// few concurrent requests and a short deadline to send its body.
+const MAX_CONCURRENT_REVEALS = 20;
+const BODY_DEADLINE_MS = 5_000;
+const inFlight = new Map<string, number>();
+
+async function readWithin(reader: ReadableStreamDefaultReader<Uint8Array>, deadline: number) {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const expired = new Promise<null>((resolve) => { timer = setTimeout(() => resolve(null), Math.max(0, deadline - Date.now())); });
+  try {
+    return await Promise.race([reader.read(), expired]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
 
 /** Dedicated reveal boundary. OAuth and ordinary MCP credentials grant no secrets. */
 export async function POST(request: Request) {
@@ -24,6 +40,10 @@ export async function POST(request: Request) {
     scope: "vault-reveal-flood", identifier: digestCredential(token), limit: MAX_VAULT_REVEALS_PER_MINUTE, windowMs: 60_000,
   });
   if (!flood.ok) return tooMany(flood.retryAfterSeconds);
+  const slot = digestCredential(token);
+  const open = inFlight.get(slot) ?? 0;
+  if (open >= MAX_CONCURRENT_REVEALS) return tooMany(1);
+  inFlight.set(slot, open + 1);
 
   try {
     const credential = await resolveHeadlessAccessKey(token);
@@ -43,8 +63,14 @@ export async function POST(request: Request) {
     if (!reader) return respond({ error: "A secret reference is required." }, 400);
     const chunks: Uint8Array[] = [];
     let size = 0;
+    const deadline = Date.now() + BODY_DEADLINE_MS;
     while (true) {
-      const { value, done } = await reader.read();
+      const next = await readWithin(reader, deadline);
+      if (!next) {
+        await reader.cancel().catch(() => undefined);
+        return respond({ error: "The request body took too long." }, 408);
+      }
+      const { value, done } = next;
       if (done) break;
       size += value.byteLength;
       if (size > 1024) {
@@ -68,5 +94,8 @@ export async function POST(request: Request) {
       { error: error instanceof VaultAccessError ? error.message : "Vault reveal is unavailable." },
       error instanceof VaultAccessError ? error.status : 503,
     );
+  } finally {
+    const remaining = (inFlight.get(slot) ?? 1) - 1;
+    if (remaining > 0) inFlight.set(slot, remaining); else inFlight.delete(slot);
   }
 }

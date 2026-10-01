@@ -2,7 +2,7 @@ import type { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { CliError } from "../errors.js";
 import { writeJson } from "../terminal/output.js";
 import { isRecord } from "../skills/bundle.js";
-import { formatVaultSchema, isVaultInstanceId, terminalText } from "./schema.js";
+import { envNameNeedsReview, formatVaultSchema, isVaultInstanceId, terminalText } from "./schema.js";
 
 export const VAULT_USAGE = `Usage: strap vault folders
        strap vault list [--folder NAME] [--query TEXT]
@@ -129,6 +129,10 @@ export async function runVaultCommand(client: Client, command: VaultCommand, jso
   } catch (error) {
     throw new CliError(error instanceof Error ? error.message : "Could not format the schema.", 3);
   }
-  if (json) return writeJson({ schema, items: listing.items.map(({ name, envName, reference }) => ({ name, envName, reference })) });
+  const needsReview = listing.items.filter((entry) => envNameNeedsReview(entry.envName)).map((entry) => entry.envName);
+  if (json) return writeJson({ schema, items: listing.items.map(({ name, envName, reference }) => ({ name, envName, reference, needsReview: envNameNeedsReview(envName) })) });
   process.stdout.write(schema);
+  if (needsReview.length) {
+    process.stderr.write(`${needsReview.length} line${needsReview.length === 1 ? " is" : "s are"} commented out until you review the variable name: ${needsReview.join(", ")}. Uncomment only names you expect your application to read.\n`);
+  }
 }

@@ -256,9 +256,11 @@ function HeadlessAccessForm({ creedId, canUseVault }: { creedId: string | undefi
     setBusy(true);
     setError(null);
     try {
-      // Load the key and the Vault together and fresh, so a folder or secret
+      // Load the key first and the Vault after it. Anything the key's grants
+      // name already existed when the Vault was read, so a folder or secret
       // granted from another tab is shown instead of being dropped unseen.
-      const [vault, freshKeys] = await Promise.all([fetchVault(), fetchKeys()]);
+      const freshKeys = await fetchKeys();
+      const vault = await fetchVault();
       setVaultItems(vault.items);
       setVaultFolders(vault.folders);
       setKeys(freshKeys);

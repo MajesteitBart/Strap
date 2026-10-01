@@ -1,11 +1,11 @@
 // Vault discovery for connected agents: metadata and references only, never values.
-import { isProcessControlEnvName, terminalText, vaultEnvName, vaultQueryMatcher, vaultSchemaLine } from "../packages/strap/src/vault/schema.ts";
+import { envNameNeedsReview as envNameNeedsReviewFor, isProcessControlEnvName, terminalText, vaultEnvName, vaultQueryMatcher, vaultSchemaLine } from "../packages/strap/src/vault/schema.ts";
 
 export const VAULT_TOOLS = [
   {
     name: "strap_list_vault_items",
     description:
-      "List Vault folders and secret metadata in the connected profile: names, descriptions, folders, secret:// references, a suggested .env.schema line for Varlock, and which of your API keys can reveal each secret. Never returns secret values. schemaLine is null when two listed secrets map to the same variable name (envNameConflict) or when the name controls process startup, such as NODE_OPTIONS or PATH (envNameReserved); do not write such lines without the user's review. Filter by folder (name or id) or by words from the name or description. Call it on its own, not in a batch.",
+      "List Vault folders and secret metadata in the connected profile: names, descriptions, folders, secret:// references, a suggested .env.schema line for Varlock, and which of your API keys can reveal each secret. Never returns secret values. schemaLine is null when two listed secrets map to the same variable name (envNameConflict) or when the name controls process startup, such as NODE_OPTIONS or PATH (envNameReserved), or when the name does not end in a credential-like word such as KEY, TOKEN, SECRET or URL (envNameNeedsReview). Never write those lines without the user's explicit approval of the variable name. Filter by folder (name or id) or by words from the name or description. Call it on its own, not in a batch.",
     inputSchema: {
       type: "object",
       properties: {
@@ -53,6 +53,11 @@ export const MAX_REVEALABLE_BY = 20;
 
 /** Validates filter arguments before any Vault data is loaded. */
 export function parseVaultListingArgs(args: { folder?: unknown; query?: unknown }): { folder: string; query: string } {
+  // Absent, null and "" mean no filter. Any other non-string is a client error:
+  // treating it as empty would silently widen a scoped lookup to the whole Vault.
+  for (const [name, value] of Object.entries({ folder: args.folder, query: args.query })) {
+    if (value !== undefined && value !== null && typeof value !== "string") throw new VaultListingError(`${name} must be a string.`);
+  }
   const folder = typeof args.folder === "string" ? args.folder.trim() : "";
   const query = typeof args.query === "string" ? args.query.trim() : "";
   if (folder.length > MAX_VAULT_FILTER_LENGTH || query.length > MAX_VAULT_FILTER_LENGTH) {
@@ -133,6 +138,8 @@ export function buildVaultListing(input: {
       const envNameConflict = (envNameUses.get(envName) ?? 0) > 1;
       // Names that control process startup are never suggested; see isProcessControlEnvName.
       const envNameReserved = isProcessControlEnvName(envName);
+      // Names that do not end in a credential-like word need a person to approve them.
+      const envNameNeedsReview = !envNameReserved && envNameNeedsReviewFor(envName);
       const folder = item.folderId ? folderById.get(item.folderId) : undefined;
       const { shown, total } = revealers(item);
       return {
@@ -144,9 +151,10 @@ export function buildVaultListing(input: {
         updatedAt: item.updatedAt,
         envName,
         // null when another listed secret maps to the same variable name; choose distinct names.
-        schemaLine: envNameConflict || envNameReserved ? null : vaultSchemaLine({ envName, reference }),
+        schemaLine: envNameConflict || envNameReserved || envNameNeedsReview ? null : vaultSchemaLine({ envName, reference }),
         envNameConflict,
         envNameReserved,
+        envNameNeedsReview,
         // Up to MAX_REVEALABLE_BY keys in their original order; the count covers all.
         revealableBy: shown.map((key) => ({ id: key.id, name: key.name, prefix: key.prefix })),
         revealableByCount: total,
