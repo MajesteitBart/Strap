@@ -32,9 +32,20 @@ export function isVaultInstanceId(value: string): boolean {
   return INSTANCE_ID.test(value);
 }
 
+const ENV_NAME = /^[A-Z_][A-Z0-9_]*$/;
+const REFERENCE = /^secret:\/\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
 export function vaultSchemaLine(entry: Pick<VaultSchemaEntry, "envName" | "reference">, instance?: string): string {
+  // Output is appended to .env.schema, so only emit shapes that cannot inject lines.
+  if (!ENV_NAME.test(entry.envName) || !REFERENCE.test(entry.reference)) throw new Error("Invalid variable name or secret reference.");
+  if (instance !== undefined && !isVaultInstanceId(instance)) throw new Error("Invalid instance id.");
   const call = instance ? `strap(${instance}, "${entry.reference}")` : `strap("${entry.reference}")`;
   return `# @sensitive @required\n${entry.envName}=${call}`;
+}
+
+/** Comments every line of free text and drops control characters, so it stays a comment. */
+function commentLines(text: string): string[] {
+  return text.split(/\r\n|\r|\n/).map((line) => `# ${line.replace(/[\u0000-\u001f\u007f]/g, " ").trimEnd()}`.trimEnd());
 }
 
 /** Formats .env.schema lines. Throws when two secrets would share one variable name. */
@@ -49,5 +60,5 @@ export function formatVaultSchema(entries: VaultSchemaEntry[], options: { instan
     seen.set(entry.envName, entry.name);
   }
   const lines = entries.map((entry) => vaultSchemaLine(entry, options.instance));
-  return [...(options.heading ? [`# ${options.heading}`] : []), ...lines].join("\n") + "\n";
+  return [...(options.heading ? commentLines(options.heading) : []), ...lines].join("\n") + "\n";
 }

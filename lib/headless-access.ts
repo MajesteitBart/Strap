@@ -160,24 +160,46 @@ export async function createHeadlessAccessKey(input: {
   return { key: generated.key, metadata: toMetadata(data as HeadlessKeyRow) };
 }
 
-/** Replaces an active key's Vault grants. The key value, mode and expiry stay the same. */
+function sameIds(left: readonly string[], right: readonly string[]) {
+  const a = [...new Set(left.map((id) => id.toLowerCase()))].sort();
+  const b = [...new Set(right.map((id) => id.toLowerCase()))].sort();
+  return a.length === b.length && a.every((id, index) => id === b[index]);
+}
+
+export type GrantUpdate =
+  | { status: "updated"; previous: HeadlessKeyMetadata; metadata: HeadlessKeyMetadata }
+  | { status: "not-found" }
+  | { status: "conflict" };
+
+/**
+ * Replaces an active key's Vault grants. The key value, mode and expiry stay the
+ * same. `expected` holds the grants the caller based its edit on; if another
+ * session changed them since, or changes them concurrently, the result is a
+ * conflict instead of silently restoring access that was just removed.
+ */
 export async function updateHeadlessKeyGrants(input: {
   userId: string;
   keyId: string;
   vaultItemIds: unknown;
   vaultFolderIds: unknown;
-}): Promise<{ previous: HeadlessKeyMetadata; metadata: HeadlessKeyMetadata } | null> {
+  expected: { vaultItemIds: unknown; vaultFolderIds: unknown };
+}): Promise<GrantUpdate> {
+  const expectedItems = parseVaultItemGrants(input.expected.vaultItemIds);
+  const expectedFolders = parseVaultFolderGrants(input.expected.vaultFolderIds);
+  if (!expectedItems || !expectedFolders) throw new VaultAccessError("Invalid expected Vault grants.", 400);
   const current = await findActiveKey(input.userId, input.keyId);
-  if (!current) return null;
+  if (!current) return { status: "not-found" };
+  if (!sameIds(expectedItems, current.vault_item_ids) || !sameIds(expectedFolders, current.vault_folder_ids)) return { status: "conflict" };
   const grants = await authorizeVaultGrants({ ...input, creedId: current.creed_id });
   const { data, error } = await query(adminDb(), keys, "update", async (database, scope) => {
     const values = { vault_item_ids: grants.vaultItemIds, vault_folder_ids: grants.vaultFolderIds } as Partial<typeof keys.$inferInsert>;
     await authorizeValues(adminDb(), keys, "update", values);
     return database.update(keys).set(values)
-      .where(and(scope, eq(keys.id, current.id), eq(keys.user_id, input.userId), usable())).returning(KEY_COLUMNS);
+      .where(and(scope, eq(keys.id, current.id), eq(keys.user_id, input.userId), usable(),
+        eq(keys.vault_item_ids, current.vault_item_ids), eq(keys.vault_folder_ids, current.vault_folder_ids))).returning(KEY_COLUMNS);
   }).then(maybeOne);
   if (error) throw new Error("Could not update headless access key.");
-  return data ? { previous: toMetadata(current), metadata: toMetadata(data as HeadlessKeyRow) } : null;
+  return data ? { status: "updated", previous: toMetadata(current), metadata: toMetadata(data as HeadlessKeyRow) } : { status: "conflict" };
 }
 
 export type KeyRotation =

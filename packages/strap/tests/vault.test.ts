@@ -48,3 +48,13 @@ test("schema output uses references, optional instances and rejects name collisi
     /would both become SHARE_ARTIFACT_SERVER/,
   );
 });
+
+test("schema output never turns free text into active schema lines", () => {
+  const entries = [{ name: "SHARE_ARTIFACT_SERVER", envName: "SHARE_ARTIFACT_SERVER", reference }];
+  const output = formatVaultSchema(entries, { heading: "Strap Vault, folder prod\nINJECTED=value\r\nOTHER=x\u0000" });
+  const active = output.split("\n").filter((line) => line && !line.startsWith("#"));
+  assert.deepEqual(active, [`SHARE_ARTIFACT_SERVER=strap("${reference}")`]);
+  assert.equal(output.includes("\u0000"), false);
+  assert.throws(() => formatVaultSchema([{ name: "x", envName: "BAD\nNAME", reference }]), /Invalid variable name/);
+  assert.throws(() => formatVaultSchema([{ name: "x", envName: "OK", reference: `${reference}")\nX=("` }]), /Invalid variable name or secret reference/);
+});

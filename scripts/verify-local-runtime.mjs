@@ -77,9 +77,10 @@ try {
  const listing=JSON.parse(discovery.data.result.content[0].text);
  assert.equal(JSON.stringify(discovery.data).includes('local-folder-fixture'),false);
  assert.deepEqual(listing.items.map(item=>[item.name,item.reference,item.grantedToThisKey]),[['REHEARSAL_FOLDER_SECRET','secret://'+filed.data.item.id,true]]);process.stdout.write('PASS discovery lists references without values\n');
- ok(await request('/api/app/headless-access/'+folderKey.data.metadata.id,'PATCH',{vaultItemIds:[],vaultFolderIds:[]}),200,'remove key grants');
+ ok(await request('/api/app/headless-access/'+folderKey.data.metadata.id,'PATCH',{vaultItemIds:[],vaultFolderIds:[],expected:{vaultItemIds:[],vaultFolderIds:[folderId]}}),200,'remove key grants');
+ ok(await request('/api/app/headless-access/'+folderKey.data.metadata.id,'PATCH',{vaultItemIds:[],vaultFolderIds:[folderId],expected:{vaultItemIds:[],vaultFolderIds:[folderId]}}),409,'stale grant edit conflicts');
  ok(await revealHeadless(folderKey.data.key,filed.data.item.id),403,'removed grant blocks reveal');
- ok(await request('/api/app/headless-access/'+folderKey.data.metadata.id,'PATCH',{vaultItemIds:[],vaultFolderIds:[folderId]}),200,'restore folder grant');
+ ok(await request('/api/app/headless-access/'+folderKey.data.metadata.id,'PATCH',{vaultItemIds:[],vaultFolderIds:[folderId],expected:{vaultItemIds:[],vaultFolderIds:[]}}),200,'restore folder grant');
  const rotatedKey=await request('/api/app/headless-access/'+folderKey.data.metadata.id+'/rotate','POST');ok(rotatedKey,200,'rotate key');
  ok(await revealHeadless(folderKey.data.key,filed.data.item.id),401,'previous key value rejected');
  ok(await revealHeadless(rotatedKey.data.key,filed.data.item.id),200,'rotated key keeps folder access');

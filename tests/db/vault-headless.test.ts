@@ -211,6 +211,9 @@ test("scoped Vault reveals enforce live Postgres permissions and audit before de
 
   const createWith = (grants: { vaultItemIds?: string[]; vaultFolderIds?: string[] }, creedId = personal, userId = owner) =>
     headless.createHeadlessAccessKey({ userId, creedId, name: "Folder key", mode: "read-only", expiresAt: null, ...grants });
+  type GrantInput = { vaultItemIds: unknown; vaultFolderIds: unknown };
+  const editGrants = (keyId: string, next: GrantInput, expected: GrantInput, userId = owner) =>
+    headless.updateHeadlessKeyGrants({ userId, keyId, ...next, expected });
   const auditFor = async (keyId: string) =>
     (await sql`select metadata from creed_audit_log where action='vault.secret_revealed' and metadata->>'keyId'=${keyId} order by created_at desc limit 1`)[0]?.metadata;
 
@@ -273,13 +276,17 @@ test("scoped Vault reveals enforce live Postgres permissions and audit before de
     const target = await repository.vaultCreate(db, { userId: owner }, { creedId: personal, name: "Rotating target", description: "", secret, folderId: folder.id });
     const created = await createWith({});
     await expectDenied(created.key, 403, target.id);
-    const updated = await headless.updateHeadlessKeyGrants({ userId: owner, keyId: created.metadata.id, vaultItemIds: [], vaultFolderIds: [folder.id] });
-    assert.deepEqual(updated?.previous.vaultFolderIds, []);
-    assert.deepEqual(updated?.metadata.vaultFolderIds, [folder.id]);
+    const none = { vaultItemIds: [], vaultFolderIds: [] };
+    const withFolder = { vaultItemIds: [], vaultFolderIds: [folder.id] };
+    const updated = await editGrants(created.metadata.id, withFolder, none);
+    assert.ok(updated.status === "updated");
+    assert.deepEqual(updated.previous.vaultFolderIds, []);
+    assert.deepEqual(updated.metadata.vaultFolderIds, [folder.id]);
     assert.equal((await request(created.key, target.id)).status, 200);
-    await assert.rejects(headless.updateHeadlessKeyGrants({ userId: owner, keyId: created.metadata.id, vaultItemIds: [companyItem.id], vaultFolderIds: [] }), { status: 403 });
-    await assert.rejects(headless.updateHeadlessKeyGrants({ userId: owner, keyId: created.metadata.id, vaultItemIds: "*", vaultFolderIds: [] }), { status: 400 });
-    assert.equal(await headless.updateHeadlessKeyGrants({ userId: member, keyId: created.metadata.id, vaultItemIds: [], vaultFolderIds: [] }), null);
+    await assert.rejects(editGrants(created.metadata.id, { vaultItemIds: [companyItem.id], vaultFolderIds: [] }, withFolder), { status: 403 });
+    await assert.rejects(editGrants(created.metadata.id, { vaultItemIds: "*", vaultFolderIds: [] }, withFolder), { status: 400 });
+    await assert.rejects(editGrants(created.metadata.id, none, { vaultItemIds: "*", vaultFolderIds: [] }), { status: 400 });
+    assert.deepEqual(await editGrants(created.metadata.id, none, withFolder, member), { status: "not-found" });
 
     const rotated = await headless.rotateHeadlessAccessKey({ userId: owner, keyId: created.metadata.id });
     assert.ok(rotated.status === "rotated");
@@ -292,14 +299,34 @@ test("scoped Vault reveals enforce live Postgres permissions and audit before de
 
     await headless.revokeHeadlessAccessKey({ userId: owner, keyId: created.metadata.id });
     assert.deepEqual(await headless.rotateHeadlessAccessKey({ userId: owner, keyId: created.metadata.id }), { status: "not-found" });
-    assert.equal(await headless.updateHeadlessKeyGrants({ userId: owner, keyId: created.metadata.id, vaultItemIds: [], vaultFolderIds: [] }), null);
+    assert.deepEqual(await editGrants(created.metadata.id, none, withFolder), { status: "not-found" });
+  });
+
+  await t.test("grant edits based on stale or concurrently changed grants conflict", async () => {
+    const shared1 = await repository.vaultCreate(db, { userId: owner }, { creedId: personal, name: "Contested A", description: "", secret });
+    const shared2 = await repository.vaultCreate(db, { userId: owner }, { creedId: personal, name: "Contested B", description: "", secret });
+    const created = await createWith({ vaultItemIds: [shared1.id] });
+    const loaded = { vaultItemIds: [shared1.id], vaultFolderIds: [] };
+    // Tab A removes the grant; tab B, opened earlier, then tries to add another.
+    assert.equal((await editGrants(created.metadata.id, { vaultItemIds: [], vaultFolderIds: [] }, loaded)).status, "updated");
+    assert.deepEqual(await editGrants(created.metadata.id, { vaultItemIds: [shared1.id, shared2.id], vaultFolderIds: [] }, loaded), { status: "conflict" });
+    assert.deepEqual((await sql`select vault_item_ids from creed_headless_access_keys where id=${created.metadata.id}`)[0].vault_item_ids, []);
+    // Two concurrent edits from the same base: one applies, the other conflicts.
+    const results = await Promise.all([
+      editGrants(created.metadata.id, { vaultItemIds: [shared1.id], vaultFolderIds: [] }, { vaultItemIds: [], vaultFolderIds: [] }),
+      editGrants(created.metadata.id, { vaultItemIds: [shared2.id], vaultFolderIds: [] }, { vaultItemIds: [], vaultFolderIds: [] }),
+    ]);
+    assert.deepEqual(results.map(result => result.status).sort(), ["conflict", "updated"]);
+    // Order and case of the expected IDs do not matter.
+    const stored = (await sql`select vault_item_ids from creed_headless_access_keys where id=${created.metadata.id}`)[0].vault_item_ids as string[];
+    assert.equal((await editGrants(created.metadata.id, { vaultItemIds: [], vaultFolderIds: [] }, { vaultItemIds: stored.map(id => id.toUpperCase()), vaultFolderIds: [] })).status, "updated");
   });
 
   await t.test("expired keys cannot be rotated or edited", async () => {
     const expiring = await createWith({ vaultItemIds: [item.id] });
     await sql`update creed_headless_access_keys set expires_at=now()-interval '1 minute' where id=${expiring.metadata.id}`;
     assert.deepEqual(await headless.rotateHeadlessAccessKey({ userId: owner, keyId: expiring.metadata.id }), { status: "not-found" });
-    assert.equal(await headless.updateHeadlessKeyGrants({ userId: owner, keyId: expiring.metadata.id, vaultItemIds: [], vaultFolderIds: [] }), null);
+    assert.deepEqual(await editGrants(expiring.metadata.id, { vaultItemIds: [], vaultFolderIds: [] }, { vaultItemIds: [item.id], vaultFolderIds: [] }), { status: "not-found" });
     const [row] = await sql`select key_hash, vault_item_ids from creed_headless_access_keys where id=${expiring.metadata.id}`;
     assert.equal(row.key_hash, shared.digestCredential(expiring.key));
     assert.deepEqual(row.vault_item_ids, [item.id]);
@@ -380,13 +407,19 @@ test("scoped Vault reveals enforce live Postgres permissions and audit before de
       assert.equal((await foldersRoute.POST(json("POST", body))).status, 400);
       assert.equal((await folderRoute.PATCH(json("PATCH", body), params(folder.id))).status, 400);
     }
+    // Folder names stay on one line; they appear in CLI selections and schema comments.
+    assert.equal((await foldersRoute.POST(json("POST", { strapId: personal, name: "prod\nINJECTED=value", description: "" }))).status, 400);
+    assert.equal((await folderRoute.PATCH(json("PATCH", { name: "tab\there", description: "" }), params(folder.id))).status, 400);
     const target = await repository.vaultCreate(db, { userId: owner }, { creedId: personal, name: "Route target", description: "", secret, folderId: folder.id });
 
     const created = await createWith({});
-    for (const body of [null, {}, { vaultItemIds: [] }, { vaultItemIds: [], vaultFolderIds: "*" }]) {
+    const base = { vaultItemIds: [], vaultFolderIds: [] };
+    for (const body of [null, {}, { vaultItemIds: [] }, { vaultItemIds: [], vaultFolderIds: "*", expected: base }, { vaultItemIds: [], vaultFolderIds: [] }, { vaultItemIds: [], vaultFolderIds: [], expected: { vaultItemIds: [] } }]) {
       assert.equal((await keyRoute.PATCH(json("PATCH", body), params(created.metadata.id))).status, 400);
     }
-    const patched = await keyRoute.PATCH(json("PATCH", { vaultItemIds: [], vaultFolderIds: [folder.id] }), params(created.metadata.id));
+    const stale = await keyRoute.PATCH(json("PATCH", { vaultItemIds: [], vaultFolderIds: [folder.id], expected: { vaultItemIds: [target.id], vaultFolderIds: [] } }), params(created.metadata.id));
+    assert.equal(stale.status, 409);
+    const patched = await keyRoute.PATCH(json("PATCH", { vaultItemIds: [], vaultFolderIds: [folder.id], expected: base }), params(created.metadata.id));
     assert.equal(patched.status, 200);
     assert.deepEqual((await patched.json() as { metadata: { vaultFolderIds: string[] } }).metadata.vaultFolderIds, [folder.id]);
     // Routes record this audit without awaiting it.

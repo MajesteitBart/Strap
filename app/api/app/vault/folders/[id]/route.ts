@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireApiAuth } from "@/lib/api-auth";
 import { readJsonObject } from "@/lib/strap-api";
+import { isVaultFolderName } from "@/lib/vault-grants";
 import { deleteVaultFolder, updateVaultFolder, VaultAccessError } from "@/lib/api-key-vault";
 
 type Context = { params: Promise<{ id: string }> };
@@ -21,8 +22,8 @@ export async function PATCH(request: Request, context: Context) {
   if (!body) return NextResponse.json({ error: "Expected a JSON object." }, { status: 400, headers: NO_STORE });
   const name = typeof body.name === "string" ? body.name.trim() : "";
   const description = typeof body.description === "string" ? body.description.trim() : "";
-  if (!name || name.length > 120 || description.length > 500) {
-    return NextResponse.json({ error: "Valid name and description are required." }, { status: 400, headers: NO_STORE });
+  if (!isVaultFolderName(name) || description.length > 500) {
+    return NextResponse.json({ error: "A one-line name of up to 120 characters and a valid description are required." }, { status: 400, headers: NO_STORE });
   }
   try {
     return NextResponse.json(

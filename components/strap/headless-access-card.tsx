@@ -80,13 +80,17 @@ function VaultGrantPicker({ folders, items, value, onChange, disabled }: {
         <div className="flex flex-col gap-2">
           {folders.length ? <span className="text-xs font-medium text-[var(--strap-text-secondary)]">Individual secrets</span> : null}
           {items.map((item) => {
+            // The checkbox is the direct grant only, so it stays removable when a
+            // folder grant also covers the secret.
+            const direct = value.vaultItemIds.includes(item.id);
             const viaFolder = item.folderId !== null && value.vaultFolderIds.includes(item.folderId);
+            const folder = item.folderId ? folderName.get(item.folderId) : undefined;
             return (
               <label key={item.id} className="flex items-center gap-2 text-sm">
-                <input type="checkbox" checked={viaFolder || value.vaultItemIds.includes(item.id)} disabled={disabled || viaFolder || (!value.vaultItemIds.includes(item.id) && value.vaultItemIds.length >= MAX_GRANTS)}
+                <input type="checkbox" checked={direct} disabled={disabled || (!direct && value.vaultItemIds.length >= MAX_GRANTS)}
                   onChange={(event) => onChange({ ...value, vaultItemIds: toggle(value.vaultItemIds, item.id, event.target.checked) })} />
                 {item.name}
-                {item.folderId && folderName.has(item.folderId) ? <span className="text-xs text-[var(--strap-text-tertiary)]">{viaFolder ? `via ${folderName.get(item.folderId)}` : folderName.get(item.folderId)}</span> : null}
+                {folder ? <span className="text-xs text-[var(--strap-text-tertiary)]">{viaFolder ? `also covered by ${folder}` : folder}</span> : null}
               </label>
             );
           })}
@@ -116,7 +120,9 @@ function HeadlessAccessForm({ creedId, canUseVault }: { creedId: string | undefi
   const [vaultItems, setVaultItems] = useState<VaultOption[]>([]);
   const [vaultFolders, setVaultFolders] = useState<FolderOption[]>([]);
   const [grants, setGrants] = useState<Grants>(NO_GRANTS);
-  const [editing, setEditing] = useState<{ keyId: string; grants: Grants } | null>(null);
+  // `base` is the key's stored grants when the editor opened; the server rejects
+  // the save if another session changed them since.
+  const [editing, setEditing] = useState<{ keyId: string; base: Grants; grants: Grants } | null>(null);
   const [vaultError, setVaultError] = useState<string | null>(null);
   // Grants are edited against loaded Vault metadata only, so a failed or pending
   // load can never be saved as "no access".
@@ -193,9 +199,14 @@ function HeadlessAccessForm({ creedId, canUseVault }: { creedId: string | undefi
       const response = await fetch(`/api/app/headless-access/${encodeURIComponent(editing.keyId)}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editing.grants),
+        body: JSON.stringify({ ...editing.grants, expected: editing.base }),
       });
       const payload = (await response.json().catch(() => ({}))) as { error?: string };
+      if (response.status === 409) {
+        // Show the current access instead of overwriting another session's change.
+        setEditing(null);
+        await loadKeys().catch(() => undefined);
+      }
       if (!response.ok) throw new Error(payload.error || "Could not update secret access.");
       setEditing(null);
       await loadKeys();
@@ -238,6 +249,7 @@ function HeadlessAccessForm({ creedId, canUseVault }: { creedId: string | undefi
     const itemIds = new Set(vaultItems.map((item) => item.id));
     setEditing({
       keyId: key.id,
+      base: { vaultItemIds: key.vaultItemIds ?? [], vaultFolderIds: key.vaultFolderIds ?? [] },
       grants: {
         vaultItemIds: (key.vaultItemIds ?? []).filter((id) => itemIds.has(id)),
         vaultFolderIds: (key.vaultFolderIds ?? []).filter((id) => folderIds.has(id)),
@@ -356,7 +368,7 @@ function HeadlessAccessForm({ creedId, canUseVault }: { creedId: string | undefi
                 <fieldset disabled={busy} className="mt-4 flex flex-col gap-3 rounded-lg border border-[var(--strap-border)] p-4">
                   <legend className="px-1 text-sm font-medium">Secret access for {key.name}</legend>
                   <p className="text-xs leading-5 text-[var(--strap-text-secondary)]">Changes apply on the key&apos;s next request. The key value stays the same.</p>
-                  <VaultGrantPicker folders={vaultFolders} items={vaultItems} value={editing.grants} onChange={(value) => setEditing({ keyId: key.id, grants: value })} disabled={busy} />
+                  <VaultGrantPicker folders={vaultFolders} items={vaultItems} value={editing.grants} onChange={(value) => setEditing((current) => current ? { ...current, grants: value } : current)} disabled={busy} />
                   <div className="flex gap-3"><Button onClick={() => void saveGrants()}>{busy ? "Saving…" : "Save access"}</Button><Button variant="ghost" onClick={() => setEditing(null)}>Cancel</Button></div>
                 </fieldset>
               ) : null}

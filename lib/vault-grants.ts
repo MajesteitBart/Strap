@@ -20,6 +20,11 @@ export function parseVaultFolderGrants(value: unknown): string[] | undefined {
   return parseIdList(value, MAX_VAULT_FOLDER_GRANTS);
 }
 
+/** Folder names are selected in CLI commands and printed in schema comments, so they stay on one line. */
+export function isVaultFolderName(name: string): boolean {
+  return name.length >= 1 && name.length <= 120 && !/[\u0000-\u001f\u007f]/.test(name);
+}
+
 /** Absent means "leave unchanged"; null means "no folder". */
 export function parseVaultFolderId(value: unknown): string | null | undefined | false {
   if (value === undefined) return undefined;
