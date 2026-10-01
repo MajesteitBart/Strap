@@ -49,7 +49,7 @@ app/                Next routes
 ├── (strap-app)/    signed-in product: /file, /skills, /connections, /vault, /settings (active Strap), /account (user)
 ├── api/app/        session-authed APIs (requireApiAuth)
 │   ├── headless-access/  one-time-visible scoped agent keys
-│   └── vault/      metadata, create, update, reveal, and delete operations
+│   └── vault/      metadata, create, update, reveal, delete, and folder operations
 ├── api/creed/*     token-authed agent APIs (hash compare)
 ├── authorize/      browser OAuth consent
 ├── device/         OAuth device authorization
@@ -81,6 +81,7 @@ lib/
 ├── headless-access.ts        scoped API-key creation and resolution
 ├── oauth-device.ts           device authorization grant lifecycle
 ├── api-key-vault.ts          authorized app-encrypted Vault operations
+├── vault-tools.ts            metadata-only Vault discovery for MCP and the CLI
 ├── audit-log.ts              creed_audit_events writer
 ├── rate-limit.ts             per-token rate limiting
 ├── observability.ts          structured log helpers

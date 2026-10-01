@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
-import { Copy, KeyRound, Link2, Server, Trash2 } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Copy, KeyRound, Link2, RefreshCw, Server, ShieldCheck, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useStrap } from "@/components/strap/strap-provider";
@@ -18,13 +18,83 @@ type KeyMetadata = {
   lastUsedAt: string | null;
   createdAt: string;
   vaultItemIds: string[];
+  vaultFolderIds: string[];
 };
+
+type VaultOption = { id: string; name: string; folderId: string | null };
+type FolderOption = { id: string; name: string };
+type Grants = { vaultItemIds: string[]; vaultFolderIds: string[] };
+
+const NO_GRANTS: Grants = { vaultItemIds: [], vaultFolderIds: [] };
+const MAX_GRANTS = 100;
 
 const MODE_LABEL: Record<HeadlessKeyMode, string> = {
   "read-only": "Read only",
   "proposal-only": "Read and propose",
   direct: "Permitted direct edits",
 };
+
+function plural(count: number, noun: string) {
+  return `${count} ${noun}${count === 1 ? "" : "s"}`;
+}
+
+function grantSummary(key: KeyMetadata) {
+  const parts = [
+    key.vaultFolderIds?.length ? plural(key.vaultFolderIds.length, "folder") : "",
+    key.vaultItemIds?.length ? plural(key.vaultItemIds.length, "secret") : "",
+  ].filter(Boolean);
+  return parts.length ? `Secret access: ${parts.join(", ")}` : "No secret access";
+}
+
+function toggle(ids: string[], id: string, checked: boolean) {
+  return checked ? [...ids, id] : ids.filter((entry) => entry !== id);
+}
+
+function VaultGrantPicker({ folders, items, value, onChange, disabled }: {
+  folders: FolderOption[];
+  items: VaultOption[];
+  value: Grants;
+  onChange: (value: Grants) => void;
+  disabled: boolean;
+}) {
+  const folderName = new Map(folders.map((folder) => [folder.id, folder.name]));
+  if (!folders.length && !items.length) {
+    return <p className="text-xs text-[var(--strap-text-secondary)]">Your Vault is empty. <Link href="/vault" className="underline underline-offset-4">Add secrets</Link> first.</p>;
+  }
+  return (
+    <div className="flex max-h-56 flex-col gap-3 overflow-y-auto">
+      {folders.length ? (
+        <div className="flex flex-col gap-2">
+          <span className="text-xs font-medium text-[var(--strap-text-secondary)]">Folders, including secrets added later</span>
+          {folders.map((folder) => (
+            <label key={folder.id} className="flex items-center gap-2 text-sm">
+              <input type="checkbox" checked={value.vaultFolderIds.includes(folder.id)} disabled={disabled || (!value.vaultFolderIds.includes(folder.id) && value.vaultFolderIds.length >= MAX_GRANTS)}
+                onChange={(event) => onChange({ ...value, vaultFolderIds: toggle(value.vaultFolderIds, folder.id, event.target.checked) })} />
+              {folder.name}
+              <span className="text-xs text-[var(--strap-text-tertiary)]">{plural(items.filter((item) => item.folderId === folder.id).length, "secret")}</span>
+            </label>
+          ))}
+        </div>
+      ) : null}
+      {items.length ? (
+        <div className="flex flex-col gap-2">
+          {folders.length ? <span className="text-xs font-medium text-[var(--strap-text-secondary)]">Individual secrets</span> : null}
+          {items.map((item) => {
+            const viaFolder = item.folderId !== null && value.vaultFolderIds.includes(item.folderId);
+            return (
+              <label key={item.id} className="flex items-center gap-2 text-sm">
+                <input type="checkbox" checked={viaFolder || value.vaultItemIds.includes(item.id)} disabled={disabled || viaFolder || (!value.vaultItemIds.includes(item.id) && value.vaultItemIds.length >= MAX_GRANTS)}
+                  onChange={(event) => onChange({ ...value, vaultItemIds: toggle(value.vaultItemIds, item.id, event.target.checked) })} />
+                {item.name}
+                {item.folderId && folderName.has(item.folderId) ? <span className="text-xs text-[var(--strap-text-tertiary)]">{viaFolder ? `via ${folderName.get(item.folderId)}` : folderName.get(item.folderId)}</span> : null}
+              </label>
+            );
+          })}
+        </div>
+      ) : null}
+    </div>
+  );
+}
 
 export function HeadlessAccessCard() {
   const { state } = useStrap();
@@ -40,12 +110,18 @@ function HeadlessAccessForm({ creedId, canUseVault }: { creedId: string | undefi
   const [name, setName] = useState("");
   const [mode, setMode] = useState<HeadlessKeyMode>("proposal-only");
   const [expiry, setExpiry] = useState("90");
-  const [createdKey, setCreatedKey] = useState<string | null>(null);
+  const [createdKey, setCreatedKey] = useState<{ key: string; rotated: boolean } | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [vaultItems, setVaultItems] = useState<Array<{ id: string; name: string }>>([]);
-  const [vaultItemIds, setVaultItemIds] = useState<string[]>([]);
+  const [vaultItems, setVaultItems] = useState<VaultOption[]>([]);
+  const [vaultFolders, setVaultFolders] = useState<FolderOption[]>([]);
+  const [grants, setGrants] = useState<Grants>(NO_GRANTS);
+  const [editing, setEditing] = useState<{ keyId: string; grants: Grants } | null>(null);
   const [vaultError, setVaultError] = useState<string | null>(null);
+  // Grants are edited against loaded Vault metadata only, so a failed or pending
+  // load can never be saved as "no access".
+  const [vaultLoaded, setVaultLoaded] = useState(false);
+  const rotating = useRef(false);
 
   useEffect(() => {
     if (!creedId || !canUseVault) return;
@@ -56,8 +132,12 @@ function HeadlessAccessForm({ creedId, canUseVault }: { creedId: string | undefi
           cache: "no-store", signal: controller.signal,
         });
         if (!response.ok) throw new Error();
-        const payload = await response.json() as { items: Array<{ id: string; name: string }> };
-        if (!controller.signal.aborted) setVaultItems(payload.items);
+        const payload = await response.json() as { items: VaultOption[]; folders?: FolderOption[] };
+        if (!controller.signal.aborted) {
+          setVaultItems(payload.items);
+          setVaultFolders(payload.folders ?? []);
+          setVaultLoaded(true);
+        }
       } catch {
         if (!controller.signal.aborted) setVaultError("Could not load Vault items. Reload to select secrets.");
       }
@@ -90,19 +170,78 @@ function HeadlessAccessForm({ creedId, canUseVault }: { creedId: string | undefi
       const response = await fetch("/api/app/headless-access", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ creedId, name: name.trim(), mode, expiresAt, vaultItemIds: canUseVault ? vaultItemIds : [] }),
+        body: JSON.stringify({ creedId, name: name.trim(), mode, expiresAt, ...(canUseVault ? grants : NO_GRANTS) }),
       });
       const payload = (await response.json().catch(() => ({}))) as { key?: string; error?: string };
       if (!response.ok || !payload.key) throw new Error(payload.error || "Could not create API key.");
-      setCreatedKey(payload.key);
+      setCreatedKey({ key: payload.key, rotated: false });
       setName("");
-      setVaultItemIds([]);
+      setGrants(NO_GRANTS);
       await loadKeys();
     } catch (createError) {
       setError(createError instanceof Error ? createError.message : "Could not create API key.");
     } finally {
       setBusy(false);
     }
+  }
+
+  async function saveGrants() {
+    if (!editing) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const response = await fetch(`/api/app/headless-access/${encodeURIComponent(editing.keyId)}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editing.grants),
+      });
+      const payload = (await response.json().catch(() => ({}))) as { error?: string };
+      if (!response.ok) throw new Error(payload.error || "Could not update secret access.");
+      setEditing(null);
+      await loadKeys();
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : "Could not update secret access.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function rotateKey(key: KeyMetadata) {
+    // One rotation at a time: an older response arriving last would show a key
+    // value that the newer rotation already invalidated.
+    if (rotating.current) return;
+    if (!window.confirm(`Rotate ${key.name}? The current value stops working immediately. Its mode, expiry and secret access stay the same.`)) return;
+    rotating.current = true;
+    setBusy(true);
+    setError(null);
+    try {
+      const response = await fetch(`/api/app/headless-access/${encodeURIComponent(key.id)}/rotate`, { method: "POST" });
+      const payload = (await response.json().catch(() => ({}))) as { key?: string; error?: string };
+      if (!response.ok || !payload.key) {
+        setError(payload.error || "Could not rotate API key.");
+        return;
+      }
+      setCreatedKey({ key: payload.key, rotated: true });
+      await loadKeys();
+    } finally {
+      rotating.current = false;
+      setBusy(false);
+    }
+  }
+
+  function editGrants(key: KeyMetadata) {
+    if (editing?.keyId === key.id) return setEditing(null);
+    // Grants can outlive deleted folders and secrets. Drop those IDs here so the
+    // editor saves only what it shows; the server still rejects unknown IDs.
+    const folderIds = new Set(vaultFolders.map((folder) => folder.id));
+    const itemIds = new Set(vaultItems.map((item) => item.id));
+    setEditing({
+      keyId: key.id,
+      grants: {
+        vaultItemIds: (key.vaultItemIds ?? []).filter((id) => itemIds.has(id)),
+        vaultFolderIds: (key.vaultFolderIds ?? []).filter((id) => folderIds.has(id)),
+      },
+    });
   }
 
   async function revokeKey(id: string) {
@@ -114,6 +253,7 @@ function HeadlessAccessForm({ creedId, canUseVault }: { creedId: string | undefi
       setError(payload.error || "Could not revoke API key.");
       return;
     }
+    if (editing?.keyId === id) setEditing(null);
     await loadKeys();
   }
 
@@ -152,19 +292,10 @@ function HeadlessAccessForm({ creedId, canUseVault }: { creedId: string | undefi
             {canUseVault ? (
               <fieldset disabled={busy} className="flex flex-col gap-2">
                 <legend className="mb-2 text-sm font-medium">Secret access for Varlock (optional)</legend>
-                <p className="text-xs leading-5 text-[var(--strap-text-secondary)]">This key can reveal the secrets you select, in any context access mode. Leave all unchecked for no secret access.</p>
+                <p className="text-xs leading-5 text-[var(--strap-text-secondary)]">This key can reveal the folders and secrets you select, in any context access mode. You can change this later.</p>
                 {vaultError ? <p role="alert" className="text-xs text-[var(--strap-danger)]">{vaultError}</p> : null}
-                <div className="flex max-h-48 flex-col gap-2 overflow-y-auto">
-                  {vaultItems.map((item) => (
-                    <label key={item.id} className="flex items-center gap-2 text-sm">
-                      <input type="checkbox" checked={vaultItemIds.includes(item.id)}
-                        disabled={!vaultItemIds.includes(item.id) && vaultItemIds.length >= 100}
-                        onChange={(event) => setVaultItemIds((ids) => event.target.checked ? [...ids, item.id] : ids.filter((id) => id !== item.id))} />
-                      {item.name}
-                    </label>
-                  ))}
-                </div>
-                <Link href="/vault" className="text-xs underline underline-offset-4">Manage secrets and copy references</Link>
+                <VaultGrantPicker folders={vaultFolders} items={vaultItems} value={grants} onChange={setGrants} disabled={busy} />
+                <Link href="/vault" className="text-xs underline underline-offset-4">Manage secrets and folders</Link>
               </fieldset>
             ) : null}
             <Button onClick={() => void createKey()} disabled={busy || !name.trim()}>{busy ? "Creating…" : "Create API key"}</Button>
@@ -183,11 +314,11 @@ function HeadlessAccessForm({ creedId, canUseVault }: { creedId: string | undefi
 
       {createdKey ? (
         <div className="mt-4 rounded-xl border border-[var(--strap-accent)]/40 bg-[var(--strap-accent)]/5 p-4">
-          <div className="text-[14px] font-medium">Copy this key now</div>
-          <p className="mt-1 text-[13px] text-[var(--strap-text-secondary)]">It cannot be revealed again after you leave this page.</p>
+          <div className="text-[14px] font-medium">{createdKey.rotated ? "Copy the rotated key now" : "Copy this key now"}</div>
+          <p className="mt-1 text-[13px] text-[var(--strap-text-secondary)]">{createdKey.rotated ? "Replace the old value wherever it is stored. " : ""}It cannot be revealed again after you leave this page.</p>
           <div className="mt-3 flex items-start gap-2">
-            <code className="min-w-0 flex-1 break-all rounded-md bg-[var(--strap-surface)] px-3 py-2 text-[12px]">{createdKey}</code>
-            <Button size="icon" variant="secondary" aria-label="Copy API key" onClick={() => void navigator.clipboard.writeText(createdKey)}><Copy className="h-4 w-4" /></Button>
+            <code className="min-w-0 flex-1 break-all rounded-md bg-[var(--strap-surface)] px-3 py-2 text-[12px]">{createdKey.key}</code>
+            <Button size="icon" variant="secondary" aria-label="Copy API key" onClick={() => void navigator.clipboard.writeText(createdKey.key)}><Copy className="h-4 w-4" /></Button>
           </div>
           <Button variant="ghost" className="mt-2" onClick={() => setCreatedKey(null)}>I saved it</Button>
         </div>
@@ -198,15 +329,31 @@ function HeadlessAccessForm({ creedId, canUseVault }: { creedId: string | undefi
       {keys.length ? (
         <div className="mt-5 divide-y divide-[var(--strap-border)] rounded-xl border border-[var(--strap-border)]">
           {keys.map((key) => (
-            <div key={key.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
-              <div>
-                <div className="text-[14px] font-medium">{key.name}</div>
-                <div className="mt-1 text-[12px] text-[var(--strap-text-tertiary)]">
-                  <span className="font-mono">{key.prefix}…</span> · {MODE_LABEL[key.mode]} · {key.revokedAt ? "Revoked" : key.expiresAt ? `Expires ${new Date(key.expiresAt).toLocaleDateString()}` : "No expiry"}
+            <div key={key.id} className="p-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <div className="text-[14px] font-medium">{key.name}</div>
+                  <div className="mt-1 text-[12px] text-[var(--strap-text-tertiary)]">
+                    <span className="font-mono">{key.prefix}…</span> · {MODE_LABEL[key.mode]} · {key.revokedAt ? "Revoked" : key.expiresAt ? `Expires ${new Date(key.expiresAt).toLocaleDateString()}` : "No expiry"}
+                  </div>
+                  <p className="mt-1 text-xs text-[var(--strap-text-secondary)]">{grantSummary(key)}</p>
                 </div>
-                <p className="mt-1 text-xs text-[var(--strap-text-secondary)]">{key.vaultItemIds?.length ? `${key.vaultItemIds.length} selected secret${key.vaultItemIds.length === 1 ? "" : "s"}` : "No secret access"}</p>
+                {!key.revokedAt ? (
+                  <div className="flex items-center gap-1">
+                    {canUseVault && vaultLoaded ? <Button size="icon" variant="ghost" aria-label={`Edit secret access for ${key.name}`} title="Edit secret access" onClick={() => editGrants(key)}><ShieldCheck className="h-4 w-4" /></Button> : null}
+                    <Button size="icon" variant="ghost" aria-label={`Rotate ${key.name}`} title="Rotate key value" disabled={busy} onClick={() => void rotateKey(key)}><RefreshCw className="h-4 w-4" /></Button>
+                    <Button size="icon" variant="ghost" aria-label={`Revoke ${key.name}`} title="Revoke key" onClick={() => void revokeKey(key.id)}><Trash2 className="h-4 w-4" /></Button>
+                  </div>
+                ) : null}
               </div>
-              {!key.revokedAt ? <Button size="icon" variant="ghost" aria-label={`Revoke ${key.name}`} onClick={() => void revokeKey(key.id)}><Trash2 className="h-4 w-4" /></Button> : null}
+              {editing?.keyId === key.id ? (
+                <fieldset disabled={busy} className="mt-4 flex flex-col gap-3 rounded-lg border border-[var(--strap-border)] p-4">
+                  <legend className="px-1 text-sm font-medium">Secret access for {key.name}</legend>
+                  <p className="text-xs leading-5 text-[var(--strap-text-secondary)]">Changes apply on the key&apos;s next request. The key value stays the same.</p>
+                  <VaultGrantPicker folders={vaultFolders} items={vaultItems} value={editing.grants} onChange={(value) => setEditing({ keyId: key.id, grants: value })} disabled={busy} />
+                  <div className="flex gap-3"><Button onClick={() => void saveGrants()}>{busy ? "Saving…" : "Save access"}</Button><Button variant="ghost" onClick={() => setEditing(null)}>Cancel</Button></div>
+                </fieldset>
+              ) : null}
             </div>
           ))}
         </div>

@@ -11,7 +11,7 @@ plugin.registerDataType({
   name: "strapAccessKey",
   sensitive: true,
   internal: true,
-  typeDescription: "Strap API key with explicitly selected Vault items",
+  typeDescription: "Strap API key with explicit Vault item or folder grants",
 });
 
 plugin.registerRootDecorator({

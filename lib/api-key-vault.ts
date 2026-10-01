@@ -1,41 +1,77 @@
 import { recordAuditEvent, recordRequiredAuditEvent } from "@/lib/audit-log";
 import { getDatabase } from "@/lib/db/client";
-import { vaultCreate, vaultDelete, vaultList, vaultReveal, vaultUpdate, type VaultCredential } from "@/lib/db/repositories/vault";
+import {
+  vaultCreate, vaultDelete, vaultFolderCreate, vaultFolderDelete, vaultFolderList, vaultFolderUpdate, vaultList, vaultReveal, vaultUpdate,
+  type VaultCredential,
+} from "@/lib/db/repositories/vault";
 import "server-only";
 export { VaultRepositoryError as VaultAccessError } from "@/lib/db/repositories/vault";
-export type VaultItem = { id: string; creedId: string; name: string; description: string; createdBy: string; createdAt: string; updatedAt: string; lastAccessedAt: string | null };
+export type VaultItem = { id: string; creedId: string; folderId: string | null; name: string; description: string; createdBy: string; createdAt: string; updatedAt: string; lastAccessedAt: string | null };
+export type VaultFolder = { id: string; strapId: string; name: string; description: string; createdAt: string; updatedAt: string };
 function toItem(row: Awaited<ReturnType<typeof vaultCreate>>): VaultItem {
-  return { id: row.id, creedId: row.creed_id, name: row.name, description: row.description, createdBy: row.created_by, createdAt: row.created_at, updatedAt: row.updated_at, lastAccessedAt: row.last_accessed_at };
+  return { id: row.id, creedId: row.creed_id, folderId: row.folder_id, name: row.name, description: row.description, createdBy: row.created_by, createdAt: row.created_at, updatedAt: row.updated_at, lastAccessedAt: row.last_accessed_at };
+}
+function toFolder(row: Awaited<ReturnType<typeof vaultFolderCreate>>): VaultFolder {
+  return { id: row.id, strapId: row.strap_id, name: row.name, description: row.description, createdAt: row.created_at, updatedAt: row.updated_at };
 }
 export async function listVaultItems(userId: string, creedId: string): Promise<VaultItem[]> {
   return (await vaultList(getDatabase(), { userId }, creedId)).map(toItem);
 }
-export async function createVaultItem(input: { userId: string; creedId: string; name: string; description: string; secret: string; request: Request }): Promise<VaultItem> {
+export async function listVaultFolders(userId: string, creedId: string): Promise<VaultFolder[]> {
+  return (await vaultFolderList(getDatabase(), { userId }, creedId)).map(toFolder);
+}
+export async function createVaultItem(input: { userId: string; creedId: string; name: string; description: string; secret: string; folderId?: string | null; request: Request }): Promise<VaultItem> {
   const row = await vaultCreate(getDatabase(), { userId: input.userId }, input);
-  await recordAuditEvent({ userId: input.userId, action: "vault.secret_created", metadata: { itemId: row.id, creedId: row.creed_id }, request: input.request });
+  await recordAuditEvent({ userId: input.userId, action: "vault.secret_created", metadata: { itemId: row.id, creedId: row.creed_id, folderId: row.folder_id }, request: input.request });
   return toItem(row);
 }
 export async function revealVaultItem(input: {
   userId: string;
   itemId: string;
   request: Request;
-  /** Headless reveals must supply the resolved key's explicit item grants. */
+  /** Headless reveals must supply the resolved key's explicit item and folder grants. */
   credential?: VaultCredential;
 }): Promise<{ item: VaultItem; secret: string }> {
-  const result = await vaultReveal(getDatabase(), { userId: input.userId }, input.itemId, creedId => recordRequiredAuditEvent({
+  const result = await vaultReveal(getDatabase(), { userId: input.userId }, input.itemId, (creedId, grant) => recordRequiredAuditEvent({
     userId: input.userId,
     action: "vault.secret_revealed",
-    metadata: { itemId: input.itemId, creedId, ...(input.credential ? { keyId: input.credential.keyId, source: "headless" } : {}) },
+    metadata: {
+      itemId: input.itemId,
+      creedId,
+      ...(input.credential ? { keyId: input.credential.keyId, source: "headless" } : {}),
+      ...(grant ? { folderId: grant.folderId } : {}),
+    },
     request: input.request,
   }), input.credential);
   return { item: toItem(result.item), secret: result.secret };
 }
-export async function updateVaultItem(input: { userId: string; itemId: string; name: string; description: string; secret: string | null; request: Request }): Promise<VaultItem> {
-  const row = await vaultUpdate(getDatabase(), { userId: input.userId }, input);
-  await recordAuditEvent({ userId: input.userId, action: "vault.secret_updated", metadata: { itemId: row.id, creedId: row.creed_id, secretRotated: input.secret !== null }, request: input.request });
-  return toItem(row);
+export async function updateVaultItem(input: { userId: string; itemId: string; name: string; description: string; secret: string | null; folderId?: string | null; request: Request }): Promise<VaultItem> {
+  const { previous, updated } = await vaultUpdate(getDatabase(), { userId: input.userId }, input);
+  const moved = previous.folder_id !== updated.folder_id;
+  await recordAuditEvent({
+    userId: input.userId,
+    action: "vault.secret_updated",
+    metadata: { itemId: updated.id, creedId: updated.creed_id, secretRotated: input.secret !== null, ...(moved ? { fromFolderId: previous.folder_id, toFolderId: updated.folder_id } : {}) },
+    request: input.request,
+  });
+  return toItem(updated);
 }
 export async function deleteVaultItem(input: { userId: string; itemId: string; request: Request }): Promise<void> {
   const row = await vaultDelete(getDatabase(), { userId: input.userId }, input.itemId);
   await recordAuditEvent({ userId: input.userId, action: "vault.secret_deleted", metadata: { itemId: row.id, creedId: row.creed_id }, request: input.request });
+}
+export async function createVaultFolder(input: { userId: string; strapId: string; name: string; description: string; request: Request }): Promise<VaultFolder> {
+  const row = await vaultFolderCreate(getDatabase(), { userId: input.userId }, input);
+  await recordAuditEvent({ userId: input.userId, action: "vault.folder_created", metadata: { folderId: row.id, creedId: row.strap_id }, request: input.request });
+  return toFolder(row);
+}
+export async function updateVaultFolder(input: { userId: string; folderId: string; name: string; description: string; request: Request }): Promise<VaultFolder> {
+  const row = await vaultFolderUpdate(getDatabase(), { userId: input.userId }, input);
+  await recordAuditEvent({ userId: input.userId, action: "vault.folder_updated", metadata: { folderId: row.id, creedId: row.strap_id }, request: input.request });
+  return toFolder(row);
+}
+export async function deleteVaultFolder(input: { userId: string; folderId: string; request: Request }): Promise<{ movedItemIds: string[] }> {
+  const { folder, movedItemIds } = await vaultFolderDelete(getDatabase(), { userId: input.userId }, input.folderId);
+  await recordAuditEvent({ userId: input.userId, action: "vault.folder_deleted", metadata: { folderId: folder.id, creedId: folder.strap_id, movedItemIds }, request: input.request });
+  return { movedItemIds };
 }

@@ -20,6 +20,8 @@ import { checkRateLimit } from "@/lib/rate-limit";
 import { markdownToRichHtml } from "@/lib/rich-text";
 import { callSkillTool } from "@/lib/skill-mcp";
 import { isSkillPayloadBatch,SKILL_TOOLS,skillToolsFor } from "@/lib/skill-tools";
+import { callVaultTool } from "@/lib/vault-mcp";
+import { VAULT_TOOLS,vaultToolsFor,type VaultCallerGrant } from "@/lib/vault-tools";
 import {
 createBlankStrapState,
 getAvatarInitials,
@@ -97,6 +99,8 @@ type McpCredentialGrant = {
   clientName: string | null;
   creedGrants: StrapGrant[];
   allowLegacyPersonalFallback: boolean;
+  // Headless keys only. OAuth credentials never carry Vault grants.
+  vaultGrant: VaultCallerGrant | null;
 };
 
 // Keep the MCP route self-contained for schema/error text so a route-module
@@ -780,6 +784,7 @@ async function resolveMcpCredential(bearer: string): Promise<McpCredentialGrant 
       clientName: key.clientName,
       creedGrants: [{ creedId: key.creedId, mode: key.mode }],
       allowLegacyPersonalFallback: false,
+      vaultGrant: { keyId: key.keyId, vaultItemIds: key.vaultItemIds, vaultFolderIds: key.vaultFolderIds },
     };
   }
   const oauth = await findOAuthAccessToken(bearer);
@@ -791,6 +796,7 @@ async function resolveMcpCredential(bearer: string): Promise<McpCredentialGrant 
     clientName: oauth.clientName,
     creedGrants: oauth.creedGrants,
     allowLegacyPersonalFallback: oauth.allowLegacyPersonalFallback,
+    vaultGrant: null,
   };
 }
 
@@ -972,6 +978,7 @@ async function handleToolCall(
   user: User,
   fallbackAgentName: string | null,
   credentialMode: StrapGrantMode,
+  vaultCaller: VaultCallerGrant | null,
 ) {
   const userId = user.id;
   const params = (rpcRequest.params ?? {}) as McpToolCallParams;
@@ -988,6 +995,15 @@ async function handleToolCall(
       strapId: state.creedId,
       mode: credentialMode,
       role: state.creeds?.find((entry) => entry.id === state.creedId)?.role,
+    }));
+  }
+
+  if (VAULT_TOOLS.some((tool) => tool.name === name)) {
+    return jsonToolResult(await callVaultTool(args, {
+      userId,
+      strapId: state.creedId,
+      role: state.creeds?.find((entry) => entry.id === state.creedId)?.role,
+      caller: vaultCaller,
     }));
   }
 
@@ -2220,6 +2236,7 @@ async function handleRpcRequest(
   user: User,
   fallbackAgentName: string | null,
   credentialMode: StrapGrantMode,
+  vaultCaller: VaultCallerGrant | null,
 ) {
   if (!rpcRequest.method) {
     return errorFor(rpcRequest.id, -32600, "Missing JSON-RPC method.");
@@ -2250,6 +2267,7 @@ async function handleRpcRequest(
       tools: [
         ...listToolsFor(state, credentialMode),
         ...skillToolsFor(state.creedId, credentialMode, state.creeds?.find((entry) => entry.id === state.creedId)?.role),
+        ...vaultToolsFor(state.creedId, state.creeds?.find((entry) => entry.id === state.creedId)?.role),
       ],
     });
   }
@@ -2321,6 +2339,7 @@ async function handleRpcRequest(
         user,
         fallbackAgentName,
         credentialMode,
+        vaultCaller,
       );
       return responseFor(rpcRequest.id, result);
     } catch (error) {
@@ -2500,6 +2519,7 @@ export async function POST(request: Request) {
           userData.user as User,
           clientName,
           credentialMode,
+          resolved.vaultGrant,
         ),
       ),
     )

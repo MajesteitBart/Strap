@@ -52,8 +52,8 @@ try {
  const reveal=await request('/api/app/vault/'+vault.data.item.id);ok(reveal,200,'Vault audited reveal');assert.equal(reveal.data.secret,'local-vault-fixture');
  const created=await request('/api/app/headless-access','POST',{strapId:profileId,name:'Local read rehearsal',mode:'read-only'});ok(created,201,'create scoped read key');
  const key=created.data.key;
- const revealHeadless=async credential=>{
-   const response=await fetch(origin+'/api/strap/vault/reveal',{method:'POST',headers:{Authorization:'Bearer '+credential,'Content-Type':'application/json'},body:JSON.stringify({reference:'secret://'+vault.data.item.id})});
+ const revealHeadless=async (credential,itemId=vault.data.item.id)=>{
+   const response=await fetch(origin+'/api/strap/vault/reveal',{method:'POST',headers:{Authorization:'Bearer '+credential,'Content-Type':'application/json'},body:JSON.stringify({reference:'secret://'+itemId})});
    assert.match(response.headers.get('cache-control')??'',/no-store/);
    return {response,data:await response.json()};
  };
@@ -66,6 +66,26 @@ try {
  ok(await request('/api/app/headless-access/'+secretKey.data.metadata.id,'DELETE'),200,'revoke secret key');
  ok(await revealHeadless(secretKey.data.key),401,'revoked secret key cannot reveal');
  ok(await request('/api/app/vault/'+vault.data.item.id,'DELETE'),200,'Vault delete');
+ const folder=await request('/api/app/vault/folders','POST',{strapId:profileId,name:'Rehearsal folder',description:'Local synthetic folder'});ok(folder,201,'Vault folder create');
+ const folderId=folder.data.folder.id;
+ const filed=await request('/api/app/vault','POST',{strapId:profileId,name:'REHEARSAL_FOLDER_SECRET',description:'Filed fixture',secret:'local-folder-fixture',folderId});ok(filed,201,'Vault create in folder');
+ const folderKey=await request('/api/app/headless-access','POST',{strapId:profileId,name:'Local folder rehearsal',mode:'read-only',vaultFolderIds:[folderId]});ok(folderKey,201,'create folder-granted key');
+ const folderReveal=await revealHeadless(folderKey.data.key,filed.data.item.id);ok(folderReveal,200,'folder grant reveals a filed secret');assert.deepEqual(folderReveal.data,{secret:'local-folder-fixture'});
+ const [folderAudit]=await connection`select metadata from creed_audit_log where action='vault.secret_revealed' and metadata->>'keyId'=${folderKey.data.metadata.id}`;
+ assert.equal(folderAudit.metadata.folderId,folderId);process.stdout.write('PASS folder reveal audit names the folder\n');
+ const discovery=await request('/mcp','POST',{jsonrpc:'2.0',id:10,method:'tools/call',params:{name:'strap_list_vault_items',arguments:{folder:'rehearsal folder'}}},{Authorization:'Bearer '+folderKey.data.key,Accept:'application/json, text/event-stream'});ok(discovery,200,'MCP Vault discovery');
+ const listing=JSON.parse(discovery.data.result.content[0].text);
+ assert.equal(JSON.stringify(discovery.data).includes('local-folder-fixture'),false);
+ assert.deepEqual(listing.items.map(item=>[item.name,item.reference,item.grantedToThisKey]),[['REHEARSAL_FOLDER_SECRET','secret://'+filed.data.item.id,true]]);process.stdout.write('PASS discovery lists references without values\n');
+ ok(await request('/api/app/headless-access/'+folderKey.data.metadata.id,'PATCH',{vaultItemIds:[],vaultFolderIds:[]}),200,'remove key grants');
+ ok(await revealHeadless(folderKey.data.key,filed.data.item.id),403,'removed grant blocks reveal');
+ ok(await request('/api/app/headless-access/'+folderKey.data.metadata.id,'PATCH',{vaultItemIds:[],vaultFolderIds:[folderId]}),200,'restore folder grant');
+ const rotatedKey=await request('/api/app/headless-access/'+folderKey.data.metadata.id+'/rotate','POST');ok(rotatedKey,200,'rotate key');
+ ok(await revealHeadless(folderKey.data.key,filed.data.item.id),401,'previous key value rejected');
+ ok(await revealHeadless(rotatedKey.data.key,filed.data.item.id),200,'rotated key keeps folder access');
+ const removedFolder=await request('/api/app/vault/folders/'+folderId,'DELETE');ok(removedFolder,200,'Vault folder delete');assert.deepEqual(removedFolder.data.movedItemIds,[filed.data.item.id]);
+ ok(await revealHeadless(rotatedKey.data.key,filed.data.item.id),403,'deleted folder removes folder access');
+ ok(await request('/api/app/vault/'+filed.data.item.id,'DELETE'),200,'filed secret delete');
  const mcpHeaders={Authorization:'Bearer '+key,Accept:'application/json, text/event-stream'};
  const read=await request('/mcp','POST',{jsonrpc:'2.0',id:1,method:'tools/call',params:{name:'read_strap',arguments:{}}},mcpHeaders);ok(read,200,'MCP read through scoped key');assert.equal(Boolean(read.data.error),false);assert.equal(Boolean(read.data.result?.isError),false);assert.ok(JSON.stringify(read.data).includes('Local migration edit persisted'));
  const tools=await request('/mcp','POST',{jsonrpc:'2.0',id:2,method:'tools/list'},mcpHeaders);ok(tools,200,'MCP read-only tool list');assert.equal(tools.data.result.tools.some(tool=>/propose|direct_edit|publish|update_section|create_section/.test(tool.name)),false);

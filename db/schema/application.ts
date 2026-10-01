@@ -523,6 +523,7 @@ export const creed_headless_access_keys = pgTable("creed_headless_access_keys", 
   key_prefix: text().notNull(),
   key_hash: text().notNull(),
   vault_item_ids: uuid().array().default(sql`'{}'::uuid[]`).notNull(),
+  vault_folder_ids: uuid().array().default(sql`'{}'::uuid[]`).notNull(),
   mode: text().default('proposal-only').notNull(),
   expires_at: timestamp({ withTimezone: true, mode: 'string' }),
   revoked_at: timestamp({ withTimezone: true, mode: 'string' }),
@@ -530,6 +531,7 @@ export const creed_headless_access_keys = pgTable("creed_headless_access_keys", 
   created_at: timestamp({ withTimezone: true, mode: 'string' }).default(sql`timezone('utc'::text, now())`).notNull(),
 }, (table) => [
   check("creed_headless_access_keys_vault_item_ids_check", sql`cardinality(${table.vault_item_ids}) <= 100 AND array_position(${table.vault_item_ids}, NULL) IS NULL`),
+  check("creed_headless_access_keys_vault_folder_ids_check", sql`cardinality(${table.vault_folder_ids}) <= 100 AND array_position(${table.vault_folder_ids}, NULL) IS NULL`),
   uniqueIndex("creed_headless_access_keys_hash_idx").using("btree", table.key_hash.asc().nullsLast()),
   index("creed_headless_access_keys_user_creed_idx").using("btree", table.user_id.asc().nullsLast(), table.creed_id.asc().nullsLast(), table.created_at.desc().nullsFirst()),
   foreignKey({
@@ -589,9 +591,32 @@ export const oauth_authorization_codes = pgTable("oauth_authorization_codes", {
     }).onDelete("cascade"),
 ]);
 
+// Folders group Vault items in one profile. A headless key granted a folder can
+// reveal every item currently in it.
+export const strap_vault_folders = pgTable("strap_vault_folders", {
+  id: uuid().defaultRandom().primaryKey().notNull(),
+  strap_id: uuid().notNull(),
+  name: text().notNull(),
+  description: text().default('').notNull(),
+  created_at: timestamp({ withTimezone: true, mode: 'string' }).default(sql`timezone('utc'::text, now())`).notNull(),
+  updated_at: timestamp({ withTimezone: true, mode: 'string' }).default(sql`timezone('utc'::text, now())`).notNull(),
+}, (table) => [
+  uniqueIndex("strap_vault_folders_name_idx").using("btree", sql`strap_id`, sql`lower(name)`),
+  // Target of the items' composite key, which keeps an item and its folder in one profile.
+  unique("strap_vault_folders_strap_id_id_key").on(table.strap_id, table.id),
+  foreignKey({
+      columns: [table.strap_id],
+      foreignColumns: [creeds.id],
+      name: "strap_vault_folders_strap_id_fkey"
+    }).onDelete("cascade"),
+  check("strap_vault_folders_description_check", sql`char_length(description) <= 500`),
+  check("strap_vault_folders_name_check", sql`(char_length(name) >= 1) AND (char_length(name) <= 120)`),
+]);
+
 export const creed_vault_items = pgTable("creed_vault_items", {
   id: uuid().defaultRandom().primaryKey().notNull(),
   creed_id: uuid().notNull(),
+  folder_id: uuid(),
   secret_ciphertext: text().notNull(),
   name: text().notNull(),
   description: text().default('').notNull(),
@@ -601,7 +626,14 @@ export const creed_vault_items = pgTable("creed_vault_items", {
   last_accessed_at: timestamp({ withTimezone: true, mode: 'string' }),
 }, (table) => [
   index("creed_vault_items_creed_created_idx").using("btree", table.creed_id.asc().nullsLast(), table.created_at.desc().nullsFirst()),
+  index("creed_vault_items_folder_idx").using("btree", table.folder_id.asc().nullsLast()),
   uniqueIndex("creed_vault_items_name_idx").using("btree", sql`creed_id`, sql`lower(name)`),
+  // Deleting a folder first moves its items out, in the same transaction.
+  foreignKey({
+      columns: [table.creed_id, table.folder_id],
+      foreignColumns: [strap_vault_folders.strap_id, strap_vault_folders.id],
+      name: "creed_vault_items_folder_fkey"
+    }),
   foreignKey({
       columns: [table.created_by],
       foreignColumns: [users.id],

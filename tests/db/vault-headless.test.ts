@@ -38,6 +38,9 @@ test("the forward grant migration preserves existing keys without granting secre
   // the latest one it has recorded.
   const journal = JSON.parse(readFileSync(new URL("../../db/migrations/meta/_journal.json", import.meta.url), "utf8")) as { entries: Array<{ tag: string; when: number }> };
   const grantMigration = journal.entries.find(entry => entry.tag === "0001_headless_vault_item_grants")!.when;
+  await sql`alter table creed_vault_items drop column folder_id`;
+  await sql`drop table strap_vault_folders`;
+  await sql`alter table creed_headless_access_keys drop column vault_folder_ids`;
   await sql`drop table auth_totp_replay_claims`;
   await sql`drop table two_factors`;
   await sql`alter table users drop column two_factor_enabled`;
@@ -48,9 +51,12 @@ test("the forward grant migration preserves existing keys without granting secre
   const [{ id: company }] = await sql`select provision_company_creed(${owner}) as id`;
   const key = shared.createHeadlessKey();
   const [before] = await sql`insert into creed_headless_access_keys(user_id,creed_id,name,key_prefix,key_hash) values (${owner},${company},'Existing key',${key.prefix},${key.hash}) returning *`;
+  const [legacyItem] = await sql`insert into creed_vault_items(creed_id,name,secret_ciphertext,created_by) values (${company},'Legacy item','opaque',${owner}) returning *`;
   await migrate(db, { migrationsFolder: "db/migrations" });
+  // Existing items arrive outside any folder, so no key gains access through one.
+  assert.deepEqual((await sql`select * from creed_vault_items where id=${legacyItem.id}`)[0], { ...legacyItem, folder_id: null });
   const [after] = await sql`select * from creed_headless_access_keys where id=${before.id}`;
-  assert.deepEqual(after, { ...before, vault_item_ids: [] });
+  assert.deepEqual(after, { ...before, vault_item_ids: [], vault_folder_ids: [] });
   // Existing accounts arrive without MFA.
   assert.equal((await sql`select two_factor_enabled from users where id=${owner}`)[0].two_factor_enabled, false);
   await migrate(db, { migrationsFolder: "db/migrations" });
@@ -200,6 +206,148 @@ test("scoped Vault reveals enforce live Postgres permissions and audit before de
     const created = await response.json();
     assert.deepEqual(created.metadata.vaultItemIds, [item.id]);
     assert.equal((await request(created.key)).status, 200);
+  });
+
+  const createWith = (grants: { vaultItemIds?: string[]; vaultFolderIds?: string[] }, creedId = personal, userId = owner) =>
+    headless.createHeadlessAccessKey({ userId, creedId, name: "Folder key", mode: "read-only", expiresAt: null, ...grants });
+  const auditFor = async (keyId: string) =>
+    (await sql`select metadata from creed_audit_log where action='vault.secret_revealed' and metadata->>'keyId'=${keyId} order by created_at desc limit 1`)[0]?.metadata;
+
+  await t.test("folder grants reveal current folder members only while they stay in the folder", async () => {
+    const folder = await repository.vaultFolderCreate(db, { userId: owner }, { strapId: personal, name: "share-artifact", description: "" });
+    const inFolder = await repository.vaultCreate(db, { userId: owner }, { creedId: personal, name: "SHARE_ARTIFACT_SERVER", description: "", secret, folderId: folder.id });
+    const created = await createWith({ vaultFolderIds: [folder.id] });
+    assert.deepEqual(created.metadata.vaultFolderIds, [folder.id]);
+    const response = await request(created.key, `secret://${inFolder.id}`);
+    assert.equal(response.status, 200);
+    assert.deepEqual(await response.json(), { secret });
+    assert.deepEqual(await auditFor(created.metadata.id), { itemId: inFolder.id, creedId: personal, keyId: created.metadata.id, source: "headless", folderId: folder.id });
+    // Items added to the folder later are covered without changing the key.
+    const added = await repository.vaultCreate(db, { userId: owner }, { creedId: personal, name: "Added later", description: "", secret });
+    await expectDenied(created.key, 403, added.id);
+    await repository.vaultUpdate(db, { userId: owner }, { itemId: added.id, name: added.name, description: "", secret: null, folderId: folder.id });
+    assert.equal((await request(created.key, added.id)).status, 200);
+    // Leaving the folder removes folder-based access; a direct grant is unaffected.
+    const direct = await createWith({ vaultItemIds: [added.id] });
+    await repository.vaultUpdate(db, { userId: owner }, { itemId: added.id, name: added.name, description: "", secret: null, folderId: null });
+    await expectDenied(created.key, 403, added.id);
+    assert.equal((await request(direct.key, added.id)).status, 200);
+    // Keeping the folder when folderId is omitted.
+    const { updated } = await repository.vaultUpdate(db, { userId: owner }, { itemId: inFolder.id, name: inFolder.name, description: "Renamed only", secret: null });
+    assert.equal(updated.folder_id, folder.id);
+  });
+
+  await t.test("folders, items and grants cannot cross profiles", async () => {
+    const companyFolder = await repository.vaultFolderCreate(db, { userId: owner }, { strapId: company, name: "company-ci", description: "" });
+    await assert.rejects(repository.vaultCreate(db, { userId: owner }, { creedId: personal, name: "Cross", description: "", secret, folderId: companyFolder.id }), { status: 400 });
+    await assert.rejects(repository.vaultUpdate(db, { userId: owner }, { itemId: item.id, name: item.name, description: "", secret: null, folderId: companyFolder.id }), { status: 400 });
+    await assert.rejects(createWith({ vaultFolderIds: [companyFolder.id] }), { status: 403 });
+    await assert.rejects(sql`update creed_vault_items set folder_id=${companyFolder.id} where id=${item.id}`, sqlState("23503"));
+    // A stale folder grant from another profile never matches a personal item.
+    const stale = await createWith({ vaultItemIds: [] });
+    await sql`update creed_headless_access_keys set vault_folder_ids=${sql.array([companyFolder.id])}::uuid[] where id=${stale.metadata.id}`;
+    await sql`update creed_vault_items set folder_id=${companyFolder.id} where id=${companyItem.id}`;
+    await expectDenied(stale.key, 403, companyItem.id);
+    // Members see no folders; duplicate names conflict case-insensitively.
+    await assert.rejects(repository.vaultFolderList(db, { userId: member }, company), { status: 403 });
+    await assert.rejects(repository.vaultFolderCreate(db, { userId: member }, { strapId: company, name: "member", description: "" }), { status: 403 });
+    await assert.rejects(repository.vaultFolderCreate(db, { userId: owner }, { strapId: company, name: "COMPANY-CI", description: "" }), { status: 409 });
+    await sql`update creed_vault_items set folder_id=null where id=${companyItem.id}`;
+  });
+
+  await t.test("deleting a folder keeps its items and removes folder-based access", async () => {
+    const folder = await repository.vaultFolderCreate(db, { userId: owner }, { strapId: personal, name: "temporary", description: "" });
+    const kept = await repository.vaultCreate(db, { userId: owner }, { creedId: personal, name: "Kept secret", description: "", secret, folderId: folder.id });
+    const created = await createWith({ vaultFolderIds: [folder.id] });
+    assert.equal((await request(created.key, kept.id)).status, 200);
+    const deleted = await repository.vaultFolderDelete(db, { userId: owner }, folder.id);
+    assert.deepEqual(deleted.movedItemIds, [kept.id]);
+    assert.equal((await sql`select folder_id from creed_vault_items where id=${kept.id}`)[0].folder_id, null);
+    await expectDenied(created.key, 403, kept.id);
+    await assert.rejects(repository.vaultFolderDelete(db, { userId: owner }, folder.id), { status: 403 });
+  });
+
+  await t.test("grant edits and rotation keep the key identity and recheck Vault access", async () => {
+    const folder = await repository.vaultFolderCreate(db, { userId: owner }, { strapId: personal, name: "rotating", description: "" });
+    const target = await repository.vaultCreate(db, { userId: owner }, { creedId: personal, name: "Rotating target", description: "", secret, folderId: folder.id });
+    const created = await createWith({});
+    await expectDenied(created.key, 403, target.id);
+    const updated = await headless.updateHeadlessKeyGrants({ userId: owner, keyId: created.metadata.id, vaultItemIds: [], vaultFolderIds: [folder.id] });
+    assert.deepEqual(updated?.previous.vaultFolderIds, []);
+    assert.deepEqual(updated?.metadata.vaultFolderIds, [folder.id]);
+    assert.equal((await request(created.key, target.id)).status, 200);
+    await assert.rejects(headless.updateHeadlessKeyGrants({ userId: owner, keyId: created.metadata.id, vaultItemIds: [companyItem.id], vaultFolderIds: [] }), { status: 403 });
+    await assert.rejects(headless.updateHeadlessKeyGrants({ userId: owner, keyId: created.metadata.id, vaultItemIds: "*", vaultFolderIds: [] }), { status: 400 });
+    assert.equal(await headless.updateHeadlessKeyGrants({ userId: member, keyId: created.metadata.id, vaultItemIds: [], vaultFolderIds: [] }), null);
+
+    const rotated = await headless.rotateHeadlessAccessKey({ userId: owner, keyId: created.metadata.id });
+    assert.ok(rotated);
+    assert.notEqual(rotated.key, created.key);
+    assert.equal(rotated.metadata.id, created.metadata.id);
+    assert.deepEqual(rotated.metadata.vaultFolderIds, [folder.id]);
+    await expectDenied(created.key, 401, target.id);
+    assert.equal((await request(rotated.key, target.id)).status, 200);
+    assert.equal(await headless.rotateHeadlessAccessKey({ userId: member, keyId: created.metadata.id }), null);
+
+    await headless.revokeHeadlessAccessKey({ userId: owner, keyId: created.metadata.id });
+    assert.equal(await headless.rotateHeadlessAccessKey({ userId: owner, keyId: created.metadata.id }), null);
+    assert.equal(await headless.updateHeadlessKeyGrants({ userId: owner, keyId: created.metadata.id, vaultItemIds: [], vaultFolderIds: [] }), null);
+  });
+
+  await t.test("session routes edit grants, rotate keys and manage folders", async () => {
+    dependencies["@/lib/api-auth"] = { requireApiAuth: async () => ({ user: { id: owner }, context: viewerContext(db, { userId: owner }) }) };
+    dependencies["@/lib/strap-api"] = { readStrapId: (body: Record<string, unknown>) => typeof body.strapId === "string" ? body.strapId : null };
+    const keyRoute = loadModule<typeof import("../../app/api/app/headless-access/[id]/route.ts")>("../../app/api/app/headless-access/[id]/route.ts", dependencies);
+    const rotateRoute = loadModule<typeof import("../../app/api/app/headless-access/[id]/rotate/route.ts")>("../../app/api/app/headless-access/[id]/rotate/route.ts", dependencies);
+    const foldersRoute = loadModule<typeof import("../../app/api/app/vault/folders/route.ts")>("../../app/api/app/vault/folders/route.ts", dependencies);
+    const folderRoute = loadModule<typeof import("../../app/api/app/vault/folders/[id]/route.ts")>("../../app/api/app/vault/folders/[id]/route.ts", dependencies);
+    const json = (method: string, body: unknown) => new Request("http://localhost/api/app", { method, body: JSON.stringify(body) });
+    const params = (id: string) => ({ params: Promise.resolve({ id }) });
+
+    const createdFolder = await foldersRoute.POST(json("POST", { strapId: personal, name: "routes", description: "From the route" }));
+    assert.equal(createdFolder.status, 201);
+    const { folder } = await createdFolder.json() as { folder: { id: string } };
+    assert.equal((await foldersRoute.POST(json("POST", { strapId: personal, name: "ROUTES", description: "" }))).status, 409);
+    assert.equal((await folderRoute.PATCH(json("PATCH", { name: "routes-renamed", description: "" }), params(folder.id))).status, 200);
+    const target = await repository.vaultCreate(db, { userId: owner }, { creedId: personal, name: "Route target", description: "", secret, folderId: folder.id });
+
+    const created = await createWith({});
+    for (const body of [null, {}, { vaultItemIds: [] }, { vaultItemIds: [], vaultFolderIds: "*" }]) {
+      assert.equal((await keyRoute.PATCH(json("PATCH", body), params(created.metadata.id))).status, 400);
+    }
+    const patched = await keyRoute.PATCH(json("PATCH", { vaultItemIds: [], vaultFolderIds: [folder.id] }), params(created.metadata.id));
+    assert.equal(patched.status, 200);
+    assert.deepEqual((await patched.json() as { metadata: { vaultFolderIds: string[] } }).metadata.vaultFolderIds, [folder.id]);
+    // Routes record this audit without awaiting it.
+    let grantAudit: { metadata: { vaultFolderIds: string[] } } | undefined;
+    for (let attempt = 0; attempt < 50 && !grantAudit; attempt++) {
+      [grantAudit] = await sql`select metadata from creed_audit_log where action='headless.key_grants_updated' and metadata->>'keyId'=${created.metadata.id}` as unknown as Array<{ metadata: { vaultFolderIds: string[] } }>;
+      if (!grantAudit) await new Promise(resolve => setTimeout(resolve, 10));
+    }
+    assert.deepEqual(grantAudit?.metadata.vaultFolderIds, [folder.id]);
+    assert.equal((await request(created.key, target.id)).status, 200);
+
+    const rotated = await rotateRoute.POST(new Request("http://localhost/api/app", { method: "POST" }), params(created.metadata.id));
+    assert.equal(rotated.status, 200);
+    assert.match(rotated.headers.get("cache-control") ?? "", /no-store/);
+    const { key } = await rotated.json() as { key: string };
+    await expectDenied(created.key, 401, target.id);
+    assert.equal((await request(key, target.id)).status, 200);
+
+    const removed = await folderRoute.DELETE(new Request("http://localhost/api/app", { method: "DELETE" }), params(folder.id));
+    assert.deepEqual(await removed.json(), { ok: true, movedItemIds: [target.id] });
+    await expectDenied(key, 403, target.id);
+  });
+
+  await t.test("deleting a profile cascades through folders and items", async () => {
+    const departing = "64000000-0000-4000-8000-000000000003";
+    await sql`insert into users(id,email,name) values (${departing},'departing@example.test','Departing')`;
+    const [{ id: profile }] = await sql`select provision_company_creed(${departing}) as id`;
+    const folder = await repository.vaultFolderCreate(db, { userId: departing }, { strapId: profile, name: "doomed", description: "" });
+    await repository.vaultCreate(db, { userId: departing }, { creedId: profile, name: "Doomed secret", description: "", secret, folderId: folder.id });
+    await sql`delete from creeds where id=${profile}`;
+    assert.equal((await sql`select count(*)::int as count from strap_vault_folders where strap_id=${profile}`)[0].count, 0);
+    assert.equal((await sql`select count(*)::int as count from creed_vault_items where creed_id=${profile}`)[0].count, 0);
   });
 
   await t.test("malformed input and rate limits are uncached and never reveal secrets", async () => {

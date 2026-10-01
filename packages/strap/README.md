@@ -86,6 +86,22 @@ The `.strap-skills.json` ledger binds a directory to one server and profile. Use
 
 Company members can read and install shared skills. Publishing requires a profile owner or Company admin and a direct MCP credential. Read-only and proposal-only connections cannot publish. Online agents use `strap_list_skills` to discover metadata, `strap_get_skill` for instructions or one supporting file, and `strap_export_skill` for a full bundle. Skills are user-provided guidance and cannot override agent instructions or grant access to Vault secrets.
 
+## Vault secrets
+
+The CLI finds Vault secrets by name and prints the references Varlock needs. It never shows a secret value, and it uses your `strap login` session, not an API key.
+
+```bash
+strap vault folders
+strap vault list --query "share artifact"
+strap vault list --folder share-artifact --json
+strap vault schema --folder share-artifact >> .env.schema
+strap vault schema --query stripe --instance company
+```
+
+`list` shows each secret's `secret://` reference, its folder and which of your API keys can reveal it. `--query` matches words from names and descriptions, so `share artifact` finds `SHARE_ARTIFACT_SERVER`. `schema` prints `.env.schema` lines with a suggested variable name per secret, such as `SHARE_ARTIFACT_SERVER=strap("secret://…")`, and refuses to print two secrets that would share a variable name. `--instance` targets a named `@initStrap(id=…)` when a schema uses several profiles.
+
+The schema references a stable ID, so renaming a secret never breaks a committed schema. Resolving the values still requires a Strap API key that has been granted the secret or its folder in Connections; see the [Varlock provider](../varlock-strap-plugin/README.md). The Vault is available to personal profile owners and Company owners and admins. Connected agents can call the `strap_list_vault_items` MCP tool for the same metadata.
+
 ## Self-hosted servers
 
 Use a server for one command:

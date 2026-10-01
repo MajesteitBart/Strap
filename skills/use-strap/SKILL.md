@@ -74,10 +74,11 @@ On conflict, compare local and published copies before choosing a version. Do no
 
 Use the [Strap Varlock provider guide](https://github.com/MajesteitBart/Strap/blob/main/packages/varlock-strap-plugin/README.md) for installation and the maintained `.env.schema` examples, including multiple profiles. The provider requires Node.js 22+ and is tested with Varlock 1.19.x.
 
-1. Create or select a Vault item and copy its `secret://UUID` reference.
-2. In Connections > Headless access, create a key with those individual items selected under **Secret access for Varlock**. Read-only mode suffices for secrets; context mode and secret grants are separate. Existing keys without item grants cannot reveal secrets. Company Vault access requires an owner/admin.
-3. Supply `STRAP_API_KEY` through a protected local environment or CI secret store. Configure `@initStrap(token=$STRAP_API_KEY)`, declare the key as `@type=strapAccessKey`, and resolve application variables with `strap("secret://UUID")` in `.env.schema`, following the guide. For self-hosting, the provider's `server` is the origin without `/mcp`.
-4. Validate with `npx varlock load`, then launch the intended application with `npx varlock run -- <command>`.
+1. Find the secret by name: `strap vault list --query "<words>"` or the `strap_list_vault_items` MCP tool. Both return metadata, the `secret://UUID` reference, a suggested schema line and the API keys that can reveal it. Neither returns values.
+2. Write the schema lines with `strap vault schema --folder <name>` or `--query "<words>"`, or copy `schemaLine` from the tool result. Keep references as IDs; do not invent name-based references.
+3. The application's key needs a grant for the secret or its folder. If `revealableBy` does not include that key, or Varlock reports 403, ask the user to add the folder or secret to the key in Connections > Headless access. Grants can be edited without replacing the key. Read-only mode suffices for secrets; context mode and secret grants are separate. Company Vault access requires an owner/admin.
+4. Supply `STRAP_API_KEY` through a protected local environment or CI secret store. Configure `@initStrap(token=$STRAP_API_KEY)`, declare the key as `@type=strapAccessKey`, and resolve application variables with `strap("secret://UUID")` in `.env.schema`, following the guide. For self-hosting, the provider's `server` is the origin without `/mcp`.
+5. Validate with `npx varlock load`, then launch the intended application with `npx varlock run -- <command>`.
 
 The provider marks resolved values sensitive and the bootstrap key internal. The launched application receives resolved secrets; this is runtime injection, not a credential proxy. Keep plaintext out of agent output and committed files. Ordinary MCP reads and CLI OAuth do not reveal Vault values. Fetching a skill grants no secret access.
 

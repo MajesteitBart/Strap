@@ -6,7 +6,7 @@ import {
 } from "@/lib/headless-access";
 import { isHeadlessKeyMode, parseOptionalExpiry } from "@/lib/headless-access-shared";
 import { VaultAccessError } from "@/lib/api-key-vault";
-import { parseVaultItemGrants } from "@/lib/vault-grants";
+import { parseVaultFolderGrants, parseVaultItemGrants } from "@/lib/vault-grants";
 import { getCreedRole } from "@/lib/strap-membership";
 import { NextResponse } from "next/server";
 
@@ -45,9 +45,10 @@ export async function POST(request: Request) {
   const name = typeof body.name === "string" ? body.name.trim() : "";
   const expiresAt = parseOptionalExpiry(body.expiresAt ?? null);
   const vaultItemIds = parseVaultItemGrants(body.vaultItemIds);
-  if (!creedId || !name || name.length > 120 || !isHeadlessKeyMode(body.mode) || expiresAt === undefined || !vaultItemIds) {
+  const vaultFolderIds = parseVaultFolderGrants(body.vaultFolderIds);
+  if (!creedId || !name || name.length > 120 || !isHeadlessKeyMode(body.mode) || expiresAt === undefined || !vaultItemIds || !vaultFolderIds) {
     return NextResponse.json(
-      { error: "Valid strapId, name, mode, optional future expiresAt, and up to 100 Vault item IDs are required." },
+      { error: "Valid strapId, name, mode, optional future expiresAt, and up to 100 Vault item and 100 folder IDs are required." },
       { status: 400 },
     );
   }
@@ -62,11 +63,12 @@ export async function POST(request: Request) {
       mode: body.mode,
       expiresAt,
       vaultItemIds,
+      vaultFolderIds,
     });
     void recordAuditEvent({
       userId: auth.user.id,
       action: "headless.key_created",
-      metadata: { keyId: created.metadata.id, creedId, mode: created.metadata.mode, vaultItemIds },
+      metadata: { keyId: created.metadata.id, creedId, mode: created.metadata.mode, vaultItemIds, vaultFolderIds },
       request,
     });
     return NextResponse.json(created, { status: 201, headers: NO_STORE });
