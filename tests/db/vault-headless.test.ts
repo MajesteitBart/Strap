@@ -33,9 +33,16 @@ function loadModule<T>(path: string, dependencies: Record<string, unknown>): T {
 test("the forward grant migration preserves existing keys without granting secrets", { skip: !databaseTestsEnabled }, async t => {
   const { db, connection: sql, close } = await createTestDatabase();
   t.after(close);
-  // Restore main's schema only in this disposable database, then upgrade it.
+  // Restore the pre-grant schema only in this disposable database, then upgrade it.
+  // Later migrations roll back too: the migrator only applies entries newer than
+  // the latest one it has recorded.
+  const journal = JSON.parse(readFileSync(new URL("../../db/migrations/meta/_journal.json", import.meta.url), "utf8")) as { entries: Array<{ tag: string; when: number }> };
+  const grantMigration = journal.entries.find(entry => entry.tag === "0001_headless_vault_item_grants")!.when;
+  await sql`drop table auth_totp_replay_claims`;
+  await sql`drop table two_factors`;
+  await sql`alter table users drop column two_factor_enabled`;
   await sql`alter table creed_headless_access_keys drop column vault_item_ids`;
-  await sql`delete from drizzle.__drizzle_migrations where created_at = (select max(created_at) from drizzle.__drizzle_migrations)`;
+  await sql`delete from drizzle.__drizzle_migrations where created_at >= ${grantMigration}`;
   const owner = "65000000-0000-4000-8000-000000000001";
   await sql`insert into users(id,email,name) values (${owner},'legacy@example.test','Legacy')`;
   const [{ id: company }] = await sql`select provision_company_creed(${owner}) as id`;
@@ -44,6 +51,8 @@ test("the forward grant migration preserves existing keys without granting secre
   await migrate(db, { migrationsFolder: "db/migrations" });
   const [after] = await sql`select * from creed_headless_access_keys where id=${before.id}`;
   assert.deepEqual(after, { ...before, vault_item_ids: [] });
+  // Existing accounts arrive without MFA.
+  assert.equal((await sql`select two_factor_enabled from users where id=${owner}`)[0].two_factor_enabled, false);
   await migrate(db, { migrationsFolder: "db/migrations" });
   assert.deepEqual((await sql`select * from creed_headless_access_keys where id=${before.id}`)[0], after);
 });
