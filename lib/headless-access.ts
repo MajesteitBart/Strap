@@ -1,5 +1,5 @@
 import { listVaultFolders, listVaultItems, VaultAccessError } from "@/lib/api-key-vault";
-import { vaultScope } from "@/lib/db/repositories/vault";
+import { lockVaultAccess } from "@/lib/db/repositories/vault";
 import { parseVaultFolderGrants, parseVaultItemGrants } from "@/lib/vault-grants";
 import * as tables from "@/db/schema/application";
 import { authorizeValues } from "@/lib/authz/policies";
@@ -159,13 +159,7 @@ export async function createHeadlessAccessKey(input: {
     return database.transaction(async (tx) => {
       // A key with grants needs the Vault role while it is written: the
       // membership row stays locked until the insert commits, as in vaultCreate.
-      if (grantsAccess) {
-        const [access] = await tx.select({ id: tables.creeds.id }).from(tables.creeds)
-          .innerJoin(tables.creed_members, eq(tables.creed_members.creed_id, tables.creeds.id))
-          .where(and(eq(tables.creeds.id, input.creedId), eq(tables.creed_members.user_id, input.userId), vaultScope({ userId: input.userId }, tables.creeds.id)))
-          .for("share");
-        if (!access) return [];
-      }
+      if (grantsAccess && !(await lockVaultAccess(tx, { userId: input.userId }, input.creedId))) return [];
       return tx.insert(keys).values(values).returning(KEY_COLUMNS);
     });
   }).then(maybeOne);
@@ -205,17 +199,20 @@ export async function updateHeadlessKeyGrants(input: {
   if (!current) return { status: "not-found" };
   if (!sameIds(expectedItems, current.vault_item_ids) || !sameIds(expectedFolders, current.vault_folder_ids)) return { status: "conflict" };
   const grants = await authorizeVaultGrants({ ...input, creedId: current.creed_id });
-  // Granting anything also requires the Vault role at write time, so a demotion
-  // between the checks above and this update cannot slip a grant through.
-  // Clearing all grants only reduces access and stays allowed.
+  // Granting anything also requires the Vault role at write time: the
+  // membership row stays locked until the update commits, as in key creation,
+  // so a demotion between the checks above and this update cannot slip a grant
+  // through. Clearing all grants only reduces access and stays allowed.
   const grantsAccess = grants.vaultItemIds.length > 0 || grants.vaultFolderIds.length > 0;
   const { data, error } = await query(adminDb(), keys, "update", async (database, scope) => {
     const values = { vault_item_ids: grants.vaultItemIds, vault_folder_ids: grants.vaultFolderIds } as Partial<typeof keys.$inferInsert>;
     await authorizeValues(adminDb(), keys, "update", values);
-    return database.update(keys).set(values)
-      .where(and(scope, eq(keys.id, current.id), eq(keys.user_id, input.userId), usable(),
-        eq(keys.vault_item_ids, current.vault_item_ids), eq(keys.vault_folder_ids, current.vault_folder_ids),
-        grantsAccess ? vaultScope({ userId: input.userId }, keys.creed_id) : undefined)).returning(KEY_COLUMNS);
+    return database.transaction(async (tx) => {
+      if (grantsAccess && !(await lockVaultAccess(tx, { userId: input.userId }, current.creed_id))) return [];
+      return tx.update(keys).set(values)
+        .where(and(scope, eq(keys.id, current.id), eq(keys.user_id, input.userId), usable(),
+          eq(keys.vault_item_ids, current.vault_item_ids), eq(keys.vault_folder_ids, current.vault_folder_ids))).returning(KEY_COLUMNS);
+    });
   }).then(maybeOne);
   if (error) throw new Error("Could not update headless access key.");
   if (data) return { status: "updated", previous: toMetadata(current), metadata: toMetadata(data as HeadlessKeyRow) };

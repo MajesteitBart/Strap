@@ -16,11 +16,25 @@ const NOT_GRANTED = "Secret access was not granted to this key.";
 const metadata = { id: items.id, creed_id: items.creed_id, folder_id: items.folder_id, name: items.name, description: items.description, created_by: items.created_by, created_at: items.created_at, updated_at: items.updated_at, last_accessed_at: items.last_accessed_at };
 const folderMetadata = { id: folders.id, strap_id: folders.strap_id, name: folders.name, description: folders.description, created_at: folders.created_at, updated_at: folders.updated_at };
 /** Vault access: a personal profile's owner, or a Company owner or admin. */
-export function vaultScope(viewer: Viewer, profile: SQLWrapper) {
-  return scope(viewer, profile);
-}
 function scope(viewer: Viewer, profile: SQLWrapper) {
   return sql`exists (select 1 from public.creed_members member join public.creeds profile on profile.id = member.creed_id where member.creed_id = ${profile} and member.user_id = ${viewer.userId} and ((profile.type = 'personal' and profile.owner_user_id = ${viewer.userId} and member.role = 'owner') or (profile.type = 'company' and member.role in ('owner', 'admin'))))`;
+}
+/**
+ * Locks the viewer's membership row until the transaction ends and reports
+ * whether it grants Vault access, by the same rule as scope. Writes that need
+ * the Vault role call this first, so a demotion or removal cannot commit
+ * between the check and the write. The role is tested on the locked row
+ * itself: if a demotion commits while this waits, Postgres rechecks the new
+ * row version, whereas the scope subquery would keep its older snapshot and
+ * still see the old role.
+ */
+export async function lockVaultAccess(tx: Pick<PostgresJsDatabase, "select">, viewer: Viewer, profileId: string): Promise<boolean> {
+  const [access] = await tx.select({ id: creeds.id }).from(creeds).innerJoin(creed_members, eq(creed_members.creed_id, creeds.id))
+    .where(and(eq(creeds.id, profileId), eq(creed_members.user_id, viewer.userId), or(
+      and(eq(creeds.type, "personal"), eq(creeds.owner_user_id, viewer.userId), eq(creed_members.role, "owner")),
+      and(eq(creeds.type, "company"), inArray(creed_members.role, ["owner", "admin"])),
+    ))).for("share");
+  return access !== undefined;
 }
 function constraintError(error: unknown): { code?: string; constraint?: string } {
   // Drizzle wraps driver errors; postgres.js puts the SQLSTATE on the cause.
@@ -55,9 +69,7 @@ export async function vaultList(db: PostgresJsDatabase, viewer: Viewer, profileI
 }
 export async function vaultCreate(db: PostgresJsDatabase, viewer: Viewer, input: { creedId: string; name: string; description: string; secret: string; folderId?: string | null }) {
   return mapConstraints(() => db.transaction(async tx => {
-    const [access] = await tx.select({ id: creeds.id }).from(creeds).innerJoin(creed_members, eq(creed_members.creed_id, creeds.id))
-      .where(and(eq(creeds.id, input.creedId), eq(creed_members.user_id, viewer.userId), scope(viewer, creeds.id))).for("share");
-    if (!access) throw new VaultRepositoryError("Forbidden", 403);
+    if (!(await lockVaultAccess(tx, viewer, input.creedId))) throw new VaultRepositoryError("Forbidden", 403);
     const id = randomUUID();
     const [row] = await tx.insert(items).values({ id, creed_id: input.creedId, folder_id: input.folderId ?? null, created_by: viewer.userId, name: input.name, description: input.description,
       secret_ciphertext: encryptVaultSecret(input.secret, id, input.creedId) }).returning(metadata);
@@ -97,9 +109,7 @@ export async function vaultFolderCreate(db: PostgresJsDatabase, viewer: Viewer, 
   // Like vaultCreate: the membership row stays locked until the insert commits,
   // so a concurrent demotion or removal cannot interleave.
   return mapConstraints(() => db.transaction(async tx => {
-    const [access] = await tx.select({ id: creeds.id }).from(creeds).innerJoin(creed_members, eq(creed_members.creed_id, creeds.id))
-      .where(and(eq(creeds.id, input.strapId), eq(creed_members.user_id, viewer.userId), scope(viewer, creeds.id))).for("share");
-    if (!access) throw new VaultRepositoryError("Forbidden", 403);
+    if (!(await lockVaultAccess(tx, viewer, input.strapId))) throw new VaultRepositoryError("Forbidden", 403);
     const [row] = await tx.insert(folders).values({ strap_id: input.strapId, name: input.name, description: input.description }).returning(folderMetadata);
     return row;
   }));
@@ -131,9 +141,7 @@ export async function vaultFolderDelete(db: PostgresJsDatabase, viewer: Viewer, 
     if (!folder) throw new VaultRepositoryError("Folder not found or access denied.", 403);
     // Hold the membership row as folder creation does, so a demotion or removal
     // cannot commit between this check and the writes below.
-    const [access] = await tx.select({ id: creeds.id }).from(creeds).innerJoin(creed_members, eq(creed_members.creed_id, creeds.id))
-      .where(and(eq(creeds.id, folder.strap_id), eq(creed_members.user_id, viewer.userId), scope(viewer, creeds.id))).for("share");
-    if (!access) throw new VaultRepositoryError("Folder not found or access denied.", 403);
+    if (!(await lockVaultAccess(tx, viewer, folder.strap_id))) throw new VaultRepositoryError("Folder not found or access denied.", 403);
     // Only the number of moved items is kept: a large folder must not produce
     // an unbounded response or audit payload.
     const moved = await tx.update(items).set({ folder_id: null, updated_at: new Date().toISOString() })

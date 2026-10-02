@@ -7,6 +7,8 @@ import { NextResponse } from "next/server.js";
 import ts from "typescript";
 import * as tables from "../../db/schema/application.ts";
 import * as policies from "../../lib/authz/policies.ts";
+import { setTimeout as delay } from "node:timers/promises";
+import { createConnection } from "../../lib/db/connection.ts";
 import { viewerContext, type DatabaseContext } from "../../lib/db/context.ts";
 import * as queries from "../../lib/db/query.ts";
 import * as repository from "../../lib/db/repositories/vault.ts";
@@ -498,6 +500,48 @@ test("scoped Vault reveals enforce live Postgres permissions and audit before de
     assert.deepEqual((await sql`select vault_folder_ids from creed_headless_access_keys where id=${key.metadata.id}`)[0].vault_folder_ids, []);
     // Removing access needs no Vault role.
     assert.equal((await stale.updateHeadlessKeyGrants({ userId: member, keyId: key.metadata.id, ...none, expected: none })).status, "updated");
+  });
+
+  await t.test("a demotion that commits while a Vault write waits on the membership row blocks the write", async () => {
+    const [{ name }] = await sql`select current_database() as name`;
+    const url = new URL(process.env.DATABASE_URL!);
+    url.pathname = `/${name}`;
+    // The test pool has one connection, so the owner's demotion runs on its own
+    // and holds the membership row while the write starts. It commits once the
+    // writer's connection waits on that row, or after five seconds; the test
+    // then requires that the wait happened, so it cannot pass without the race.
+    const duringDemotion = async (write: () => Promise<unknown>) => {
+      await sql`update creed_members set role='admin' where creed_id=${company} and user_id=${member}`;
+      const [{ pid: writer }] = await sql`select pg_backend_pid() as pid`;
+      const ownerSession = createConnection(url.toString());
+      let outcome: Promise<void> | undefined;
+      let waited = false;
+      try {
+        await ownerSession.begin(async demotion => {
+          await demotion`update creed_members set role='member' where creed_id=${company} and user_id=${member}`;
+          outcome = assert.rejects(write(), { status: 403 });
+          for (let attempt = 0; attempt < 50 && !waited; attempt++) {
+            const [{ waiting }] = await demotion`select count(*)::int as waiting from pg_stat_activity where pid = ${writer} and wait_event_type = 'Lock'`;
+            waited = waiting > 0;
+            if (!waited) await delay(100);
+          }
+        });
+      } finally {
+        await ownerSession.end();
+      }
+      await outcome;
+      assert.ok(waited, "the write never waited on the membership row");
+    };
+    await sql`update creed_members set role='admin' where creed_id=${company} and user_id=${member}`;
+    const contested = await repository.vaultFolderCreate(db, { userId: owner }, { strapId: company, name: "contested", description: "" });
+    const key = await create([], company, member);
+    const none = { vaultItemIds: [], vaultFolderIds: [] };
+    await duringDemotion(() => headless.updateHeadlessKeyGrants({ userId: member, keyId: key.metadata.id, vaultItemIds: [], vaultFolderIds: [contested.id], expected: none }));
+    assert.deepEqual((await sql`select vault_folder_ids from creed_headless_access_keys where id=${key.metadata.id}`)[0].vault_folder_ids, []);
+    await duringDemotion(() => headless.createHeadlessAccessKey({ userId: member, creedId: company, name: "Racing grant", mode: "read-only", expiresAt: null, vaultFolderIds: [contested.id] }));
+    assert.equal((await sql`select count(*)::int as count from creed_headless_access_keys where name='Racing grant'`)[0].count, 0);
+    await duringDemotion(() => repository.vaultFolderCreate(db, { userId: member }, { strapId: company, name: "racing-folder", description: "" }));
+    assert.equal((await sql`select count(*)::int as count from strap_vault_folders where name='racing-folder'`)[0].count, 0);
   });
 
   await t.test("creating a key with grants re-checks the Vault role at write time", async () => {
