@@ -50,7 +50,7 @@ export async function fetchStrapSecret(input: {
     await response.body?.cancel();
     const messages: Record<number, string> = {
       401: "Strap API key is invalid, expired, or revoked.",
-      403: "Strap API key is not authorized for this secret. Check its selected items and current Vault permissions.",
+      403: "Strap API key is not authorized for this secret. Grant the secret or its folder to this key in Connections, and check current Vault permissions.",
       404: "Strap Vault item no longer exists.",
       429: "Strap reveal rate limit reached. Retry later.",
       503: "Strap reveal or its required audit is unavailable. Retry later.",

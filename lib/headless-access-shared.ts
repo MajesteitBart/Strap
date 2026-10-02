@@ -32,6 +32,15 @@ export function digestCredential(value: string): string {
   return createHash("sha256").update(value).digest("hex");
 }
 
+/**
+ * True when a key without an expiry, or with one still in the future, is
+ * checked against the current clock. An unreadable value counts as expired.
+ * Use after a database lock wait, where SQL now() is the transaction's start.
+ */
+export function stillUnexpired(expiresAt: string | null): boolean {
+  return expiresAt === null || new Date(expiresAt).getTime() > Date.now();
+}
+
 export function parseOptionalExpiry(value: unknown): string | null | undefined {
   if (value === null || value === "") return null;
   if (typeof value !== "string") return undefined;

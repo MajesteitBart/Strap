@@ -58,7 +58,7 @@ Session reads and personal writes use a viewer DatabaseContext and lib/authz/pol
 
 Privileged server operations must name their purpose through lib/db/service.ts. They retain domain checks: current membership and role for Company changes; verified hash, explicit profile grant and credential mode for agent/OAuth/MCP access; authenticated self for personal token provisioning; an invitation token plus matching email for invitation acceptance. Retained database functions validate atomic ownership/device/skill operations. There is no browser database client.
 
-Vault and avatar repositories accept a viewer directly and apply their own SQL scopes. Vault reveal requires a successful audit and rechecks membership before decrypting; metadata responses never include ciphertext. User-directory reads expose only account display metadata and require self or shared membership. Maintenance requires its dedicated bearer secret.
+Vault and avatar repositories accept a viewer directly and apply their own SQL scopes. Vault folders share the item scope (personal owner or Company owner/admin), and a composite foreign key keeps an item and its folder in the same profile. Headless reveals require an item or folder grant on the key, scoped to the key's profile. Vault reveal requires a successful audit and rechecks membership before decrypting; metadata responses never include ciphertext. User-directory reads expose only account display metadata and require self or shared membership. Maintenance requires its dedicated bearer secret.
 
 ## Review findings
 

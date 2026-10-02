@@ -110,7 +110,10 @@ export async function importSnapshot(target: Sql, snapshot: MigrationSnapshot): 
     const inserted = new Set(["users", "accounts"]);
     const remaining = new Set<string>(applicationTables);
     while (remaining.size) {
-      const ready = [...remaining].filter(table=>dependencies.every(fk=>fk.child !== table || fk.parent === table || inserted.has(fk.parent)));
+      // Wait only for parents in this import. Tables added after the source schema,
+      // such as strap_vault_folders, stay empty and their references arrive null;
+      // a non-null reference would fail its foreign key and roll the import back.
+      const ready = [...remaining].filter(table=>dependencies.every(fk=>fk.child !== table || fk.parent === table || !remaining.has(fk.parent)));
       if (!ready.length) throw new Error("The import dependency graph contains a cycle.");
       for (const table of ready) {
         await insertRows(tx, table, snapshot.tables[table]);

@@ -19,12 +19,17 @@ export type AuditAction =
   | "creed.imported"
   | "headless.key_created"
   | "headless.key_revoked"
+  | "headless.key_grants_updated"
+  | "headless.key_rotated"
   | "oauth.device_approved"
   | "oauth.device_denied"
   | "vault.secret_created"
   | "vault.secret_revealed"
   | "vault.secret_updated"
   | "vault.secret_deleted"
+  | "vault.folder_created"
+  | "vault.folder_updated"
+  | "vault.folder_deleted"
   // Company plan
   | "company.provisioned"
   | "company.invite_created"
@@ -61,11 +66,35 @@ export type AuditLogInput = {
   request?: Request;
 };
 
+// Request headers are client-controlled and audit rows are kept, so stored
+// values are capped: a high-volume caller cannot grow the log with large
+// headers. 64 characters fit any IPv6 address.
+const MAX_IP_LENGTH = 64;
+const MAX_USER_AGENT_LENGTH = 512;
+
+function bounded(value: string | null | undefined, max: number): string | null {
+  return value ? value.slice(0, max) : null;
+}
+
 function clientIp(request: Request | undefined): string | null {
   if (!request) return null;
   const forwarded = request.headers.get("x-forwarded-for");
-  if (forwarded) return forwarded.split(",")[0]?.trim() || null;
-  return request.headers.get("x-real-ip") || null;
+  if (forwarded) return bounded(forwarded.split(",")[0]?.trim(), MAX_IP_LENGTH);
+  return bounded(request.headers.get("x-real-ip"), MAX_IP_LENGTH);
+}
+
+/**
+ * The audit row for an event. Callers that must commit the audit together with
+ * the audited change insert this on their own transaction.
+ */
+export function auditRow(input: AuditLogInput): typeof tables.creed_audit_log.$inferInsert {
+  return {
+    user_id: input.userId,
+    action: input.action,
+    metadata: input.metadata ?? {},
+    ip_address: clientIp(input.request),
+    user_agent: bounded(input.request?.headers.get("user-agent"), MAX_USER_AGENT_LENGTH),
+  };
 }
 
 /**
@@ -81,16 +110,10 @@ export async function recordAuditEvent(input: AuditLogInput): Promise<void> {
   try {
     const admin = serviceContext("lib/audit-log.ts");
     await query(admin, tables.creed_audit_log, "insert", async (database, _scope) => {
-    const values = {
-      user_id: input.userId,
-      action: input.action,
-      metadata: input.metadata ?? {},
-      ip_address: clientIp(input.request),
-      user_agent: input.request?.headers.get("user-agent") ?? null,
-    } as typeof tables.creed_audit_log.$inferInsert;
-    await authorizeValues(admin, tables.creed_audit_log, "insert", values);
-    return database.insert(tables.creed_audit_log).values(values);
-  });
+      const values = auditRow(input);
+      await authorizeValues(admin, tables.creed_audit_log, "insert", values);
+      return database.insert(tables.creed_audit_log).values(values);
+    });
   } catch (error) {
     // Audit is best-effort (never blocks the mutation), but the failure must
     // still be observable - the old console.warn was gated to non-production,
@@ -100,32 +123,5 @@ export async function recordAuditEvent(input: AuditLogInput): Promise<void> {
       { action: input.action },
       error instanceof Error ? error : new Error(String(error)),
     );
-  }
-}
-
-/**
- * Required audit write for actions where the audit row is a compensating
- * security control. Unlike recordAuditEvent, this throws when persistence is
- * unavailable so callers can fail closed before returning sensitive data.
- */
-export async function recordRequiredAuditEvent(input: AuditLogInput): Promise<void> {
-  if (!isDatabaseConfigured()) {
-    throw new Error("Audit logging is unavailable.");
-  }
-
-  const admin = serviceContext("lib/audit-log.ts");
-  const { error } = await query(admin, tables.creed_audit_log, "insert", async (database, _scope) => {
-    const values = {
-    user_id: input.userId,
-    action: input.action,
-    metadata: input.metadata ?? {},
-    ip_address: clientIp(input.request),
-    user_agent: input.request?.headers.get("user-agent") ?? null,
-  } as typeof tables.creed_audit_log.$inferInsert;
-    await authorizeValues(admin, tables.creed_audit_log, "insert", values);
-    return database.insert(tables.creed_audit_log).values(values);
-  });
-  if (error) {
-    throw new Error("Required audit event could not be persisted.");
   }
 }

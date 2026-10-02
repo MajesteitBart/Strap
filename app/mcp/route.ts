@@ -20,6 +20,8 @@ import { checkRateLimit } from "@/lib/rate-limit";
 import { markdownToRichHtml } from "@/lib/rich-text";
 import { callSkillTool } from "@/lib/skill-mcp";
 import { isSkillPayloadBatch,SKILL_TOOLS,skillToolsFor } from "@/lib/skill-tools";
+import { callVaultTool } from "@/lib/vault-mcp";
+import { isVaultListingBatch,VAULT_TOOLS,vaultToolsFor,type VaultCallerGrant } from "@/lib/vault-tools";
 import {
 createBlankStrapState,
 getAvatarInitials,
@@ -97,6 +99,8 @@ type McpCredentialGrant = {
   clientName: string | null;
   creedGrants: StrapGrant[];
   allowLegacyPersonalFallback: boolean;
+  // Headless keys only. OAuth credentials never carry Vault grants.
+  vaultGrant: VaultCallerGrant | null;
 };
 
 // Keep the MCP route self-contained for schema/error text so a route-module
@@ -780,6 +784,7 @@ async function resolveMcpCredential(bearer: string): Promise<McpCredentialGrant 
       clientName: key.clientName,
       creedGrants: [{ creedId: key.creedId, mode: key.mode }],
       allowLegacyPersonalFallback: false,
+      vaultGrant: { keyId: key.keyId, vaultItemIds: key.vaultItemIds, vaultFolderIds: key.vaultFolderIds },
     };
   }
   const oauth = await findOAuthAccessToken(bearer);
@@ -791,6 +796,7 @@ async function resolveMcpCredential(bearer: string): Promise<McpCredentialGrant 
     clientName: oauth.clientName,
     creedGrants: oauth.creedGrants,
     allowLegacyPersonalFallback: oauth.allowLegacyPersonalFallback,
+    vaultGrant: null,
   };
 }
 
@@ -972,6 +978,7 @@ async function handleToolCall(
   user: User,
   fallbackAgentName: string | null,
   credentialMode: StrapGrantMode,
+  vaultCaller: VaultCallerGrant | null,
 ) {
   const userId = user.id;
   const params = (rpcRequest.params ?? {}) as McpToolCallParams;
@@ -988,6 +995,17 @@ async function handleToolCall(
       strapId: state.creedId,
       mode: credentialMode,
       role: state.creeds?.find((entry) => entry.id === state.creedId)?.role,
+    }));
+  }
+
+  if (VAULT_TOOLS.some((tool) => tool.name === name)) {
+    const profile = state.creeds?.find((entry) => entry.id === state.creedId);
+    return jsonToolResult(await callVaultTool(params.arguments, {
+      userId,
+      strapId: state.creedId,
+      role: profile?.role,
+      profileType: profile?.type,
+      caller: vaultCaller,
     }));
   }
 
@@ -2220,6 +2238,7 @@ async function handleRpcRequest(
   user: User,
   fallbackAgentName: string | null,
   credentialMode: StrapGrantMode,
+  vaultCaller: VaultCallerGrant | null,
 ) {
   if (!rpcRequest.method) {
     return errorFor(rpcRequest.id, -32600, "Missing JSON-RPC method.");
@@ -2250,6 +2269,7 @@ async function handleRpcRequest(
       tools: [
         ...listToolsFor(state, credentialMode),
         ...skillToolsFor(state.creedId, credentialMode, state.creeds?.find((entry) => entry.id === state.creedId)?.role),
+        ...vaultToolsFor(state.creedId, state.creeds?.find((entry) => entry.id === state.creedId)?.role),
       ],
     });
   }
@@ -2321,6 +2341,7 @@ async function handleRpcRequest(
         user,
         fallbackAgentName,
         credentialMode,
+        vaultCaller,
       );
       return responseFor(rpcRequest.id, result);
     } catch (error) {
@@ -2441,13 +2462,28 @@ export async function POST(request: Request) {
       { status: 400, headers: MCP_CORS_HEADERS },
     );
   }
+  if (isVaultListingBatch(requests)) {
+    return NextResponse.json(
+      { jsonrpc: "2.0", id: null, error: { code: -32600, message: "Vault listings require an individual request. Send strap_list_vault_items on its own." } },
+      { status: 400, headers: MCP_CORS_HEADERS },
+    );
+  }
+  // The credential was resolved before the body arrived. A slowly streamed
+  // body must not let a key rotated, revoked or expired meanwhile dispatch tools.
+  const stillValid = await resolveMcpCredential(bearer);
+  if (!stillValid || stillValid.credentialId !== resolved.credentialId) {
+    return unauthorized();
+  }
+  // From here on use the fresh credential, so profile grants, mode and Vault
+  // grants changed while the body streamed take effect for this request.
+  const credential = stillValid;
   // Resolve which Strap this batch targets (Personal by default, or a Company
   // Strap named via the `creed` arg + granted to this token). Company Straps
   // load read-only. MCP only needs recent activity + a tight proposal cap.
   const { state, credentialMode } = await resolveMcpState(
     admin as unknown as DatabaseContext,
     userData.user as unknown as { id: string } & Record<string, unknown>,
-    resolved,
+    credential,
     requests
   );
   const firstRequest = requests[0];
@@ -2457,8 +2493,8 @@ export async function POST(request: Request) {
       : undefined;
 
   const clientName =
-    resolveMcpAgentName(firstRequest ?? {}, firstToolArgs, resolved.clientName) ??
-    resolved.clientName;
+    resolveMcpAgentName(firstRequest ?? {}, firstToolArgs, credential.clientName) ??
+    credential.clientName;
   // An explicit grant can become inaccessible after issuance (for example,
   // when company membership is removed). resolveMcpState intentionally returns
   // an empty state in that case. Do not let the usage helper interpret a
@@ -2467,7 +2503,7 @@ export async function POST(request: Request) {
   // their OAuth Disconnect action. Headless keys have their own lifecycle UI;
   // putting them in this roster would make Disconnect appear to revoke a key
   // when it only removed OAuth state.
-  if (resolved.credentialType === "oauth" && state.creedId) {
+  if (credential.credentialType === "oauth" && state.creedId) {
     await recordMcpClientUsage(admin as never, userId, clientName, state.creedId);
   }
   const cliAgentHeader = (request.headers.get("x-strap-cli-agent") ??
@@ -2475,8 +2511,8 @@ export async function POST(request: Request) {
     ?.trim()
     .toLowerCase();
   if (
-    resolved.credentialType === "oauth" &&
-    getAgentIconKind(resolved.clientName) === "cli" &&
+    credential.credentialType === "oauth" &&
+    getAgentIconKind(credential.clientName) === "cli" &&
     cliAgentHeader &&
     state.creedId &&
     isCliAttributableAgentId(cliAgentHeader)
@@ -2484,7 +2520,7 @@ export async function POST(request: Request) {
     await recordCliAgentUsage(
       admin as never,
       userId,
-      resolved.credentialId,
+      credential.credentialId,
       cliAgentHeader,
       state.creedId,
     );
@@ -2500,6 +2536,7 @@ export async function POST(request: Request) {
           userData.user as User,
           clientName,
           credentialMode,
+          credential.vaultGrant,
         ),
       ),
     )

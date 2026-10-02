@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { requireApiAuth } from "@/lib/api-auth";
-import { createVaultItem, listVaultItems, VaultAccessError } from "@/lib/api-key-vault";
-import { readStrapId } from "@/lib/strap-api";
+import { createVaultItem, listVaultFolders, listVaultItems, VaultAccessError } from "@/lib/api-key-vault";
+import { readJsonObject, readStrapId } from "@/lib/strap-api";
+import { parseVaultFolderId } from "@/lib/vault-grants";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -22,10 +23,11 @@ export async function GET(request: Request) {
     params.get("strapId")?.trim() || params.get("creedId")?.trim();
   if (!creedId) return NextResponse.json({ error: "strapId is required." }, { status: 400 });
   try {
-    return NextResponse.json(
-      { items: await listVaultItems(auth.user.id, creedId) },
-      { headers: NO_STORE },
-    );
+    const [items, folders] = await Promise.all([
+      listVaultItems(auth.user.id, creedId),
+      listVaultFolders(auth.user.id, creedId),
+    ]);
+    return NextResponse.json({ items, folders }, { headers: NO_STORE });
   } catch (error) {
     return vaultError(error);
   }
@@ -34,13 +36,15 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const auth = await requireApiAuth();
   if (auth instanceof NextResponse) return auth;
-  const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
+  const body = await readJsonObject(request);
+  if (!body) return NextResponse.json({ error: "Expected a JSON object." }, { status: 400, headers: NO_STORE });
   const creedId = readStrapId(body) ?? "";
   const name = typeof body.name === "string" ? body.name.trim() : "";
   const description = typeof body.description === "string" ? body.description.trim() : "";
   const secret = typeof body.secret === "string" ? body.secret : "";
-  if (!creedId || !name || name.length > 120 || description.length > 500 || !secret || secret.length > 16_384) {
-    return NextResponse.json({ error: "Valid strapId, name, description, and secret are required." }, { status: 400, headers: NO_STORE });
+  const folderId = parseVaultFolderId(body.folderId);
+  if (!creedId || !name || name.length > 120 || description.length > 500 || !secret || secret.length > 16_384 || folderId === false) {
+    return NextResponse.json({ error: "Valid strapId, name, description, secret, and optional folderId are required." }, { status: 400, headers: NO_STORE });
   }
   try {
     const item = await createVaultItem({
@@ -49,6 +53,7 @@ export async function POST(request: Request) {
       name,
       description,
       secret,
+      folderId: folderId ?? null,
       request,
     });
     return NextResponse.json({ item }, { status: 201, headers: NO_STORE });

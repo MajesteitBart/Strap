@@ -1,18 +1,20 @@
-import { listVaultItems, VaultAccessError } from "@/lib/api-key-vault";
-import { parseVaultItemGrants } from "@/lib/vault-grants";
+import { listVaultFolders, listVaultItems, VaultAccessError } from "@/lib/api-key-vault";
+import { lockVaultAccess } from "@/lib/db/repositories/vault";
+import { parseVaultFolderGrants, parseVaultItemGrants } from "@/lib/vault-grants";
 import * as tables from "@/db/schema/application";
 import { authorizeValues } from "@/lib/authz/policies";
 import type { DatabaseContext } from "@/lib/db/context";
-import { exactlyOne, maybeOne, query } from "@/lib/db/query";
+import { maybeOne, query } from "@/lib/db/query";
 import { serviceContext } from "@/lib/db/service";
 import {
   createHeadlessKey,
   digestCredential,
   isHeadlessKey,
+  stillUnexpired,
   type HeadlessKeyMode,
 } from "@/lib/headless-access-shared";
 import { getStrapRole } from "@/lib/strap-membership";
-import { and, desc, eq, isNull } from "drizzle-orm";
+import { and, desc, eq, isNull, or, sql } from "drizzle-orm";
 import "server-only";
 
 type HeadlessKeyRow = {
@@ -27,6 +29,7 @@ type HeadlessKeyRow = {
   last_used_at: string | null;
   created_at: string;
   vault_item_ids: string[];
+  vault_folder_ids: string[];
 };
 
 export type HeadlessKeyMetadata = {
@@ -40,6 +43,7 @@ export type HeadlessKeyMetadata = {
   lastUsedAt: string | null;
   createdAt: string;
   vaultItemIds: string[];
+  vaultFolderIds: string[];
 };
 
 export type ResolvedHeadlessKey = {
@@ -49,6 +53,15 @@ export type ResolvedHeadlessKey = {
   clientName: string;
   mode: HeadlessKeyMode;
   vaultItemIds: string[];
+  vaultFolderIds: string[];
+};
+
+const keys = tables.creed_headless_access_keys;
+// Every read returns metadata only; the key hash never leaves this module.
+const KEY_COLUMNS = {
+  id: keys.id, creed_id: keys.creed_id, user_id: keys.user_id, name: keys.name, key_prefix: keys.key_prefix, mode: keys.mode,
+  expires_at: keys.expires_at, revoked_at: keys.revoked_at, last_used_at: keys.last_used_at, created_at: keys.created_at,
+  vault_item_ids: keys.vault_item_ids, vault_folder_ids: keys.vault_folder_ids,
 };
 
 function adminDb(): DatabaseContext {
@@ -67,11 +80,67 @@ function toMetadata(row: HeadlessKeyRow): HeadlessKeyMetadata {
     lastUsedAt: row.last_used_at,
     createdAt: row.created_at,
     vaultItemIds: row.vault_item_ids,
+    vaultFolderIds: row.vault_folder_ids,
   };
 }
 
+/**
+ * Normalizes requested grants and rechecks live Vault permissions, including
+ * the Company owner/admin gate. Every granted item and folder must belong to
+ * the key's profile.
+ */
+async function authorizeVaultGrants(input: {
+  userId: string;
+  creedId: string;
+  vaultItemIds?: unknown;
+  vaultFolderIds?: unknown;
+}): Promise<{ vaultItemIds: string[]; vaultFolderIds: string[] }> {
+  const vaultItemIds = parseVaultItemGrants(input.vaultItemIds);
+  const vaultFolderIds = parseVaultFolderGrants(input.vaultFolderIds);
+  if (!vaultItemIds || !vaultFolderIds) throw new VaultAccessError("Invalid Vault grants.", 400);
+  if (vaultItemIds.length) {
+    const allowed = new Set((await listVaultItems(input.userId, input.creedId)).map((item) => item.id));
+    if (vaultItemIds.some((id) => !allowed.has(id))) {
+      throw new VaultAccessError("Vault items must belong to the selected Strap.", 403);
+    }
+  }
+  if (vaultFolderIds.length) {
+    const allowed = new Set((await listVaultFolders(input.userId, input.creedId)).map((folder) => folder.id));
+    if (vaultFolderIds.some((id) => !allowed.has(id))) {
+      throw new VaultAccessError("Vault folders must belong to the selected Strap.", 403);
+    }
+  }
+  return { vaultItemIds, vaultFolderIds };
+}
+
+/** A key whose user left its profile cannot be rotated into a fresh value. */
+function stillMember() {
+  return sql`exists (select 1 from public.creed_members member where member.creed_id = ${keys.creed_id} and member.user_id = ${keys.user_id})`;
+}
+
+/** Revoked and expired keys can no longer be edited or rotated. */
+function usable() {
+  return and(isNull(keys.revoked_at), or(isNull(keys.expires_at), sql`${keys.expires_at} > now()`));
+}
+
+async function findActiveKey(userId: string, keyId: string): Promise<HeadlessKeyRow | null> {
+  const { data, error } = await query(adminDb(), keys, "select", (database, scope) => database.select(KEY_COLUMNS).from(keys)
+    .where(and(scope, eq(keys.id, keyId), eq(keys.user_id, userId), usable()))).then(maybeOne);
+  if (error) throw new Error("Could not load headless access key.");
+  return (data as HeadlessKeyRow | null) ?? null;
+}
+
+/** The newest active keys first, at most limit of them. */
+export async function listActiveHeadlessKeys(userId: string, creedId: string, limit: number): Promise<HeadlessKeyMetadata[]> {
+  const { data, error } = await query(adminDb(), keys, "select", (database, scope) => database.select(KEY_COLUMNS).from(keys)
+    .where(and(scope, eq(keys.user_id, userId), eq(keys.creed_id, creedId), usable())).orderBy(desc(keys.created_at)).limit(limit));
+  if (error) throw new Error("Could not list headless access keys.");
+  return ((data as HeadlessKeyRow[] | null) ?? []).map(toMetadata);
+}
+
 export async function listHeadlessKeys(userId: string, creedId: string): Promise<HeadlessKeyMetadata[]> {
-  const { data, error } = await query(adminDb(), tables.creed_headless_access_keys, "select", (database, scope) => database.select({ id: tables.creed_headless_access_keys.id, creed_id: tables.creed_headless_access_keys.creed_id, user_id: tables.creed_headless_access_keys.user_id, name: tables.creed_headless_access_keys.name, key_prefix: tables.creed_headless_access_keys.key_prefix, mode: tables.creed_headless_access_keys.mode, expires_at: tables.creed_headless_access_keys.expires_at, revoked_at: tables.creed_headless_access_keys.revoked_at, last_used_at: tables.creed_headless_access_keys.last_used_at, created_at: tables.creed_headless_access_keys.created_at, vault_item_ids: tables.creed_headless_access_keys.vault_item_ids }).from(tables.creed_headless_access_keys).where(and(scope, eq(tables.creed_headless_access_keys.user_id, userId), eq(tables.creed_headless_access_keys.creed_id, creedId))).orderBy(desc(tables.creed_headless_access_keys.created_at)));
+  const { data, error } = await query(adminDb(), keys, "select", (database, scope) => database.select(KEY_COLUMNS).from(keys)
+    .where(and(scope, eq(keys.user_id, userId), eq(keys.creed_id, creedId))).orderBy(desc(keys.created_at)));
   if (error) throw new Error("Could not list headless access keys.");
   return ((data as HeadlessKeyRow[] | null) ?? []).map(toMetadata);
 }
@@ -83,19 +152,12 @@ export async function createHeadlessAccessKey(input: {
   mode: HeadlessKeyMode;
   expiresAt: string | null;
   vaultItemIds?: string[];
+  vaultFolderIds?: string[];
 }): Promise<{ key: string; metadata: HeadlessKeyMetadata }> {
-  const vaultItemIds = parseVaultItemGrants(input.vaultItemIds);
-  if (!vaultItemIds) throw new VaultAccessError("Invalid Vault item grants.", 400);
-  if (vaultItemIds.length) {
-    // Recheck live Vault permissions, including the Company admin gate.
-    const items = await listVaultItems(input.userId, input.creedId);
-    const allowed = new Set(items.map((item) => item.id));
-    if (vaultItemIds.some((id) => !allowed.has(id))) {
-      throw new VaultAccessError("Vault items must belong to the selected Strap.", 403);
-    }
-  }
+  const grants = await authorizeVaultGrants(input);
+  const grantsAccess = grants.vaultItemIds.length > 0 || grants.vaultFolderIds.length > 0;
   const generated = createHeadlessKey();
-  const { data, error } = await query(adminDb(), tables.creed_headless_access_keys, "insert", async (database, _scope) => {
+  const { data, error } = await query(adminDb(), keys, "insert", async (database, _scope) => {
     const values = {
       creed_id: input.creedId,
       user_id: input.userId,
@@ -104,42 +166,125 @@ export async function createHeadlessAccessKey(input: {
       key_hash: generated.hash,
       mode: input.mode,
       expires_at: input.expiresAt,
-      vault_item_ids: vaultItemIds,
-    } as typeof tables.creed_headless_access_keys.$inferInsert;
-    await authorizeValues(adminDb(), tables.creed_headless_access_keys, "insert", values);
-    return database.insert(tables.creed_headless_access_keys).values(values).returning({ id: tables.creed_headless_access_keys.id, creed_id: tables.creed_headless_access_keys.creed_id, user_id: tables.creed_headless_access_keys.user_id, name: tables.creed_headless_access_keys.name, key_prefix: tables.creed_headless_access_keys.key_prefix, mode: tables.creed_headless_access_keys.mode, expires_at: tables.creed_headless_access_keys.expires_at, revoked_at: tables.creed_headless_access_keys.revoked_at, last_used_at: tables.creed_headless_access_keys.last_used_at, created_at: tables.creed_headless_access_keys.created_at, vault_item_ids: tables.creed_headless_access_keys.vault_item_ids });
-  }).then(exactlyOne);
-  if (error || !data) throw new Error("Could not create headless access key.");
+      vault_item_ids: grants.vaultItemIds,
+      vault_folder_ids: grants.vaultFolderIds,
+    } as typeof keys.$inferInsert;
+    await authorizeValues(adminDb(), keys, "insert", values);
+    return database.transaction(async (tx) => {
+      // A key with grants needs the Vault role while it is written: the
+      // membership row stays locked until the insert commits, as in vaultCreate.
+      if (grantsAccess && !(await lockVaultAccess(tx, { userId: input.userId }, input.creedId))) return [];
+      return tx.insert(keys).values(values).returning(KEY_COLUMNS);
+    });
+  }).then(maybeOne);
+  if (error) throw new Error("Could not create headless access key.");
+  if (!data) throw new VaultAccessError("Granting secrets requires Vault access to this Strap.", 403);
   return { key: generated.key, metadata: toMetadata(data as HeadlessKeyRow) };
+}
+
+function sameIds(left: readonly string[], right: readonly string[]) {
+  const a = [...new Set(left.map((id) => id.toLowerCase()))].sort();
+  const b = [...new Set(right.map((id) => id.toLowerCase()))].sort();
+  return a.length === b.length && a.every((id, index) => id === b[index]);
+}
+
+export type GrantUpdate =
+  | { status: "updated"; previous: HeadlessKeyMetadata; metadata: HeadlessKeyMetadata }
+  | { status: "not-found" }
+  | { status: "conflict" };
+
+/**
+ * Replaces an active key's Vault grants. The key value, mode and expiry stay the
+ * same. `expected` holds the grants the caller based its edit on; if another
+ * session changed them since, or changes them concurrently, the result is a
+ * conflict instead of silently restoring access that was just removed.
+ */
+export async function updateHeadlessKeyGrants(input: {
+  userId: string;
+  keyId: string;
+  vaultItemIds: unknown;
+  vaultFolderIds: unknown;
+  expected: { vaultItemIds: unknown; vaultFolderIds: unknown };
+}): Promise<GrantUpdate> {
+  const expectedItems = parseVaultItemGrants(input.expected.vaultItemIds);
+  const expectedFolders = parseVaultFolderGrants(input.expected.vaultFolderIds);
+  if (!expectedItems || !expectedFolders) throw new VaultAccessError("Invalid expected Vault grants.", 400);
+  const current = await findActiveKey(input.userId, input.keyId);
+  if (!current) return { status: "not-found" };
+  if (!sameIds(expectedItems, current.vault_item_ids) || !sameIds(expectedFolders, current.vault_folder_ids)) return { status: "conflict" };
+  const grants = await authorizeVaultGrants({ ...input, creedId: current.creed_id });
+  // Granting anything also requires the Vault role at write time: the
+  // membership row stays locked until the update commits, as in key creation,
+  // so a demotion between the checks above and this update cannot slip a grant
+  // through. Clearing all grants only reduces access and stays allowed.
+  const grantsAccess = grants.vaultItemIds.length > 0 || grants.vaultFolderIds.length > 0;
+  const { data, error } = await query(adminDb(), keys, "update", async (database, scope) => {
+    const values = { vault_item_ids: grants.vaultItemIds, vault_folder_ids: grants.vaultFolderIds } as Partial<typeof keys.$inferInsert>;
+    await authorizeValues(adminDb(), keys, "update", values);
+    return database.transaction(async (tx) => {
+      if (grantsAccess && !(await lockVaultAccess(tx, { userId: input.userId }, current.creed_id))) return [];
+      return tx.update(keys).set(values)
+        .where(and(scope, eq(keys.id, current.id), eq(keys.user_id, input.userId), usable(),
+          eq(keys.vault_item_ids, current.vault_item_ids), eq(keys.vault_folder_ids, current.vault_folder_ids))).returning(KEY_COLUMNS);
+    });
+  }).then(maybeOne);
+  if (error) throw new Error("Could not update headless access key.");
+  if (data) return { status: "updated", previous: toMetadata(current), metadata: toMetadata(data as HeadlessKeyRow) };
+  // Nothing matched: the grants changed (conflict), the key stopped being
+  // usable, or the Vault role was lost.
+  const after = await findActiveKey(input.userId, input.keyId);
+  if (!after) return { status: "not-found" };
+  if (sameIds(after.vault_item_ids, current.vault_item_ids) && sameIds(after.vault_folder_ids, current.vault_folder_ids)) {
+    throw new VaultAccessError("Granting secrets requires Vault access to this Strap.", 403);
+  }
+  return { status: "conflict" };
+}
+
+export type KeyRotation =
+  | { status: "rotated"; key: string; metadata: HeadlessKeyMetadata }
+  | { status: "not-found" }
+  | { status: "conflict" };
+
+/**
+ * Issues a new value for an active key and invalidates the old one at once.
+ * Name, mode, expiry and Vault grants carry over. The update only applies to
+ * the value read first, so of two concurrent rotations exactly one succeeds
+ * and the other reports a conflict instead of returning an invalidated key.
+ */
+export async function rotateHeadlessAccessKey(input: {
+  userId: string;
+  keyId: string;
+}): Promise<KeyRotation> {
+  const { data: current, error: readError } = await query(adminDb(), keys, "select", (database, scope) => database.select({ key_hash: keys.key_hash }).from(keys)
+    .where(and(scope, eq(keys.id, input.keyId), eq(keys.user_id, input.userId), usable(), stillMember()))).then(maybeOne);
+  if (readError) throw new Error("Could not load headless access key.");
+  if (!current) return { status: "not-found" };
+  const previousHash = (current as { key_hash: string }).key_hash;
+  const generated = createHeadlessKey();
+  const { data, error } = await query(adminDb(), keys, "update", async (database, scope) => {
+    const values = { key_prefix: generated.prefix, key_hash: generated.hash, last_used_at: null } as Partial<typeof keys.$inferInsert>;
+    await authorizeValues(adminDb(), keys, "update", values);
+    return database.update(keys).set(values)
+      .where(and(scope, eq(keys.id, input.keyId), eq(keys.user_id, input.userId), usable(), eq(keys.key_hash, previousHash), stillMember())).returning(KEY_COLUMNS);
+  }).then(maybeOne);
+  if (error) throw new Error("Could not rotate headless access key.");
+  return data ? { status: "rotated", key: generated.key, metadata: toMetadata(data as HeadlessKeyRow) } : { status: "conflict" };
 }
 
 export async function revokeHeadlessAccessKey(input: {
   userId: string;
   keyId: string;
 }): Promise<boolean> {
-  const { data, error } = await query(adminDb(), tables.creed_headless_access_keys, "update", async (database, scope) => {
-    const values = { revoked_at: new Date().toISOString() } as Partial<typeof tables.creed_headless_access_keys.$inferInsert>;
-    await authorizeValues(adminDb(), tables.creed_headless_access_keys, "update", values);
-    return database.update(tables.creed_headless_access_keys).set(values).where(and(scope, eq(tables.creed_headless_access_keys.id, input.keyId), eq(tables.creed_headless_access_keys.user_id, input.userId), isNull(tables.creed_headless_access_keys.revoked_at))).returning({ id: tables.creed_headless_access_keys.id });
+  const { data, error } = await query(adminDb(), keys, "update", async (database, scope) => {
+    const values = { revoked_at: new Date().toISOString() } as Partial<typeof keys.$inferInsert>;
+    await authorizeValues(adminDb(), keys, "update", values);
+    return database.update(keys).set(values).where(and(scope, eq(keys.id, input.keyId), eq(keys.user_id, input.userId), isNull(keys.revoked_at))).returning({ id: keys.id });
   }).then(maybeOne);
   if (error) throw new Error("Could not revoke headless access key.");
   return Boolean(data);
 }
 
-export async function resolveHeadlessAccessKey(token: string): Promise<ResolvedHeadlessKey | null> {
-  if (!isHeadlessKey(token)) return null;
-  const admin = adminDb();
-  const { data, error } = await query(admin, tables.creed_headless_access_keys, "select", (database, scope) => database.select({ id: tables.creed_headless_access_keys.id, creed_id: tables.creed_headless_access_keys.creed_id, user_id: tables.creed_headless_access_keys.user_id, name: tables.creed_headless_access_keys.name, key_prefix: tables.creed_headless_access_keys.key_prefix, mode: tables.creed_headless_access_keys.mode, expires_at: tables.creed_headless_access_keys.expires_at, revoked_at: tables.creed_headless_access_keys.revoked_at, last_used_at: tables.creed_headless_access_keys.last_used_at, created_at: tables.creed_headless_access_keys.created_at, vault_item_ids: tables.creed_headless_access_keys.vault_item_ids }).from(tables.creed_headless_access_keys).where(and(scope, eq(tables.creed_headless_access_keys.key_hash, digestCredential(token))))).then(maybeOne);
-  if (error || !data) return null;
-  const row = data as HeadlessKeyRow;
-  if (row.revoked_at || (row.expires_at && new Date(row.expires_at).getTime() <= Date.now())) {
-    return null;
-  }
-  const role = await getStrapRole(admin, row.user_id, row.creed_id);
-  if (!role) return null;
-
-  await query(admin, tables.creed_headless_access_keys, "update", (database, scope) => database.update(tables.creed_headless_access_keys).set({ last_used_at: new Date().toISOString() }).where(and(scope, eq(tables.creed_headless_access_keys.id, row.id))));
-
+function toResolved(row: HeadlessKeyRow): ResolvedHeadlessKey {
   return {
     keyId: row.id,
     userId: row.user_id,
@@ -147,5 +292,51 @@ export async function resolveHeadlessAccessKey(token: string): Promise<ResolvedH
     clientName: row.name,
     mode: row.mode,
     vaultItemIds: row.vault_item_ids,
+    vaultFolderIds: row.vault_folder_ids,
   };
+}
+
+/**
+ * Looks up an active key by its value without writing anything. Callers that
+ * apply rate limits first record use with recordHeadlessKeyUse afterwards, so
+ * a flood of requests costs reads, not row locks and writes.
+ */
+export async function findHeadlessAccessKey(token: string): Promise<ResolvedHeadlessKey | null> {
+  if (!isHeadlessKey(token)) return null;
+  const admin = adminDb();
+  const { data, error } = await query(admin, keys, "select", (database, scope) => database.select(KEY_COLUMNS).from(keys)
+    .where(and(scope, eq(keys.key_hash, digestCredential(token))))).then(maybeOne);
+  if (error || !data) return null;
+  const row = data as HeadlessKeyRow;
+  if (row.revoked_at || !stillUnexpired(row.expires_at)) return null;
+  const role = await getStrapRole(admin, row.user_id, row.creed_id);
+  if (!role) return null;
+  return toResolved(row);
+}
+
+/**
+ * Records use of a key found by findHeadlessAccessKey and returns its live
+ * state, or null. Use is recorded only while the key still has the presented
+ * hash, is not revoked and has not expired. The row is locked first: a
+ * rotation or revocation that committed after the lookup makes the lock match
+ * nothing, and the old value is not authenticated. Expiry is checked against
+ * the clock after the lock, because the lock may have waited and SQL now() is
+ * the transaction's start.
+ */
+export async function recordHeadlessKeyUse(token: string, keyId: string): Promise<ResolvedHeadlessKey | null> {
+  const hash = digestCredential(token);
+  const { data, error } = await query(adminDb(), keys, "update", (database, scope) => database.transaction(async (tx) => {
+    const [current] = await tx.select({ expires_at: keys.expires_at }).from(keys)
+      .where(and(scope, eq(keys.id, keyId), eq(keys.key_hash, hash), isNull(keys.revoked_at))).for("no key update");
+    if (!current || !stillUnexpired(current.expires_at)) return [];
+    return tx.update(keys).set({ last_used_at: new Date().toISOString() }).where(eq(keys.id, keyId)).returning(KEY_COLUMNS);
+  })).then(maybeOne);
+  if (error || !data) return null;
+  return toResolved(data as HeadlessKeyRow);
+}
+
+/** Finds a key by its value and records its use. */
+export async function resolveHeadlessAccessKey(token: string): Promise<ResolvedHeadlessKey | null> {
+  const found = await findHeadlessAccessKey(token);
+  return found ? recordHeadlessKeyUse(token, found.keyId) : null;
 }

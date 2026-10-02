@@ -2,16 +2,23 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import * as orm from "drizzle-orm";
+import { drizzle } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import { NextResponse } from "next/server.js";
 import ts from "typescript";
 import * as tables from "../../db/schema/application.ts";
 import * as policies from "../../lib/authz/policies.ts";
+import { setTimeout as delay } from "node:timers/promises";
+import { createConnection } from "../../lib/db/connection.ts";
 import { viewerContext, type DatabaseContext } from "../../lib/db/context.ts";
 import * as queries from "../../lib/db/query.ts";
 import * as repository from "../../lib/db/repositories/vault.ts";
 import * as shared from "../../lib/headless-access-shared.ts";
+import * as strapApi from "../../lib/strap-api.ts";
 import * as grants from "../../lib/vault-grants.ts";
+import * as vaultTools from "../../lib/vault-tools.ts";
+import * as nodeCrypto from "node:crypto";
+import * as headlessKeys from "../../lib/db/repositories/headless-keys.ts";
 import { checkRateLimit } from "../../lib/rate-limit.ts";
 import { createTestDatabase, databaseTestsEnabled, sqlState } from "./harness.ts";
 
@@ -38,6 +45,9 @@ test("the forward grant migration preserves existing keys without granting secre
   // the latest one it has recorded.
   const journal = JSON.parse(readFileSync(new URL("../../db/migrations/meta/_journal.json", import.meta.url), "utf8")) as { entries: Array<{ tag: string; when: number }> };
   const grantMigration = journal.entries.find(entry => entry.tag === "0001_headless_vault_item_grants")!.when;
+  await sql`alter table creed_vault_items drop column folder_id`;
+  await sql`drop table strap_vault_folders`;
+  await sql`alter table creed_headless_access_keys drop column vault_folder_ids`;
   await sql`drop table auth_totp_replay_claims`;
   await sql`drop table two_factors`;
   await sql`alter table users drop column two_factor_enabled`;
@@ -48,9 +58,12 @@ test("the forward grant migration preserves existing keys without granting secre
   const [{ id: company }] = await sql`select provision_company_creed(${owner}) as id`;
   const key = shared.createHeadlessKey();
   const [before] = await sql`insert into creed_headless_access_keys(user_id,creed_id,name,key_prefix,key_hash) values (${owner},${company},'Existing key',${key.prefix},${key.hash}) returning *`;
+  const [legacyItem] = await sql`insert into creed_vault_items(creed_id,name,secret_ciphertext,created_by) values (${company},'Legacy item','opaque',${owner}) returning *`;
   await migrate(db, { migrationsFolder: "db/migrations" });
+  // Existing items arrive outside any folder, so no key gains access through one.
+  assert.deepEqual((await sql`select * from creed_vault_items where id=${legacyItem.id}`)[0], { ...legacyItem, folder_id: null });
   const [after] = await sql`select * from creed_headless_access_keys where id=${before.id}`;
-  assert.deepEqual(after, { ...before, vault_item_ids: [] });
+  assert.deepEqual(after, { ...before, vault_item_ids: [], vault_folder_ids: [] });
   // Existing accounts arrive without MFA.
   assert.equal((await sql`select two_factor_enabled from users where id=${owner}`)[0].two_factor_enabled, false);
   await migrate(db, { migrationsFolder: "db/migrations" });
@@ -200,6 +213,855 @@ test("scoped Vault reveals enforce live Postgres permissions and audit before de
     const created = await response.json();
     assert.deepEqual(created.metadata.vaultItemIds, [item.id]);
     assert.equal((await request(created.key)).status, 200);
+  });
+
+  const createWith = (grants: { vaultItemIds?: string[]; vaultFolderIds?: string[] }, creedId = personal, userId = owner) =>
+    headless.createHeadlessAccessKey({ userId, creedId, name: "Folder key", mode: "read-only", expiresAt: null, ...grants });
+  type GrantInput = { vaultItemIds: unknown; vaultFolderIds: unknown };
+  const editGrants = (keyId: string, next: GrantInput, expected: GrantInput, userId = owner) =>
+    headless.updateHeadlessKeyGrants({ userId, keyId, ...next, expected });
+  const auditFor = async (keyId: string) =>
+    (await sql`select metadata from creed_audit_log where action='vault.secret_revealed' and metadata->>'keyId'=${keyId} order by created_at desc limit 1`)[0]?.metadata;
+
+  await t.test("folder grants reveal current folder members only while they stay in the folder", async () => {
+    const folder = await repository.vaultFolderCreate(db, { userId: owner }, { strapId: personal, name: "share-artifact", description: "" });
+    const inFolder = await repository.vaultCreate(db, { userId: owner }, { creedId: personal, name: "SHARE_ARTIFACT_SERVER", description: "", secret, folderId: folder.id });
+    const created = await createWith({ vaultFolderIds: [folder.id] });
+    assert.deepEqual(created.metadata.vaultFolderIds, [folder.id]);
+    const response = await request(created.key, `secret://${inFolder.id}`);
+    assert.equal(response.status, 200);
+    assert.deepEqual(await response.json(), { secret });
+    assert.deepEqual(await auditFor(created.metadata.id), { itemId: inFolder.id, creedId: personal, keyId: created.metadata.id, source: "headless", folderId: folder.id });
+    // Items added to the folder later are covered without changing the key.
+    const added = await repository.vaultCreate(db, { userId: owner }, { creedId: personal, name: "Added later", description: "", secret });
+    await expectDenied(created.key, 403, added.id);
+    await repository.vaultUpdate(db, { userId: owner }, { itemId: added.id, name: added.name, description: "", secret: null, folderId: folder.id, expectedFolderId: null });
+    assert.equal((await request(created.key, added.id)).status, 200);
+    // Leaving the folder removes folder-based access; a direct grant is unaffected.
+    const direct = await createWith({ vaultItemIds: [added.id] });
+    await repository.vaultUpdate(db, { userId: owner }, { itemId: added.id, name: added.name, description: "", secret: null, folderId: null, expectedFolderId: folder.id });
+    await expectDenied(created.key, 403, added.id);
+    assert.equal((await request(direct.key, added.id)).status, 200);
+    // Keeping the folder when folderId is omitted.
+    const { updated } = await repository.vaultUpdate(db, { userId: owner }, { itemId: inFolder.id, name: inFolder.name, description: "Renamed only", secret: null });
+    assert.equal(updated.folder_id, folder.id);
+  });
+
+  await t.test("folders, items and grants cannot cross profiles", async () => {
+    const companyFolder = await repository.vaultFolderCreate(db, { userId: owner }, { strapId: company, name: "company-ci", description: "" });
+    await assert.rejects(repository.vaultCreate(db, { userId: owner }, { creedId: personal, name: "Cross", description: "", secret, folderId: companyFolder.id }), { status: 400 });
+    await assert.rejects(repository.vaultUpdate(db, { userId: owner }, { itemId: item.id, name: item.name, description: "", secret: null, folderId: companyFolder.id, expectedFolderId: item.folder_id }), { status: 400 });
+    await assert.rejects(createWith({ vaultFolderIds: [companyFolder.id] }), { status: 403 });
+    await assert.rejects(sql`update creed_vault_items set folder_id=${companyFolder.id} where id=${item.id}`, sqlState("23503"));
+    // A stale folder grant from another profile never matches a personal item.
+    const stale = await createWith({ vaultItemIds: [] });
+    await sql`update creed_headless_access_keys set vault_folder_ids=${sql.array([companyFolder.id])}::uuid[] where id=${stale.metadata.id}`;
+    await sql`update creed_vault_items set folder_id=${companyFolder.id} where id=${companyItem.id}`;
+    await expectDenied(stale.key, 403, companyItem.id);
+    // Members see no folders; duplicate names conflict case-insensitively.
+    await assert.rejects(repository.vaultFolderList(db, { userId: member }, company), { status: 403 });
+    await assert.rejects(repository.vaultFolderCreate(db, { userId: member }, { strapId: company, name: "member", description: "" }), { status: 403 });
+    await assert.rejects(repository.vaultFolderCreate(db, { userId: owner }, { strapId: company, name: "COMPANY-CI", description: "" }), { status: 409 });
+    await sql`update creed_vault_items set folder_id=null where id=${companyItem.id}`;
+  });
+
+  await t.test("deleting a folder keeps its items and removes folder-based access", async () => {
+    const folder = await repository.vaultFolderCreate(db, { userId: owner }, { strapId: personal, name: "temporary", description: "" });
+    const kept = await repository.vaultCreate(db, { userId: owner }, { creedId: personal, name: "Kept secret", description: "", secret, folderId: folder.id });
+    const created = await createWith({ vaultFolderIds: [folder.id] });
+    assert.equal((await request(created.key, kept.id)).status, 200);
+    // A deletion confirmed from a view that did not show every secret in the
+    // folder is refused and changes nothing.
+    await assert.rejects(repository.vaultFolderDelete(db, { userId: owner }, folder.id, []), { status: 409 });
+    const late = await repository.vaultCreate(db, { userId: owner }, { creedId: personal, name: "Late secret", description: "", secret, folderId: folder.id });
+    await assert.rejects(repository.vaultFolderDelete(db, { userId: owner }, folder.id, [kept.id]), { status: 409 });
+    assert.deepEqual((await sql`select count(*)::int as count from creed_vault_items where folder_id=${folder.id}`)[0].count, 2);
+    assert.equal((await request(created.key, late.id)).status, 200);
+    const deleted = await repository.vaultFolderDelete(db, { userId: owner }, folder.id, [late.id, kept.id.toUpperCase()]);
+    assert.equal(deleted.movedItemCount, 2);
+    assert.equal((await sql`select folder_id from creed_vault_items where id=${kept.id}`)[0].folder_id, null);
+    await expectDenied(created.key, 403, kept.id);
+    await assert.rejects(repository.vaultFolderDelete(db, { userId: owner }, folder.id, []), { status: 403 });
+  });
+
+  await t.test("grant edits and rotation keep the key identity and recheck Vault access", async () => {
+    const folder = await repository.vaultFolderCreate(db, { userId: owner }, { strapId: personal, name: "rotating", description: "" });
+    const target = await repository.vaultCreate(db, { userId: owner }, { creedId: personal, name: "Rotating target", description: "", secret, folderId: folder.id });
+    const created = await createWith({});
+    await expectDenied(created.key, 403, target.id);
+    const none = { vaultItemIds: [], vaultFolderIds: [] };
+    const withFolder = { vaultItemIds: [], vaultFolderIds: [folder.id] };
+    const updated = await editGrants(created.metadata.id, withFolder, none);
+    assert.ok(updated.status === "updated");
+    assert.deepEqual(updated.previous.vaultFolderIds, []);
+    assert.deepEqual(updated.metadata.vaultFolderIds, [folder.id]);
+    assert.equal((await request(created.key, target.id)).status, 200);
+    await assert.rejects(editGrants(created.metadata.id, { vaultItemIds: [companyItem.id], vaultFolderIds: [] }, withFolder), { status: 403 });
+    await assert.rejects(editGrants(created.metadata.id, { vaultItemIds: "*", vaultFolderIds: [] }, withFolder), { status: 400 });
+    await assert.rejects(editGrants(created.metadata.id, none, { vaultItemIds: "*", vaultFolderIds: [] }), { status: 400 });
+    assert.deepEqual(await editGrants(created.metadata.id, none, withFolder, member), { status: "not-found" });
+
+    const rotated = await headless.rotateHeadlessAccessKey({ userId: owner, keyId: created.metadata.id });
+    assert.ok(rotated.status === "rotated");
+    assert.notEqual(rotated.key, created.key);
+    assert.equal(rotated.metadata.id, created.metadata.id);
+    assert.deepEqual(rotated.metadata.vaultFolderIds, [folder.id]);
+    await expectDenied(created.key, 401, target.id);
+    assert.equal((await request(rotated.key, target.id)).status, 200);
+    assert.deepEqual(await headless.rotateHeadlessAccessKey({ userId: member, keyId: created.metadata.id }), { status: "not-found" });
+
+    await headless.revokeHeadlessAccessKey({ userId: owner, keyId: created.metadata.id });
+    assert.deepEqual(await headless.rotateHeadlessAccessKey({ userId: owner, keyId: created.metadata.id }), { status: "not-found" });
+    assert.deepEqual(await editGrants(created.metadata.id, none, withFolder), { status: "not-found" });
+  });
+
+  await t.test("grant edits based on stale or concurrently changed grants conflict", async () => {
+    const shared1 = await repository.vaultCreate(db, { userId: owner }, { creedId: personal, name: "Contested A", description: "", secret });
+    const shared2 = await repository.vaultCreate(db, { userId: owner }, { creedId: personal, name: "Contested B", description: "", secret });
+    const created = await createWith({ vaultItemIds: [shared1.id] });
+    const loaded = { vaultItemIds: [shared1.id], vaultFolderIds: [] };
+    // Tab A removes the grant; tab B, opened earlier, then tries to add another.
+    assert.equal((await editGrants(created.metadata.id, { vaultItemIds: [], vaultFolderIds: [] }, loaded)).status, "updated");
+    assert.deepEqual(await editGrants(created.metadata.id, { vaultItemIds: [shared1.id, shared2.id], vaultFolderIds: [] }, loaded), { status: "conflict" });
+    assert.deepEqual((await sql`select vault_item_ids from creed_headless_access_keys where id=${created.metadata.id}`)[0].vault_item_ids, []);
+    // Two concurrent edits from the same base: one applies, the other conflicts.
+    const results = await Promise.all([
+      editGrants(created.metadata.id, { vaultItemIds: [shared1.id], vaultFolderIds: [] }, { vaultItemIds: [], vaultFolderIds: [] }),
+      editGrants(created.metadata.id, { vaultItemIds: [shared2.id], vaultFolderIds: [] }, { vaultItemIds: [], vaultFolderIds: [] }),
+    ]);
+    assert.deepEqual(results.map(result => result.status).sort(), ["conflict", "updated"]);
+    // Order and case of the expected IDs do not matter.
+    const stored = (await sql`select vault_item_ids from creed_headless_access_keys where id=${created.metadata.id}`)[0].vault_item_ids as string[];
+    assert.equal((await editGrants(created.metadata.id, { vaultItemIds: [], vaultFolderIds: [] }, { vaultItemIds: stored.map(id => id.toUpperCase()), vaultFolderIds: [] })).status, "updated");
+  });
+
+  await t.test("expired keys cannot be rotated or edited", async () => {
+    const expiring = await createWith({ vaultItemIds: [item.id] });
+    await sql`update creed_headless_access_keys set expires_at=now()-interval '1 minute' where id=${expiring.metadata.id}`;
+    assert.deepEqual(await headless.rotateHeadlessAccessKey({ userId: owner, keyId: expiring.metadata.id }), { status: "not-found" });
+    assert.deepEqual(await editGrants(expiring.metadata.id, { vaultItemIds: [], vaultFolderIds: [] }, { vaultItemIds: [item.id], vaultFolderIds: [] }), { status: "not-found" });
+    const [row] = await sql`select key_hash, vault_item_ids from creed_headless_access_keys where id=${expiring.metadata.id}`;
+    assert.equal(row.key_hash, shared.digestCredential(expiring.key));
+    assert.deepEqual(row.vault_item_ids, [item.id]);
+  });
+
+  await t.test("of two concurrent rotations exactly one returns a working key", async () => {
+    const contested = await createWith({ vaultItemIds: [item.id] });
+    const results = await Promise.all([
+      headless.rotateHeadlessAccessKey({ userId: owner, keyId: contested.metadata.id }),
+      headless.rotateHeadlessAccessKey({ userId: owner, keyId: contested.metadata.id }),
+    ]);
+    assert.deepEqual(results.map(result => result.status).sort(), ["conflict", "rotated"]);
+    const winner = results.find(result => result.status === "rotated");
+    assert.ok(winner?.status === "rotated");
+    assert.equal((await request(winner.key, item.id)).status, 200);
+    await expectDenied(contested.key, 401, item.id);
+  });
+
+  await t.test("folder creation rechecks the current Company role", async () => {
+    await sql`update creed_members set role='admin' where creed_id=${company} and user_id=${member}`;
+    const allowed = await repository.vaultFolderCreate(db, { userId: member }, { strapId: company, name: "admin-folder", description: "" });
+    assert.equal(allowed.strap_id, company);
+    await sql`update creed_members set role='member' where creed_id=${company} and user_id=${member}`;
+    await assert.rejects(repository.vaultFolderCreate(db, { userId: member }, { strapId: company, name: "after-demotion", description: "" }), { status: 403 });
+    await assert.rejects(repository.vaultFolderDelete(db, { userId: member }, allowed.id, []), { status: 403 });
+    assert.equal((await sql`select count(*)::int as count from strap_vault_folders where id=${allowed.id}`)[0].count, 1);
+  });
+
+  await t.test("a folder that grows mid-window raises the key's reveal budget", async () => {
+    const growing = await repository.vaultFolderCreate(db, { userId: owner }, { strapId: personal, name: "growing", description: "" });
+    const first = await repository.vaultCreate(db, { userId: owner }, { creedId: personal, name: "Growing 0", description: "", secret, folderId: growing.id });
+    const created = await createWith({ vaultFolderIds: [growing.id] });
+    // The first reveal opens a 200-request window for a one-secret folder.
+    assert.equal((await request(created.key, first.id)).status, 200);
+    const added = [first];
+    for (let index = 1; index < 150; index++) {
+      added.push(await repository.vaultCreate(db, { userId: owner }, { creedId: personal, name: `Growing ${index}`, description: "", secret, folderId: growing.id }));
+    }
+    // 150 secrets allow 300 reveals in this window, including the one already used.
+    for (let index = 1; index < 300; index++) assert.equal((await request(created.key, added[index % added.length].id)).status, 200);
+    assert.equal((await request(created.key, first.id)).status, 429);
+  });
+
+  await t.test("the reveal limit grows with the secrets a key can reveal", async () => {
+    const big = await repository.vaultFolderCreate(db, { userId: owner }, { strapId: personal, name: "big", description: "" });
+    const filed = [];
+    for (let index = 0; index < 150; index++) {
+      filed.push(await repository.vaultCreate(db, { userId: owner }, { creedId: personal, name: `Big ${index}`, description: "", secret, folderId: big.id }));
+    }
+    const created = await createWith({ vaultFolderIds: [big.id] });
+    assert.equal(await repository.vaultGrantCoverage(db, { userId: owner }, { creedId: personal, vaultItemIds: [], vaultFolderIds: [big.id] }), 150);
+    // A schema load followed by a run of all 150 secrets fits in one window.
+    for (let pass = 0; pass < 2; pass++) {
+      for (const entry of filed) assert.equal((await request(created.key, entry.id)).status, 200);
+    }
+    const throttled = await request(created.key, filed[0].id);
+    assert.equal(throttled.status, 429);
+    assert.ok(throttled.headers.get("retry-after"));
+  });
+
+  await t.test("session routes edit grants, rotate keys and manage folders", async () => {
+    dependencies["@/lib/api-auth"] = { requireApiAuth: async () => ({ user: { id: owner }, context: viewerContext(db, { userId: owner }) }) };
+    dependencies["@/lib/strap-api"] = strapApi;
+    const keyRoute = loadModule<typeof import("../../app/api/app/headless-access/[id]/route.ts")>("../../app/api/app/headless-access/[id]/route.ts", dependencies);
+    const rotateRoute = loadModule<typeof import("../../app/api/app/headless-access/[id]/rotate/route.ts")>("../../app/api/app/headless-access/[id]/rotate/route.ts", dependencies);
+    const foldersRoute = loadModule<typeof import("../../app/api/app/vault/folders/route.ts")>("../../app/api/app/vault/folders/route.ts", dependencies);
+    const folderRoute = loadModule<typeof import("../../app/api/app/vault/folders/[id]/route.ts")>("../../app/api/app/vault/folders/[id]/route.ts", dependencies);
+    const json = (method: string, body: unknown) => new Request("http://localhost/api/app", { method, body: JSON.stringify(body) });
+    const params = (id: string) => ({ params: Promise.resolve({ id }) });
+
+    const createdFolder = await foldersRoute.POST(json("POST", { strapId: personal, name: "routes", description: "From the route" }));
+    assert.equal(createdFolder.status, 201);
+    const { folder } = await createdFolder.json() as { folder: { id: string; updatedAt: string } };
+    assert.equal((await foldersRoute.POST(json("POST", { strapId: personal, name: "ROUTES", description: "" }))).status, 409);
+    assert.equal((await folderRoute.PATCH(json("PATCH", { name: "routes-renamed", description: "", expectedUpdatedAt: folder.updatedAt }), params(folder.id))).status, 200);
+    // A second editor that opened the folder before that rename cannot overwrite it.
+    const staleRename = await folderRoute.PATCH(json("PATCH", { name: "routes-stale", description: "Older form", expectedUpdatedAt: folder.updatedAt }), params(folder.id));
+    assert.equal(staleRename.status, 409);
+    assert.deepEqual((await sql`select name, description from strap_vault_folders where id=${folder.id}`)[0], { name: "routes-renamed", description: "" });
+    for (const expectedUpdatedAt of [undefined, "", "yesterday", 7, "2026-02-30T12:00:00Z", "2026-99-99T25:61:61Z", "2026-10-02T12:00:00+99:99"]) {
+      assert.equal((await folderRoute.PATCH(json("PATCH", { name: "routes-other", description: "", expectedUpdatedAt }), params(folder.id))).status, 400);
+    }
+    // Valid JSON that is not an object is a client error, not a server error.
+    for (const body of [null, [], "text", 7]) {
+      assert.equal((await foldersRoute.POST(json("POST", body))).status, 400);
+      assert.equal((await folderRoute.PATCH(json("PATCH", body), params(folder.id))).status, 400);
+    }
+    // Folder names stay on one line; they appear in CLI selections and schema comments.
+    assert.equal((await foldersRoute.POST(json("POST", { strapId: personal, name: "prod\nINJECTED=value", description: "" }))).status, 400);
+    assert.equal((await folderRoute.PATCH(json("PATCH", { name: "tab\there", description: "" }), params(folder.id))).status, 400);
+    const target = await repository.vaultCreate(db, { userId: owner }, { creedId: personal, name: "Route target", description: "", secret, folderId: folder.id });
+
+    const created = await createWith({});
+    const base = { vaultItemIds: [], vaultFolderIds: [] };
+    for (const body of [null, {}, { vaultItemIds: [] }, { vaultItemIds: [], vaultFolderIds: "*", expected: base }, { vaultItemIds: [], vaultFolderIds: [] }, { vaultItemIds: [], vaultFolderIds: [], expected: { vaultItemIds: [] } }]) {
+      assert.equal((await keyRoute.PATCH(json("PATCH", body), params(created.metadata.id))).status, 400);
+    }
+    const stale = await keyRoute.PATCH(json("PATCH", { vaultItemIds: [], vaultFolderIds: [folder.id], expected: { vaultItemIds: [target.id], vaultFolderIds: [] } }), params(created.metadata.id));
+    assert.equal(stale.status, 409);
+    const patched = await keyRoute.PATCH(json("PATCH", { vaultItemIds: [], vaultFolderIds: [folder.id], expected: base }), params(created.metadata.id));
+    assert.equal(patched.status, 200);
+    assert.deepEqual((await patched.json() as { metadata: { vaultFolderIds: string[] } }).metadata.vaultFolderIds, [folder.id]);
+    // Routes record this audit without awaiting it.
+    let grantAudit: { metadata: { vaultFolderIds: string[] } } | undefined;
+    for (let attempt = 0; attempt < 50 && !grantAudit; attempt++) {
+      [grantAudit] = await sql`select metadata from creed_audit_log where action='headless.key_grants_updated' and metadata->>'keyId'=${created.metadata.id}` as unknown as Array<{ metadata: { vaultFolderIds: string[] } }>;
+      if (!grantAudit) await new Promise(resolve => setTimeout(resolve, 10));
+    }
+    assert.deepEqual(grantAudit?.metadata.vaultFolderIds, [folder.id]);
+    assert.equal((await request(created.key, target.id)).status, 200);
+
+    const rotated = await rotateRoute.POST(new Request("http://localhost/api/app", { method: "POST" }), params(created.metadata.id));
+    assert.equal(rotated.status, 200);
+    assert.match(rotated.headers.get("cache-control") ?? "", /no-store/);
+    const { key } = await rotated.json() as { key: string };
+    await expectDenied(created.key, 401, target.id);
+    assert.equal((await request(key, target.id)).status, 200);
+
+    // The route requires the secrets the caller saw in the folder.
+    assert.equal((await folderRoute.DELETE(new Request("http://localhost/api/app", { method: "DELETE" }), params(folder.id))).status, 400);
+    assert.equal((await folderRoute.DELETE(json("DELETE", { expectedItemIds: ["not-a-uuid"] }), params(folder.id))).status, 400);
+    assert.equal((await folderRoute.DELETE(json("DELETE", { expectedItemIds: [] }), params(folder.id))).status, 409);
+    const removed = await folderRoute.DELETE(json("DELETE", { expectedItemIds: [target.id] }), params(folder.id));
+    assert.deepEqual(await removed.json(), { ok: true, movedItemCount: 1 });
+    await expectDenied(key, 403, target.id);
+  });
+
+  await t.test("deleting a profile cascades through folders and items", async () => {
+    const departing = "64000000-0000-4000-8000-000000000003";
+    await sql`insert into users(id,email,name) values (${departing},'departing@example.test','Departing')`;
+    const [{ id: profile }] = await sql`select provision_company_creed(${departing}) as id`;
+    const folder = await repository.vaultFolderCreate(db, { userId: departing }, { strapId: profile, name: "doomed", description: "" });
+    await repository.vaultCreate(db, { userId: departing }, { creedId: profile, name: "Doomed secret", description: "", secret, folderId: folder.id });
+    await sql`delete from creeds where id=${profile}`;
+    assert.equal((await sql`select count(*)::int as count from strap_vault_folders where strap_id=${profile}`)[0].count, 0);
+    assert.equal((await sql`select count(*)::int as count from creed_vault_items where creed_id=${profile}`)[0].count, 0);
+  });
+
+  await t.test("a stale folder move cannot undo another session's move", async () => {
+    const granted = await repository.vaultFolderCreate(db, { userId: owner }, { strapId: personal, name: "granted", description: "" });
+    const moved = await repository.vaultCreate(db, { userId: owner }, { creedId: personal, name: "Moved secret", description: "", secret, folderId: granted.id });
+    const key = await createWith({ vaultFolderIds: [granted.id] });
+    const edit = (changes: { description?: string; folderId?: string | null; expectedFolderId?: string | null }) =>
+      repository.vaultUpdate(db, { userId: owner }, { itemId: moved.id, name: moved.name, description: changes.description ?? "", secret: null, ...changes });
+    // Session A moves the secret out of the folder to revoke folder-based access.
+    await edit({ folderId: null, expectedFolderId: granted.id });
+    await expectDenied(key.key, 403, moved.id);
+    // Session B's form still shows the folder; its move is rejected.
+    await assert.rejects(edit({ folderId: granted.id, expectedFolderId: granted.id }), { status: 409 });
+    // Edits that leave the folder alone keep A's move, and moves must name the expected folder.
+    await edit({ description: "Edited in session B" });
+    await assert.rejects(edit({ folderId: granted.id }), { status: 400 });
+    assert.equal((await sql`select folder_id from creed_vault_items where id=${moved.id}`)[0].folder_id, null);
+    await expectDenied(key.key, 403, moved.id);
+  });
+
+  await t.test("coverage counts only secrets the key's user can still access", async () => {
+    await sql`update creed_members set role='admin' where creed_id=${company} and user_id=${member}`;
+    const counted = await repository.vaultFolderCreate(db, { userId: member }, { strapId: company, name: "counted", description: "" });
+    await repository.vaultCreate(db, { userId: member }, { creedId: company, name: "Counted", description: "", secret, folderId: counted.id });
+    const grant = { creedId: company, vaultItemIds: [], vaultFolderIds: [counted.id] };
+    assert.equal(await repository.vaultGrantCoverage(db, { userId: member }, grant), 1);
+    await sql`update creed_members set role='member' where creed_id=${company} and user_id=${member}`;
+    assert.equal(await repository.vaultGrantCoverage(db, { userId: member }, grant), 0);
+  });
+
+  await t.test("granting re-checks the Vault role at write time", async () => {
+    await sql`update creed_members set role='admin' where creed_id=${company} and user_id=${member}`;
+    const late = await repository.vaultFolderCreate(db, { userId: owner }, { strapId: company, name: "late", description: "" });
+    const key = await create([], company, member);
+    // These reads approve the grant as if they ran just before a demotion.
+    const vault = dependencies["@/lib/api-key-vault"] as Record<string, unknown>;
+    const stale = loadModule<typeof import("../../lib/headless-access.ts")>("../../lib/headless-access.ts", {
+      ...dependencies,
+      "@/lib/api-key-vault": { ...vault, listVaultItems: async () => [], listVaultFolders: async () => [{ id: late.id }] },
+    });
+    await sql`update creed_members set role='member' where creed_id=${company} and user_id=${member}`;
+    const none = { vaultItemIds: [], vaultFolderIds: [] };
+    await assert.rejects(stale.updateHeadlessKeyGrants({ userId: member, keyId: key.metadata.id, vaultItemIds: [], vaultFolderIds: [late.id], expected: none }), { status: 403 });
+    assert.deepEqual((await sql`select vault_folder_ids from creed_headless_access_keys where id=${key.metadata.id}`)[0].vault_folder_ids, []);
+    // Removing access needs no Vault role.
+    assert.equal((await stale.updateHeadlessKeyGrants({ userId: member, keyId: key.metadata.id, ...none, expected: none })).status, "updated");
+  });
+
+  await t.test("a demotion that commits while a Vault write or reveal waits on the membership row blocks it", async () => {
+    const [{ name }] = await sql`select current_database() as name`;
+    const url = new URL(process.env.DATABASE_URL!);
+    url.pathname = `/${name}`;
+    // The test pool has one connection, so the owner's demotion runs on its own
+    // and holds the membership row while the write starts. It commits once the
+    // writer's connection waits on that row, or after five seconds; the test
+    // then requires that the wait happened, so it cannot pass without the race.
+    const duringDemotion = async (write: () => Promise<unknown>, status = 403) => {
+      await sql`update creed_members set role='admin' where creed_id=${company} and user_id=${member}`;
+      const [{ pid: writer }] = await sql`select pg_backend_pid() as pid`;
+      const ownerSession = createConnection(url.toString());
+      let outcome: Promise<void> | undefined;
+      let waited = false;
+      try {
+        await ownerSession.begin(async demotion => {
+          await demotion`update creed_members set role='member' where creed_id=${company} and user_id=${member}`;
+          outcome = assert.rejects(write(), { status });
+          for (let attempt = 0; attempt < 50 && !waited; attempt++) {
+            const [{ waiting }] = await demotion`select count(*)::int as waiting from pg_stat_activity where pid = ${writer} and wait_event_type = 'Lock'`;
+            waited = waiting > 0;
+            if (!waited) await delay(100);
+          }
+        });
+      } finally {
+        await ownerSession.end();
+      }
+      await outcome;
+      assert.ok(waited, "the write never waited on the membership row");
+    };
+    await sql`update creed_members set role='admin' where creed_id=${company} and user_id=${member}`;
+    const contested = await repository.vaultFolderCreate(db, { userId: owner }, { strapId: company, name: "contested", description: "" });
+    const key = await create([], company, member);
+    const none = { vaultItemIds: [], vaultFolderIds: [] };
+    await duringDemotion(() => headless.updateHeadlessKeyGrants({ userId: member, keyId: key.metadata.id, vaultItemIds: [], vaultFolderIds: [contested.id], expected: none }));
+    assert.deepEqual((await sql`select vault_folder_ids from creed_headless_access_keys where id=${key.metadata.id}`)[0].vault_folder_ids, []);
+    await duringDemotion(() => headless.createHeadlessAccessKey({ userId: member, creedId: company, name: "Racing grant", mode: "read-only", expiresAt: null, vaultFolderIds: [contested.id] }));
+    assert.equal((await sql`select count(*)::int as count from creed_headless_access_keys where name='Racing grant'`)[0].count, 0);
+    await duringDemotion(() => repository.vaultFolderCreate(db, { userId: member }, { strapId: company, name: "racing-folder", description: "" }));
+    assert.equal((await sql`select count(*)::int as count from strap_vault_folders where name='racing-folder'`)[0].count, 0);
+    const racing = await repository.vaultCreate(db, { userId: owner }, { creedId: company, name: "Racing secret", description: "", secret });
+    await duringDemotion(() => repository.vaultUpdate(db, { userId: member }, { itemId: racing.id, name: "Renamed while demoted", description: "", secret: null }));
+    await duringDemotion(() => repository.vaultDelete(db, { userId: member }, racing.id));
+    assert.deepEqual((await sql`select name from creed_vault_items where id=${racing.id}`).map(row => row.name), ["Racing secret"]);
+    await duringDemotion(() => repository.vaultFolderUpdate(db, { userId: member }, { folderId: contested.id, name: "renamed-while-demoted", description: "", expectedUpdatedAt: contested.updated_at }));
+    await duringDemotion(() => repository.vaultFolderDelete(db, { userId: member }, contested.id, []));
+    assert.deepEqual((await sql`select name from strap_vault_folders where id=${contested.id}`).map(row => row.name), ["contested"]);
+    // A reveal that loses the role while it waits returns no plaintext and writes no audit.
+    let audited = false;
+    await duringDemotion(() => repository.vaultReveal(db, { userId: member }, racing.id, async () => { audited = true; }), 409);
+    assert.equal(audited, false);
+    assert.equal((await sql`select last_accessed_at from creed_vault_items where id=${racing.id}`)[0].last_accessed_at, null);
+  });
+
+  await t.test("a profile deletion waits for a Vault write that holds the role lock instead of deadlocking", async () => {
+    const deleter = "64000000-0000-4000-8000-000000000009";
+    await sql`insert into users(id,email,name) values (${deleter},'deleter@example.test','Deleter')`;
+    const [{ id: doomed }] = await sql`select provision_company_creed(${deleter}) as id`;
+    const [{ name }] = await sql`select current_database() as name`;
+    const url = new URL(process.env.DATABASE_URL!);
+    url.pathname = `/${name}`;
+    const writerSession = createConnection(url.toString());
+    const deleterSession = createConnection(url.toString());
+    try {
+      const [{ pid: deleterPid }] = await deleterSession`select pg_backend_pid() as pid`;
+      let deletion: Promise<unknown> | undefined;
+      let waited = false;
+      // Hold the role lock, start deleting the profile, and insert only once the
+      // deletion waits: the insert's foreign-key check then needs the profile row.
+      await drizzle(writerSession).transaction(async tx => {
+        assert.equal(await repository.lockVaultAccess(tx, { userId: deleter }, doomed), true);
+        deletion = deleterSession`delete from creeds where id=${doomed}`.then(() => null, (error: unknown) => error);
+        for (let attempt = 0; attempt < 50 && !waited; attempt++) {
+          const [{ waiting }] = await sql`select count(*)::int as waiting from pg_stat_activity where pid = ${deleterPid} and wait_event_type = 'Lock'`;
+          waited = waiting > 0;
+          if (!waited) await delay(100);
+        }
+        await tx.insert(tables.strap_vault_folders).values({ strap_id: doomed, name: "during-deletion", description: "" });
+      });
+      assert.ok(waited, "the deletion never waited on the profile");
+      assert.equal(await deletion, null);
+      assert.equal((await sql`select count(*)::int as count from creeds where id=${doomed}`)[0].count, 0);
+    } finally {
+      await writerSession.end();
+      await deleterSession.end();
+    }
+  });
+
+  await t.test("deleting a folder while its profile is deleted does not deadlock", async () => {
+    const folderOwner = "64000000-0000-4000-8000-000000000010";
+    await sql`insert into users(id,email,name) values (${folderOwner},'folder-owner@example.test','Folder owner')`;
+    const [{ id: doomed }] = await sql`select provision_company_creed(${folderOwner}) as id`;
+    const folder = await repository.vaultFolderCreate(db, { userId: folderOwner }, { strapId: doomed, name: "doomed-folder", description: "" });
+    const [{ name }] = await sql`select current_database() as name`;
+    const url = new URL(process.env.DATABASE_URL!);
+    url.pathname = `/${name}`;
+    const writerSession = createConnection(url.toString());
+    const blockerSession = createConnection(url.toString());
+    const deleterSession = createConnection(url.toString());
+    const waitsOnLock = async (pid: number) => {
+      for (let attempt = 0; attempt < 50; attempt++) {
+        const [{ waiting }] = await sql`select count(*)::int as waiting from pg_stat_activity where pid = ${pid} and wait_event_type = 'Lock'`;
+        if (waiting > 0) return true;
+        await delay(100);
+      }
+      return false;
+    };
+    try {
+      const [{ pid: writerPid }] = await writerSession`select pg_backend_pid() as pid`;
+      const [{ pid: deleterPid }] = await deleterSession`select pg_backend_pid() as pid`;
+      let folderDeletion: Promise<unknown> | undefined;
+      let profileDeletion: Promise<unknown> | undefined;
+      // Another session holds the folder row, so the folder deletion stops at
+      // its folder lock; the profile deletion starts while it waits there.
+      await blockerSession.begin(async blocker => {
+        await blocker`select id from strap_vault_folders where id=${folder.id} for share`;
+        folderDeletion = repository.vaultFolderDelete(drizzle(writerSession), { userId: folderOwner }, folder.id, []).then(() => null, (error: unknown) => error);
+        assert.ok(await waitsOnLock(writerPid), "the folder deletion never waited on the folder");
+        profileDeletion = deleterSession`delete from creeds where id=${doomed}`.then(() => null, (error: unknown) => error);
+        assert.ok(await waitsOnLock(deleterPid), "the profile deletion never waited");
+      });
+      assert.equal(await folderDeletion, null);
+      assert.equal(await profileDeletion, null);
+      assert.equal((await sql`select count(*)::int as count from creeds where id=${doomed}`)[0].count, 0);
+    } finally {
+      await writerSession.end();
+      await blockerSession.end();
+      await deleterSession.end();
+    }
+  });
+
+  await t.test("creating a key with grants re-checks the Vault role at write time", async () => {
+    await sql`update creed_members set role='admin' where creed_id=${company} and user_id=${member}`;
+    const pending = await repository.vaultFolderCreate(db, { userId: owner }, { strapId: company, name: "pending", description: "" });
+    const vault = dependencies["@/lib/api-key-vault"] as Record<string, unknown>;
+    const stale = loadModule<typeof import("../../lib/headless-access.ts")>("../../lib/headless-access.ts", {
+      ...dependencies,
+      "@/lib/api-key-vault": { ...vault, listVaultItems: async () => [], listVaultFolders: async () => [{ id: pending.id }] },
+    });
+    await sql`update creed_members set role='member' where creed_id=${company} and user_id=${member}`;
+    const [{ count: before }] = await sql`select count(*)::int as count from creed_headless_access_keys where user_id=${member}`;
+    await assert.rejects(stale.createHeadlessAccessKey({ userId: member, creedId: company, name: "Late grant", mode: "read-only", expiresAt: null, vaultFolderIds: [pending.id] }), { status: 403 });
+    const [{ count: after }] = await sql`select count(*)::int as count from creed_headless_access_keys where user_id=${member}`;
+    assert.equal(after, before);
+    // A key without grants needs no Vault role.
+    assert.ok((await stale.createHeadlessAccessKey({ userId: member, creedId: company, name: "Plain", mode: "read-only", expiresAt: null })).key);
+  });
+
+  await t.test("a rotation that commits while a key is being resolved rejects the old value", async () => {
+    const created = await create([item.id]);
+    const [{ name }] = await sql`select current_database() as name`;
+    const url = new URL(process.env.DATABASE_URL!);
+    url.pathname = `/${name}`;
+    const [{ pid: resolver }] = await sql`select pg_backend_pid() as pid`;
+    const rotationSession = createConnection(url.toString());
+    let resolved: Promise<unknown> | undefined;
+    let waited = false;
+    try {
+      // The rotation holds the key row; the resolver reads the old hash, then
+      // waits to record its use until the rotation commits.
+      await rotationSession.begin(async rotation => {
+        await rotation`update creed_headless_access_keys set key_hash=${shared.digestCredential(shared.createHeadlessKey().key)} where id=${created.metadata.id}`;
+        resolved = headless.resolveHeadlessAccessKey(created.key);
+        for (let attempt = 0; attempt < 50 && !waited; attempt++) {
+          const [{ waiting }] = await rotation`select count(*)::int as waiting from pg_stat_activity where pid = ${resolver} and wait_event_type = 'Lock'`;
+          waited = waiting > 0;
+          if (!waited) await delay(100);
+        }
+      });
+    } finally {
+      await rotationSession.end();
+    }
+    assert.ok(waited, "the resolver never waited on the key row");
+    assert.equal(await resolved, null);
+    assert.equal((await sql`select last_used_at from creed_headless_access_keys where id=${created.metadata.id}`)[0].last_used_at, null);
+  });
+
+  await t.test("a key that expires while a request waits on its row is refused", async () => {
+    const created = await create([item.id]);
+    const [{ name }] = await sql`select current_database() as name`;
+    const url = new URL(process.env.DATABASE_URL!);
+    url.pathname = `/${name}`;
+    const [{ pid: requester }] = await sql`select pg_backend_pid() as pid`;
+    // Another session holds the key row until the key has expired; the request
+    // started while the key was still valid.
+    const pastExpiry = async (request: () => Promise<unknown>) => {
+      await sql`update creed_headless_access_keys set expires_at = now() + interval '2 seconds' where id=${created.metadata.id}`;
+      const holder = createConnection(url.toString());
+      let outcome: Promise<unknown> | undefined;
+      let waited = false;
+      try {
+        await holder.begin(async session => {
+          await session`select id from creed_headless_access_keys where id=${created.metadata.id} for update`;
+          outcome = request().then(value => ({ value }), (error: unknown) => ({ error }));
+          for (let attempt = 0; attempt < 50 && !waited; attempt++) {
+            const [{ waiting }] = await session`select count(*)::int as waiting from pg_stat_activity where pid = ${requester} and wait_event_type = 'Lock'`;
+            waited = waiting > 0;
+            if (!waited) await delay(100);
+          }
+          await delay(2500);
+        });
+      } finally {
+        await holder.end();
+      }
+      assert.ok(waited, "the request never waited on the key row");
+      return outcome;
+    };
+    assert.deepEqual(await pastExpiry(() => headless.resolveHeadlessAccessKey(created.key)), { value: null });
+    const resolvedEarlier = { keyId: created.metadata.id, keyHash: shared.digestCredential(created.key), creedId: personal, vaultItemIds: [item.id], vaultFolderIds: [] };
+    let audited = false;
+    const reveal = await pastExpiry(() => repository.vaultReveal(db, { userId: owner }, item.id, async () => { audited = true; }, resolvedEarlier)) as { error?: { status?: number } };
+    assert.equal(reveal.error?.status, 409);
+    assert.equal(audited, false);
+    assert.equal((await sql`select last_used_at from creed_headless_access_keys where id=${created.metadata.id}`)[0].last_used_at, null);
+  });
+
+  await t.test("a reveal that resolved before rotation, revocation or grant removal is refused", async () => {
+    const target = await repository.vaultCreate(db, { userId: owner }, { creedId: personal, name: "Stalled target", description: "", secret });
+    const reveal = (credential: { keyId: string; keyHash: string; vaultItemIds: string[] }) =>
+      repository.vaultReveal(db, { userId: owner }, target.id, async () => {}, { ...credential, creedId: personal, vaultFolderIds: [] });
+    // Each case resolves the key first, then changes it before the reveal finishes.
+    const rotatedKey = await createWith({ vaultItemIds: [target.id] });
+    const resolved = { keyId: rotatedKey.metadata.id, keyHash: shared.digestCredential(rotatedKey.key), vaultItemIds: [target.id] };
+    assert.equal((await reveal(resolved)).secret, secret);
+    assert.equal((await headless.rotateHeadlessAccessKey({ userId: owner, keyId: rotatedKey.metadata.id })).status, "rotated");
+    await assert.rejects(reveal(resolved), { status: 409 });
+
+    const revokedKey = await createWith({ vaultItemIds: [target.id] });
+    const beforeRevoke = { keyId: revokedKey.metadata.id, keyHash: shared.digestCredential(revokedKey.key), vaultItemIds: [target.id] };
+    await headless.revokeHeadlessAccessKey({ userId: owner, keyId: revokedKey.metadata.id });
+    await assert.rejects(reveal(beforeRevoke), { status: 409 });
+
+    const narrowedKey = await createWith({ vaultItemIds: [target.id] });
+    const beforeEdit = { keyId: narrowedKey.metadata.id, keyHash: shared.digestCredential(narrowedKey.key), vaultItemIds: [target.id] };
+    assert.equal((await editGrants(narrowedKey.metadata.id, { vaultItemIds: [], vaultFolderIds: [] }, { vaultItemIds: [target.id], vaultFolderIds: [] })).status, "updated");
+    await assert.rejects(reveal(beforeEdit), { status: 409 });
+  });
+
+  await t.test("a refused reveal leaves no reveal audit", async () => {
+    const target = await repository.vaultCreate(db, { userId: owner }, { creedId: personal, name: "Audited target", description: "", secret });
+    const created = await createWith({ vaultItemIds: [target.id] });
+    const stale = { keyId: created.metadata.id, keyHash: shared.digestCredential(created.key), creedId: personal, vaultItemIds: [target.id], vaultFolderIds: [] };
+    assert.equal((await headless.rotateHeadlessAccessKey({ userId: owner, keyId: created.metadata.id })).status, "rotated");
+    const vault = dependencies["@/lib/api-key-vault"] as typeof import("../../lib/api-key-vault.ts");
+    const audits = async () => (await sql`select count(*)::int as count from creed_audit_log where action='vault.secret_revealed' and metadata->>'itemId'=${target.id}`)[0].count;
+    const before = await audits();
+    await assert.rejects(vault.revealVaultItem({ userId: owner, itemId: target.id, request: new Request("http://localhost/"), credential: stale }), { status: 409 });
+    assert.equal(await audits(), before);
+    // A successful session reveal still writes exactly one audit row.
+    assert.equal((await vault.revealVaultItem({ userId: owner, itemId: target.id, request: new Request("http://localhost/") })).secret, secret);
+    assert.equal(await audits(), before + 1);
+  });
+
+  await t.test("the reveal audit names the grant that authorized it at commit time", async () => {
+    const both = await repository.vaultFolderCreate(db, { userId: owner }, { strapId: personal, name: "provenance", description: "" });
+    const target = await repository.vaultCreate(db, { userId: owner }, { creedId: personal, name: "Provenance target", description: "", secret, folderId: both.id });
+    const created = await createWith({ vaultItemIds: [target.id], vaultFolderIds: [both.id] });
+    // Resolved while the key granted the item directly and through its folder.
+    const resolved = { keyId: created.metadata.id, keyHash: shared.digestCredential(created.key), creedId: personal, vaultItemIds: [target.id], vaultFolderIds: [both.id] };
+    assert.equal((await editGrants(created.metadata.id, { vaultItemIds: [], vaultFolderIds: [both.id] }, { vaultItemIds: [target.id], vaultFolderIds: [both.id] })).status, "updated");
+    const vault = dependencies["@/lib/api-key-vault"] as typeof import("../../lib/api-key-vault.ts");
+    assert.equal((await vault.revealVaultItem({ userId: owner, itemId: target.id, request: new Request("http://localhost/"), credential: resolved })).secret, secret);
+    assert.equal((await auditFor(created.metadata.id)).folderId, both.id);
+  });
+
+  await t.test("reveals share one budget per user and write nothing before the limits allow them", async () => {
+    const heavy = "64000000-0000-4000-8000-000000000011";
+    await sql`insert into users(id,email,name) values (${heavy},'heavy@example.test','Heavy')`;
+    const [{ id: heavyProfile }] = await sql`insert into creeds(type,name,owner_user_id) values ('personal','Heavy',${heavy}) returning id`;
+    await sql`insert into creed_members(creed_id,user_id,role) values (${heavyProfile},${heavy},'owner')`;
+    const heavyItem = await repository.vaultCreate(db, { userId: heavy }, { creedId: heavyProfile, name: "Heavy fixture", description: "", secret });
+    const lastUsed = async (keyId: string) => (await sql`select last_used_at from creed_headless_access_keys where id=${keyId}`)[0].last_used_at;
+    // A key without grants is refused before any write.
+    const bare = await headless.createHeadlessAccessKey({ userId: heavy, creedId: heavyProfile, name: "Bare", mode: "read-only", expiresAt: null });
+    assert.equal((await request(bare.key, heavyItem.id)).status, 403);
+    assert.equal(await lastUsed(bare.metadata.id), null);
+    // Another key of the same user finds the shared budget spent.
+    for (let used = 0; used < grants.MAX_VAULT_REVEALS_PER_MINUTE; used++) {
+      checkRateLimit({ scope: "vault-reveal-user", identifier: heavy, limit: grants.MAX_VAULT_REVEALS_PER_MINUTE, windowMs: 60_000 });
+    }
+    const fresh = await headless.createHeadlessAccessKey({ userId: heavy, creedId: heavyProfile, name: "Fresh", mode: "read-only", expiresAt: null, vaultItemIds: [heavyItem.id] });
+    const throttled = await request(fresh.key, heavyItem.id);
+    assert.equal(throttled.status, 429);
+    assert.equal((await throttled.text()).includes(secret), false);
+    assert.equal(await lastUsed(fresh.metadata.id), null);
+  });
+
+  await t.test("requests a key's own limit refuses do not spend the user's shared budget", async () => {
+    const budgetOwner = "64000000-0000-4000-8000-000000000012";
+    await sql`insert into users(id,email,name) values (${budgetOwner},'shared@example.test','Shared')`;
+    const [{ id: sharedProfile }] = await sql`insert into creeds(type,name,owner_user_id) values ('personal','Shared',${budgetOwner}) returning id`;
+    await sql`insert into creed_members(creed_id,user_id,role) values (${sharedProfile},${budgetOwner},'owner')`;
+    const sharedItem = await repository.vaultCreate(db, { userId: budgetOwner }, { creedId: sharedProfile, name: "Shared fixture", description: "", secret });
+    const noisy = await headless.createHeadlessAccessKey({ userId: budgetOwner, creedId: sharedProfile, name: "Noisy", mode: "read-only", expiresAt: null, vaultItemIds: [sharedItem.id] });
+    // The quiet key belongs to the same user but another profile: the budget is per user.
+    const [{ id: budgetCompany }] = await sql`select provision_company_creed(${budgetOwner}) as id`;
+    const companySecret = await repository.vaultCreate(db, { userId: budgetOwner }, { creedId: budgetCompany, name: "Company fixture", description: "", secret });
+    const quiet = await headless.createHeadlessAccessKey({ userId: budgetOwner, creedId: budgetCompany, name: "Quiet", mode: "read-only", expiresAt: null, vaultItemIds: [companySecret.id] });
+    // One request is left in the user's budget, and the noisy key has spent its own limit.
+    for (let used = 0; used < grants.MAX_VAULT_REVEALS_PER_MINUTE - 1; used++) {
+      checkRateLimit({ scope: "vault-reveal-user", identifier: budgetOwner, limit: grants.MAX_VAULT_REVEALS_PER_MINUTE, windowMs: 60_000 });
+    }
+    const keyLimit = Math.min(grants.MAX_VAULT_REVEALS_PER_MINUTE, 2 * grants.MAX_VAULT_ITEM_GRANTS);
+    for (let used = 0; used < keyLimit; used++) {
+      checkRateLimit({ scope: "vault-reveal", identifier: noisy.metadata.id, limit: keyLimit, windowMs: 60_000 });
+    }
+    for (let attempt = 0; attempt < 5; attempt++) assert.equal((await request(noisy.key, sharedItem.id)).status, 429);
+    assert.equal((await request(quiet.key, companySecret.id)).status, 200);
+    assert.equal((await request(quiet.key, companySecret.id)).status, 429);
+  });
+
+  await t.test("demoting a Company admin clears their keys' secret grants", async () => {
+    const demoted = "64000000-0000-4000-8000-000000000016";
+    await sql`insert into users(id,email,name) values (${demoted},'demoted@example.test','Demoted')`;
+    await sql`insert into creed_members(creed_id,user_id,role) values (${company},${demoted},'admin')`;
+    const folder = await repository.vaultFolderCreate(db, { userId: owner }, { strapId: company, name: "demoted-folder", description: "" });
+    const filed = await repository.vaultCreate(db, { userId: owner }, { creedId: company, name: "Demoted target", description: "", secret, folderId: folder.id });
+    const key = await headless.createHeadlessAccessKey({ userId: demoted, creedId: company, name: "Demoted key", mode: "read-only", expiresAt: null, vaultFolderIds: [folder.id] });
+    assert.equal((await request(key.key, filed.id)).status, 200);
+    const ownerUser = { id: owner, email: "owner@example.test", emailVerified: true, name: "Owner" };
+    const companyAdmin = loadModule<typeof import("../../lib/company-admin.ts")>("../../lib/company-admin.ts", {
+      ...dependencies,
+      "node:crypto": nodeCrypto,
+      "@/lib/db/procedures": { callProcedure: async () => { throw new Error("not used by setMemberRole"); } },
+      "@/lib/legacy-subscription-deletion": { checkLegacyDeletion: async () => { throw new Error("not used by setMemberRole"); } },
+      "@/lib/user-name": { getDisplayName: () => "Owner" },
+      "@/lib/db/repositories/headless-keys": headlessKeys,
+    });
+    assert.deepEqual(await companyAdmin.setMemberRole({ creedId: company, actor: ownerUser, targetUserId: demoted, role: "member" }), { ok: true });
+    const [row] = await sql`select revoked_at, vault_item_ids, vault_folder_ids from creed_headless_access_keys where id=${key.metadata.id}`;
+    assert.deepEqual([row.revoked_at, row.vault_item_ids, row.vault_folder_ids], [null, [], []]);
+    // Promotion does not bring the grants back.
+    assert.deepEqual(await companyAdmin.setMemberRole({ creedId: company, actor: ownerUser, targetUserId: demoted, role: "admin" }), { ok: true });
+    await expectDenied(key.key, 403, filed.id);
+  });
+
+  await t.test("leaving a Company revokes the member's keys and rejoining does not revive older ones", async () => {
+    const leaver = "64000000-0000-4000-8000-000000000013";
+    await sql`insert into users(id,email,name) values (${leaver},'leaver@example.test','Leaver')`;
+    await sql`insert into creed_members(creed_id,user_id,role) values (${company},${leaver},'admin')`;
+    const folder = await repository.vaultFolderCreate(db, { userId: owner }, { strapId: company, name: "leaver-folder", description: "" });
+    const filed = await repository.vaultCreate(db, { userId: owner }, { creedId: company, name: "Leaver target", description: "", secret, folderId: folder.id });
+    const current = await headless.createHeadlessAccessKey({ userId: leaver, creedId: company, name: "Leaver key", mode: "read-only", expiresAt: null, vaultFolderIds: [folder.id] });
+    assert.equal((await request(current.key, filed.id)).status, 200);
+    const ownerUser = { id: owner, email: "owner@example.test", emailVerified: true, name: "Owner" };
+    const companyAdmin = loadModule<typeof import("../../lib/company-admin.ts")>("../../lib/company-admin.ts", {
+      ...dependencies,
+      "node:crypto": nodeCrypto,
+      "@/lib/db/procedures": { callProcedure: async () => { throw new Error("not used by removeMember"); } },
+      "@/lib/legacy-subscription-deletion": { checkLegacyDeletion: async () => { throw new Error("not used by removeMember"); } },
+      "@/lib/user-name": { getDisplayName: () => "Owner" },
+      "@/lib/db/repositories/headless-keys": headlessKeys,
+    });
+    assert.deepEqual(await companyAdmin.removeMember({ creedId: company, actor: ownerUser, targetUserId: leaver }), { ok: true });
+    assert.notEqual((await sql`select revoked_at from creed_headless_access_keys where id=${current.metadata.id}`)[0].revoked_at, null);
+    await expectDenied(current.key, 401, filed.id);
+
+    // A key left active by a removal before keys were revoked with it cannot be
+    // rotated while its user is not a member, and is revoked when they rejoin.
+    const dormant = shared.createHeadlessKey();
+    const [{ id: dormantId }] = await sql`insert into creed_headless_access_keys(user_id,creed_id,name,key_prefix,key_hash,vault_folder_ids) values (${leaver},${company},'Dormant',${dormant.prefix},${dormant.hash},${`{${folder.id}}`}::uuid[]) returning id`;
+    assert.deepEqual(await headless.rotateHeadlessAccessKey({ userId: leaver, keyId: dormantId }), { status: "not-found" });
+    const secretCrypto = loadModule<typeof import("../../lib/secret-crypto.ts")>("../../lib/secret-crypto.ts", { "node:crypto": nodeCrypto });
+    const invites = loadModule<typeof import("../../lib/company-invites.ts")>("../../lib/company-invites.ts", {
+      ...dependencies,
+      "node:crypto": nodeCrypto,
+      "@/lib/db/repositories/users": { findUser: async () => ({ data: null, error: null }) },
+      "@/lib/secret-crypto": secretCrypto,
+      "@/lib/strap-backend": { getAvatarInitials: () => "", getAvatarUrl: () => null, getUserName: () => "" },
+      "@/lib/db/repositories/headless-keys": headlessKeys,
+    });
+    const token = "invite-token-for-leaver";
+    await sql`insert into creed_invites(creed_id,email,role,token_hash,invited_by,status,expires_at) values (${company},'leaver@example.test','admin',${secretCrypto.hashSecret(token)},${owner},'pending',now() + interval '1 day')`;
+    const accepted = await invites.acceptInvite(token, { id: leaver, email: "leaver@example.test", emailVerified: true, name: "Leaver" });
+    assert.equal(accepted.ok, true);
+    assert.equal((await sql`select role from creed_members where creed_id=${company} and user_id=${leaver}`)[0].role, "admin");
+    assert.notEqual((await sql`select revoked_at from creed_headless_access_keys where id=${dormantId}`)[0].revoked_at, null);
+    await expectDenied(dormant.key, 401, filed.id);
+    await expectDenied(current.key, 401, filed.id);
+  });
+
+  await t.test("Vault discovery reads one folder's secrets and counts folders in the database", async () => {
+    const vaultMcp = loadModule<typeof import("../../lib/vault-mcp.ts")>("../../lib/vault-mcp.ts", { ...dependencies, "@/lib/vault-tools": vaultTools });
+    const access = { userId: owner, strapId: personal, role: "owner", profileType: "personal", caller: null };
+    const listedFolder = await repository.vaultFolderCreate(db, { userId: owner }, { strapId: personal, name: "discovery", description: "" });
+    const inside = await repository.vaultCreate(db, { userId: owner }, { creedId: personal, name: "DISCOVERY_INSIDE", description: "", secret, folderId: listedFolder.id });
+    const everything = await vaultMcp.callVaultTool(undefined, access);
+    assert.equal(everything.truncated, false);
+    assert.equal(everything.folders.find((entry) => entry.id === listedFolder.id)?.itemCount, 1);
+    assert.ok(everything.items.some((entry) => entry.id === inside.id) && everything.items.some((entry) => entry.id === item.id));
+    const oneFolder = await vaultMcp.callVaultTool({ folder: "DISCOVERY" }, access);
+    assert.deepEqual(oneFolder.items.map((entry) => entry.id), [inside.id]);
+    await assert.rejects(vaultMcp.callVaultTool({ folder: "no-such-folder" }, access), vaultTools.VaultListingError);
+  });
+
+  await t.test("Vault discovery reaches folders and matches beyond its read limits", async () => {
+    const vaultMcp = loadModule<typeof import("../../lib/vault-mcp.ts")>("../../lib/vault-mcp.ts", { ...dependencies, "@/lib/vault-tools": vaultTools });
+    const large = "64000000-0000-4000-8000-000000000015";
+    await sql`insert into users(id,email,name) values (${large},'large@example.test','Large')`;
+    const [{ id: largeProfile }] = await sql`insert into creeds(type,name,owner_user_id) values ('personal','Large',${large}) returning id`;
+    await sql`insert into creed_members(creed_id,user_id,role) values (${largeProfile},${large},'owner')`;
+    const access = { userId: large, strapId: largeProfile, role: "owner", profileType: "personal", caller: null };
+    // 1,001 folders: F1001 sorts after the folder read limit.
+    await sql`insert into strap_vault_folders(strap_id,name,description) select ${largeProfile}, 'F' || lpad(g::text, 4, '0'), '' from generate_series(1, ${vaultTools.MAX_VAULT_LISTING_FOLDERS + 1}) g`;
+    const [{ id: lastFolderId }] = await sql`select id from strap_vault_folders where strap_id=${largeProfile} and name='F1001'`;
+    const filed = await repository.vaultCreate(db, { userId: large }, { creedId: largeProfile, name: "FILED_LATE", description: "", secret, folderId: lastFolderId });
+    for (const folder of ["f1001", lastFolderId]) {
+      const byFolder = await vaultMcp.callVaultTool({ folder }, access);
+      assert.deepEqual(byFolder.items.map((entry) => entry.id), [filed.id]);
+      assert.deepEqual(byFolder.folders.map((entry) => [entry.name, entry.itemCount]), [["F1001", 1]]);
+    }
+    const unfiltered = await vaultMcp.callVaultTool(undefined, access);
+    assert.equal(unfiltered.folders.length, vaultTools.MAX_VAULT_LISTING_FOLDERS);
+    assert.equal(unfiltered.foldersTruncated, true);
+    // Its folder is past the folder limit, but the secret still names it.
+    assert.deepEqual(unfiltered.items.find((entry) => entry.id === filed.id)?.folder, { id: lastFolderId, name: "F1001" });
+    // 5,000 earlier secrets, then the only match.
+    // Ordered ids put the only match after the first read.
+    await sql`insert into creed_vault_items(id,creed_id,name,secret_ciphertext,created_by) select ('00000000-0000-4000-8000-' || lpad(g::text, 12, '0'))::uuid, ${largeProfile}, 'AA_FILLER_' || lpad(g::text, 5, '0'), 'opaque', ${large} from generate_series(1, ${vaultTools.MAX_VAULT_LISTING_SCAN}) g`;
+    await sql`insert into creed_vault_items(id,creed_id,name,description,secret_ciphertext,created_by) values ('ffffffff-ffff-4fff-8fff-ffffffffffff',${largeProfile},'ZZ_TARGET','unique needle','opaque',${large})`;
+    const first = await vaultMcp.callVaultTool({ query: "unique needle" }, access);
+    assert.deepEqual(first.items, []);
+    assert.ok(first.truncated && first.nextCursor);
+    const second = await vaultMcp.callVaultTool({ query: "unique needle", cursor: first.nextCursor }, access);
+    assert.deepEqual(second.items.map((entry) => entry.name), ["ZZ_TARGET"]);
+    assert.equal(second.nextCursor, null);
+    // An unfiltered paged read returns every secret exactly once, even when one
+    // already returned is renamed to sort later.
+    const seen: string[] = [];
+    let cursor: string | null = null;
+    let calls = 0;
+    do {
+      const page = await vaultMcp.callVaultTool(cursor ? { cursor } : undefined, access);
+      seen.push(...page.items.map((entry) => entry.id));
+      if (calls === 0) await sql`update creed_vault_items set name='ZZZ_RENAMED' where id=${page.items[0]!.id}`;
+      cursor = page.nextCursor;
+      calls++;
+    } while (cursor && calls < 30);
+    const [{ count: total }] = await sql`select count(*)::int as count from creed_vault_items where creed_id=${largeProfile}`;
+    assert.equal(seen.length, total);
+    assert.equal(new Set(seen).size, total);
+  });
+
+  await t.test("one user's keys share a preflight cap and a concurrency cap before any counting", async () => {
+    const busy = "64000000-0000-4000-8000-000000000014";
+    await sql`insert into users(id,email,name) values (${busy},'busy@example.test','Busy')`;
+    const [{ id: busyProfile }] = await sql`insert into creeds(type,name,owner_user_id) values ('personal','Busy',${busy}) returning id`;
+    await sql`insert into creed_members(creed_id,user_id,role) values (${busyProfile},${busy},'owner')`;
+    const busyItem = await repository.vaultCreate(db, { userId: busy }, { creedId: busyProfile, name: "Busy fixture", description: "", secret });
+    const keyFor = (label: string) => headless.createHeadlessAccessKey({ userId: busy, creedId: busyProfile, name: label, mode: "read-only", expiresAt: null, vaultItemIds: [busyItem.id] });
+    const stalled = (key: string) => route.POST(new Request("http://localhost/api/strap/vault/reveal", {
+      method: "POST", headers: { authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+      body: new ReadableStream({ start() {} }), duplex: "half",
+    } as RequestInit));
+    // Three keys hold 20 open requests each: the user's concurrency cap.
+    const holders = await Promise.all([keyFor("Holder 1"), keyFor("Holder 2"), keyFor("Holder 3")]);
+    const pending = holders.flatMap((holder) => Array.from({ length: 20 }, () => stalled(holder.key)));
+    const extra = await keyFor("Extra");
+    for (let attempt = 0; attempt < 50; attempt++) {
+      const response = await request(extra.key, busyItem.id);
+      if (response.status === 429) break;
+      assert.equal(response.status, 200, "the extra key should be refused once the user's slots are full");
+      await delay(20);
+    }
+    assert.equal((await request(extra.key, busyItem.id)).status, 429);
+    const results = await Promise.all(pending);
+    assert.deepEqual([...new Set(results.map((response) => response.status))], [408]);
+    assert.equal((await request(extra.key, busyItem.id)).status, 200);
+    // With the user's preflight budget spent, no key of that user gets further.
+    for (let used = 0; used < 5 * grants.MAX_VAULT_REVEALS_PER_MINUTE; used++) {
+      checkRateLimit({ scope: "vault-reveal-user-preflight", identifier: busy, limit: 5 * grants.MAX_VAULT_REVEALS_PER_MINUTE, windowMs: 60_000 });
+    }
+    const late = await keyFor("Late");
+    assert.equal((await request(late.key, busyItem.id)).status, 429);
+    assert.equal((await sql`select last_used_at from creed_headless_access_keys where id=${late.metadata.id}`)[0].last_used_at, null);
+  });
+
+  await t.test("a metadata edit is not audited as a folder move another session made", async () => {
+    const vault = dependencies["@/lib/api-key-vault"] as typeof import("../../lib/api-key-vault.ts");
+    const destination = await repository.vaultFolderCreate(db, { userId: owner }, { strapId: personal, name: "moved-elsewhere", description: "" });
+    const target = await repository.vaultCreate(db, { userId: owner }, { creedId: personal, name: "Audit target", description: "", secret });
+    const [{ name }] = await sql`select current_database() as name`;
+    const url = new URL(process.env.DATABASE_URL!);
+    url.pathname = `/${name}`;
+    const [{ pid: editor }] = await sql`select pg_backend_pid() as pid`;
+    const moverSession = createConnection(url.toString());
+    let edit: Promise<unknown> | undefined;
+    let waited = false;
+    try {
+      // Another session moves the secret and holds its row while the rename runs.
+      await moverSession.begin(async move => {
+        await move`update creed_vault_items set folder_id=${destination.id} where id=${target.id}`;
+        edit = vault.updateVaultItem({ userId: owner, itemId: target.id, name: "Audit target renamed", description: "", secret: null, request: new Request("http://localhost/") });
+        for (let attempt = 0; attempt < 50 && !waited; attempt++) {
+          const [{ waiting }] = await move`select count(*)::int as waiting from pg_stat_activity where pid = ${editor} and wait_event_type = 'Lock'`;
+          waited = waiting > 0;
+          if (!waited) await delay(100);
+        }
+      });
+    } finally {
+      await moverSession.end();
+    }
+    assert.ok(waited, "the rename never waited on the secret's row");
+    await edit;
+    const [audit] = await sql`select metadata from creed_audit_log where action='vault.secret_updated' and metadata->>'itemId'=${target.id}`;
+    assert.equal(audit.metadata.fromFolderId, undefined);
+    assert.equal(audit.metadata.toFolderId, undefined);
+    assert.equal((await sql`select folder_id from creed_vault_items where id=${target.id}`)[0].folder_id, destination.id);
+  });
+
+  await t.test("reveal audits store bounded copies of client headers", async () => {
+    const created = await create([item.id]);
+    const response = await route.POST(new Request("http://localhost/api/strap/vault/reveal", {
+      method: "POST",
+      headers: { authorization: `Bearer ${created.key}`, "Content-Type": "application/json", "user-agent": "u".repeat(10_000), "x-forwarded-for": `${"f".repeat(500)}, 203.0.113.9` },
+      body: JSON.stringify({ reference: item.id }),
+    }));
+    assert.equal(response.status, 200);
+    const [row] = await sql`select user_agent, ip_address from creed_audit_log where action='vault.secret_revealed' and metadata->>'keyId'=${created.metadata.id}`;
+    assert.equal(row.user_agent, "u".repeat(512));
+    assert.equal(row.ip_address, "f".repeat(64));
+  });
+
+  await t.test("slow reveal bodies time out and open reveals per key are capped", async () => {
+    const created = await create([item.id]);
+    const stalled = () => route.POST(new Request("http://localhost/api/strap/vault/reveal", {
+      method: "POST", headers: { authorization: `Bearer ${created.key}`, "Content-Type": "application/json" },
+      body: new ReadableStream({ start() {} }), duplex: "half",
+    } as RequestInit));
+    const pending = Array.from({ length: 20 }, stalled);
+    // The cap applies before any database work, so the 21st request is refused at once.
+    const refused = await request(created.key, item.id);
+    assert.equal(refused.status, 429);
+    const results = await Promise.all(pending);
+    assert.deepEqual([...new Set(results.map((response) => response.status))], [408]);
+    for (const response of results) assert.equal((await response.text()).includes(secret), false);
+    // Finished requests free their slots.
+    assert.equal((await request(created.key, item.id)).status, 200);
   });
 
   await t.test("malformed input and rate limits are uncached and never reveal secrets", async () => {
