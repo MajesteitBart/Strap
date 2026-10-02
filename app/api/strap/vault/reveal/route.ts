@@ -1,4 +1,4 @@
-import { resolveHeadlessAccessKey } from "@/lib/headless-access";
+import { findHeadlessAccessKey, recordHeadlessKeyUse } from "@/lib/headless-access";
 import { digestCredential, isHeadlessKey } from "@/lib/headless-access-shared";
 import { countRevealableVaultItems, revealVaultItem, VaultAccessError } from "@/lib/api-key-vault";
 import { MAX_VAULT_ITEM_GRANTS, MAX_VAULT_REVEALS_PER_MINUTE, parseVaultReference } from "@/lib/vault-grants";
@@ -46,18 +46,30 @@ export async function POST(request: Request) {
   inFlight.set(slot, open + 1);
 
   try {
-    const credential = await resolveHeadlessAccessKey(token);
-    if (!credential) return respond({ error: "Invalid or expired Strap API key." }, 401);
+    // Reads only until the limits below allow the request; recording use locks
+    // and writes the key row.
+    const found = await findHeadlessAccessKey(token);
+    if (!found) return respond({ error: "Invalid or expired Strap API key." }, 401);
+    if (found.vaultItemIds.length === 0 && found.vaultFolderIds.length === 0) {
+      return respond({ error: "Secret access was not granted to this key." }, 403);
+    }
+    // All of a user's keys share one budget, so creating more keys does not
+    // multiply coverage counts, key-use writes or reveal transactions. The
+    // lookup above is read-only and stays bounded per key by the flood guard.
+    const perUser = checkRateLimit({ scope: "vault-reveal-user", identifier: found.userId, limit: MAX_VAULT_REVEALS_PER_MINUTE, windowMs: 60_000 });
+    if (!perUser.ok) return tooMany(perUser.retryAfterSeconds);
     // Allow one full schema load followed by a run of everything this key can
     // reveal. Folder grants grow as secrets are added, so size the limit on use.
-    const coverage = await countRevealableVaultItems(credential.userId, credential);
+    const coverage = await countRevealableVaultItems(found.userId, found);
     const limit = checkRateLimit({
       scope: "vault-reveal",
-      identifier: credential.keyId,
+      identifier: found.keyId,
       limit: Math.min(MAX_VAULT_REVEALS_PER_MINUTE, 2 * Math.max(MAX_VAULT_ITEM_GRANTS, coverage)),
       windowMs: 60_000,
     });
     if (!limit.ok) return tooMany(limit.retryAfterSeconds);
+    const credential = await recordHeadlessKeyUse(token, found.keyId);
+    if (!credential) return respond({ error: "Invalid or expired Strap API key." }, 401);
     // The body contains a single public item reference. Bound it before parsing.
     const reader = request.body?.getReader();
     if (!reader) return respond({ error: "A secret reference is required." }, 400);

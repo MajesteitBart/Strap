@@ -1454,7 +1454,7 @@
       "file": "lib/headless-access.ts",
       "kind": "content",
       "occurrences": 24,
-      "fingerprint": "31ab9403251ccf151e52b49c40db603d24a787670f32311ab29ccaaeb902d332",
+      "fingerprint": "f47065b9a80dbd6c28c187c3a6d8e6747e9f56528998a1001a0c411cc2d941f2",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -2407,8 +2407,8 @@
     {
       "file": "tests/db/vault-headless.test.ts",
       "kind": "content",
-      "occurrences": 132,
-      "fingerprint": "04014ed3cdd71d0d359dfb43080eb7f69d79b93b1accdc6ad25d5ba9a52deaf5",
+      "occurrences": 139,
+      "fingerprint": "3cd279b1ddfac0b8389d19ca87d26f18a4d81f766f40a59a150511b71df00601",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."

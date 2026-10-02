@@ -271,42 +271,59 @@ export async function revokeHeadlessAccessKey(input: {
   return Boolean(data);
 }
 
-export async function resolveHeadlessAccessKey(token: string): Promise<ResolvedHeadlessKey | null> {
+function toResolved(row: HeadlessKeyRow): ResolvedHeadlessKey {
+  return {
+    keyId: row.id,
+    userId: row.user_id,
+    creedId: row.creed_id,
+    clientName: row.name,
+    mode: row.mode,
+    vaultItemIds: row.vault_item_ids,
+    vaultFolderIds: row.vault_folder_ids,
+  };
+}
+
+/**
+ * Looks up an active key by its value without writing anything. Callers that
+ * apply rate limits first record use with recordHeadlessKeyUse afterwards, so
+ * a flood of requests costs reads, not row locks and writes.
+ */
+export async function findHeadlessAccessKey(token: string): Promise<ResolvedHeadlessKey | null> {
   if (!isHeadlessKey(token)) return null;
   const admin = adminDb();
-  const hash = digestCredential(token);
   const { data, error } = await query(admin, keys, "select", (database, scope) => database.select(KEY_COLUMNS).from(keys)
-    .where(and(scope, eq(keys.key_hash, hash)))).then(maybeOne);
+    .where(and(scope, eq(keys.key_hash, digestCredential(token))))).then(maybeOne);
   if (error || !data) return null;
   const row = data as HeadlessKeyRow;
-  if (row.revoked_at || (row.expires_at && new Date(row.expires_at).getTime() <= Date.now())) {
-    return null;
-  }
+  if (row.revoked_at || !stillUnexpired(row.expires_at)) return null;
   const role = await getStrapRole(admin, row.user_id, row.creed_id);
   if (!role) return null;
+  return toResolved(row);
+}
 
-  // Use is recorded only while the key still has the presented hash, is not
-  // revoked and has not expired. The row is locked first: a rotation or
-  // revocation that committed after the read above makes the lock match
-  // nothing, and the old value is not authenticated. Expiry is checked against
-  // the clock after the lock, because the lock may have waited and SQL now() is
-  // the transaction's start. The grants returned are the live ones.
-  const { data: used, error: useError } = await query(admin, keys, "update", (database, scope) => database.transaction(async (tx) => {
+/**
+ * Records use of a key found by findHeadlessAccessKey and returns its live
+ * state, or null. Use is recorded only while the key still has the presented
+ * hash, is not revoked and has not expired. The row is locked first: a
+ * rotation or revocation that committed after the lookup makes the lock match
+ * nothing, and the old value is not authenticated. Expiry is checked against
+ * the clock after the lock, because the lock may have waited and SQL now() is
+ * the transaction's start.
+ */
+export async function recordHeadlessKeyUse(token: string, keyId: string): Promise<ResolvedHeadlessKey | null> {
+  const hash = digestCredential(token);
+  const { data, error } = await query(adminDb(), keys, "update", (database, scope) => database.transaction(async (tx) => {
     const [current] = await tx.select({ expires_at: keys.expires_at }).from(keys)
-      .where(and(scope, eq(keys.id, row.id), eq(keys.key_hash, hash), isNull(keys.revoked_at))).for("no key update");
+      .where(and(scope, eq(keys.id, keyId), eq(keys.key_hash, hash), isNull(keys.revoked_at))).for("no key update");
     if (!current || !stillUnexpired(current.expires_at)) return [];
-    return tx.update(keys).set({ last_used_at: new Date().toISOString() }).where(eq(keys.id, row.id)).returning(KEY_COLUMNS);
+    return tx.update(keys).set({ last_used_at: new Date().toISOString() }).where(eq(keys.id, keyId)).returning(KEY_COLUMNS);
   })).then(maybeOne);
-  if (useError || !used) return null;
-  const live = used as HeadlessKeyRow;
+  if (error || !data) return null;
+  return toResolved(data as HeadlessKeyRow);
+}
 
-  return {
-    keyId: live.id,
-    userId: live.user_id,
-    creedId: live.creed_id,
-    clientName: live.name,
-    mode: live.mode,
-    vaultItemIds: live.vault_item_ids,
-    vaultFolderIds: live.vault_folder_ids,
-  };
+/** Finds a key by its value and records its use. */
+export async function resolveHeadlessAccessKey(token: string): Promise<ResolvedHeadlessKey | null> {
+  const found = await findHeadlessAccessKey(token);
+  return found ? recordHeadlessKeyUse(token, found.keyId) : null;
 }

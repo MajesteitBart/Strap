@@ -775,6 +775,28 @@ test("scoped Vault reveals enforce live Postgres permissions and audit before de
     assert.equal((await auditFor(created.metadata.id)).folderId, both.id);
   });
 
+  await t.test("reveals share one budget per user and write nothing before the limits allow them", async () => {
+    const heavy = "64000000-0000-4000-8000-000000000011";
+    await sql`insert into users(id,email,name) values (${heavy},'heavy@example.test','Heavy')`;
+    const [{ id: heavyProfile }] = await sql`insert into creeds(type,name,owner_user_id) values ('personal','Heavy',${heavy}) returning id`;
+    await sql`insert into creed_members(creed_id,user_id,role) values (${heavyProfile},${heavy},'owner')`;
+    const heavyItem = await repository.vaultCreate(db, { userId: heavy }, { creedId: heavyProfile, name: "Heavy fixture", description: "", secret });
+    const lastUsed = async (keyId: string) => (await sql`select last_used_at from creed_headless_access_keys where id=${keyId}`)[0].last_used_at;
+    // A key without grants is refused before any write.
+    const bare = await headless.createHeadlessAccessKey({ userId: heavy, creedId: heavyProfile, name: "Bare", mode: "read-only", expiresAt: null });
+    assert.equal((await request(bare.key, heavyItem.id)).status, 403);
+    assert.equal(await lastUsed(bare.metadata.id), null);
+    // Another key of the same user finds the shared budget spent.
+    for (let used = 0; used < grants.MAX_VAULT_REVEALS_PER_MINUTE; used++) {
+      checkRateLimit({ scope: "vault-reveal-user", identifier: heavy, limit: grants.MAX_VAULT_REVEALS_PER_MINUTE, windowMs: 60_000 });
+    }
+    const fresh = await headless.createHeadlessAccessKey({ userId: heavy, creedId: heavyProfile, name: "Fresh", mode: "read-only", expiresAt: null, vaultItemIds: [heavyItem.id] });
+    const throttled = await request(fresh.key, heavyItem.id);
+    assert.equal(throttled.status, 429);
+    assert.equal((await throttled.text()).includes(secret), false);
+    assert.equal(await lastUsed(fresh.metadata.id), null);
+  });
+
   await t.test("reveal audits store bounded copies of client headers", async () => {
     const created = await create([item.id]);
     const response = await route.POST(new Request("http://localhost/api/strap/vault/reveal", {
