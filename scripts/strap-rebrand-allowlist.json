@@ -2309,7 +2309,7 @@
       "file": "scripts/verify-local-runtime.mjs",
       "kind": "content",
       "occurrences": 24,
-      "fingerprint": "72895a1a0c768c17cd7e5e4364fd52505c1d799be6285329ffb9ec7e050c7033",
+      "fingerprint": "5da1716fbd2c8a495742acac5a34cbef4eb1fe692ffc6036d805d742056aa1d4",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -2407,8 +2407,8 @@
     {
       "file": "tests/db/vault-headless.test.ts",
       "kind": "content",
-      "occurrences": 145,
-      "fingerprint": "8e9dc2fafa6e478b57c87f12eaf42876bdaebeaf07530809ae95bcb874fcb65d",
+      "occurrences": 153,
+      "fingerprint": "5cac32a32dd0c121bd5003acbd56b697719121ae3d76f48b31145f4dc2e6cedb",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."

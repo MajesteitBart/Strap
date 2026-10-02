@@ -808,6 +808,30 @@ test("scoped Vault reveals enforce live Postgres permissions and audit before de
     assert.equal(await lastUsed(fresh.metadata.id), null);
   });
 
+  await t.test("requests a key's own limit refuses do not spend the user's shared budget", async () => {
+    const budgetOwner = "64000000-0000-4000-8000-000000000012";
+    await sql`insert into users(id,email,name) values (${budgetOwner},'shared@example.test','Shared')`;
+    const [{ id: sharedProfile }] = await sql`insert into creeds(type,name,owner_user_id) values ('personal','Shared',${budgetOwner}) returning id`;
+    await sql`insert into creed_members(creed_id,user_id,role) values (${sharedProfile},${budgetOwner},'owner')`;
+    const sharedItem = await repository.vaultCreate(db, { userId: budgetOwner }, { creedId: sharedProfile, name: "Shared fixture", description: "", secret });
+    const noisy = await headless.createHeadlessAccessKey({ userId: budgetOwner, creedId: sharedProfile, name: "Noisy", mode: "read-only", expiresAt: null, vaultItemIds: [sharedItem.id] });
+    // The quiet key belongs to the same user but another profile: the budget is per user.
+    const [{ id: budgetCompany }] = await sql`select provision_company_creed(${budgetOwner}) as id`;
+    const companySecret = await repository.vaultCreate(db, { userId: budgetOwner }, { creedId: budgetCompany, name: "Company fixture", description: "", secret });
+    const quiet = await headless.createHeadlessAccessKey({ userId: budgetOwner, creedId: budgetCompany, name: "Quiet", mode: "read-only", expiresAt: null, vaultItemIds: [companySecret.id] });
+    // One request is left in the user's budget, and the noisy key has spent its own limit.
+    for (let used = 0; used < grants.MAX_VAULT_REVEALS_PER_MINUTE - 1; used++) {
+      checkRateLimit({ scope: "vault-reveal-user", identifier: budgetOwner, limit: grants.MAX_VAULT_REVEALS_PER_MINUTE, windowMs: 60_000 });
+    }
+    const keyLimit = Math.min(grants.MAX_VAULT_REVEALS_PER_MINUTE, 2 * grants.MAX_VAULT_ITEM_GRANTS);
+    for (let used = 0; used < keyLimit; used++) {
+      checkRateLimit({ scope: "vault-reveal", identifier: noisy.metadata.id, limit: keyLimit, windowMs: 60_000 });
+    }
+    for (let attempt = 0; attempt < 5; attempt++) assert.equal((await request(noisy.key, sharedItem.id)).status, 429);
+    assert.equal((await request(quiet.key, companySecret.id)).status, 200);
+    assert.equal((await request(quiet.key, companySecret.id)).status, 429);
+  });
+
   await t.test("a metadata edit is not audited as a folder move another session made", async () => {
     const vault = dependencies["@/lib/api-key-vault"] as typeof import("../../lib/api-key-vault.ts");
     const destination = await repository.vaultFolderCreate(db, { userId: owner }, { strapId: personal, name: "moved-elsewhere", description: "" });

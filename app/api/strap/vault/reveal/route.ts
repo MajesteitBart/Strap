@@ -53,11 +53,6 @@ export async function POST(request: Request) {
     if (found.vaultItemIds.length === 0 && found.vaultFolderIds.length === 0) {
       return respond({ error: "Secret access was not granted to this key." }, 403);
     }
-    // All of a user's keys share one budget, so creating more keys does not
-    // multiply coverage counts, key-use writes or reveal transactions. The
-    // lookup above is read-only and stays bounded per key by the flood guard.
-    const perUser = checkRateLimit({ scope: "vault-reveal-user", identifier: found.userId, limit: MAX_VAULT_REVEALS_PER_MINUTE, windowMs: 60_000 });
-    if (!perUser.ok) return tooMany(perUser.retryAfterSeconds);
     // Allow one full schema load followed by a run of everything this key can
     // reveal. Folder grants grow as secrets are added, so size the limit on use.
     const coverage = await countRevealableVaultItems(found.userId, found);
@@ -68,6 +63,12 @@ export async function POST(request: Request) {
       windowMs: 60_000,
     });
     if (!limit.ok) return tooMany(limit.retryAfterSeconds);
+    // All of a user's keys share one budget, so creating more keys does not
+    // multiply key-use writes or reveal transactions. It is spent only by
+    // requests the key's own limit admitted, so one key cannot exhaust it for
+    // the user's other keys beyond that limit.
+    const perUser = checkRateLimit({ scope: "vault-reveal-user", identifier: found.userId, limit: MAX_VAULT_REVEALS_PER_MINUTE, windowMs: 60_000 });
+    if (!perUser.ok) return tooMany(perUser.retryAfterSeconds);
     const credential = await recordHeadlessKeyUse(token, found.keyId);
     if (!credential) return respond({ error: "Invalid or expired Strap API key." }, 401);
     // The body contains a single public item reference. Bound it before parsing.
