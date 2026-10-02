@@ -22,6 +22,7 @@ type VaultFolder = {
   id: string;
   name: string;
   description: string;
+  updatedAt: string;
 };
 
 type EditorState = {
@@ -38,10 +39,12 @@ type FolderEditorState = {
   id: string | null;
   name: string;
   description: string;
+  // The folder's version when the editor opened; a save is rejected if another session changed it since.
+  updatedAt: string;
 };
 
 const EMPTY_EDITOR: EditorState = { id: null, name: "", description: "", secret: "", folderId: "", originalFolderId: "" };
-const EMPTY_FOLDER_EDITOR: FolderEditorState = { id: null, name: "", description: "" };
+const EMPTY_FOLDER_EDITOR: FolderEditorState = { id: null, name: "", description: "", updatedAt: "" };
 
 // Keyed by Strap so items, the editor and any in-flight request from the
 // previously active Strap never render, or act, under the new Strap's heading.
@@ -109,7 +112,7 @@ function StrapVault() {
   }
 
   function openFolderEditor(folder?: VaultFolder) {
-    setFolderEditor(folder ? { id: folder.id, name: folder.name, description: folder.description } : EMPTY_FOLDER_EDITOR);
+    setFolderEditor(folder ? { id: folder.id, name: folder.name, description: folder.description, updatedAt: folder.updatedAt } : EMPTY_FOLDER_EDITOR);
     setFolderEditorOpen(true);
     setEditorOpen(false);
     setError(null);
@@ -158,9 +161,15 @@ function StrapVault() {
       const response = await fetch(folderEditor.id ? `/api/app/vault/folders/${encodeURIComponent(folderEditor.id)}` : "/api/app/vault/folders", {
         method: folderEditor.id ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ creedId, name: folderEditor.name.trim(), description: folderEditor.description.trim() }),
+        body: JSON.stringify({
+          creedId,
+          name: folderEditor.name.trim(),
+          description: folderEditor.description.trim(),
+          ...(folderEditor.id ? { expectedUpdatedAt: folderEditor.updatedAt } : {}),
+        }),
       });
       const payload = (await response.json().catch(() => ({}))) as { error?: string };
+      if (response.status === 409) await loadItems().catch(() => undefined);
       if (!response.ok) throw new Error(payload.error || "Could not save the folder.");
       setFolderEditor(EMPTY_FOLDER_EDITOR);
       setFolderEditorOpen(false);

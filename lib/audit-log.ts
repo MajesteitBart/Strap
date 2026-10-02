@@ -66,11 +66,21 @@ export type AuditLogInput = {
   request?: Request;
 };
 
+// Request headers are client-controlled and audit rows are kept, so stored
+// values are capped: a high-volume caller cannot grow the log with large
+// headers. 64 characters fit any IPv6 address.
+const MAX_IP_LENGTH = 64;
+const MAX_USER_AGENT_LENGTH = 512;
+
+function bounded(value: string | null | undefined, max: number): string | null {
+  return value ? value.slice(0, max) : null;
+}
+
 function clientIp(request: Request | undefined): string | null {
   if (!request) return null;
   const forwarded = request.headers.get("x-forwarded-for");
-  if (forwarded) return forwarded.split(",")[0]?.trim() || null;
-  return request.headers.get("x-real-ip") || null;
+  if (forwarded) return bounded(forwarded.split(",")[0]?.trim(), MAX_IP_LENGTH);
+  return bounded(request.headers.get("x-real-ip"), MAX_IP_LENGTH);
 }
 
 /**
@@ -83,7 +93,7 @@ export function auditRow(input: AuditLogInput): typeof tables.creed_audit_log.$i
     action: input.action,
     metadata: input.metadata ?? {},
     ip_address: clientIp(input.request),
-    user_agent: input.request?.headers.get("user-agent") ?? null,
+    user_agent: bounded(input.request?.headers.get("user-agent"), MAX_USER_AGENT_LENGTH),
   };
 }
 

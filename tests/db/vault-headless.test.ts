@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import * as orm from "drizzle-orm";
+import { drizzle } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import { NextResponse } from "next/server.js";
 import ts from "typescript";
@@ -401,9 +402,16 @@ test("scoped Vault reveals enforce live Postgres permissions and audit before de
 
     const createdFolder = await foldersRoute.POST(json("POST", { strapId: personal, name: "routes", description: "From the route" }));
     assert.equal(createdFolder.status, 201);
-    const { folder } = await createdFolder.json() as { folder: { id: string } };
+    const { folder } = await createdFolder.json() as { folder: { id: string; updatedAt: string } };
     assert.equal((await foldersRoute.POST(json("POST", { strapId: personal, name: "ROUTES", description: "" }))).status, 409);
-    assert.equal((await folderRoute.PATCH(json("PATCH", { name: "routes-renamed", description: "" }), params(folder.id))).status, 200);
+    assert.equal((await folderRoute.PATCH(json("PATCH", { name: "routes-renamed", description: "", expectedUpdatedAt: folder.updatedAt }), params(folder.id))).status, 200);
+    // A second editor that opened the folder before that rename cannot overwrite it.
+    const staleRename = await folderRoute.PATCH(json("PATCH", { name: "routes-stale", description: "Older form", expectedUpdatedAt: folder.updatedAt }), params(folder.id));
+    assert.equal(staleRename.status, 409);
+    assert.deepEqual((await sql`select name, description from strap_vault_folders where id=${folder.id}`)[0], { name: "routes-renamed", description: "" });
+    for (const expectedUpdatedAt of [undefined, "", "yesterday", 7, "2026-02-30T12:00:00Z", "2026-99-99T25:61:61Z", "2026-10-02T12:00:00+99:99"]) {
+      assert.equal((await folderRoute.PATCH(json("PATCH", { name: "routes-other", description: "", expectedUpdatedAt }), params(folder.id))).status, 400);
+    }
     // Valid JSON that is not an object is a client error, not a server error.
     for (const body of [null, [], "text", 7]) {
       assert.equal((await foldersRoute.POST(json("POST", body))).status, 400);
@@ -502,7 +510,7 @@ test("scoped Vault reveals enforce live Postgres permissions and audit before de
     assert.equal((await stale.updateHeadlessKeyGrants({ userId: member, keyId: key.metadata.id, ...none, expected: none })).status, "updated");
   });
 
-  await t.test("a demotion that commits while a Vault write waits on the membership row blocks the write", async () => {
+  await t.test("a demotion that commits while a Vault write or reveal waits on the membership row blocks it", async () => {
     const [{ name }] = await sql`select current_database() as name`;
     const url = new URL(process.env.DATABASE_URL!);
     url.pathname = `/${name}`;
@@ -510,7 +518,7 @@ test("scoped Vault reveals enforce live Postgres permissions and audit before de
     // and holds the membership row while the write starts. It commits once the
     // writer's connection waits on that row, or after five seconds; the test
     // then requires that the wait happened, so it cannot pass without the race.
-    const duringDemotion = async (write: () => Promise<unknown>) => {
+    const duringDemotion = async (write: () => Promise<unknown>, status = 403) => {
       await sql`update creed_members set role='admin' where creed_id=${company} and user_id=${member}`;
       const [{ pid: writer }] = await sql`select pg_backend_pid() as pid`;
       const ownerSession = createConnection(url.toString());
@@ -519,7 +527,7 @@ test("scoped Vault reveals enforce live Postgres permissions and audit before de
       try {
         await ownerSession.begin(async demotion => {
           await demotion`update creed_members set role='member' where creed_id=${company} and user_id=${member}`;
-          outcome = assert.rejects(write(), { status: 403 });
+          outcome = assert.rejects(write(), { status });
           for (let attempt = 0; attempt < 50 && !waited; attempt++) {
             const [{ waiting }] = await demotion`select count(*)::int as waiting from pg_stat_activity where pid = ${writer} and wait_event_type = 'Lock'`;
             waited = waiting > 0;
@@ -542,6 +550,95 @@ test("scoped Vault reveals enforce live Postgres permissions and audit before de
     assert.equal((await sql`select count(*)::int as count from creed_headless_access_keys where name='Racing grant'`)[0].count, 0);
     await duringDemotion(() => repository.vaultFolderCreate(db, { userId: member }, { strapId: company, name: "racing-folder", description: "" }));
     assert.equal((await sql`select count(*)::int as count from strap_vault_folders where name='racing-folder'`)[0].count, 0);
+    const racing = await repository.vaultCreate(db, { userId: owner }, { creedId: company, name: "Racing secret", description: "", secret });
+    await duringDemotion(() => repository.vaultUpdate(db, { userId: member }, { itemId: racing.id, name: "Renamed while demoted", description: "", secret: null }));
+    await duringDemotion(() => repository.vaultDelete(db, { userId: member }, racing.id));
+    assert.deepEqual((await sql`select name from creed_vault_items where id=${racing.id}`).map(row => row.name), ["Racing secret"]);
+    await duringDemotion(() => repository.vaultFolderUpdate(db, { userId: member }, { folderId: contested.id, name: "renamed-while-demoted", description: "", expectedUpdatedAt: contested.updated_at }));
+    await duringDemotion(() => repository.vaultFolderDelete(db, { userId: member }, contested.id));
+    assert.deepEqual((await sql`select name from strap_vault_folders where id=${contested.id}`).map(row => row.name), ["contested"]);
+    // A reveal that loses the role while it waits returns no plaintext and writes no audit.
+    let audited = false;
+    await duringDemotion(() => repository.vaultReveal(db, { userId: member }, racing.id, async () => { audited = true; }), 409);
+    assert.equal(audited, false);
+    assert.equal((await sql`select last_accessed_at from creed_vault_items where id=${racing.id}`)[0].last_accessed_at, null);
+  });
+
+  await t.test("a profile deletion waits for a Vault write that holds the role lock instead of deadlocking", async () => {
+    const deleter = "64000000-0000-4000-8000-000000000009";
+    await sql`insert into users(id,email,name) values (${deleter},'deleter@example.test','Deleter')`;
+    const [{ id: doomed }] = await sql`select provision_company_creed(${deleter}) as id`;
+    const [{ name }] = await sql`select current_database() as name`;
+    const url = new URL(process.env.DATABASE_URL!);
+    url.pathname = `/${name}`;
+    const writerSession = createConnection(url.toString());
+    const deleterSession = createConnection(url.toString());
+    try {
+      const [{ pid: deleterPid }] = await deleterSession`select pg_backend_pid() as pid`;
+      let deletion: Promise<unknown> | undefined;
+      let waited = false;
+      // Hold the role lock, start deleting the profile, and insert only once the
+      // deletion waits: the insert's foreign-key check then needs the profile row.
+      await drizzle(writerSession).transaction(async tx => {
+        assert.equal(await repository.lockVaultAccess(tx, { userId: deleter }, doomed), true);
+        deletion = deleterSession`delete from creeds where id=${doomed}`.then(() => null, (error: unknown) => error);
+        for (let attempt = 0; attempt < 50 && !waited; attempt++) {
+          const [{ waiting }] = await sql`select count(*)::int as waiting from pg_stat_activity where pid = ${deleterPid} and wait_event_type = 'Lock'`;
+          waited = waiting > 0;
+          if (!waited) await delay(100);
+        }
+        await tx.insert(tables.strap_vault_folders).values({ strap_id: doomed, name: "during-deletion", description: "" });
+      });
+      assert.ok(waited, "the deletion never waited on the profile");
+      assert.equal(await deletion, null);
+      assert.equal((await sql`select count(*)::int as count from creeds where id=${doomed}`)[0].count, 0);
+    } finally {
+      await writerSession.end();
+      await deleterSession.end();
+    }
+  });
+
+  await t.test("deleting a folder while its profile is deleted does not deadlock", async () => {
+    const folderOwner = "64000000-0000-4000-8000-000000000010";
+    await sql`insert into users(id,email,name) values (${folderOwner},'folder-owner@example.test','Folder owner')`;
+    const [{ id: doomed }] = await sql`select provision_company_creed(${folderOwner}) as id`;
+    const folder = await repository.vaultFolderCreate(db, { userId: folderOwner }, { strapId: doomed, name: "doomed-folder", description: "" });
+    const [{ name }] = await sql`select current_database() as name`;
+    const url = new URL(process.env.DATABASE_URL!);
+    url.pathname = `/${name}`;
+    const writerSession = createConnection(url.toString());
+    const blockerSession = createConnection(url.toString());
+    const deleterSession = createConnection(url.toString());
+    const waitsOnLock = async (pid: number) => {
+      for (let attempt = 0; attempt < 50; attempt++) {
+        const [{ waiting }] = await sql`select count(*)::int as waiting from pg_stat_activity where pid = ${pid} and wait_event_type = 'Lock'`;
+        if (waiting > 0) return true;
+        await delay(100);
+      }
+      return false;
+    };
+    try {
+      const [{ pid: writerPid }] = await writerSession`select pg_backend_pid() as pid`;
+      const [{ pid: deleterPid }] = await deleterSession`select pg_backend_pid() as pid`;
+      let folderDeletion: Promise<unknown> | undefined;
+      let profileDeletion: Promise<unknown> | undefined;
+      // Another session holds the folder row, so the folder deletion stops at
+      // its folder lock; the profile deletion starts while it waits there.
+      await blockerSession.begin(async blocker => {
+        await blocker`select id from strap_vault_folders where id=${folder.id} for share`;
+        folderDeletion = repository.vaultFolderDelete(drizzle(writerSession), { userId: folderOwner }, folder.id).then(() => null, (error: unknown) => error);
+        assert.ok(await waitsOnLock(writerPid), "the folder deletion never waited on the folder");
+        profileDeletion = deleterSession`delete from creeds where id=${doomed}`.then(() => null, (error: unknown) => error);
+        assert.ok(await waitsOnLock(deleterPid), "the profile deletion never waited");
+      });
+      assert.equal(await folderDeletion, null);
+      assert.equal(await profileDeletion, null);
+      assert.equal((await sql`select count(*)::int as count from creeds where id=${doomed}`)[0].count, 0);
+    } finally {
+      await writerSession.end();
+      await blockerSession.end();
+      await deleterSession.end();
+    }
   });
 
   await t.test("creating a key with grants re-checks the Vault role at write time", async () => {
@@ -608,6 +705,19 @@ test("scoped Vault reveals enforce live Postgres permissions and audit before de
     const vault = dependencies["@/lib/api-key-vault"] as typeof import("../../lib/api-key-vault.ts");
     assert.equal((await vault.revealVaultItem({ userId: owner, itemId: target.id, request: new Request("http://localhost/"), credential: resolved })).secret, secret);
     assert.equal((await auditFor(created.metadata.id)).folderId, both.id);
+  });
+
+  await t.test("reveal audits store bounded copies of client headers", async () => {
+    const created = await create([item.id]);
+    const response = await route.POST(new Request("http://localhost/api/strap/vault/reveal", {
+      method: "POST",
+      headers: { authorization: `Bearer ${created.key}`, "Content-Type": "application/json", "user-agent": "u".repeat(10_000), "x-forwarded-for": `${"f".repeat(500)}, 203.0.113.9` },
+      body: JSON.stringify({ reference: item.id }),
+    }));
+    assert.equal(response.status, 200);
+    const [row] = await sql`select user_agent, ip_address from creed_audit_log where action='vault.secret_revealed' and metadata->>'keyId'=${created.metadata.id}`;
+    assert.equal(row.user_agent, "u".repeat(512));
+    assert.equal(row.ip_address, "f".repeat(64));
   });
 
   await t.test("slow reveal bodies time out and open reveals per key are capped", async () => {

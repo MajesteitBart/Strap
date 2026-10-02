@@ -70,7 +70,7 @@ export async function createVaultFolder(input: { userId: string; strapId: string
   await recordAuditEvent({ userId: input.userId, action: "vault.folder_created", metadata: { folderId: row.id, creedId: row.strap_id }, request: input.request });
   return toFolder(row);
 }
-export async function updateVaultFolder(input: { userId: string; folderId: string; name: string; description: string; request: Request }): Promise<VaultFolder> {
+export async function updateVaultFolder(input: { userId: string; folderId: string; name: string; description: string; expectedUpdatedAt: string; request: Request }): Promise<VaultFolder> {
   const row = await vaultFolderUpdate(getDatabase(), { userId: input.userId }, input);
   await recordAuditEvent({ userId: input.userId, action: "vault.folder_updated", metadata: { folderId: row.id, creedId: row.strap_id }, request: input.request });
   return toFolder(row);

@@ -770,7 +770,7 @@
       "file": "components/strap/api-key-vault-screen.tsx",
       "kind": "content",
       "occurrences": 15,
-      "fingerprint": "357b44fcfffd783e1d73aec2bfd2bd27d14d073cfb4e5d8f6bbf6f416600d6aa",
+      "fingerprint": "78cdb380f42145f4ea3459ffd257abb59535306a7a52a348f337eb5480194ffd",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -1184,7 +1184,7 @@
       "file": "lib/audit-log.ts",
       "kind": "content",
       "occurrences": 7,
-      "fingerprint": "441db62dcb6f747a3485f634741845f11aa012fe3711088c8a03089b034761e5",
+      "fingerprint": "748ae4748e63790544f67f643c992d2ab2f6178c82e52ce25923c323f86bb520",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -1417,8 +1417,8 @@
     {
       "file": "lib/db/repositories/vault.ts",
       "kind": "content",
-      "occurrences": 66,
-      "fingerprint": "9cfa3c92fd664235bdc864762708345f027f01b9ff11d8f9e69f33d9a09b582d",
+      "occurrences": 62,
+      "fingerprint": "ceceafdd085c0d18a1e2899ea60e5ce2cf79b07f0603af046cbbf0c18918d8a3",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -1453,8 +1453,8 @@
     {
       "file": "lib/headless-access.ts",
       "kind": "content",
-      "occurrences": 33,
-      "fingerprint": "729db684ae9bf91a1aa59bf126bbfdfd7406138b746125afcaa14378364e2203",
+      "occurrences": 24,
+      "fingerprint": "dd5af490fcda484d992bf9dd9318e18288170d65adb0122f835ed5fba6a6e85d",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -2407,8 +2407,8 @@
     {
       "file": "tests/db/vault-headless.test.ts",
       "kind": "content",
-      "occurrences": 107,
-      "fingerprint": "91178b8bfa8630e61dca7462b9ed2da09c0da7b1d4c4e8348c0126efcdde1e86",
+      "occurrences": 126,
+      "fingerprint": "ea1291bc6e595c9ecd4b93c5c74a43742324e274803ba8e79376ccf4977ab5ce",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
