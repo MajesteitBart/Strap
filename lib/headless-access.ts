@@ -113,6 +113,11 @@ async function authorizeVaultGrants(input: {
   return { vaultItemIds, vaultFolderIds };
 }
 
+/** A key whose user left its profile cannot be rotated into a fresh value. */
+function stillMember() {
+  return sql`exists (select 1 from public.creed_members member where member.creed_id = ${keys.creed_id} and member.user_id = ${keys.user_id})`;
+}
+
 /** Revoked and expired keys can no longer be edited or rotated. */
 function usable() {
   return and(isNull(keys.revoked_at), or(isNull(keys.expires_at), sql`${keys.expires_at} > now()`));
@@ -243,7 +248,7 @@ export async function rotateHeadlessAccessKey(input: {
   keyId: string;
 }): Promise<KeyRotation> {
   const { data: current, error: readError } = await query(adminDb(), keys, "select", (database, scope) => database.select({ key_hash: keys.key_hash }).from(keys)
-    .where(and(scope, eq(keys.id, input.keyId), eq(keys.user_id, input.userId), usable()))).then(maybeOne);
+    .where(and(scope, eq(keys.id, input.keyId), eq(keys.user_id, input.userId), usable(), stillMember()))).then(maybeOne);
   if (readError) throw new Error("Could not load headless access key.");
   if (!current) return { status: "not-found" };
   const previousHash = (current as { key_hash: string }).key_hash;
@@ -252,7 +257,7 @@ export async function rotateHeadlessAccessKey(input: {
     const values = { key_prefix: generated.prefix, key_hash: generated.hash, last_used_at: null } as Partial<typeof keys.$inferInsert>;
     await authorizeValues(adminDb(), keys, "update", values);
     return database.update(keys).set(values)
-      .where(and(scope, eq(keys.id, input.keyId), eq(keys.user_id, input.userId), usable(), eq(keys.key_hash, previousHash))).returning(KEY_COLUMNS);
+      .where(and(scope, eq(keys.id, input.keyId), eq(keys.user_id, input.userId), usable(), eq(keys.key_hash, previousHash), stillMember())).returning(KEY_COLUMNS);
   }).then(maybeOne);
   if (error) throw new Error("Could not rotate headless access key.");
   return data ? { status: "rotated", key: generated.key, metadata: toMetadata(data as HeadlessKeyRow) } : { status: "conflict" };

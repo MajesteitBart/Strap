@@ -16,6 +16,8 @@ import * as repository from "../../lib/db/repositories/vault.ts";
 import * as shared from "../../lib/headless-access-shared.ts";
 import * as strapApi from "../../lib/strap-api.ts";
 import * as grants from "../../lib/vault-grants.ts";
+import * as nodeCrypto from "node:crypto";
+import * as headlessKeys from "../../lib/db/repositories/headless-keys.ts";
 import { checkRateLimit } from "../../lib/rate-limit.ts";
 import { createTestDatabase, databaseTestsEnabled, sqlState } from "./harness.ts";
 
@@ -830,6 +832,51 @@ test("scoped Vault reveals enforce live Postgres permissions and audit before de
     for (let attempt = 0; attempt < 5; attempt++) assert.equal((await request(noisy.key, sharedItem.id)).status, 429);
     assert.equal((await request(quiet.key, companySecret.id)).status, 200);
     assert.equal((await request(quiet.key, companySecret.id)).status, 429);
+  });
+
+  await t.test("leaving a Company revokes the member's keys and rejoining does not revive older ones", async () => {
+    const leaver = "64000000-0000-4000-8000-000000000013";
+    await sql`insert into users(id,email,name) values (${leaver},'leaver@example.test','Leaver')`;
+    await sql`insert into creed_members(creed_id,user_id,role) values (${company},${leaver},'admin')`;
+    const folder = await repository.vaultFolderCreate(db, { userId: owner }, { strapId: company, name: "leaver-folder", description: "" });
+    const filed = await repository.vaultCreate(db, { userId: owner }, { creedId: company, name: "Leaver target", description: "", secret, folderId: folder.id });
+    const current = await headless.createHeadlessAccessKey({ userId: leaver, creedId: company, name: "Leaver key", mode: "read-only", expiresAt: null, vaultFolderIds: [folder.id] });
+    assert.equal((await request(current.key, filed.id)).status, 200);
+    const ownerUser = { id: owner, email: "owner@example.test", emailVerified: true, name: "Owner" };
+    const companyAdmin = loadModule<typeof import("../../lib/company-admin.ts")>("../../lib/company-admin.ts", {
+      ...dependencies,
+      "node:crypto": nodeCrypto,
+      "@/lib/db/procedures": { callProcedure: async () => { throw new Error("not used by removeMember"); } },
+      "@/lib/legacy-subscription-deletion": { checkLegacyDeletion: async () => { throw new Error("not used by removeMember"); } },
+      "@/lib/user-name": { getDisplayName: () => "Owner" },
+      "@/lib/db/repositories/headless-keys": headlessKeys,
+    });
+    assert.deepEqual(await companyAdmin.removeMember({ creedId: company, actor: ownerUser, targetUserId: leaver }), { ok: true });
+    assert.notEqual((await sql`select revoked_at from creed_headless_access_keys where id=${current.metadata.id}`)[0].revoked_at, null);
+    await expectDenied(current.key, 401, filed.id);
+
+    // A key left active by a removal before keys were revoked with it cannot be
+    // rotated while its user is not a member, and is revoked when they rejoin.
+    const dormant = shared.createHeadlessKey();
+    const [{ id: dormantId }] = await sql`insert into creed_headless_access_keys(user_id,creed_id,name,key_prefix,key_hash,vault_folder_ids) values (${leaver},${company},'Dormant',${dormant.prefix},${dormant.hash},${`{${folder.id}}`}::uuid[]) returning id`;
+    assert.deepEqual(await headless.rotateHeadlessAccessKey({ userId: leaver, keyId: dormantId }), { status: "not-found" });
+    const secretCrypto = loadModule<typeof import("../../lib/secret-crypto.ts")>("../../lib/secret-crypto.ts", { "node:crypto": nodeCrypto });
+    const invites = loadModule<typeof import("../../lib/company-invites.ts")>("../../lib/company-invites.ts", {
+      ...dependencies,
+      "node:crypto": nodeCrypto,
+      "@/lib/db/repositories/users": { findUser: async () => ({ data: null, error: null }) },
+      "@/lib/secret-crypto": secretCrypto,
+      "@/lib/strap-backend": { getAvatarInitials: () => "", getAvatarUrl: () => null, getUserName: () => "" },
+      "@/lib/db/repositories/headless-keys": headlessKeys,
+    });
+    const token = "invite-token-for-leaver";
+    await sql`insert into creed_invites(creed_id,email,role,token_hash,invited_by,status,expires_at) values (${company},'leaver@example.test','admin',${secretCrypto.hashSecret(token)},${owner},'pending',now() + interval '1 day')`;
+    const accepted = await invites.acceptInvite(token, { id: leaver, email: "leaver@example.test", emailVerified: true, name: "Leaver" });
+    assert.equal(accepted.ok, true);
+    assert.equal((await sql`select role from creed_members where creed_id=${company} and user_id=${leaver}`)[0].role, "admin");
+    assert.notEqual((await sql`select revoked_at from creed_headless_access_keys where id=${dormantId}`)[0].revoked_at, null);
+    await expectDenied(dormant.key, 401, filed.id);
+    await expectDenied(current.key, 401, filed.id);
   });
 
   await t.test("a metadata edit is not audited as a folder move another session made", async () => {

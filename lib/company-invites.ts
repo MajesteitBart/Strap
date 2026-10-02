@@ -3,6 +3,7 @@ import type { User } from "@/lib/auth/user";
 import { authorizeValues } from "@/lib/authz/policies";
 import type { DatabaseContext } from "@/lib/db/context";
 import { exactlyOne, maybeOne, query } from "@/lib/db/query";
+import { revokeProfileHeadlessKeys } from "@/lib/db/repositories/headless-keys";
 import { findUser } from "@/lib/db/repositories/users";
 import { serviceContext } from "@/lib/db/service";
 import { hashSecret } from "@/lib/secret-crypto";
@@ -303,7 +304,12 @@ export async function acceptInvite(token: string, user: User): Promise<AcceptRes
     role: invite.role,
   } as typeof tables.creed_members.$inferInsert;
     await authorizeValues(db, tables.creed_members, "insert", values);
-    return database.insert(tables.creed_members).values(values);
+    // Keys left from an earlier membership, including ones from before removal
+    // revoked them, stay revoked: rejoining must not bring back their grants.
+    return database.transaction(async (tx) => {
+      await tx.insert(tables.creed_members).values(values);
+      await revokeProfileHeadlessKeys(tx, user.id, invite.creed_id);
+    });
   });
   if (memberError) {
     return { ok: false, error: "Could not join the company.", code: "failed" };
