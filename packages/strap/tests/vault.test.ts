@@ -55,6 +55,9 @@ test("schema output never turns free text into active schema lines", () => {
   const active = output.split("\n").filter((line) => line && !line.startsWith("#"));
   assert.deepEqual(active, [`SHARE_ARTIFACT_SERVER=strap("${reference}")`]);
   assert.equal(output.includes("\u0000"), false);
+  const c1 = formatVaultSchema(entries, { heading: "Strap Vault, folder \u009b2J\u009d52;c;ZXZpbA==\u009c\u0085X=1\u007f" });
+  assert.equal(/[\u0000-\u0009\u000b-\u001f\u007f-\u009f]/.test(c1), false);
+  assert.equal(c1.split("\n")[0], "# Strap Vault, folder  2J 52;c;ZXZpbA==  X=1");
   assert.throws(() => formatVaultSchema([{ name: "x", envName: "BAD\nNAME", reference, needsReview: false }]), /Invalid variable name/);
   assert.throws(() => formatVaultSchema([{ name: "x", envName: "OK", reference: `${reference}")\nX=("`, needsReview: false }]), /Invalid variable name or secret reference/);
 });

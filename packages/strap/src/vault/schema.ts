@@ -97,9 +97,9 @@ export function vaultSchemaLine(entry: Pick<VaultSchemaEntry, "envName" | "refer
   return `# @sensitive @required\n${entry.envName}=${call}`;
 }
 
-/** Comments every line of free text and drops control characters, so it stays a comment. */
+/** Comments every line of free text and drops C0, DEL and C1 controls, so it stays an inert comment. */
 function commentLines(text: string): string[] {
-  return text.split(/\r\n|\r|\n/).map((line) => `# ${line.replace(/[\u0000-\u001f\u007f]/g, " ").trimEnd()}`.trimEnd());
+  return text.split(/\r\n|\r|\n/).map((line) => `# ${line.replace(/[\u0000-\u001f\u007f-\u009f]/g, " ").trimEnd()}`.trimEnd());
 }
 
 /** Formats .env.schema lines. Throws when two secrets would share one variable name. */
