@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { creed_headless_access_keys as headlessKeys, creed_members, creeds, strap_vault_folders as folders, creed_vault_items as items } from "../../../db/schema/application.ts";
 import type { Viewer } from "../../authz/viewer.ts";
 import { decryptVaultSecret, encryptVaultSecret } from "../../vault-crypto.ts";
+import { stillUnexpired } from "../../headless-access-shared.ts";
 import { vaultGrantCovers } from "../../vault-grants.ts";
 
 export class VaultRepositoryError extends Error {
@@ -210,9 +211,12 @@ export async function vaultReveal(db: PostgresJsDatabase, viewer: Viewer, id: st
       const [key] = await tx.select({
         itemIds: headlessKeys.vault_item_ids,
         folderIds: headlessKeys.vault_folder_ids,
-        usable: sql<boolean>`${headlessKeys.revoked_at} is null and (${headlessKeys.expires_at} is null or ${headlessKeys.expires_at} > now())`,
+        revokedAt: headlessKeys.revoked_at,
+        expiresAt: headlessKeys.expires_at,
       }).from(headlessKeys).where(and(eq(headlessKeys.id, credential.keyId), eq(headlessKeys.key_hash, credential.keyHash))).for("share");
-      if (!key?.usable) throw changed();
+      // Expiry is checked against the clock after the lock: the lock may have
+      // waited, and SQL now() is the transaction's start time.
+      if (!key || key.revokedAt !== null || !stillUnexpired(key.expiresAt)) throw changed();
       if (!key.itemIds.includes(row.id)) {
         if (!row.folder_id || !key.folderIds.includes(row.folder_id)) throw changed();
         grant = { folderId: row.folder_id };

@@ -658,6 +658,74 @@ test("scoped Vault reveals enforce live Postgres permissions and audit before de
     assert.ok((await stale.createHeadlessAccessKey({ userId: member, creedId: company, name: "Plain", mode: "read-only", expiresAt: null })).key);
   });
 
+  await t.test("a rotation that commits while a key is being resolved rejects the old value", async () => {
+    const created = await create([item.id]);
+    const [{ name }] = await sql`select current_database() as name`;
+    const url = new URL(process.env.DATABASE_URL!);
+    url.pathname = `/${name}`;
+    const [{ pid: resolver }] = await sql`select pg_backend_pid() as pid`;
+    const rotationSession = createConnection(url.toString());
+    let resolved: Promise<unknown> | undefined;
+    let waited = false;
+    try {
+      // The rotation holds the key row; the resolver reads the old hash, then
+      // waits to record its use until the rotation commits.
+      await rotationSession.begin(async rotation => {
+        await rotation`update creed_headless_access_keys set key_hash=${shared.digestCredential(shared.createHeadlessKey().key)} where id=${created.metadata.id}`;
+        resolved = headless.resolveHeadlessAccessKey(created.key);
+        for (let attempt = 0; attempt < 50 && !waited; attempt++) {
+          const [{ waiting }] = await rotation`select count(*)::int as waiting from pg_stat_activity where pid = ${resolver} and wait_event_type = 'Lock'`;
+          waited = waiting > 0;
+          if (!waited) await delay(100);
+        }
+      });
+    } finally {
+      await rotationSession.end();
+    }
+    assert.ok(waited, "the resolver never waited on the key row");
+    assert.equal(await resolved, null);
+    assert.equal((await sql`select last_used_at from creed_headless_access_keys where id=${created.metadata.id}`)[0].last_used_at, null);
+  });
+
+  await t.test("a key that expires while a request waits on its row is refused", async () => {
+    const created = await create([item.id]);
+    const [{ name }] = await sql`select current_database() as name`;
+    const url = new URL(process.env.DATABASE_URL!);
+    url.pathname = `/${name}`;
+    const [{ pid: requester }] = await sql`select pg_backend_pid() as pid`;
+    // Another session holds the key row until the key has expired; the request
+    // started while the key was still valid.
+    const pastExpiry = async (request: () => Promise<unknown>) => {
+      await sql`update creed_headless_access_keys set expires_at = now() + interval '2 seconds' where id=${created.metadata.id}`;
+      const holder = createConnection(url.toString());
+      let outcome: Promise<unknown> | undefined;
+      let waited = false;
+      try {
+        await holder.begin(async session => {
+          await session`select id from creed_headless_access_keys where id=${created.metadata.id} for update`;
+          outcome = request().then(value => ({ value }), (error: unknown) => ({ error }));
+          for (let attempt = 0; attempt < 50 && !waited; attempt++) {
+            const [{ waiting }] = await session`select count(*)::int as waiting from pg_stat_activity where pid = ${requester} and wait_event_type = 'Lock'`;
+            waited = waiting > 0;
+            if (!waited) await delay(100);
+          }
+          await delay(2500);
+        });
+      } finally {
+        await holder.end();
+      }
+      assert.ok(waited, "the request never waited on the key row");
+      return outcome;
+    };
+    assert.deepEqual(await pastExpiry(() => headless.resolveHeadlessAccessKey(created.key)), { value: null });
+    const resolvedEarlier = { keyId: created.metadata.id, keyHash: shared.digestCredential(created.key), creedId: personal, vaultItemIds: [item.id], vaultFolderIds: [] };
+    let audited = false;
+    const reveal = await pastExpiry(() => repository.vaultReveal(db, { userId: owner }, item.id, async () => { audited = true; }, resolvedEarlier)) as { error?: { status?: number } };
+    assert.equal(reveal.error?.status, 409);
+    assert.equal(audited, false);
+    assert.equal((await sql`select last_used_at from creed_headless_access_keys where id=${created.metadata.id}`)[0].last_used_at, null);
+  });
+
   await t.test("a reveal that resolved before rotation, revocation or grant removal is refused", async () => {
     const target = await repository.vaultCreate(db, { userId: owner }, { creedId: personal, name: "Stalled target", description: "", secret });
     const reveal = (credential: { keyId: string; keyHash: string; vaultItemIds: string[] }) =>

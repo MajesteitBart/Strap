@@ -10,6 +10,7 @@ import {
   createHeadlessKey,
   digestCredential,
   isHeadlessKey,
+  stillUnexpired,
   type HeadlessKeyMode,
 } from "@/lib/headless-access-shared";
 import { getStrapRole } from "@/lib/strap-membership";
@@ -273,8 +274,9 @@ export async function revokeHeadlessAccessKey(input: {
 export async function resolveHeadlessAccessKey(token: string): Promise<ResolvedHeadlessKey | null> {
   if (!isHeadlessKey(token)) return null;
   const admin = adminDb();
+  const hash = digestCredential(token);
   const { data, error } = await query(admin, keys, "select", (database, scope) => database.select(KEY_COLUMNS).from(keys)
-    .where(and(scope, eq(keys.key_hash, digestCredential(token))))).then(maybeOne);
+    .where(and(scope, eq(keys.key_hash, hash)))).then(maybeOne);
   if (error || !data) return null;
   const row = data as HeadlessKeyRow;
   if (row.revoked_at || (row.expires_at && new Date(row.expires_at).getTime() <= Date.now())) {
@@ -283,15 +285,28 @@ export async function resolveHeadlessAccessKey(token: string): Promise<ResolvedH
   const role = await getStrapRole(admin, row.user_id, row.creed_id);
   if (!role) return null;
 
-  await query(admin, keys, "update", (database, scope) => database.update(keys).set({ last_used_at: new Date().toISOString() }).where(and(scope, eq(keys.id, row.id))));
+  // Use is recorded only while the key still has the presented hash, is not
+  // revoked and has not expired. The row is locked first: a rotation or
+  // revocation that committed after the read above makes the lock match
+  // nothing, and the old value is not authenticated. Expiry is checked against
+  // the clock after the lock, because the lock may have waited and SQL now() is
+  // the transaction's start. The grants returned are the live ones.
+  const { data: used, error: useError } = await query(admin, keys, "update", (database, scope) => database.transaction(async (tx) => {
+    const [current] = await tx.select({ expires_at: keys.expires_at }).from(keys)
+      .where(and(scope, eq(keys.id, row.id), eq(keys.key_hash, hash), isNull(keys.revoked_at))).for("no key update");
+    if (!current || !stillUnexpired(current.expires_at)) return [];
+    return tx.update(keys).set({ last_used_at: new Date().toISOString() }).where(eq(keys.id, row.id)).returning(KEY_COLUMNS);
+  })).then(maybeOne);
+  if (useError || !used) return null;
+  const live = used as HeadlessKeyRow;
 
   return {
-    keyId: row.id,
-    userId: row.user_id,
-    creedId: row.creed_id,
-    clientName: row.name,
-    mode: row.mode,
-    vaultItemIds: row.vault_item_ids,
-    vaultFolderIds: row.vault_folder_ids,
+    keyId: live.id,
+    userId: live.user_id,
+    creedId: live.creed_id,
+    clientName: live.name,
+    mode: live.mode,
+    vaultItemIds: live.vault_item_ids,
+    vaultFolderIds: live.vault_folder_ids,
   };
 }
