@@ -60,18 +60,18 @@ export const MAX_REVEALABLE_BY = 20;
 /** Validates filter arguments before any Vault data is loaded. */
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-/** Where the next page starts: the name and id of the last secret already returned or read. */
-export type VaultCursor = { name: string; id: string };
+/** Where the next page starts: the id of the last secret already returned or read. */
+export type VaultCursor = { id: string };
 
 export function encodeVaultCursor(item: VaultCursor): string {
-  return Buffer.from(JSON.stringify([item.name, item.id]), "utf8").toString("base64url");
+  return Buffer.from(JSON.stringify([item.id]), "utf8").toString("base64url");
 }
 
 function decodeVaultCursor(value: string): VaultCursor {
   try {
     const parsed: unknown = JSON.parse(Buffer.from(value, "base64url").toString("utf8"));
-    if (Array.isArray(parsed) && parsed.length === 2 && typeof parsed[0] === "string" && parsed[0].length <= 200 && typeof parsed[1] === "string" && UUID.test(parsed[1])) {
-      return { name: parsed[0], id: parsed[1].toLowerCase() };
+    if (Array.isArray(parsed) && parsed.length === 1 && typeof parsed[0] === "string" && UUID.test(parsed[0])) {
+      return { id: parsed[0].toLowerCase() };
     }
   } catch {
     // Fall through to the client error below.
@@ -91,7 +91,7 @@ export function parseVaultListingArgs(args: { folder?: unknown; query?: unknown;
     throw new VaultListingError(`folder and query are limited to ${MAX_VAULT_FILTER_LENGTH} characters.`);
   }
   const cursorText = typeof args.cursor === "string" ? args.cursor.trim() : "";
-  if (cursorText.length > 1024) throw new VaultListingError("cursor is not valid; pass nextCursor from the previous listing.");
+  if (cursorText.length > 256) throw new VaultListingError("cursor is not valid; pass nextCursor from the previous listing.");
   return { folder, query, cursor: cursorText ? decodeVaultCursor(cursorText) : null };
 }
 
@@ -120,7 +120,9 @@ export function buildVaultListing(input: {
   itemCounts?: Map<string, number>;
   /** The folder the caller already resolved for the folder filter. */
   selectedFolder?: Folder;
-  /** items, in name and id order, stop at the read limit and more rows follow. */
+  /** Folders that listed secrets belong to but that are not in folders, used only to name them. */
+  referencedFolders?: Folder[];
+  /** items, in id order, stop at the read limit and more rows follow. */
   hasMoreRows?: boolean;
   /** Only the newest keys were read, so revealer counts may be lower bounds. */
   keysTruncated?: boolean;
@@ -134,7 +136,7 @@ export function buildVaultListing(input: {
   const { folder: folderArg, query: queryArg } = parseVaultListingArgs(input);
   const namesNeedReview = input.profileType !== "personal";
   const selected = input.selectedFolder ?? selectVaultFolder(input.folders, folderArg);
-  const folderById = new Map(input.folders.map((folder) => [folder.id, folder]));
+  const folderById = new Map([...input.folders, ...(input.referencedFolders ?? [])].map((folder) => [folder.id, folder]));
   // Index grants once, so a listing is linear in items plus grants rather
   // than items times keys.
   const keysByItem = new Map<string, Key[]>();
@@ -185,9 +187,10 @@ export function buildVaultListing(input: {
   const page = listed.slice(0, MAX_VAULT_LISTING_ITEMS);
   const lastRead = input.items[input.items.length - 1];
   const resumeAfter = listed.length > MAX_VAULT_LISTING_ITEMS ? page[page.length - 1] : input.hasMoreRows ? lastRead : undefined;
-  const nextCursor = resumeAfter ? encodeVaultCursor(resumeAfter) : null;
+  const nextCursor = resumeAfter ? encodeVaultCursor({ id: resumeAfter.id }) : null;
   const truncated = nextCursor !== null;
-  const items = page
+  // Pages are read in id order; each one is shown in name order.
+  const items = [...page].sort((a, b) => a.name.localeCompare(b.name))
     .map((item) => {
       const reference = `secret://${item.id}`;
       const envName = vaultEnvName(item.name);

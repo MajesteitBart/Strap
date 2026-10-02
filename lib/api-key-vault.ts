@@ -2,7 +2,7 @@ import * as tables from "@/db/schema/application";
 import { auditRow, recordAuditEvent } from "@/lib/audit-log";
 import { getDatabase } from "@/lib/db/client";
 import {
-  vaultCreate, vaultDelete, vaultFolderCreate, vaultFolderDelete, vaultFolderFind, vaultFolderItemCounts, vaultFolderList, vaultFolderUpdate, vaultGrantCoverage, vaultList, vaultReveal, vaultUpdate,
+  vaultCreate, vaultDelete, vaultFolderCreate, vaultFolderDelete, vaultFolderFind, vaultFolderItemCounts, vaultFolderList, vaultFoldersByIds, vaultFolderUpdate, vaultGrantCoverage, vaultList, vaultReveal, vaultUpdate,
   type VaultCredential,
 } from "@/lib/db/repositories/vault";
 import "server-only";
@@ -15,11 +15,14 @@ function toItem(row: Awaited<ReturnType<typeof vaultCreate>>): VaultItem {
 function toFolder(row: Awaited<ReturnType<typeof vaultFolderCreate>>): VaultFolder {
   return { id: row.id, strapId: row.strap_id, name: row.name, description: row.description, createdAt: row.created_at, updatedAt: row.updated_at };
 }
-export async function listVaultItems(userId: string, creedId: string, options: { folderId?: string; after?: { name: string; id: string }; limit?: number } = {}): Promise<VaultItem[]> {
+export async function listVaultItems(userId: string, creedId: string, options: { folderId?: string; byId?: boolean; afterId?: string; limit?: number } = {}): Promise<VaultItem[]> {
   return (await vaultList(getDatabase(), { userId }, creedId, options)).map(toItem);
 }
 export async function listVaultFolders(userId: string, creedId: string, options: { limit?: number } = {}): Promise<VaultFolder[]> {
   return (await vaultFolderList(getDatabase(), { userId }, creedId, options)).map(toFolder);
+}
+export async function listVaultFoldersByIds(userId: string, creedId: string, folderIds: readonly string[]): Promise<VaultFolder[]> {
+  return (await vaultFoldersByIds(getDatabase(), { userId }, creedId, folderIds)).map(toFolder);
 }
 export async function findVaultFolder(userId: string, creedId: string, nameOrId: string): Promise<VaultFolder | null> {
   const row = await vaultFolderFind(getDatabase(), { userId }, creedId, nameOrId);

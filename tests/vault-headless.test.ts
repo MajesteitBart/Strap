@@ -81,15 +81,15 @@ test("listings return pages of secrets with a cursor to continue", () => {
   assert.match(full.note, /call again with cursor/);
   // The cursor resumes after the last secret returned.
   const last = many[MAX_VAULT_LISTING_ITEMS - 1]!;
-  assert.deepEqual(parseVaultListingArgs({ cursor: full.nextCursor }).cursor, { name: last.name, id: last.id });
+  assert.deepEqual(parseVaultListingArgs({ cursor: full.nextCursor }).cursor, { id: last.id });
   const few = buildVaultListing({ profileType: "personal", folders: [], items: many.slice(0, 3), keys: [], caller: null });
   assert.equal(few.truncated, false);
   assert.equal(few.nextCursor, null);
   // When the read stopped early, the cursor resumes after the last secret read, even if none matched.
   const unmatched = buildVaultListing({ profileType: "personal", folders: [], items: many.slice(0, 3), keys: [], caller: null, hasMoreRows: true, query: "nothing matches this" });
   assert.equal(unmatched.items.length, 0);
-  assert.deepEqual(parseVaultListingArgs({ cursor: unmatched.nextCursor }).cursor, { name: many[2]!.name, id: many[2]!.id });
-  for (const cursor of ["not-base64-json", Buffer.from(JSON.stringify(["x", "not-a-uuid"])).toString("base64url"), 7]) {
+  assert.deepEqual(parseVaultListingArgs({ cursor: unmatched.nextCursor }).cursor, { id: many[2]!.id });
+  for (const cursor of ["not-base64-json", Buffer.from(JSON.stringify(["not-a-uuid"])).toString("base64url"), 7]) {
     assert.throws(() => parseVaultListingArgs({ cursor }), VaultListingError);
   }
   // Capped key reads are flagged separately and do not mark the secrets as truncated.

@@ -102,6 +102,7 @@ async function listVault(client: Client, command: VaultCommand): Promise<Listing
     items.push(...page.items);
     keysTruncated ||= page.keysTruncated;
   }
+  items.sort((a, b) => a.name.localeCompare(b.name));
   return { ...first, items, truncated: page.truncated, nextCursor: page.nextCursor, keysTruncated };
 }
 
@@ -131,7 +132,8 @@ export async function runVaultCommand(client: Client, command: VaultCommand, jso
   const listing = await listVault(client, command);
   // A schema from a partial listing would silently miss secrets.
   if (command.action === "schema" && listing.truncated) throw new CliError(TRUNCATED, 3);
-  if (listing.truncated) process.stderr.write(`${TRUNCATED}\n`);
+  // The folders command reads no secret pages; only its own folder cap applies.
+  if (listing.truncated && command.action !== "folders") process.stderr.write(`${TRUNCATED}\n`);
   if (listing.keysTruncated && command.action === "list") process.stderr.write("Only your newest API keys were counted, so revealable-by counts may be low.\n");
   if (listing.foldersTruncated && command.action === "folders") {
     process.stderr.write("Strap listed only the first folders. Any folder can still be selected with strap vault list --folder <name>.\n");

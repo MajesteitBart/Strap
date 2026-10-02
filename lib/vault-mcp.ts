@@ -1,5 +1,5 @@
 import "server-only";
-import { countVaultFolderItems, findVaultFolder, listVaultFolders, listVaultItems } from "@/lib/api-key-vault";
+import { countVaultFolderItems, findVaultFolder, listVaultFolders, listVaultFoldersByIds, listVaultItems } from "@/lib/api-key-vault";
 import { listActiveHeadlessKeys } from "@/lib/headless-access";
 import {
   buildVaultListing,
@@ -40,14 +40,23 @@ export async function callVaultTool(
   const [folderRows, keyRows, itemRows] = await Promise.all([
     selected ? Promise.resolve([selected]) : listVaultFolders(userId, strapId, { limit: MAX_VAULT_LISTING_FOLDERS + 1 }),
     listActiveHeadlessKeys(userId, strapId, MAX_VAULT_LISTING_KEYS + 1),
-    listVaultItems(userId, strapId, { folderId: selected?.id, after: cursor ?? undefined, limit: MAX_VAULT_LISTING_SCAN + 1 }),
+    listVaultItems(userId, strapId, { folderId: selected?.id, byId: true, afterId: cursor?.id, limit: MAX_VAULT_LISTING_SCAN + 1 }),
   ]);
   const folders = folderRows.slice(0, MAX_VAULT_LISTING_FOLDERS);
+  const items = itemRows.slice(0, MAX_VAULT_LISTING_SCAN);
+  // Secrets can sit in folders beyond the folder limit; read those folders too
+  // so a filed secret is never shown as unfiled.
+  const shown = new Set(folders.map((entry) => entry.id));
+  const missing = [...new Set(items.flatMap((entry) => (entry.folderId && !shown.has(entry.folderId) ? [entry.folderId] : [])))];
   // Counts only for the folders in this response.
-  const itemCounts = await countVaultFolderItems(userId, strapId, folders.map((entry) => entry.id));
+  const [itemCounts, referencedFolders] = await Promise.all([
+    countVaultFolderItems(userId, strapId, folders.map((entry) => entry.id)),
+    listVaultFoldersByIds(userId, strapId, missing),
+  ]);
   return buildVaultListing({
     folders,
-    items: itemRows.slice(0, MAX_VAULT_LISTING_SCAN),
+    referencedFolders,
+    items,
     keys: keyRows.slice(0, MAX_VAULT_LISTING_KEYS),
     caller: access.caller,
     profileType: access.profileType,

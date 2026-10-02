@@ -4,7 +4,7 @@ import type { User } from "@/lib/auth/user";
 import { authorizeValues } from "@/lib/authz/policies";
 import type { DatabaseContext } from "@/lib/db/context";
 import { callProcedure } from "@/lib/db/procedures";
-import { revokeProfileHeadlessKeys } from "@/lib/db/repositories/headless-keys";
+import { clearProfileHeadlessKeyGrants, revokeProfileHeadlessKeys } from "@/lib/db/repositories/headless-keys";
 import { conflictSet, query } from "@/lib/db/query";
 import { serviceContext } from "@/lib/db/service";
 import { checkLegacyDeletion } from "@/lib/legacy-subscription-deletion";
@@ -96,16 +96,23 @@ export async function setMemberRole(params: {
         typeof tables.creed_members.$inferInsert
       >;
       await authorizeValues(db, tables.creed_members, "update", values);
-      return database
-        .update(tables.creed_members)
-        .set(values)
-        .where(
-          and(
-            scope,
-            eq(tables.creed_members.creed_id, params.creedId),
-            eq(tables.creed_members.user_id, params.targetUserId),
-          ),
-        );
+      // A member cannot manage the Vault, so their keys lose their secret
+      // grants with the role; a later promotion does not bring them back.
+      return database.transaction(async (tx) => {
+        await tx
+          .update(tables.creed_members)
+          .set(values)
+          .where(
+            and(
+              scope,
+              eq(tables.creed_members.creed_id, params.creedId),
+              eq(tables.creed_members.user_id, params.targetUserId),
+            ),
+          );
+        if (params.role === "member") {
+          await clearProfileHeadlessKeyGrants(tx, params.targetUserId, params.creedId);
+        }
+      });
     },
   );
   if (error)

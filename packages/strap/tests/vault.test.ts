@@ -55,6 +55,19 @@ test("folder output warns when Strap listed only the first folders", async () =>
     process.stderr.write = write.err;
   }
   assert.match(errors.join(""), /listed only the first folders/);
+  // More secret pages do not make the folder list partial.
+  const paged = { ...listing, truncated: true, nextCursor: "page-2", foldersTruncated: false };
+  const pagedClient = { callTool: async () => ({ content: [{ type: "text", text: JSON.stringify(paged) }] }) } as unknown as Parameters<typeof runVaultCommand>[0];
+  const pagedErrors: string[] = [];
+  process.stdout.write = (() => true) as typeof process.stdout.write;
+  process.stderr.write = ((chunk: string) => { pagedErrors.push(String(chunk)); return true; }) as typeof process.stderr.write;
+  try {
+    await runVaultCommand(pagedClient, { action: "folders" }, true);
+  } finally {
+    process.stdout.write = write.out;
+    process.stderr.write = write.err;
+  }
+  assert.equal(pagedErrors.join(""), "");
 });
 
 test("vault commands accept only their own options", () => {

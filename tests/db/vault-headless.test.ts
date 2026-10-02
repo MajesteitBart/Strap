@@ -835,6 +835,31 @@ test("scoped Vault reveals enforce live Postgres permissions and audit before de
     assert.equal((await request(quiet.key, companySecret.id)).status, 429);
   });
 
+  await t.test("demoting a Company admin clears their keys' secret grants", async () => {
+    const demoted = "64000000-0000-4000-8000-000000000016";
+    await sql`insert into users(id,email,name) values (${demoted},'demoted@example.test','Demoted')`;
+    await sql`insert into creed_members(creed_id,user_id,role) values (${company},${demoted},'admin')`;
+    const folder = await repository.vaultFolderCreate(db, { userId: owner }, { strapId: company, name: "demoted-folder", description: "" });
+    const filed = await repository.vaultCreate(db, { userId: owner }, { creedId: company, name: "Demoted target", description: "", secret, folderId: folder.id });
+    const key = await headless.createHeadlessAccessKey({ userId: demoted, creedId: company, name: "Demoted key", mode: "read-only", expiresAt: null, vaultFolderIds: [folder.id] });
+    assert.equal((await request(key.key, filed.id)).status, 200);
+    const ownerUser = { id: owner, email: "owner@example.test", emailVerified: true, name: "Owner" };
+    const companyAdmin = loadModule<typeof import("../../lib/company-admin.ts")>("../../lib/company-admin.ts", {
+      ...dependencies,
+      "node:crypto": nodeCrypto,
+      "@/lib/db/procedures": { callProcedure: async () => { throw new Error("not used by setMemberRole"); } },
+      "@/lib/legacy-subscription-deletion": { checkLegacyDeletion: async () => { throw new Error("not used by setMemberRole"); } },
+      "@/lib/user-name": { getDisplayName: () => "Owner" },
+      "@/lib/db/repositories/headless-keys": headlessKeys,
+    });
+    assert.deepEqual(await companyAdmin.setMemberRole({ creedId: company, actor: ownerUser, targetUserId: demoted, role: "member" }), { ok: true });
+    const [row] = await sql`select revoked_at, vault_item_ids, vault_folder_ids from creed_headless_access_keys where id=${key.metadata.id}`;
+    assert.deepEqual([row.revoked_at, row.vault_item_ids, row.vault_folder_ids], [null, [], []]);
+    // Promotion does not bring the grants back.
+    assert.deepEqual(await companyAdmin.setMemberRole({ creedId: company, actor: ownerUser, targetUserId: demoted, role: "admin" }), { ok: true });
+    await expectDenied(key.key, 403, filed.id);
+  });
+
   await t.test("leaving a Company revokes the member's keys and rejoining does not revive older ones", async () => {
     const leaver = "64000000-0000-4000-8000-000000000013";
     await sql`insert into users(id,email,name) values (${leaver},'leaver@example.test','Leaver')`;
@@ -913,17 +938,33 @@ test("scoped Vault reveals enforce live Postgres permissions and audit before de
     const unfiltered = await vaultMcp.callVaultTool(undefined, access);
     assert.equal(unfiltered.folders.length, vaultTools.MAX_VAULT_LISTING_FOLDERS);
     assert.equal(unfiltered.foldersTruncated, true);
+    // Its folder is past the folder limit, but the secret still names it.
+    assert.deepEqual(unfiltered.items.find((entry) => entry.id === filed.id)?.folder, { id: lastFolderId, name: "F1001" });
     // 5,000 earlier secrets, then the only match.
-    await sql`insert into creed_vault_items(creed_id,name,secret_ciphertext,created_by) select ${largeProfile}, 'AA_FILLER_' || lpad(g::text, 5, '0'), 'opaque', ${large} from generate_series(1, ${vaultTools.MAX_VAULT_LISTING_SCAN}) g`;
-    await sql`insert into creed_vault_items(creed_id,name,description,secret_ciphertext,created_by) values (${largeProfile},'ZZ_TARGET','unique needle','opaque',${large})`;
+    // Ordered ids put the only match after the first read.
+    await sql`insert into creed_vault_items(id,creed_id,name,secret_ciphertext,created_by) select ('00000000-0000-4000-8000-' || lpad(g::text, 12, '0'))::uuid, ${largeProfile}, 'AA_FILLER_' || lpad(g::text, 5, '0'), 'opaque', ${large} from generate_series(1, ${vaultTools.MAX_VAULT_LISTING_SCAN}) g`;
+    await sql`insert into creed_vault_items(id,creed_id,name,description,secret_ciphertext,created_by) values ('ffffffff-ffff-4fff-8fff-ffffffffffff',${largeProfile},'ZZ_TARGET','unique needle','opaque',${large})`;
     const first = await vaultMcp.callVaultTool({ query: "unique needle" }, access);
     assert.deepEqual(first.items, []);
-    assert.equal(first.truncated, true);
-    assert.ok(first.nextCursor);
+    assert.ok(first.truncated && first.nextCursor);
     const second = await vaultMcp.callVaultTool({ query: "unique needle", cursor: first.nextCursor }, access);
     assert.deepEqual(second.items.map((entry) => entry.name), ["ZZ_TARGET"]);
-    assert.equal(second.truncated, false);
     assert.equal(second.nextCursor, null);
+    // An unfiltered paged read returns every secret exactly once, even when one
+    // already returned is renamed to sort later.
+    const seen: string[] = [];
+    let cursor: string | null = null;
+    let calls = 0;
+    do {
+      const page = await vaultMcp.callVaultTool(cursor ? { cursor } : undefined, access);
+      seen.push(...page.items.map((entry) => entry.id));
+      if (calls === 0) await sql`update creed_vault_items set name='ZZZ_RENAMED' where id=${page.items[0]!.id}`;
+      cursor = page.nextCursor;
+      calls++;
+    } while (cursor && calls < 30);
+    const [{ count: total }] = await sql`select count(*)::int as count from creed_vault_items where creed_id=${largeProfile}`;
+    assert.equal(seen.length, total);
+    assert.equal(new Set(seen).size, total);
   });
 
   await t.test("one user's keys share a preflight cap and a concurrency cap before any counting", async () => {

@@ -1,4 +1,4 @@
-import { and, asc, eq, inArray, or, sql, type SQLWrapper } from "drizzle-orm";
+import { and, asc, eq, gt, inArray, or, sql, type SQLWrapper } from "drizzle-orm";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { randomUUID } from "node:crypto";
 import { creed_headless_access_keys as headlessKeys, creed_members, creeds, strap_vault_folders as folders, creed_vault_items as items } from "../../../db/schema/application.ts";
@@ -75,15 +75,17 @@ export async function vaultMetadata(db: Pick<PostgresJsDatabase, "select">, view
   return row;
 }
 /**
- * Secrets in name and id order. folderId restricts the list to one folder,
- * after resumes past a secret already seen, and limit caps the rows read.
+ * Secrets in name order, or in id order for paging: an id never changes, so a
+ * rename during a paged read cannot skip or repeat a secret. folderId
+ * restricts the list to one folder, afterId resumes past a secret already
+ * read (id order only), and limit caps the rows read.
  */
-export async function vaultList(db: PostgresJsDatabase, viewer: Viewer, profileId: string, options: { folderId?: string; after?: { name: string; id: string }; limit?: number } = {}) {
+export async function vaultList(db: PostgresJsDatabase, viewer: Viewer, profileId: string, options: { folderId?: string; byId?: boolean; afterId?: string; limit?: number } = {}) {
   await requireVaultAccess(db, viewer, profileId);
   const rows = db.select(metadata).from(items)
     .where(and(eq(items.creed_id, profileId), options.folderId ? eq(items.folder_id, options.folderId) : undefined,
-      options.after ? sql`(${items.name}, ${items.id}) > (${options.after.name}, ${options.after.id}::uuid)` : undefined, scope(viewer, items.creed_id)))
-    .orderBy(asc(items.name), asc(items.id)).$dynamic();
+      options.byId && options.afterId ? gt(items.id, options.afterId) : undefined, scope(viewer, items.creed_id)))
+    .orderBy(...(options.byId ? [asc(items.id)] : [asc(items.name), asc(items.id)])).$dynamic();
   return options.limit === undefined ? rows : rows.limit(options.limit);
 }
 export async function vaultCreate(db: PostgresJsDatabase, viewer: Viewer, input: { creedId: string; name: string; description: string; secret: string; folderId?: string | null }) {
@@ -131,6 +133,12 @@ export async function vaultFolderList(db: PostgresJsDatabase, viewer: Viewer, pr
   await requireVaultAccess(db, viewer, profileId);
   const rows = db.select(folderMetadata).from(folders).where(and(eq(folders.strap_id, profileId), scope(viewer, folders.strap_id))).orderBy(asc(folders.name)).$dynamic();
   return options.limit === undefined ? rows : rows.limit(options.limit);
+}
+/** The given folders of a profile; unknown ids are skipped. */
+export async function vaultFoldersByIds(db: PostgresJsDatabase, viewer: Viewer, profileId: string, folderIds: readonly string[]) {
+  await requireVaultAccess(db, viewer, profileId);
+  if (!folderIds.length) return [];
+  return db.select(folderMetadata).from(folders).where(and(eq(folders.strap_id, profileId), inArray(folders.id, [...folderIds]), scope(viewer, folders.strap_id)));
 }
 /** Number of secrets in each of the given folders, counted in the database. */
 export async function vaultFolderItemCounts(db: PostgresJsDatabase, viewer: Viewer, profileId: string, folderIds: readonly string[]) {
