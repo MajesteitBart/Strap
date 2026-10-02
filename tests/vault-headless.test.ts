@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import * as grants from "../lib/vault-grants.ts";
-import { buildVaultListing, canListVault, isVaultListingBatch, MAX_REVEALABLE_BY, MAX_VAULT_FILTER_LENGTH, parseVaultListingArgs, vaultToolsFor, VaultListingError } from "../lib/vault-tools.ts";
+import { buildVaultListing, canListVault, isVaultListingBatch, MAX_REVEALABLE_BY, MAX_VAULT_FILTER_LENGTH, MAX_VAULT_LISTING_ITEMS, parseVaultListingArgs, vaultToolsFor, VaultListingError } from "../lib/vault-tools.ts";
 
 const itemId = "11111111-1111-4111-8111-111111111111";
 const otherItemId = "22222222-2222-4222-8222-222222222222";
@@ -71,6 +71,36 @@ test("Vault discovery lists metadata for managers only and never carries values"
     error instanceof VaultListingError && /Available folders: "share-artifact"/.test(error.message));
 });
 
+test("listings return pages of secrets with a cursor to continue", () => {
+  const many = Array.from({ length: MAX_VAULT_LISTING_ITEMS + 1 }, (_, index) => ({
+    id: `00000000-0000-4000-8000-${String(index).padStart(12, "0")}`, folderId: null, name: `SECRET_${String(index).padStart(4, "0")}`, description: "", updatedAt: "2026-10-01T00:00:00.000Z",
+  }));
+  const full = buildVaultListing({ profileType: "personal", folders: [], items: many, keys: [], caller: null });
+  assert.equal(full.items.length, MAX_VAULT_LISTING_ITEMS);
+  assert.equal(full.truncated, true);
+  assert.match(full.note, /call again with cursor/);
+  // The cursor resumes after the last secret returned.
+  const last = many[MAX_VAULT_LISTING_ITEMS - 1]!;
+  assert.deepEqual(parseVaultListingArgs({ cursor: full.nextCursor }).cursor, { name: last.name, id: last.id });
+  const few = buildVaultListing({ profileType: "personal", folders: [], items: many.slice(0, 3), keys: [], caller: null });
+  assert.equal(few.truncated, false);
+  assert.equal(few.nextCursor, null);
+  // When the read stopped early, the cursor resumes after the last secret read, even if none matched.
+  const unmatched = buildVaultListing({ profileType: "personal", folders: [], items: many.slice(0, 3), keys: [], caller: null, hasMoreRows: true, query: "nothing matches this" });
+  assert.equal(unmatched.items.length, 0);
+  assert.deepEqual(parseVaultListingArgs({ cursor: unmatched.nextCursor }).cursor, { name: many[2]!.name, id: many[2]!.id });
+  for (const cursor of ["not-base64-json", Buffer.from(JSON.stringify(["x", "not-a-uuid"])).toString("base64url"), 7]) {
+    assert.throws(() => parseVaultListingArgs({ cursor }), VaultListingError);
+  }
+  // Capped key reads are flagged separately and do not mark the secrets as truncated.
+  const capped = buildVaultListing({ profileType: "personal", folders: [], items: many.slice(0, 3), keys: [], caller: null, keysTruncated: true });
+  assert.equal(capped.truncated, false);
+  assert.equal(capped.keysTruncated, true);
+  // Folder counts from the database are used even when only some items were read.
+  const big = { id: folderId, name: "big", description: "" };
+  assert.equal(buildVaultListing({ profileType: "personal", folders: [big], items: [], keys: [], caller: null, itemCounts: new Map([[folderId, 7000]]) }).folders[0]?.itemCount, 7000);
+});
+
 test("Vault listings are rejected inside JSON-RPC batches", () => {
   const call = (name: string) => ({ jsonrpc: "2.0", id: 1, method: "tools/call", params: { name, arguments: {} } });
   assert.equal(isVaultListingBatch([call("strap_list_vault_items")]), false);
@@ -113,7 +143,7 @@ test("folder lookup prefers IDs, filters are bounded and revealers are capped wi
   assert.deepEqual(listing.items[0]?.revealableBy.slice(0, 5).map((key) => key.id), ["k0", "k1", "k2", "k3", "k4"]);
   assert.throws(() => parseVaultListingArgs({ query: "x".repeat(MAX_VAULT_FILTER_LENGTH + 1) }), VaultListingError);
   assert.throws(() => parseVaultListingArgs({ folder: "x".repeat(MAX_VAULT_FILTER_LENGTH + 1) }), VaultListingError);
-  assert.deepEqual(parseVaultListingArgs({ folder: " real ", query: null }), { folder: "real", query: "" });
+  assert.deepEqual(parseVaultListingArgs({ folder: " real ", query: null }), { folder: "real", query: "", cursor: null });
 });
 
 test("colliding variable names get no schema line", () => {
@@ -150,7 +180,7 @@ test("filters must be strings and unusual names need review", () => {
   assert.throws(() => parseVaultListingArgs({ folder: 17 }), /folder must be a string/);
   assert.throws(() => parseVaultListingArgs({ query: [] }), /query must be a string/);
   assert.throws(() => parseVaultListingArgs({ query: { words: "x" } }), VaultListingError);
-  assert.deepEqual(parseVaultListingArgs({ folder: null, query: "" }), { folder: "", query: "" });
+  assert.deepEqual(parseVaultListingArgs({ folder: null, query: "" }), { folder: "", query: "", cursor: null });
   const items = [
     { id: itemId, folderId: null, name: "Deployment API", description: "", updatedAt: "2026-10-01T00:00:00.000Z" },
     { id: otherItemId, folderId: null, name: "Deployment token", description: "", updatedAt: "2026-10-01T00:00:00.000Z" },

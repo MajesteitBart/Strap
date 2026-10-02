@@ -130,6 +130,14 @@ async function findActiveKey(userId: string, keyId: string): Promise<HeadlessKey
   return (data as HeadlessKeyRow | null) ?? null;
 }
 
+/** The newest active keys first, at most limit of them. */
+export async function listActiveHeadlessKeys(userId: string, creedId: string, limit: number): Promise<HeadlessKeyMetadata[]> {
+  const { data, error } = await query(adminDb(), keys, "select", (database, scope) => database.select(KEY_COLUMNS).from(keys)
+    .where(and(scope, eq(keys.user_id, userId), eq(keys.creed_id, creedId), usable())).orderBy(desc(keys.created_at)).limit(limit));
+  if (error) throw new Error("Could not list headless access keys.");
+  return ((data as HeadlessKeyRow[] | null) ?? []).map(toMetadata);
+}
+
 export async function listHeadlessKeys(userId: string, creedId: string): Promise<HeadlessKeyMetadata[]> {
   const { data, error } = await query(adminDb(), keys, "select", (database, scope) => database.select(KEY_COLUMNS).from(keys)
     .where(and(scope, eq(keys.user_id, userId), eq(keys.creed_id, creedId))).orderBy(desc(keys.created_at)));

@@ -1174,8 +1174,8 @@
     {
       "file": "lib/api-key-vault.ts",
       "kind": "content",
-      "occurrences": 21,
-      "fingerprint": "e3aab6752ffb4a3d66119150c8c59584db0f01891a405f5a720fc292e2e185c4",
+      "occurrences": 25,
+      "fingerprint": "202955a00bc0680a7e31cb4b1f212e3fddcc23fc5d98e2e945a85e36e1df1d86",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -1426,8 +1426,8 @@
     {
       "file": "lib/db/repositories/vault.ts",
       "kind": "content",
-      "occurrences": 63,
-      "fingerprint": "6897068596be73aa92aa85035cbc1318a8f0d050b11d65e76ac8549d534573da",
+      "occurrences": 65,
+      "fingerprint": "ca88c2855955bb47ca7c75edaacfa34ed46312d8f8db7e2bcdb03c291e03e474",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -1462,8 +1462,8 @@
     {
       "file": "lib/headless-access.ts",
       "kind": "content",
-      "occurrences": 27,
-      "fingerprint": "f2e96e771e06ea40b72e630862a7b607dffccdb3e63f50b27194b7ac5f7bdd97",
+      "occurrences": 30,
+      "fingerprint": "09c9e53adbca7e1441c7a3596c844a99a7bcd74bf939b664da55e59a6b590080",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -2416,8 +2416,8 @@
     {
       "file": "tests/db/vault-headless.test.ts",
       "kind": "content",
-      "occurrences": 166,
-      "fingerprint": "96d3a3fcdd5bf9ede163510520443cbb81c31206683774b73a78348526031375",
+      "occurrences": 181,
+      "fingerprint": "0e136cb48a8ea242f6e2cff2feadef83b22faea955482f6901747659104906cd",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."

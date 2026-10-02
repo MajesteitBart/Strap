@@ -5,20 +5,21 @@ export const VAULT_TOOLS = [
   {
     name: "strap_list_vault_items",
     description:
-      "List Vault folders and secret metadata in the connected profile: names, descriptions, folders, secret:// references, a suggested .env.schema line for Varlock, and which of your API keys can reveal each secret. Never returns secret values. schemaLine is null when two listed secrets map to the same variable name (envNameConflict) or when the name controls process startup, such as NODE_OPTIONS or PATH (envNameReserved), or, in a Company profile, because another owner or admin may have chosen the name (envNameNeedsReview). Never write those lines without the user's explicit approval of the variable name. Filter by folder (name or id) or by words from the name or description. Call it on its own, not in a batch.",
+      "List Vault folders and secret metadata in the connected profile: names, descriptions, folders, secret:// references, a suggested .env.schema line for Varlock, and which of your API keys can reveal each secret. Never returns secret values. schemaLine is null when two listed secrets map to the same variable name (envNameConflict) or when the name controls process startup, such as NODE_OPTIONS or PATH (envNameReserved), or, in a Company profile, because another owner or admin may have chosen the name (envNameNeedsReview). Never write those lines without the user's explicit approval of the variable name. Filter by folder (name or id) or by words from the name or description. Returns at most 500 secrets per call; when truncated is true, call again with cursor set to nextCursor to continue. keysTruncated means revealableByCount may be a lower bound, and envNameConflict covers only the secrets in one response. Call it on its own, not in a batch.",
     inputSchema: {
       type: "object",
       properties: {
         folder: { type: "string", description: "Folder name (case-insensitive) or id." },
         query: { type: "string", description: "Words to match against secret names and descriptions." },
+        cursor: { type: "string", description: "nextCursor from the previous call, to continue a truncated listing." },
       },
     },
   },
 ] as const;
 
 /**
- * A listing loads every folder, item and key in the profile. Batches would
- * multiply that work behind one rate-limit token, so listings go alone.
+ * A listing reads up to the scan limits of folders, items and keys. Batches
+ * would multiply that work behind one rate-limit token, so listings go alone.
  */
 export function isVaultListingBatch(requests: unknown[]): boolean {
   return requests.length > 1 && requests.some((request) => {
@@ -48,14 +49,40 @@ export class VaultListingError extends Error {}
 
 /** Longest accepted folder or query argument. Folder names are at most 120 characters. */
 export const MAX_VAULT_FILTER_LENGTH = 200;
+/** One listing returns at most this many secrets and reads at most the scan limits below. */
+export const MAX_VAULT_LISTING_ITEMS = 500;
+export const MAX_VAULT_LISTING_SCAN = 5_000;
+export const MAX_VAULT_LISTING_FOLDERS = 1_000;
+export const MAX_VAULT_LISTING_KEYS = 1_000;
 /** Keys listed per secret; revealableByCount carries the full number. */
 export const MAX_REVEALABLE_BY = 20;
 
 /** Validates filter arguments before any Vault data is loaded. */
-export function parseVaultListingArgs(args: { folder?: unknown; query?: unknown }): { folder: string; query: string } {
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** Where the next page starts: the name and id of the last secret already returned or read. */
+export type VaultCursor = { name: string; id: string };
+
+export function encodeVaultCursor(item: VaultCursor): string {
+  return Buffer.from(JSON.stringify([item.name, item.id]), "utf8").toString("base64url");
+}
+
+function decodeVaultCursor(value: string): VaultCursor {
+  try {
+    const parsed: unknown = JSON.parse(Buffer.from(value, "base64url").toString("utf8"));
+    if (Array.isArray(parsed) && parsed.length === 2 && typeof parsed[0] === "string" && parsed[0].length <= 200 && typeof parsed[1] === "string" && UUID.test(parsed[1])) {
+      return { name: parsed[0], id: parsed[1].toLowerCase() };
+    }
+  } catch {
+    // Fall through to the client error below.
+  }
+  throw new VaultListingError("cursor is not valid; pass nextCursor from the previous listing.");
+}
+
+export function parseVaultListingArgs(args: { folder?: unknown; query?: unknown; cursor?: unknown }): { folder: string; query: string; cursor: VaultCursor | null } {
   // Absent, null and "" mean no filter. Any other non-string is a client error:
   // treating it as empty would silently widen a scoped lookup to the whole Vault.
-  for (const [name, value] of Object.entries({ folder: args.folder, query: args.query })) {
+  for (const [name, value] of Object.entries({ folder: args.folder, query: args.query, cursor: args.cursor })) {
     if (value !== undefined && value !== null && typeof value !== "string") throw new VaultListingError(`${name} must be a string.`);
   }
   const folder = typeof args.folder === "string" ? args.folder.trim() : "";
@@ -63,7 +90,25 @@ export function parseVaultListingArgs(args: { folder?: unknown; query?: unknown 
   if (folder.length > MAX_VAULT_FILTER_LENGTH || query.length > MAX_VAULT_FILTER_LENGTH) {
     throw new VaultListingError(`folder and query are limited to ${MAX_VAULT_FILTER_LENGTH} characters.`);
   }
-  return { folder, query };
+  const cursorText = typeof args.cursor === "string" ? args.cursor.trim() : "";
+  if (cursorText.length > 1024) throw new VaultListingError("cursor is not valid; pass nextCursor from the previous listing.");
+  return { folder, query, cursor: cursorText ? decodeVaultCursor(cursorText) : null };
+}
+
+/** An exact ID wins over a folder that happens to be named like another folder's ID. */
+export function selectVaultFolder<F extends Folder>(folders: F[], folderArg: string): F | undefined {
+  if (!folderArg) return undefined;
+  const selected = folders.find((folder) => folder.id === folderArg.toLowerCase()) ??
+    folders.find((folder) => folder.name.toLowerCase() === folderArg.toLowerCase());
+  if (!selected) throw vaultFolderNotFound(folders, false);
+  return selected;
+}
+
+/** A not-found error naming the given folders; more says that others exist. */
+export function vaultFolderNotFound(folders: Folder[], more: boolean): VaultListingError {
+  // Names come from other managers and may reach a terminal through generic tool errors.
+  const names = folders.map((folder) => JSON.stringify(terminalText(folder.name)));
+  return new VaultListingError(`Folder not found. Available folders: ${names.length ? names.join(", ") : "none"}${more ? ", and more" : ""}.`);
 }
 
 export function buildVaultListing(input: {
@@ -71,6 +116,16 @@ export function buildVaultListing(input: {
   items: Item[];
   keys: Key[];
   caller: VaultCallerGrant | null;
+  /** Secrets per folder counted in the database; computed from items when absent. */
+  itemCounts?: Map<string, number>;
+  /** The folder the caller already resolved for the folder filter. */
+  selectedFolder?: Folder;
+  /** items, in name and id order, stop at the read limit and more rows follow. */
+  hasMoreRows?: boolean;
+  /** Only the newest keys were read, so revealer counts may be lower bounds. */
+  keysTruncated?: boolean;
+  /** Only the first folders were read. */
+  foldersTruncated?: boolean;
   /** Personal profiles have a single author of secret names; anything else needs review. */
   profileType?: string;
   folder?: unknown;
@@ -78,16 +133,7 @@ export function buildVaultListing(input: {
 }) {
   const { folder: folderArg, query: queryArg } = parseVaultListingArgs(input);
   const namesNeedReview = input.profileType !== "personal";
-  // An exact ID wins over a folder that happens to be named like another folder's ID.
-  const selected = folderArg
-    ? input.folders.find((folder) => folder.id === folderArg.toLowerCase()) ??
-      input.folders.find((folder) => folder.name.toLowerCase() === folderArg.toLowerCase())
-    : undefined;
-  if (folderArg && !selected) {
-    // Names come from other managers and may reach a terminal through generic tool errors.
-    const names = input.folders.map((folder) => JSON.stringify(terminalText(folder.name)));
-    throw new VaultListingError(`Folder not found. Available folders: ${names.length ? names.join(", ") : "none"}.`);
-  }
+  const selected = input.selectedFolder ?? selectVaultFolder(input.folders, folderArg);
   const folderById = new Map(input.folders.map((folder) => [folder.id, folder]));
   // Index grants once, so a listing is linear in items plus grants rather
   // than items times keys.
@@ -104,8 +150,8 @@ export function buildVaultListing(input: {
   }
   const callerItems = new Set(input.caller?.vaultItemIds ?? []);
   const callerFolders = new Set(input.caller?.vaultFolderIds ?? []);
-  const itemCounts = new Map<string, number>();
-  for (const item of input.items) if (item.folderId) itemCounts.set(item.folderId, (itemCounts.get(item.folderId) ?? 0) + 1);
+  const itemCounts = input.itemCounts ?? new Map<string, number>();
+  if (!input.itemCounts) for (const item of input.items) if (item.folderId) itemCounts.set(item.folderId, (itemCounts.get(item.folderId) ?? 0) + 1);
   const folderKeySets = new Map<string, Set<Key>>();
   const folderKeySet = (id: string) => {
     let set = folderKeySets.get(id);
@@ -134,7 +180,14 @@ export function buildVaultListing(input: {
   // both suggestions would define it twice, so colliding items get no line.
   const envNameUses = new Map<string, number>();
   for (const item of listed) envNameUses.set(vaultEnvName(item.name), (envNameUses.get(vaultEnvName(item.name)) ?? 0) + 1);
-  const items = listed
+  // A page ends after MAX_VAULT_LISTING_ITEMS matches, or where the read stopped.
+  // The cursor resumes after the last secret returned or read.
+  const page = listed.slice(0, MAX_VAULT_LISTING_ITEMS);
+  const lastRead = input.items[input.items.length - 1];
+  const resumeAfter = listed.length > MAX_VAULT_LISTING_ITEMS ? page[page.length - 1] : input.hasMoreRows ? lastRead : undefined;
+  const nextCursor = resumeAfter ? encodeVaultCursor(resumeAfter) : null;
+  const truncated = nextCursor !== null;
+  const items = page
     .map((item) => {
       const reference = `secret://${item.id}`;
       const envName = vaultEnvName(item.name);
@@ -176,6 +229,12 @@ export function buildVaultListing(input: {
   return {
     folders,
     items,
-    note: "Values are never returned here. Add schemaLine to .env.schema and resolve it with Varlock and a Strap API key that can reveal the secret.",
+    truncated,
+    nextCursor,
+    keysTruncated: Boolean(input.keysTruncated),
+    foldersTruncated: Boolean(input.foldersTruncated),
+    note: "Values are never returned here. Add schemaLine to .env.schema and resolve it with Varlock and a Strap API key that can reveal the secret." +
+      (truncated ? " More secrets may match: call again with cursor set to nextCursor." : "") +
+      (input.keysTruncated ? " Only your newest API keys were counted, so revealableByCount may be a lower bound." : ""),
   };
 }

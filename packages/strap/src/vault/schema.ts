@@ -90,7 +90,7 @@ export function vaultSchemaLine(entry: Pick<VaultSchemaEntry, "envName" | "refer
   // Output is appended to .env.schema, so only emit shapes that cannot inject lines.
   if (!ENV_NAME.test(entry.envName) || !REFERENCE.test(entry.reference)) throw new Error("Invalid variable name or secret reference.");
   if (isProcessControlEnvName(entry.envName)) {
-    throw new Error(`${entry.envName} controls how programs start or connect, so it is not generated. Rename the secret, or write that line yourself after review.`);
+    throw new Error(`${entry.envName} controls how programs start or connect, so it is not generated. Rename the secret to a name that does not control how programs start.`);
   }
   if (instance !== undefined && !isVaultInstanceId(instance)) throw new Error("Invalid instance id.");
   const call = instance ? `strap(${instance}, "${entry.reference}")` : `strap("${entry.reference}")`;

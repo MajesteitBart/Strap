@@ -2,7 +2,7 @@ import * as tables from "@/db/schema/application";
 import { auditRow, recordAuditEvent } from "@/lib/audit-log";
 import { getDatabase } from "@/lib/db/client";
 import {
-  vaultCreate, vaultDelete, vaultFolderCreate, vaultFolderDelete, vaultFolderList, vaultFolderUpdate, vaultGrantCoverage, vaultList, vaultReveal, vaultUpdate,
+  vaultCreate, vaultDelete, vaultFolderCreate, vaultFolderDelete, vaultFolderFind, vaultFolderItemCounts, vaultFolderList, vaultFolderUpdate, vaultGrantCoverage, vaultList, vaultReveal, vaultUpdate,
   type VaultCredential,
 } from "@/lib/db/repositories/vault";
 import "server-only";
@@ -15,11 +15,19 @@ function toItem(row: Awaited<ReturnType<typeof vaultCreate>>): VaultItem {
 function toFolder(row: Awaited<ReturnType<typeof vaultFolderCreate>>): VaultFolder {
   return { id: row.id, strapId: row.strap_id, name: row.name, description: row.description, createdAt: row.created_at, updatedAt: row.updated_at };
 }
-export async function listVaultItems(userId: string, creedId: string): Promise<VaultItem[]> {
-  return (await vaultList(getDatabase(), { userId }, creedId)).map(toItem);
+export async function listVaultItems(userId: string, creedId: string, options: { folderId?: string; after?: { name: string; id: string }; limit?: number } = {}): Promise<VaultItem[]> {
+  return (await vaultList(getDatabase(), { userId }, creedId, options)).map(toItem);
 }
-export async function listVaultFolders(userId: string, creedId: string): Promise<VaultFolder[]> {
-  return (await vaultFolderList(getDatabase(), { userId }, creedId)).map(toFolder);
+export async function listVaultFolders(userId: string, creedId: string, options: { limit?: number } = {}): Promise<VaultFolder[]> {
+  return (await vaultFolderList(getDatabase(), { userId }, creedId, options)).map(toFolder);
+}
+export async function findVaultFolder(userId: string, creedId: string, nameOrId: string): Promise<VaultFolder | null> {
+  const row = await vaultFolderFind(getDatabase(), { userId }, creedId, nameOrId);
+  return row ? toFolder(row) : null;
+}
+export async function countVaultFolderItems(userId: string, creedId: string, folderIds: readonly string[]): Promise<Map<string, number>> {
+  const rows = await vaultFolderItemCounts(getDatabase(), { userId }, creedId, folderIds);
+  return new Map(rows.flatMap((row) => (row.folderId ? [[row.folderId, row.count] as const] : [])));
 }
 export async function createVaultItem(input: { userId: string; creedId: string; name: string; description: string; secret: string; folderId?: string | null; request: Request }): Promise<VaultItem> {
   const row = await vaultCreate(getDatabase(), { userId: input.userId }, input);

@@ -64,7 +64,9 @@ function text(value: unknown): value is string {
   return typeof value === "string";
 }
 
-function parseListing(data: unknown): { folders: Folder[]; items: Item[] } {
+type Listing = { folders: Folder[]; items: Item[]; truncated: boolean; nextCursor: string | null; keysTruncated: boolean; foldersTruncated: boolean };
+
+function parseListing(data: unknown): Listing {
   if (!isRecord(data) || !Array.isArray(data.folders) || !Array.isArray(data.items)) throw new CliError("Strap returned an invalid Vault listing.");
   const folders = data.folders.map((entry: unknown) => {
     if (!isRecord(entry) || !text(entry.id) || !text(entry.name) || !text(entry.description) || typeof entry.itemCount !== "number") throw new CliError("Strap returned an invalid Vault folder.");
@@ -80,13 +82,34 @@ function parseListing(data: unknown): { folders: Folder[]; items: Item[] } {
     const needsReview = entry.envNameNeedsReview !== false;
     return { id: entry.id, reference: entry.reference, name: entry.name, description: entry.description, folder, envName: entry.envName, revealableBy, revealableByCount, needsReview };
   });
-  return { folders, items };
+  // Older servers send no flags and list everything; a truncated listing
+  // without a cursor cannot be continued.
+  const nextCursor = text(data.nextCursor) && data.nextCursor ? data.nextCursor : null;
+  return { folders, items, truncated: data.truncated === true || nextCursor !== null, nextCursor, keysTruncated: data.keysTruncated === true, foldersTruncated: data.foldersTruncated === true };
 }
 
-async function listVault(client: Client, command: VaultCommand) {
+/** Pages followed for one command; 20 pages of 500 cover 10,000 secrets. */
+const MAX_PAGES = 20;
+
+async function listVault(client: Client, command: VaultCommand): Promise<Listing> {
+  const first = await listPage(client, command, null);
+  if (command.action === "folders") return first;
+  const items = [...first.items];
+  let page = first;
+  let keysTruncated = first.keysTruncated;
+  for (let pages = 1; page.nextCursor && pages < MAX_PAGES; pages++) {
+    page = await listPage(client, command, page.nextCursor);
+    items.push(...page.items);
+    keysTruncated ||= page.keysTruncated;
+  }
+  return { ...first, items, truncated: page.truncated, nextCursor: page.nextCursor, keysTruncated };
+}
+
+async function listPage(client: Client, command: VaultCommand, cursor: string | null): Promise<Listing> {
   const args: Record<string, string> = {};
   if (command.folder) args.folder = command.folder;
   if (command.query) args.query = command.query;
+  if (cursor) args.cursor = cursor;
   let result: Awaited<ReturnType<Client["callTool"]>>;
   try {
     result = await client.callTool({ name: "strap_list_vault_items", arguments: args });
@@ -102,8 +125,17 @@ async function listVault(client: Client, command: VaultCommand) {
   return parseListing(JSON.parse(item.text) as unknown);
 }
 
+const TRUNCATED = "Strap listed only part of the Vault. Narrow the selection with --folder or --query.";
+
 export async function runVaultCommand(client: Client, command: VaultCommand, json: boolean): Promise<void> {
   const listing = await listVault(client, command);
+  // A schema from a partial listing would silently miss secrets.
+  if (command.action === "schema" && listing.truncated) throw new CliError(TRUNCATED, 3);
+  if (listing.truncated) process.stderr.write(`${TRUNCATED}\n`);
+  if (listing.keysTruncated && command.action === "list") process.stderr.write("Only your newest API keys were counted, so revealable-by counts may be low.\n");
+  if (listing.foldersTruncated && command.action === "folders") {
+    process.stderr.write("Strap listed only the first folders. Any folder can still be selected with strap vault list --folder <name>.\n");
+  }
   if (command.action === "folders") {
     if (json) return writeJson(listing.folders);
     if (!listing.folders.length) return void process.stdout.write("No Vault folders.\n");

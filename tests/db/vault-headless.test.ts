@@ -16,6 +16,7 @@ import * as repository from "../../lib/db/repositories/vault.ts";
 import * as shared from "../../lib/headless-access-shared.ts";
 import * as strapApi from "../../lib/strap-api.ts";
 import * as grants from "../../lib/vault-grants.ts";
+import * as vaultTools from "../../lib/vault-tools.ts";
 import * as nodeCrypto from "node:crypto";
 import * as headlessKeys from "../../lib/db/repositories/headless-keys.ts";
 import { checkRateLimit } from "../../lib/rate-limit.ts";
@@ -877,6 +878,86 @@ test("scoped Vault reveals enforce live Postgres permissions and audit before de
     assert.notEqual((await sql`select revoked_at from creed_headless_access_keys where id=${dormantId}`)[0].revoked_at, null);
     await expectDenied(dormant.key, 401, filed.id);
     await expectDenied(current.key, 401, filed.id);
+  });
+
+  await t.test("Vault discovery reads one folder's secrets and counts folders in the database", async () => {
+    const vaultMcp = loadModule<typeof import("../../lib/vault-mcp.ts")>("../../lib/vault-mcp.ts", { ...dependencies, "@/lib/vault-tools": vaultTools });
+    const access = { userId: owner, strapId: personal, role: "owner", profileType: "personal", caller: null };
+    const listedFolder = await repository.vaultFolderCreate(db, { userId: owner }, { strapId: personal, name: "discovery", description: "" });
+    const inside = await repository.vaultCreate(db, { userId: owner }, { creedId: personal, name: "DISCOVERY_INSIDE", description: "", secret, folderId: listedFolder.id });
+    const everything = await vaultMcp.callVaultTool(undefined, access);
+    assert.equal(everything.truncated, false);
+    assert.equal(everything.folders.find((entry) => entry.id === listedFolder.id)?.itemCount, 1);
+    assert.ok(everything.items.some((entry) => entry.id === inside.id) && everything.items.some((entry) => entry.id === item.id));
+    const oneFolder = await vaultMcp.callVaultTool({ folder: "DISCOVERY" }, access);
+    assert.deepEqual(oneFolder.items.map((entry) => entry.id), [inside.id]);
+    await assert.rejects(vaultMcp.callVaultTool({ folder: "no-such-folder" }, access), vaultTools.VaultListingError);
+  });
+
+  await t.test("Vault discovery reaches folders and matches beyond its read limits", async () => {
+    const vaultMcp = loadModule<typeof import("../../lib/vault-mcp.ts")>("../../lib/vault-mcp.ts", { ...dependencies, "@/lib/vault-tools": vaultTools });
+    const large = "64000000-0000-4000-8000-000000000015";
+    await sql`insert into users(id,email,name) values (${large},'large@example.test','Large')`;
+    const [{ id: largeProfile }] = await sql`insert into creeds(type,name,owner_user_id) values ('personal','Large',${large}) returning id`;
+    await sql`insert into creed_members(creed_id,user_id,role) values (${largeProfile},${large},'owner')`;
+    const access = { userId: large, strapId: largeProfile, role: "owner", profileType: "personal", caller: null };
+    // 1,001 folders: F1001 sorts after the folder read limit.
+    await sql`insert into strap_vault_folders(strap_id,name,description) select ${largeProfile}, 'F' || lpad(g::text, 4, '0'), '' from generate_series(1, ${vaultTools.MAX_VAULT_LISTING_FOLDERS + 1}) g`;
+    const [{ id: lastFolderId }] = await sql`select id from strap_vault_folders where strap_id=${largeProfile} and name='F1001'`;
+    const filed = await repository.vaultCreate(db, { userId: large }, { creedId: largeProfile, name: "FILED_LATE", description: "", secret, folderId: lastFolderId });
+    for (const folder of ["f1001", lastFolderId]) {
+      const byFolder = await vaultMcp.callVaultTool({ folder }, access);
+      assert.deepEqual(byFolder.items.map((entry) => entry.id), [filed.id]);
+      assert.deepEqual(byFolder.folders.map((entry) => [entry.name, entry.itemCount]), [["F1001", 1]]);
+    }
+    const unfiltered = await vaultMcp.callVaultTool(undefined, access);
+    assert.equal(unfiltered.folders.length, vaultTools.MAX_VAULT_LISTING_FOLDERS);
+    assert.equal(unfiltered.foldersTruncated, true);
+    // 5,000 earlier secrets, then the only match.
+    await sql`insert into creed_vault_items(creed_id,name,secret_ciphertext,created_by) select ${largeProfile}, 'AA_FILLER_' || lpad(g::text, 5, '0'), 'opaque', ${large} from generate_series(1, ${vaultTools.MAX_VAULT_LISTING_SCAN}) g`;
+    await sql`insert into creed_vault_items(creed_id,name,description,secret_ciphertext,created_by) values (${largeProfile},'ZZ_TARGET','unique needle','opaque',${large})`;
+    const first = await vaultMcp.callVaultTool({ query: "unique needle" }, access);
+    assert.deepEqual(first.items, []);
+    assert.equal(first.truncated, true);
+    assert.ok(first.nextCursor);
+    const second = await vaultMcp.callVaultTool({ query: "unique needle", cursor: first.nextCursor }, access);
+    assert.deepEqual(second.items.map((entry) => entry.name), ["ZZ_TARGET"]);
+    assert.equal(second.truncated, false);
+    assert.equal(second.nextCursor, null);
+  });
+
+  await t.test("one user's keys share a preflight cap and a concurrency cap before any counting", async () => {
+    const busy = "64000000-0000-4000-8000-000000000014";
+    await sql`insert into users(id,email,name) values (${busy},'busy@example.test','Busy')`;
+    const [{ id: busyProfile }] = await sql`insert into creeds(type,name,owner_user_id) values ('personal','Busy',${busy}) returning id`;
+    await sql`insert into creed_members(creed_id,user_id,role) values (${busyProfile},${busy},'owner')`;
+    const busyItem = await repository.vaultCreate(db, { userId: busy }, { creedId: busyProfile, name: "Busy fixture", description: "", secret });
+    const keyFor = (label: string) => headless.createHeadlessAccessKey({ userId: busy, creedId: busyProfile, name: label, mode: "read-only", expiresAt: null, vaultItemIds: [busyItem.id] });
+    const stalled = (key: string) => route.POST(new Request("http://localhost/api/strap/vault/reveal", {
+      method: "POST", headers: { authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+      body: new ReadableStream({ start() {} }), duplex: "half",
+    } as RequestInit));
+    // Three keys hold 20 open requests each: the user's concurrency cap.
+    const holders = await Promise.all([keyFor("Holder 1"), keyFor("Holder 2"), keyFor("Holder 3")]);
+    const pending = holders.flatMap((holder) => Array.from({ length: 20 }, () => stalled(holder.key)));
+    const extra = await keyFor("Extra");
+    for (let attempt = 0; attempt < 50; attempt++) {
+      const response = await request(extra.key, busyItem.id);
+      if (response.status === 429) break;
+      assert.equal(response.status, 200, "the extra key should be refused once the user's slots are full");
+      await delay(20);
+    }
+    assert.equal((await request(extra.key, busyItem.id)).status, 429);
+    const results = await Promise.all(pending);
+    assert.deepEqual([...new Set(results.map((response) => response.status))], [408]);
+    assert.equal((await request(extra.key, busyItem.id)).status, 200);
+    // With the user's preflight budget spent, no key of that user gets further.
+    for (let used = 0; used < 5 * grants.MAX_VAULT_REVEALS_PER_MINUTE; used++) {
+      checkRateLimit({ scope: "vault-reveal-user-preflight", identifier: busy, limit: 5 * grants.MAX_VAULT_REVEALS_PER_MINUTE, windowMs: 60_000 });
+    }
+    const late = await keyFor("Late");
+    assert.equal((await request(late.key, busyItem.id)).status, 429);
+    assert.equal((await sql`select last_used_at from creed_headless_access_keys where id=${late.metadata.id}`)[0].last_used_at, null);
   });
 
   await t.test("a metadata edit is not audited as a folder move another session made", async () => {

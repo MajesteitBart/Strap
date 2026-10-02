@@ -5,6 +5,58 @@ import { formatVaultSchema, matchesVaultQuery, terminalText, vaultEnvName } from
 
 const reference = "secret://11111111-1111-4111-8111-111111111111";
 
+test("schema output refuses a partial Vault listing", async () => {
+  const { runVaultCommand } = await import("../src/vault/command.js");
+  const listing = { folders: [], truncated: true, items: [{ id: "11111111-1111-4111-8111-111111111111", reference, name: "API_KEY", description: "", folder: null, envName: "API_KEY", revealableBy: [], revealableByCount: 0, envNameNeedsReview: false }] };
+  const client = { callTool: async () => ({ content: [{ type: "text", text: JSON.stringify(listing) }] }) } as unknown as Parameters<typeof runVaultCommand>[0];
+  await assert.rejects(runVaultCommand(client, { action: "schema" }, false), (error: unknown) =>
+    error instanceof Error && /only part of the Vault/.test(error.message) && (error as { exitCode?: number }).exitCode === 3);
+});
+
+test("schema output follows cursors across pages", async () => {
+  const { runVaultCommand } = await import("../src/vault/command.js");
+  const secretAt = (id: string, name: string) => ({ id, reference: `secret://${id}`, name, description: "", folder: null, envName: name, revealableBy: [], revealableByCount: 0, envNameNeedsReview: false });
+  const pages: Record<string, object> = {
+    first: { folders: [], items: [secretAt("11111111-1111-4111-8111-111111111111", "FIRST_KEY")], truncated: true, nextCursor: "page-2" },
+    "page-2": { folders: [], items: [secretAt("22222222-2222-4222-8222-222222222222", "SECOND_KEY")], truncated: false, nextCursor: null },
+  };
+  const cursors: Array<string | undefined> = [];
+  const client = {
+    callTool: async ({ arguments: args }: { arguments: Record<string, string> }) => {
+      cursors.push(args.cursor);
+      return { content: [{ type: "text", text: JSON.stringify(pages[args.cursor ?? "first"]) }] };
+    },
+  } as unknown as Parameters<typeof runVaultCommand>[0];
+  const written: string[] = [];
+  const write = process.stdout.write;
+  process.stdout.write = ((chunk: string) => { written.push(String(chunk)); return true; }) as typeof process.stdout.write;
+  try {
+    await runVaultCommand(client, { action: "schema" }, false);
+  } finally {
+    process.stdout.write = write;
+  }
+  assert.deepEqual(cursors, [undefined, "page-2"]);
+  assert.match(written.join(""), /FIRST_KEY=strap\(/);
+  assert.match(written.join(""), /SECOND_KEY=strap\(/);
+});
+
+test("folder output warns when Strap listed only the first folders", async () => {
+  const { runVaultCommand } = await import("../src/vault/command.js");
+  const listing = { folders: [{ id: "33333333-3333-4333-8333-333333333333", name: "ci", description: "", itemCount: 1 }], items: [], truncated: false, nextCursor: null, foldersTruncated: true };
+  const client = { callTool: async () => ({ content: [{ type: "text", text: JSON.stringify(listing) }] }) } as unknown as Parameters<typeof runVaultCommand>[0];
+  const errors: string[] = [];
+  const write = { out: process.stdout.write, err: process.stderr.write };
+  process.stdout.write = (() => true) as typeof process.stdout.write;
+  process.stderr.write = ((chunk: string) => { errors.push(String(chunk)); return true; }) as typeof process.stderr.write;
+  try {
+    await runVaultCommand(client, { action: "folders" }, true);
+  } finally {
+    process.stdout.write = write.out;
+    process.stderr.write = write.err;
+  }
+  assert.match(errors.join(""), /listed only the first folders/);
+});
+
 test("vault commands accept only their own options", () => {
   assert.deepEqual(parseVaultCommand(["folders"]), { action: "folders" });
   assert.deepEqual(parseVaultCommand(["list", "--folder", "share-artifact", "--query", "server"]), { action: "list", folder: "share-artifact", query: "server" });

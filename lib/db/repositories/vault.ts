@@ -74,9 +74,17 @@ export async function vaultMetadata(db: Pick<PostgresJsDatabase, "select">, view
   if (!row) throw new VaultRepositoryError("Vault item not found or access denied.", 403);
   return row;
 }
-export async function vaultList(db: PostgresJsDatabase, viewer: Viewer, profileId: string) {
+/**
+ * Secrets in name and id order. folderId restricts the list to one folder,
+ * after resumes past a secret already seen, and limit caps the rows read.
+ */
+export async function vaultList(db: PostgresJsDatabase, viewer: Viewer, profileId: string, options: { folderId?: string; after?: { name: string; id: string }; limit?: number } = {}) {
   await requireVaultAccess(db, viewer, profileId);
-  return db.select(metadata).from(items).where(and(eq(items.creed_id, profileId), scope(viewer, items.creed_id))).orderBy(asc(items.name));
+  const rows = db.select(metadata).from(items)
+    .where(and(eq(items.creed_id, profileId), options.folderId ? eq(items.folder_id, options.folderId) : undefined,
+      options.after ? sql`(${items.name}, ${items.id}) > (${options.after.name}, ${options.after.id}::uuid)` : undefined, scope(viewer, items.creed_id)))
+    .orderBy(asc(items.name), asc(items.id)).$dynamic();
+  return options.limit === undefined ? rows : rows.limit(options.limit);
 }
 export async function vaultCreate(db: PostgresJsDatabase, viewer: Viewer, input: { creedId: string; name: string; description: string; secret: string; folderId?: string | null }) {
   return mapConstraints(() => db.transaction(async tx => {
@@ -119,10 +127,33 @@ export async function vaultDelete(db: PostgresJsDatabase, viewer: Viewer, id: st
     return row;
   });
 }
-export async function vaultFolderList(db: PostgresJsDatabase, viewer: Viewer, profileId: string) {
+export async function vaultFolderList(db: PostgresJsDatabase, viewer: Viewer, profileId: string, options: { limit?: number } = {}) {
   await requireVaultAccess(db, viewer, profileId);
-  return db.select(folderMetadata).from(folders).where(and(eq(folders.strap_id, profileId), scope(viewer, folders.strap_id))).orderBy(asc(folders.name));
+  const rows = db.select(folderMetadata).from(folders).where(and(eq(folders.strap_id, profileId), scope(viewer, folders.strap_id))).orderBy(asc(folders.name)).$dynamic();
+  return options.limit === undefined ? rows : rows.limit(options.limit);
 }
+/** Number of secrets in each of the given folders, counted in the database. */
+export async function vaultFolderItemCounts(db: PostgresJsDatabase, viewer: Viewer, profileId: string, folderIds: readonly string[]) {
+  await requireVaultAccess(db, viewer, profileId);
+  if (!folderIds.length) return [];
+  return db.select({ folderId: items.folder_id, count: sql<number>`count(*)::int` }).from(items)
+    .where(and(eq(items.creed_id, profileId), inArray(items.folder_id, [...folderIds]), scope(viewer, items.creed_id))).groupBy(items.folder_id);
+}
+/**
+ * Finds one folder by exact id, or else by name compared the way the unique
+ * folder-name index compares it (lower(name)), anywhere in the profile.
+ */
+export async function vaultFolderFind(db: PostgresJsDatabase, viewer: Viewer, profileId: string, nameOrId: string) {
+  await requireVaultAccess(db, viewer, profileId);
+  const inProfile = and(eq(folders.strap_id, profileId), scope(viewer, folders.strap_id));
+  if (FOLDER_ID.test(nameOrId)) {
+    const [byId] = await db.select(folderMetadata).from(folders).where(and(inProfile, eq(folders.id, nameOrId.toLowerCase()))).limit(1);
+    if (byId) return byId;
+  }
+  const [byName] = await db.select(folderMetadata).from(folders).where(and(inProfile, sql`lower(${folders.name}) = lower(${nameOrId})`)).limit(1);
+  return byName ?? null;
+}
+const FOLDER_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export async function vaultFolderCreate(db: PostgresJsDatabase, viewer: Viewer, input: { strapId: string; name: string; description: string }) {
   // Like vaultCreate: the membership row stays locked until the insert commits,
   // so a concurrent demotion or removal cannot interleave.

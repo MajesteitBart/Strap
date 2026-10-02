@@ -13,6 +13,12 @@ const NO_STORE = { "Cache-Control": "private, no-store", "Vary": "Authorization"
 const MAX_CONCURRENT_REVEALS = 20;
 const BODY_DEADLINE_MS = 5_000;
 const inFlight = new Map<string, number>();
+// Across all of a user's keys, before any per-request counting. Both are well
+// above what one key's flood guard and slot limit allow, so a single leaked key
+// cannot exhaust them for the user's other keys; many keys share them.
+const MAX_USER_PREFLIGHT_PER_MINUTE = 5 * MAX_VAULT_REVEALS_PER_MINUTE;
+const MAX_CONCURRENT_REVEALS_PER_USER = 3 * MAX_CONCURRENT_REVEALS;
+const userInFlight = new Map<string, number>();
 
 async function readWithin(reader: ReadableStreamDefaultReader<Uint8Array>, deadline: number) {
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -44,6 +50,7 @@ export async function POST(request: Request) {
   const open = inFlight.get(slot) ?? 0;
   if (open >= MAX_CONCURRENT_REVEALS) return tooMany(1);
   inFlight.set(slot, open + 1);
+  let userSlot: string | null = null;
 
   try {
     // Reads only until the limits below allow the request; recording use locks
@@ -53,6 +60,12 @@ export async function POST(request: Request) {
     if (found.vaultItemIds.length === 0 && found.vaultFolderIds.length === 0) {
       return respond({ error: "Secret access was not granted to this key." }, 403);
     }
+    const preflight = checkRateLimit({ scope: "vault-reveal-user-preflight", identifier: found.userId, limit: MAX_USER_PREFLIGHT_PER_MINUTE, windowMs: 60_000 });
+    if (!preflight.ok) return tooMany(preflight.retryAfterSeconds);
+    const userOpen = userInFlight.get(found.userId) ?? 0;
+    if (userOpen >= MAX_CONCURRENT_REVEALS_PER_USER) return tooMany(1);
+    userInFlight.set(found.userId, userOpen + 1);
+    userSlot = found.userId;
     // Allow one full schema load followed by a run of everything this key can
     // reveal. Folder grants grow as secrets are added, so size the limit on use.
     const coverage = await countRevealableVaultItems(found.userId, found);
@@ -110,5 +123,9 @@ export async function POST(request: Request) {
   } finally {
     const remaining = (inFlight.get(slot) ?? 1) - 1;
     if (remaining > 0) inFlight.set(slot, remaining); else inFlight.delete(slot);
+    if (userSlot) {
+      const userRemaining = (userInFlight.get(userSlot) ?? 1) - 1;
+      if (userRemaining > 0) userInFlight.set(userSlot, userRemaining); else userInFlight.delete(userSlot);
+    }
   }
 }
