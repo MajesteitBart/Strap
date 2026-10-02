@@ -222,14 +222,21 @@ function StrapVault() {
     }
   }
 
-  async function deleteFolder(folder: VaultFolder, count: number) {
+  async function deleteFolder(folder: VaultFolder, folderItems: VaultItem[]) {
+    const count = folderItems.length;
     const contents = count ? ` Its ${count} secret${count === 1 ? "" : "s"} stay in the Vault without a folder, and API keys that reach them through this folder lose access.` : "";
     if (!window.confirm(`Delete the folder ${folder.name}?${contents}`)) return;
     setError(null);
-    const response = await fetch(`/api/app/vault/folders/${encodeURIComponent(folder.id)}`, { method: "DELETE" }).catch(() => null);
+    // The server refuses the deletion if the folder no longer holds exactly these secrets.
+    const response = await fetch(`/api/app/vault/folders/${encodeURIComponent(folder.id)}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ expectedItemIds: folderItems.map((item) => item.id) }),
+    }).catch(() => null);
     if (!response) return reloadAfterUncertainDelete(`The delete request for the folder ${folder.name} did not complete.`);
     if (!response.ok) {
       const payload = (await response.json().catch(() => ({}))) as { error?: string };
+      if (response.status === 409) await loadItems().catch(() => undefined);
       setError(payload.error || "Could not delete the folder.");
       return;
     }
@@ -350,7 +357,7 @@ function StrapVault() {
                   <div className="flex shrink-0 items-center gap-1">
                     <Button size="icon" variant="ghost" aria-label={`Add a secret to ${folder.name}`} onClick={() => openCreate(folder.id)}><Plus className="h-4 w-4" /></Button>
                     <Button size="icon" variant="ghost" aria-label={`Edit folder ${folder.name}`} onClick={() => openFolderEditor(folder)}><Pencil className="h-4 w-4" /></Button>
-                    <Button size="icon" variant="ghost" aria-label={`Delete folder ${folder.name}`} onClick={() => void deleteFolder(folder, contents.length)}><Trash2 className="h-4 w-4" /></Button>
+                    <Button size="icon" variant="ghost" aria-label={`Delete folder ${folder.name}`} onClick={() => void deleteFolder(folder, contents)}><Trash2 className="h-4 w-4" /></Button>
                   </div>
                 </div>
                 {contents.length ? (

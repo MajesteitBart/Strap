@@ -52,7 +52,9 @@ export async function revealVaultItem(input: {
 }
 export async function updateVaultItem(input: { userId: string; itemId: string; name: string; description: string; secret: string | null; folderId?: string | null; expectedFolderId?: string | null; request: Request }): Promise<VaultItem> {
   const { previous, updated } = await vaultUpdate(getDatabase(), { userId: input.userId }, input);
-  const moved = previous.folder_id !== updated.folder_id;
+  // Only a request that asked for a move is audited as one; a concurrent move
+  // by another session can also change the folder this edit returns.
+  const moved = input.folderId !== undefined && previous.folder_id !== updated.folder_id;
   await recordAuditEvent({
     userId: input.userId,
     action: "vault.secret_updated",
@@ -75,8 +77,8 @@ export async function updateVaultFolder(input: { userId: string; folderId: strin
   await recordAuditEvent({ userId: input.userId, action: "vault.folder_updated", metadata: { folderId: row.id, creedId: row.strap_id }, request: input.request });
   return toFolder(row);
 }
-export async function deleteVaultFolder(input: { userId: string; folderId: string; request: Request }): Promise<{ movedItemCount: number }> {
-  const { folder, movedItemCount } = await vaultFolderDelete(getDatabase(), { userId: input.userId }, input.folderId);
+export async function deleteVaultFolder(input: { userId: string; folderId: string; expectedItemIds: readonly string[]; request: Request }): Promise<{ movedItemCount: number }> {
+  const { folder, movedItemCount } = await vaultFolderDelete(getDatabase(), { userId: input.userId }, input.folderId, input.expectedItemIds);
   await recordAuditEvent({ userId: input.userId, action: "vault.folder_deleted", metadata: { folderId: folder.id, creedId: folder.strap_id, movedItemCount }, request: input.request });
   return { movedItemCount };
 }

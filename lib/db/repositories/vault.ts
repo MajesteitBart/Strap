@@ -163,8 +163,14 @@ export async function vaultFolderUpdate(db: PostgresJsDatabase, viewer: Viewer, 
     return row;
   }));
 }
-/** Items in a deleted folder stay in the Vault without a folder. Keys lose folder-based access to them. */
-export async function vaultFolderDelete(db: PostgresJsDatabase, viewer: Viewer, id: string) {
+const FOLDER_CONTENTS_CHANGED = "This folder's secrets changed in another session. Review the folder and try again.";
+/**
+ * Items in a deleted folder stay in the Vault without a folder. Keys lose
+ * folder-based access to them. expectedItemIds are the secrets the caller saw
+ * in the folder: a deletion confirmed from an older view must not take access
+ * away from a secret it never showed.
+ */
+export async function vaultFolderDelete(db: PostgresJsDatabase, viewer: Viewer, id: string, expectedItemIds: readonly string[]) {
   return db.transaction(async tx => {
     // Hold the membership row as folder creation does, so a demotion or removal
     // cannot commit between this check and the writes below. The folder is
@@ -173,6 +179,13 @@ export async function vaultFolderDelete(db: PostgresJsDatabase, viewer: Viewer, 
     if (!found || !(await lockVaultAccess(tx, viewer, found.strapId))) throw new VaultRepositoryError("Folder not found or access denied.", 403);
     const [folder] = await tx.select(folderMetadata).from(folders).where(eq(folders.id, id)).for("update");
     if (!folder) throw new VaultRepositoryError("Folder not found or access denied.", 403);
+    // The folder lock keeps secrets from being created in or moved into it
+    // until this commits, so its current contents can be compared here.
+    const contents = await tx.select({ id: items.id }).from(items).where(and(eq(items.creed_id, folder.strap_id), eq(items.folder_id, folder.id)));
+    const expected = new Set(expectedItemIds.map((itemId) => itemId.toLowerCase()));
+    if (contents.length !== expected.size || contents.some((item) => !expected.has(item.id.toLowerCase()))) {
+      throw new VaultRepositoryError(FOLDER_CONTENTS_CHANGED, 409);
+    }
     // Only the number of moved items is kept: a large folder must not produce
     // an unbounded response or audit payload.
     const moved = await tx.update(items).set({ folder_id: null, updated_at: new Date().toISOString() })

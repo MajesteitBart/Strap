@@ -267,11 +267,18 @@ test("scoped Vault reveals enforce live Postgres permissions and audit before de
     const kept = await repository.vaultCreate(db, { userId: owner }, { creedId: personal, name: "Kept secret", description: "", secret, folderId: folder.id });
     const created = await createWith({ vaultFolderIds: [folder.id] });
     assert.equal((await request(created.key, kept.id)).status, 200);
-    const deleted = await repository.vaultFolderDelete(db, { userId: owner }, folder.id);
-    assert.equal(deleted.movedItemCount, 1);
+    // A deletion confirmed from a view that did not show every secret in the
+    // folder is refused and changes nothing.
+    await assert.rejects(repository.vaultFolderDelete(db, { userId: owner }, folder.id, []), { status: 409 });
+    const late = await repository.vaultCreate(db, { userId: owner }, { creedId: personal, name: "Late secret", description: "", secret, folderId: folder.id });
+    await assert.rejects(repository.vaultFolderDelete(db, { userId: owner }, folder.id, [kept.id]), { status: 409 });
+    assert.deepEqual((await sql`select count(*)::int as count from creed_vault_items where folder_id=${folder.id}`)[0].count, 2);
+    assert.equal((await request(created.key, late.id)).status, 200);
+    const deleted = await repository.vaultFolderDelete(db, { userId: owner }, folder.id, [late.id, kept.id.toUpperCase()]);
+    assert.equal(deleted.movedItemCount, 2);
     assert.equal((await sql`select folder_id from creed_vault_items where id=${kept.id}`)[0].folder_id, null);
     await expectDenied(created.key, 403, kept.id);
-    await assert.rejects(repository.vaultFolderDelete(db, { userId: owner }, folder.id), { status: 403 });
+    await assert.rejects(repository.vaultFolderDelete(db, { userId: owner }, folder.id, []), { status: 403 });
   });
 
   await t.test("grant edits and rotation keep the key identity and recheck Vault access", async () => {
@@ -354,7 +361,7 @@ test("scoped Vault reveals enforce live Postgres permissions and audit before de
     assert.equal(allowed.strap_id, company);
     await sql`update creed_members set role='member' where creed_id=${company} and user_id=${member}`;
     await assert.rejects(repository.vaultFolderCreate(db, { userId: member }, { strapId: company, name: "after-demotion", description: "" }), { status: 403 });
-    await assert.rejects(repository.vaultFolderDelete(db, { userId: member }, allowed.id), { status: 403 });
+    await assert.rejects(repository.vaultFolderDelete(db, { userId: member }, allowed.id, []), { status: 403 });
     assert.equal((await sql`select count(*)::int as count from strap_vault_folders where id=${allowed.id}`)[0].count, 1);
   });
 
@@ -448,7 +455,11 @@ test("scoped Vault reveals enforce live Postgres permissions and audit before de
     await expectDenied(created.key, 401, target.id);
     assert.equal((await request(key, target.id)).status, 200);
 
-    const removed = await folderRoute.DELETE(new Request("http://localhost/api/app", { method: "DELETE" }), params(folder.id));
+    // The route requires the secrets the caller saw in the folder.
+    assert.equal((await folderRoute.DELETE(new Request("http://localhost/api/app", { method: "DELETE" }), params(folder.id))).status, 400);
+    assert.equal((await folderRoute.DELETE(json("DELETE", { expectedItemIds: ["not-a-uuid"] }), params(folder.id))).status, 400);
+    assert.equal((await folderRoute.DELETE(json("DELETE", { expectedItemIds: [] }), params(folder.id))).status, 409);
+    const removed = await folderRoute.DELETE(json("DELETE", { expectedItemIds: [target.id] }), params(folder.id));
     assert.deepEqual(await removed.json(), { ok: true, movedItemCount: 1 });
     await expectDenied(key, 403, target.id);
   });
@@ -555,7 +566,7 @@ test("scoped Vault reveals enforce live Postgres permissions and audit before de
     await duringDemotion(() => repository.vaultDelete(db, { userId: member }, racing.id));
     assert.deepEqual((await sql`select name from creed_vault_items where id=${racing.id}`).map(row => row.name), ["Racing secret"]);
     await duringDemotion(() => repository.vaultFolderUpdate(db, { userId: member }, { folderId: contested.id, name: "renamed-while-demoted", description: "", expectedUpdatedAt: contested.updated_at }));
-    await duringDemotion(() => repository.vaultFolderDelete(db, { userId: member }, contested.id));
+    await duringDemotion(() => repository.vaultFolderDelete(db, { userId: member }, contested.id, []));
     assert.deepEqual((await sql`select name from strap_vault_folders where id=${contested.id}`).map(row => row.name), ["contested"]);
     // A reveal that loses the role while it waits returns no plaintext and writes no audit.
     let audited = false;
@@ -626,7 +637,7 @@ test("scoped Vault reveals enforce live Postgres permissions and audit before de
       // its folder lock; the profile deletion starts while it waits there.
       await blockerSession.begin(async blocker => {
         await blocker`select id from strap_vault_folders where id=${folder.id} for share`;
-        folderDeletion = repository.vaultFolderDelete(drizzle(writerSession), { userId: folderOwner }, folder.id).then(() => null, (error: unknown) => error);
+        folderDeletion = repository.vaultFolderDelete(drizzle(writerSession), { userId: folderOwner }, folder.id, []).then(() => null, (error: unknown) => error);
         assert.ok(await waitsOnLock(writerPid), "the folder deletion never waited on the folder");
         profileDeletion = deleterSession`delete from creeds where id=${doomed}`.then(() => null, (error: unknown) => error);
         assert.ok(await waitsOnLock(deleterPid), "the profile deletion never waited");
@@ -795,6 +806,39 @@ test("scoped Vault reveals enforce live Postgres permissions and audit before de
     assert.equal(throttled.status, 429);
     assert.equal((await throttled.text()).includes(secret), false);
     assert.equal(await lastUsed(fresh.metadata.id), null);
+  });
+
+  await t.test("a metadata edit is not audited as a folder move another session made", async () => {
+    const vault = dependencies["@/lib/api-key-vault"] as typeof import("../../lib/api-key-vault.ts");
+    const destination = await repository.vaultFolderCreate(db, { userId: owner }, { strapId: personal, name: "moved-elsewhere", description: "" });
+    const target = await repository.vaultCreate(db, { userId: owner }, { creedId: personal, name: "Audit target", description: "", secret });
+    const [{ name }] = await sql`select current_database() as name`;
+    const url = new URL(process.env.DATABASE_URL!);
+    url.pathname = `/${name}`;
+    const [{ pid: editor }] = await sql`select pg_backend_pid() as pid`;
+    const moverSession = createConnection(url.toString());
+    let edit: Promise<unknown> | undefined;
+    let waited = false;
+    try {
+      // Another session moves the secret and holds its row while the rename runs.
+      await moverSession.begin(async move => {
+        await move`update creed_vault_items set folder_id=${destination.id} where id=${target.id}`;
+        edit = vault.updateVaultItem({ userId: owner, itemId: target.id, name: "Audit target renamed", description: "", secret: null, request: new Request("http://localhost/") });
+        for (let attempt = 0; attempt < 50 && !waited; attempt++) {
+          const [{ waiting }] = await move`select count(*)::int as waiting from pg_stat_activity where pid = ${editor} and wait_event_type = 'Lock'`;
+          waited = waiting > 0;
+          if (!waited) await delay(100);
+        }
+      });
+    } finally {
+      await moverSession.end();
+    }
+    assert.ok(waited, "the rename never waited on the secret's row");
+    await edit;
+    const [audit] = await sql`select metadata from creed_audit_log where action='vault.secret_updated' and metadata->>'itemId'=${target.id}`;
+    assert.equal(audit.metadata.fromFolderId, undefined);
+    assert.equal(audit.metadata.toFolderId, undefined);
+    assert.equal((await sql`select folder_id from creed_vault_items where id=${target.id}`)[0].folder_id, destination.id);
   });
 
   await t.test("reveal audits store bounded copies of client headers", async () => {

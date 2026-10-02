@@ -3,6 +3,8 @@ export const MAX_VAULT_ITEM_GRANTS = 100;
 export const MAX_VAULT_FOLDER_GRANTS = 100;
 /** Per-key reveal ceiling. A key covering up to 1,000 secrets can load and run within a minute. */
 export const MAX_VAULT_REVEALS_PER_MINUTE = 2_000;
+/** Upper bound on the secret IDs a folder deletion may name as the contents it expects. */
+export const MAX_VAULT_FOLDER_CONTENTS = 10_000;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function parseIdList(value: unknown, max: number): string[] | undefined {
@@ -18,6 +20,11 @@ export function parseVaultItemGrants(value: unknown): string[] | undefined {
 
 export function parseVaultFolderGrants(value: unknown): string[] | undefined {
   return parseIdList(value, MAX_VAULT_FOLDER_GRANTS);
+}
+
+/** The secret IDs a folder deletion expects the folder to hold. Required; may be empty. */
+export function parseVaultFolderContents(value: unknown): string[] | undefined {
+  return value === undefined ? undefined : parseIdList(value, MAX_VAULT_FOLDER_CONTENTS);
 }
 
 /** Folder names are selected in CLI commands and printed in schema comments, so they stay on one line. */

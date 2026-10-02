@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireApiAuth } from "@/lib/api-auth";
 import { readJsonObject } from "@/lib/strap-api";
-import { isVaultFolderName } from "@/lib/vault-grants";
+import { isVaultFolderName, MAX_VAULT_FOLDER_CONTENTS, parseVaultFolderContents } from "@/lib/vault-grants";
 import { deleteVaultFolder, updateVaultFolder, VaultAccessError } from "@/lib/api-key-vault";
 
 type Context = { params: Promise<{ id: string }> };
@@ -38,13 +38,18 @@ export async function PATCH(request: Request, context: Context) {
   }
 }
 
-/** Items in the folder stay in the Vault without a folder. */
+/** Items in the folder stay in the Vault without a folder. The body names the secrets the caller saw in it. */
 export async function DELETE(request: Request, context: Context) {
   const auth = await requireApiAuth();
   if (auth instanceof NextResponse) return auth;
   const { id } = await context.params;
+  const body = await readJsonObject(request);
+  const expectedItemIds = parseVaultFolderContents(body?.expectedItemIds);
+  if (!expectedItemIds) {
+    return NextResponse.json({ error: `expectedItemIds must list the secrets currently in the folder, up to ${MAX_VAULT_FOLDER_CONTENTS}. Move secrets out of a larger folder before deleting it.` }, { status: 400, headers: NO_STORE });
+  }
   try {
-    return NextResponse.json({ ok: true, ...await deleteVaultFolder({ userId: auth.user.id, folderId: id, request }) }, { headers: NO_STORE });
+    return NextResponse.json({ ok: true, ...await deleteVaultFolder({ userId: auth.user.id, folderId: id, expectedItemIds, request }) }, { headers: NO_STORE });
   } catch (error) {
     return vaultError(error);
   }
