@@ -118,7 +118,8 @@ function HeadlessAccessForm({ creedId, canUseVault }: { creedId: string | undefi
   const [name, setName] = useState("");
   const [mode, setMode] = useState<HeadlessKeyMode>("proposal-only");
   const [expiry, setExpiry] = useState("90");
-  const [createdKey, setCreatedKey] = useState<{ key: string; rotated: boolean } | null>(null);
+  // keyId names the key the value belongs to, so revoking that key clears it.
+  const [createdKey, setCreatedKey] = useState<{ key: string; keyId: string; rotated: boolean } | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [vaultItems, setVaultItems] = useState<VaultOption[]>([]);
@@ -131,7 +132,9 @@ function HeadlessAccessForm({ creedId, canUseVault }: { creedId: string | undefi
   // Grants are edited against loaded Vault metadata only, so a failed or pending
   // load can never be saved as "no access".
   const [vaultLoaded, setVaultLoaded] = useState(false);
-  const rotating = useRef(false);
+  // One rotation or revocation at a time: a response that lands after another
+  // change to the same key could leave a value on screen that no longer works.
+  const mutating = useRef(false);
   const liveGrants = vaultLoaded ? { folderIds: new Set(vaultFolders.map((folder) => folder.id)), itemIds: new Set(vaultItems.map((item) => item.id)) } : null;
 
   const fetchVault = useCallback(async (signal?: AbortSignal) => {
@@ -190,9 +193,9 @@ function HeadlessAccessForm({ creedId, canUseVault }: { creedId: string | undefi
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ creedId, name: name.trim(), mode, expiresAt, ...(canUseVault ? grants : NO_GRANTS) }),
       });
-      const payload = (await response.json().catch(() => ({}))) as { key?: string; error?: string };
+      const payload = (await response.json().catch(() => ({}))) as { key?: string; metadata?: { id?: string }; error?: string };
       if (!response.ok || !payload.key) throw new Error(payload.error || "Could not create API key.");
-      setCreatedKey({ key: payload.key, rotated: false });
+      setCreatedKey({ key: payload.key, keyId: payload.metadata?.id ?? "", rotated: false });
       setName("");
       setGrants(NO_GRANTS);
       await loadKeys();
@@ -230,11 +233,11 @@ function HeadlessAccessForm({ creedId, canUseVault }: { creedId: string | undefi
   }
 
   async function rotateKey(key: KeyMetadata) {
-    // One rotation at a time: an older response arriving last would show a key
-    // value that the newer rotation already invalidated.
-    if (rotating.current) return;
+    // An older response arriving last would show a key value that a newer
+    // rotation or a revocation already invalidated.
+    if (mutating.current) return;
     if (!window.confirm(`Rotate ${key.name}? The current value stops working immediately. Its mode, expiry and secret access stay the same.`)) return;
-    rotating.current = true;
+    mutating.current = true;
     // Any value still on screen may stop working once this rotation commits.
     setCreatedKey(null);
     setBusy(true);
@@ -247,10 +250,10 @@ function HeadlessAccessForm({ creedId, canUseVault }: { creedId: string | undefi
       const payload = (await response.json().catch(() => ({}))) as { key?: string; error?: string };
       if (!response.ok) return setError(payload.error || "Could not rotate API key.");
       if (!payload.key) return setError(lost);
-      setCreatedKey({ key: payload.key, rotated: true });
+      setCreatedKey({ key: payload.key, keyId: key.id, rotated: true });
       await loadKeys().catch((loadError: unknown) => setError(loadError instanceof Error ? loadError.message : "Could not reload API keys."));
     } finally {
-      rotating.current = false;
+      mutating.current = false;
       setBusy(false);
     }
   }
@@ -291,18 +294,30 @@ function HeadlessAccessForm({ creedId, canUseVault }: { creedId: string | undefi
   }
 
   async function revokeKey(id: string) {
-    // A revoke landing during a rotation would leave a dead value on screen.
-    if (rotating.current) return;
+    // Rotation stays disabled until the revocation settles, so no new value for
+    // this key can appear after it was revoked.
+    if (mutating.current) return;
     if (!window.confirm("Revoke this API key? Headless clients using it will disconnect immediately.")) return;
+    mutating.current = true;
+    setBusy(true);
     setError(null);
-    const response = await fetch(`/api/app/headless-access/${encodeURIComponent(id)}`, { method: "DELETE" });
-    if (!response.ok) {
-      const payload = (await response.json().catch(() => ({}))) as { error?: string };
-      setError(payload.error || "Could not revoke API key.");
-      return;
+    try {
+      const response = await fetch(`/api/app/headless-access/${encodeURIComponent(id)}`, { method: "DELETE" }).catch(() => null);
+      if (response && !response.ok) {
+        const payload = (await response.json().catch(() => ({}))) as { error?: string };
+        setError(payload.error || "Could not revoke API key.");
+        return;
+      }
+      // Revoked, or possibly revoked if the response was lost: a value shown for
+      // this key no longer works.
+      setCreatedKey((current) => (current?.keyId === id ? null : current));
+      if (editing?.keyId === id) setEditing(null);
+      if (!response) setError("The revoke response did not arrive. The list below shows whether the key is still active.");
+      await loadKeys().catch((loadError: unknown) => setError(loadError instanceof Error ? loadError.message : "Could not reload API keys."));
+    } finally {
+      mutating.current = false;
+      setBusy(false);
     }
-    if (editing?.keyId === id) setEditing(null);
-    await loadKeys();
   }
 
   return (

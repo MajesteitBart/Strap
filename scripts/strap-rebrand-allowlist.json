@@ -914,7 +914,7 @@
       "file": "components/strap/headless-access-card.tsx",
       "kind": "content",
       "occurrences": 18,
-      "fingerprint": "181aea13ce7964169fb23609d8ada4f1c8752f0e6659b52a7fb3cf13aa9144f2",
+      "fingerprint": "7424d79860d16a1ff729a3072c3332f85d87bc75a5cde5194c86b67e91425ef4",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
