@@ -3,9 +3,8 @@ import { currentRequestCookie } from "@/lib/http/request-context";
 import { log } from "@/lib/observability";
 import { getRequestAuth } from "@/lib/request-auth";
 import { sanitizeNextPath } from "@/lib/safe-next";
-import { hasPersistedStrap } from "@/lib/strap-backend";
 import { isDatabaseTableMissingError } from "@/lib/strap-backend-errors";
-import { hasCompanyMembership } from "@/lib/strap-membership";
+import { readStrapMemberships } from "@/lib/strap-membership";
 import "server-only";
 
 // Server-side decisions for the public entry points: `/` and the sign-in pages.
@@ -37,15 +36,9 @@ export async function resolveRootEntry(): Promise<Redirect | { kind: "missing-sc
   const { context, user } = auth;
   if (!user) return { kind: "redirect", to: "/home" };
 
-  // A company member goes straight into the app; the app gate resolves their
-  // active (company) Strap and, for an owner who hasn't finished company setup,
-  // resumes company onboarding. They must never be routed through the personal
-  // first-run flow.
-  if (await hasCompanyMembership(context, user.id)) return { kind: "redirect", to: "/file" };
-
+  let memberships;
   try {
-    const hasStrap = await hasPersistedStrap(context, user.id);
-    return { kind: "redirect", to: hasStrap ? "/file" : "/onboarding" };
+    memberships = await readStrapMemberships(context, user.id);
   } catch (error) {
     if (isDatabaseTableMissingError(error)) {
       return { kind: "missing-schema", message: error instanceof Error ? error.message : "Strap tables are missing." };
@@ -53,6 +46,13 @@ export async function resolveRootEntry(): Promise<Redirect | { kind: "missing-sc
     log.error("home_has_persisted_creed_failed", { route: "/", userId: user.id }, error);
     throw error;
   }
+
+  // A company member goes straight into the app; the app gate resolves their
+  // active (company) Strap and, for an owner who hasn't finished company setup,
+  // resumes company onboarding. They must never be routed through the personal
+  // first-run flow.
+  if (memberships.straps.some((strap) => strap.type === "company")) return { kind: "redirect", to: "/file" };
+  return { kind: "redirect", to: memberships.personalStrapId ? "/file" : "/onboarding" };
 }
 
 // Sign-in, sign-up and two-factor pages: a signed-in visitor goes on to `next`

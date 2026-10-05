@@ -1,10 +1,10 @@
 import { isDatabaseConfigured } from "@/lib/env";
 import { getRequestAuth } from "@/lib/request-auth";
-import { hasPersistedStrap, loadActiveStrapState } from "@/lib/strap-backend";
+import { loadActiveStrapState } from "@/lib/strap-backend";
 import { isDatabaseTableMissingError } from "@/lib/strap-backend-errors";
-import { resolveActiveStrap, type ActiveStrap } from "@/lib/strap-context";
+import { pickActiveStrap, resolveActiveStrap, type ActiveStrap } from "@/lib/strap-context";
 import { initialStrapState, type StrapState } from "@/lib/strap-data";
-import { hasCompanyMembership } from "@/lib/strap-membership";
+import { readStrapMemberships, type StrapMemberships } from "@/lib/strap-membership";
 import type { User } from "@/lib/auth/user";
 import type { DatabaseContext } from "@/lib/db/context";
 import { getCompanyWelcomeState, getEntitlementWelcomeState, type WelcomeState } from "@/lib/welcome";
@@ -73,24 +73,21 @@ export async function loadAppShell(): Promise<AppShellData> {
   const { context, user } = await getRequestAuth();
   if (!user) return { kind: "redirect", to: "/pricing" };
 
-  // Independent reads, sent together. The persisted-Strap probe only matters
-  // for users without a company membership, so its outcome is inspected only
-  // then; a missing table means "not onboarded".
-  const [companyMember, active, persisted] = await Promise.all([
-    hasCompanyMembership(context, user.id),
-    resolveActiveStrap(context, user),
-    hasPersistedStrap(context, user.id).then(
-      (value) => ({ ok: true as const, value }),
-      (error: unknown) => ({ ok: false as const, error }),
-    ),
-  ]);
+  // One read answers the gate: which Straps the user belongs to and whether
+  // they own a Personal Strap. A missing table means "not onboarded".
+  let memberships: StrapMemberships;
+  try {
+    memberships = await readStrapMemberships(context, user.id);
+  } catch (error) {
+    if (isDatabaseTableMissingError(error)) return { kind: "redirect", to: "/onboarding" };
+    throw error;
+  }
+  const active = pickActiveStrap(memberships.straps);
 
   // Company members skip the personal first-run check; their active company
   // Strap decides what loads.
-  if (!companyMember) {
-    if (!persisted.ok && !isDatabaseTableMissingError(persisted.error)) throw persisted.error;
-    if (!persisted.ok || !persisted.value) return { kind: "redirect", to: "/onboarding" };
-  }
+  const companyMember = memberships.straps.some((strap) => strap.type === "company");
+  if (!companyMember && !memberships.personalStrapId) return { kind: "redirect", to: "/onboarding" };
 
   // Resume company onboarding: an owner of any Company Strap that has not
   // finished setup goes back to it rather than an empty file. Scan every

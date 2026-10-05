@@ -532,10 +532,14 @@ export function StrapProvider({
   children,
   initialState = initialStrapState,
   persistenceEnabled: initialPersistenceEnabled = false,
+  initialStateLoadedAt = 0,
 }: {
   children: ReactNode;
   initialState?: StrapState;
   persistenceEnabled?: boolean;
+  // When initialState arrived (Date.now()). Counts as the last server sync,
+  // so a mount right after the load doesn't fetch the same state again.
+  initialStateLoadedAt?: number;
 }) {
   const [state, setState] = useState(initialState);
   // Reactive, not just the prop: onboarding loads before any Strap exists (so
@@ -573,7 +577,7 @@ export function StrapProvider({
     null,
   );
   const syncInFlightRef = useRef(false);
-  const lastSyncAtRef = useRef(0);
+  const lastSyncAtRef = useRef(initialStateLoadedAt);
   const syncActivityRef = useRef(Date.now());
   const broadcastStateChanged = useCallback(() => {
     const creedId = latestStateRef.current.creedId;

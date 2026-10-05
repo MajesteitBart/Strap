@@ -17,7 +17,9 @@ export const Route = createFileRoute("/_app")({
   loader: async () => {
     const shell = await getAppShell();
     if (shell.kind === "redirect") throw redirect({ href: shell.to, replace: true });
-    return shell;
+    // The provider skips its mount-time sync when this is recent. A hover
+    // preload can be up to 30 s old by the time it renders; that one syncs.
+    return { ...shell, loadedAt: Date.now() };
   },
   // The router reloads this when the app is entered (reusing a hover preload
   // under 30s old) and never on moves within it. Dropping the data on leaving
@@ -36,7 +38,7 @@ function AppLayout() {
   }
 
   return (
-    <StrapProvider initialState={shell.initialState} persistenceEnabled={shell.persistenceEnabled}>
+    <StrapProvider initialState={shell.initialState} persistenceEnabled={shell.persistenceEnabled} initialStateLoadedAt={shell.loadedAt}>
       <AppShellLayout showWelcome={shell.showWelcome} welcomePaidAt={shell.welcomePaidAt}>
         <Outlet />
       </AppShellLayout>

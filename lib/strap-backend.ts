@@ -1,19 +1,19 @@
 import * as tables from "@/db/schema/application";
+import { users } from "@/db/schema/auth";
 import {
   getAgentIconKind,
   type CliAttributableAgentId,
 } from "@/lib/agent-icon";
 import type { User } from "@/lib/auth/user";
-import { authorizeValues } from "@/lib/authz/policies";
+import { authorizeValues, rowScope } from "@/lib/authz/policies";
 import { AccessDeniedError } from "@/lib/authz/viewer";
-import { readCompanyGitHubIntegration } from "@/lib/company-github";
 import { getDatabase } from "@/lib/db/client";
 import type { DatabaseContext } from "@/lib/db/context";
 import { viewerContext } from "@/lib/db/context";
 import { callProcedure } from "@/lib/db/procedures";
-import { conflictSet, exactlyOne, maybeOne, query } from "@/lib/db/query";
-import { companyVersionControl } from "@/lib/db/repositories/company";
-import { findUser } from "@/lib/db/repositories/users";
+import { decodeRow, decodeRows, jsonRow, jsonRows, rowJson } from "@/lib/db/json-rows";
+import { conflictSet, exactlyOne, maybeOne, query, scopedStatement } from "@/lib/db/query";
+import { findUser, userScope } from "@/lib/db/repositories/users";
 import { serviceContext } from "@/lib/db/service";
 import { getSiteUrl } from "@/lib/env";
 import { isGitHubOAuthAppConfigured } from "@/lib/github";
@@ -50,13 +50,14 @@ import {
   type StrapSwitcherItem,
 } from "@/lib/strap-data";
 import type { StrapSummary } from "@/lib/strap-membership";
-import { getPersonalStrapId, getStrapRole } from "@/lib/strap-membership";
+import { getPersonalStrapId } from "@/lib/strap-membership";
 import {
   resolveSectionPermission,
   type StrapRole,
 } from "@/lib/strap-permissions";
 import { getDisplayName } from "@/lib/user-name";
-import { and, asc, desc, eq, inArray, isNull } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, sql, type SQL } from "drizzle-orm";
+import type { PgTable } from "drizzle-orm/pg-core";
 import { randomBytes } from "node:crypto";
 import { cache } from "react";
 import "server-only";
@@ -401,12 +402,156 @@ async function readVersionControlRow(
   return (data as VersionControlRow | null) ?? null;
 }
 
-async function readMcpClientRows(client: DatabaseContext, userId: string, creedId?: string | null) {
-  const { data, error } = await query(client, tables.creed_mcp_clients, "select", (database, scope) => database.select().from(tables.creed_mcp_clients)
-    .where(and(scope, creedId ? eq(tables.creed_mcp_clients.creed_id, creedId) : eq(tables.creed_mcp_clients.user_id, userId)))
-    .orderBy(desc(tables.creed_mcp_clients.last_seen_at)));
-  assertNoError(error, "Could not load MCP clients.");
-  return ((data as McpClientRow[] | null) ?? []).filter(row => row.client_name.trim().toLowerCase() !== "mcp client").map(hydrateMcpClient);
+// Every Strap load used to issue one query per table, and each query costs two
+// network round trips (see lib/db/json-rows.ts). The readers below fetch the
+// same rows in one statement. Every table keeps its rowScope filter.
+
+type PersonalStrapRows = {
+  personalCreedId: string | null;
+  token: TokenRow | null;
+  githubIntegration: IntegrationRow | null;
+  versionControl: VersionControlRow | null;
+  mcpClients: McpClient[];
+  sections: SectionRow[];
+  proposals: ProposalRow[];
+  activity: ActivityRow[];
+  connections: ConnectionRow[];
+  gettingStarted: StrapState["gettingStarted"];
+};
+
+type CompanyStrapRows = {
+  role: StrapRole | null;
+  creed: { name: string; company_email: string | null; avatar_url: string | null } | null;
+  sections: SectionRow[];
+  proposals: ProposalRow[];
+  activity: ActivityRow[];
+  members: Array<{ user_id: string; role: StrapRole; user: User | null }>;
+  overrides: Array<{ section_id: string; permission: AgentPermission }>;
+  invites: Array<{ id: string; email: string; role: "admin" | "member" }>;
+  connections: ConnectionRow[];
+  mcpClients: McpClientRow[];
+  agentPermissions: Array<{ section_id: string; permission: AgentPermission }>;
+  githubIntegration: Pick<IntegrationRow, "status" | "provider_account_id" | "provider_login"> | null;
+  versionControl: VersionControlRow | null;
+  gettingStarted: StrapState["gettingStarted"];
+};
+
+const MEMBER_USER_KEYS = ["id", "name", "email", "emailVerified", "displayName", "avatarUrl", "image"] as const;
+
+async function readStrapStatement(client: DatabaseContext, statement: SQL) {
+  const { data, error } = await scopedStatement(client, (database) => database.execute<Record<string, unknown>>(statement));
+  const row = data?.[0];
+  if (error || !row) throw new Error(error?.message ?? "Could not load the Strap.");
+  return row;
+}
+
+function gettingStartedJson(client: DatabaseContext, userId: string) {
+  const table = tables.creed_getting_started;
+  return jsonRow(table, sql`${rowScope(client, table, "select")} and ${table.user_id} = ${userId}`, ["steps", "completed_at"]);
+}
+
+function toGettingStarted(value: unknown): StrapState["gettingStarted"] {
+  const row = decodeRow(tables.creed_getting_started, value) as { steps: Record<string, boolean> | null; completed_at: string | null } | null;
+  return row ? { steps: row.steps ?? {}, completedAt: row.completed_at } : null;
+}
+
+async function readPersonalStrapRows(
+  client: DatabaseContext,
+  userId: string,
+  limits: { proposals: number; activity: number },
+): Promise<PersonalStrapRows> {
+  const t = tables;
+  const scope = (table: PgTable) => rowScope(client, table, "select");
+  const personalId = sql`(select personal_strap.id from personal_strap)`;
+  const row = await readStrapStatement(client, sql`
+    with personal_strap as (
+      select ${t.creeds.id} as id from ${t.creeds}
+      where ${scope(t.creeds)} and ${t.creeds.owner_user_id} = ${userId} and ${t.creeds.type} = 'personal'
+    )
+    select
+      ${personalId} as personal_creed_id,
+      ${jsonRow(t.creed_tokens, sql`${scope(t.creed_tokens)} and ${t.creed_tokens.user_id} = ${userId}`)} as token,
+      ${jsonRow(t.creed_integrations, sql`${scope(t.creed_integrations)} and ${t.creed_integrations.user_id} = ${userId} and ${t.creed_integrations.provider} = 'github'`)} as github,
+      ${jsonRow(t.creed_version_control, sql`${scope(t.creed_version_control)} and ${t.creed_version_control.user_id} = ${userId}`)} as version_control,
+      ${jsonRows(t.creed_mcp_clients, {
+        // Without a personal Strap the roster falls back to the user's own rows.
+        where: sql`${scope(t.creed_mcp_clients)} and case when ${personalId} is null then ${t.creed_mcp_clients.user_id} = ${userId} else ${t.creed_mcp_clients.creed_id} = ${personalId} end`,
+        orderBy: desc(t.creed_mcp_clients.last_seen_at),
+      })} as mcp_clients,
+      ${jsonRows(t.creed_sections, { where: sql`${scope(t.creed_sections)} and ${t.creed_sections.creed_id} = ${personalId}`, orderBy: asc(t.creed_sections.position) })} as sections,
+      ${jsonRows(t.creed_proposals, { where: sql`${scope(t.creed_proposals)} and ${t.creed_proposals.creed_id} = ${personalId}`, orderBy: desc(t.creed_proposals.created_at), limit: limits.proposals })} as proposals,
+      ${jsonRows(t.creed_activity, { where: sql`${scope(t.creed_activity)} and ${t.creed_activity.creed_id} = ${personalId}`, orderBy: desc(t.creed_activity.created_at), limit: limits.activity })} as activity,
+      ${jsonRows(t.creed_connections, { where: sql`${scope(t.creed_connections)} and ${t.creed_connections.creed_id} = ${personalId}`, orderBy: desc(t.creed_connections.updated_at) })} as connections,
+      ${gettingStartedJson(client, userId)} as getting_started
+  `);
+
+  const token = decodeRow(t.creed_tokens, row.token) as TokenRow | null;
+  const github = decodeRow(t.creed_integrations, row.github) as IntegrationRow | null;
+  return {
+    personalCreedId: typeof row.personal_creed_id === "string" ? row.personal_creed_id : null,
+    token: token ? resolveTokenRow(token) : null,
+    githubIntegration: github ? resolveGitHubIntegrationRow(github) : null,
+    versionControl: decodeRow(t.creed_version_control, row.version_control) as VersionControlRow | null,
+    mcpClients: (decodeRows(t.creed_mcp_clients, row.mcp_clients) as McpClientRow[])
+      .filter((entry) => entry.client_name.trim().toLowerCase() !== "mcp client")
+      .map(hydrateMcpClient),
+    sections: decodeRows(t.creed_sections, row.sections) as SectionRow[],
+    proposals: decodeRows(t.creed_proposals, row.proposals) as ProposalRow[],
+    activity: decodeRows(t.creed_activity, row.activity) as ActivityRow[],
+    connections: decodeRows(t.creed_connections, row.connections) as ConnectionRow[],
+    gettingStarted: toGettingStarted(row.getting_started),
+  };
+}
+
+// Reads run as the viewer, so rowScope applies to every member-readable table.
+// The team GitHub connection and version control have no viewer policy; as
+// before, only owners and admins get them back.
+async function readCompanyStrapRows(userId: string, creedId: string): Promise<CompanyStrapRows> {
+  const client = viewerContext(getDatabase(), { userId });
+  const t = tables;
+  const scope = (table: PgTable) => rowScope(client, table, "select");
+  const members = t.creed_members;
+  const manager = sql`exists (select 1 from public.creed_members manager where manager.creed_id = ${creedId} and manager.user_id = ${userId} and manager.role in ('owner', 'admin'))`;
+  const row = await readStrapStatement(client, sql`
+    select
+      (select ${members.role} from ${members} where ${scope(members)} and ${members.creed_id} = ${creedId} and ${members.user_id} = ${userId}) as role,
+      ${jsonRow(t.creeds, sql`${scope(t.creeds)} and ${t.creeds.id} = ${creedId}`, ["name", "company_email", "avatar_url"])} as creed,
+      ${jsonRows(t.creed_sections, { where: sql`${scope(t.creed_sections)} and ${t.creed_sections.creed_id} = ${creedId} and ${t.creed_sections.deleted_at} is null`, orderBy: asc(t.creed_sections.position) })} as sections,
+      ${jsonRows(t.creed_proposals, { where: sql`${scope(t.creed_proposals)} and ${t.creed_proposals.creed_id} = ${creedId}`, orderBy: desc(t.creed_proposals.created_at), limit: 500 })} as proposals,
+      ${jsonRows(t.creed_activity, { where: sql`${scope(t.creed_activity)} and ${t.creed_activity.creed_id} = ${creedId}`, orderBy: desc(t.creed_activity.created_at), limit: 500 })} as activity,
+      (select coalesce(json_agg(json_build_object(
+          'user_id', ${members.user_id},
+          'role', ${members.role},
+          'user', (select ${rowJson(users, MEMBER_USER_KEYS)} from ${users} where ${users.id} = ${members.user_id} and ${userScope(client)})
+        ) order by ${members.created_at}, ${members.user_id}), '[]'::json)
+        from ${members} where ${scope(members)} and ${members.creed_id} = ${creedId}) as members,
+      ${jsonRows(t.creed_member_section_permissions, { where: sql`${scope(t.creed_member_section_permissions)} and ${t.creed_member_section_permissions.creed_id} = ${creedId} and ${t.creed_member_section_permissions.user_id} = ${userId}`, orderBy: asc(t.creed_member_section_permissions.section_id), keys: ["section_id", "permission"] })} as overrides,
+      ${jsonRows(t.creed_invites, { where: sql`${scope(t.creed_invites)} and ${t.creed_invites.creed_id} = ${creedId} and ${t.creed_invites.status} = 'pending'`, orderBy: asc(t.creed_invites.created_at), keys: ["id", "email", "role"] })} as invites,
+      ${jsonRows(t.creed_connections, { where: sql`${scope(t.creed_connections)} and ${t.creed_connections.creed_id} = ${creedId}`, orderBy: desc(t.creed_connections.updated_at) })} as connections,
+      ${jsonRows(t.creed_mcp_clients, { where: sql`${scope(t.creed_mcp_clients)} and ${t.creed_mcp_clients.creed_id} = ${creedId}`, orderBy: desc(t.creed_mcp_clients.last_seen_at) })} as mcp_clients,
+      ${jsonRows(t.creed_member_agent_permissions, { where: sql`${scope(t.creed_member_agent_permissions)} and ${t.creed_member_agent_permissions.creed_id} = ${creedId} and ${t.creed_member_agent_permissions.user_id} = ${userId}`, orderBy: asc(t.creed_member_agent_permissions.section_id), keys: ["section_id", "permission"] })} as agent_permissions,
+      ${jsonRow(t.creed_company_github_integration, sql`${t.creed_company_github_integration.creed_id} = ${creedId} and ${manager}`, ["status", "provider_account_id", "provider_login"])} as github,
+      ${jsonRow(t.creed_company_version_control, sql`${t.creed_company_version_control.creed_id} = ${creedId} and ${manager}`)} as version_control,
+      ${gettingStartedJson(client, userId)} as getting_started
+  `);
+
+  const memberRows = Array.isArray(row.members) ? (row.members as Array<{ user_id: string; role: StrapRole; user: unknown }>) : [];
+  return {
+    role: typeof row.role === "string" ? (row.role as StrapRole) : null,
+    creed: decodeRow(t.creeds, row.creed) as CompanyStrapRows["creed"],
+    sections: decodeRows(t.creed_sections, row.sections) as SectionRow[],
+    proposals: decodeRows(t.creed_proposals, row.proposals) as ProposalRow[],
+    activity: decodeRows(t.creed_activity, row.activity) as ActivityRow[],
+    members: memberRows.map((member) => ({ user_id: member.user_id, role: member.role, user: decodeRow(users, member.user) as User | null })),
+    overrides: decodeRows(t.creed_member_section_permissions, row.overrides) as CompanyStrapRows["overrides"],
+    invites: decodeRows(t.creed_invites, row.invites) as CompanyStrapRows["invites"],
+    connections: decodeRows(t.creed_connections, row.connections) as ConnectionRow[],
+    mcpClients: decodeRows(t.creed_mcp_clients, row.mcp_clients) as McpClientRow[],
+    agentPermissions: decodeRows(t.creed_member_agent_permissions, row.agent_permissions) as CompanyStrapRows["agentPermissions"],
+    githubIntegration: decodeRow(t.creed_company_github_integration, row.github) as CompanyStrapRows["githubIntegration"],
+    versionControl: decodeRow(t.creed_company_version_control, row.version_control) as VersionControlRow | null,
+    gettingStarted: toGettingStarted(row.getting_started),
+  };
 }
 
 export async function readGitHubIntegration(client: DatabaseContext, userId: string) {
@@ -502,27 +647,6 @@ export async function clearGitHubIntegration(client: DatabaseContext, userId: st
     versionControlError,
     "Could not clear version control settings.",
   );
-}
-
-// Admin re-fetch of the user, cached per request by id. The personal load path
-// enriches twice (loadActiveStrapState -> loadStrapState); keying the round-trip
-// on the id (a string, so React cache() dedupes by value) collapses those into
-// one getUserById per request.
-const fetchEnrichedUser = cache(async (userId: string): Promise<User | null> => {
-  try {
-    const admin = serviceContext("lib/strap-backend.ts");
-    const { data, error } = await findUser(admin, userId);
-    if (error || !data.user) {
-      return null;
-    }
-    return data.user;
-  } catch {
-    return null;
-  }
-});
-
-async function enrichUserForState(user: User) {
-  return (await fetchEnrichedUser(user.id)) ?? user;
 }
 
 export function getAvatarInitials(name: string) {
@@ -986,9 +1110,10 @@ function isNoopActivityEntry(entry: ActivityEntry) {
   );
 }
 
-async function ensureTokenRow(client: DatabaseContext, userId: string) {
+// `current` is the already-read row (null when there is none); omit it to read.
+async function ensureTokenRow(client: DatabaseContext, userId: string, current?: TokenRow | null) {
   const db = client;
-  const data = await readTokenRow(db, userId);
+  const data = current === undefined ? await readTokenRow(db, userId) : current;
 
   if (data) {
     // Trigger upgrade when the row is legacy (any hash / ciphertext
@@ -1228,52 +1353,33 @@ async function loadCreedStateImpl(
   user: User,
   options?: { proposalLimit?: number; activityLimit?: number },
 ): Promise<PersistResult> {
-  const proposalLimit = options?.proposalLimit ?? 500;
-  const activityLimit = options?.activityLimit ?? 500;
   const db = client;
-  // These five reads are independent of each other; only readMcpClientRows
-  // needs personalCreedId, so run the rest as one wave instead of a serial
-  // chain (was ~5 sequential round-trips, now 2).
-  const [resolvedUser, tokenRow, personalCreedId, githubIntegration, versionControl] =
-    await Promise.all([
-      enrichUserForState(user),
-      ensureTokenRow(db, user.id),
-      getPersonalStrapId(db, user.id),
-      readGithubIntegrationRow(db, user.id),
-      readVersionControlRow(db, user.id),
-    ]);
-  const mcpClients = await readMcpClientRows(db, user.id, personalCreedId);
+  const rows = await readPersonalStrapRows(db, user.id, {
+    proposals: options?.proposalLimit ?? 500,
+    activity: options?.activityLimit ?? 500,
+  });
+  const { personalCreedId, githubIntegration, versionControl, mcpClients, gettingStarted } = rows;
+  // Creates or upgrades the agent tokens when the row is missing or legacy.
+  const tokenRow = await ensureTokenRow(db, user.id, rows.token);
 
   if (!personalCreedId) {
     return {
-      state: createBlankCreedState(
-        resolvedUser,
-        tokenRow,
-        mcpClients,
-        githubIntegration,
-        versionControl,
-        { ignoreLinkedGitHubIdentity: true },
-      ),
+      state: {
+        ...createBlankCreedState(
+          user,
+          tokenRow,
+          mcpClients,
+          githubIntegration,
+          versionControl,
+          { ignoreLinkedGitHubIdentity: true },
+        ),
+        gettingStarted,
+      },
       hasPersistedCreed: false,
     };
   }
 
-  const [
-    { data: sectionRows, error: sectionError },
-    { data: proposalRows, error: proposalError },
-    { data: activityRows, error: activityError },
-    { data: connectionRows, error: connectionError },
-  ] = await Promise.all([
-    query(db, tables.creed_sections, "select", (database, scope) => database.select().from(tables.creed_sections).where(and(scope, eq(tables.creed_sections.creed_id, personalCreedId))).orderBy(asc(tables.creed_sections.position))),
-    query(db, tables.creed_proposals, "select", (database, scope) => database.select().from(tables.creed_proposals).where(and(scope, eq(tables.creed_proposals.creed_id, personalCreedId))).orderBy(desc(tables.creed_proposals.created_at)).limit(proposalLimit)),
-    query(db, tables.creed_activity, "select", (database, scope) => database.select().from(tables.creed_activity).where(and(scope, eq(tables.creed_activity.creed_id, personalCreedId))).orderBy(desc(tables.creed_activity.created_at)).limit(activityLimit)),
-    query(db, tables.creed_connections, "select", (database, scope) => database.select().from(tables.creed_connections).where(and(scope, eq(tables.creed_connections.creed_id, personalCreedId))).orderBy(desc(tables.creed_connections.updated_at))),
-  ]);
-
-  assertNoError(sectionError, "Could not load Strap sections.");
-  assertNoError(proposalError, "Could not load Strap proposals.");
-  assertNoError(activityError, "Could not load Strap activity.");
-  assertNoError(connectionError, "Could not load Strap connections.");
+  const sectionRows = rows.sections;
 
   // No early return when the section list is empty: a creed row with zero
   // sections is a real, onboarded Strap whose sections were all deleted or
@@ -1286,14 +1392,14 @@ async function loadCreedStateImpl(
   const { definitions } = buildConnectionDefinitions();
 
   const connectionMap = new Map(
-    ((connectionRows as ConnectionRow[] | null) ?? []).map((row) => [
+    rows.connections.map((row) => [
       row.connection_id,
       row,
     ]),
   );
 
   const baseState = createBlankCreedState(
-    resolvedUser,
+    user,
     tokenRow,
     mcpClients,
     githubIntegration,
@@ -1304,7 +1410,7 @@ async function loadCreedStateImpl(
   // The relative "Saved Xm ago" label starts from the most recent section
   // edit, so a fresh page load reflects when the file actually last changed
   // rather than always reading "just now".
-  const editTimes = ((sectionRows as SectionRow[] | null) ?? [])
+  const editTimes = sectionRows
     .map((row) => Date.parse(row.last_edited_at ?? row.updated_at))
     .filter((ts) => !Number.isNaN(ts));
   const lastSavedAt = editTimes.length ? Math.max(...editTimes) : null;
@@ -1320,20 +1426,13 @@ async function loadCreedStateImpl(
       mcpUrl: buildMcpUrl(),
       ...deriveMcpStatus(mcpClients),
       mcpClients,
-      sections: ((sectionRows as SectionRow[] | null) ?? []).map(
-        hydrateSection,
-      ),
-      proposals: ((proposalRows as ProposalRow[] | null) ?? []).map(
-        hydrateProposal,
-      ),
-      activity: hydrateActivityEntries(
-        (activityRows as ActivityRow[] | null) ?? [],
-        (sectionRows as SectionRow[] | null) ?? [],
-      ).filter((entry) => !isNoopActivityEntry(entry)),
+      sections: sectionRows.map(hydrateSection),
+      proposals: rows.proposals.map(hydrateProposal),
+      activity: hydrateActivityEntries(rows.activity, sectionRows).filter((entry) => !isNoopActivityEntry(entry)),
       settings: {
         requireApproval: tokenRow.require_approval,
         integrations: buildIntegrationSettings(
-          resolvedUser,
+          user,
           githubIntegration,
           {
             ignoreLinkedIdentity: true,
@@ -1351,11 +1450,12 @@ async function loadCreedStateImpl(
         };
       }),
       sectionRevisions: Object.fromEntries(
-        ((sectionRows as SectionRow[] | null) ?? []).map((row) => [
+        sectionRows.map((row) => [
           normalizeLegacySectionId(row.section_id),
           row.revision,
         ]),
       ),
+      gettingStarted,
     },
     hasPersistedCreed: true,
   };
@@ -1378,22 +1478,21 @@ export async function loadActiveCreedState(
     creeds: StrapSummary[];
   } | null,
 ): Promise<PersistResult> {
-  const resolvedUser = await enrichUserForState(user);
-  const creeds = enrichCreedSwitcherItems(active?.creeds ?? [], resolvedUser);
+  const creeds = enrichCreedSwitcherItems(active?.creeds ?? [], user);
   const activeEntry = active
     ? (creeds.find((c) => c.id === active.creedId) ?? null)
     : null;
 
   if (active && activeEntry && activeEntry.type === "company") {
     return loadCompanyCreedState(
-      resolvedUser,
+      user,
       active.creedId,
       active.role,
       creeds,
     );
   }
 
-  const result = await loadCreedState(client, resolvedUser);
+  const result = await loadCreedState(client, user);
   const personalId = creeds.find((c) => c.type === "personal")?.id;
   return {
     ...result,
@@ -1418,85 +1517,16 @@ export async function loadCompanyCreedState(
   role: StrapRole,
   creeds: StrapSwitcherItem[],
 ): Promise<PersistResult> {
-  const admin = viewerContext(getDatabase(), { userId: user.id });
-  const verifiedRole = await getStrapRole(admin, user.id, creedId);
-  if (!verifiedRole) throw new AccessDeniedError();
-  role = verifiedRole;
-  const authAdmin = serviceContext("lib/strap-backend.ts");
-  const resolvedUser = await enrichUserForState(user);
+  const rows = await readCompanyStrapRows(user.id, creedId);
+  if (!rows.role) throw new AccessDeniedError();
+  role = rows.role;
 
-  const creedWithAvatar = (await query(admin, tables.creeds, "select", (database, scope) => database.select({ name: tables.creeds.name, company_email: tables.creeds.company_email, avatar_url: tables.creeds.avatar_url }).from(tables.creeds).where(and(scope, eq(tables.creeds.id, creedId)))).then(maybeOne)) as {
-    data: {
-      name?: string;
-      company_email?: string | null;
-      avatar_url?: string | null;
-    } | null;
-    error: unknown;
-  };
-  const creedResult = creedWithAvatar.error
-    ? ((await query(admin, tables.creeds, "select", (database, scope) => database.select({ name: tables.creeds.name, company_email: tables.creeds.company_email }).from(tables.creeds).where(and(scope, eq(tables.creeds.id, creedId)))).then(maybeOne)) as {
-        data: { name?: string; company_email?: string | null } | null;
-        error: unknown;
-      })
-    : creedWithAvatar;
-
-  const [
-    sectionsResult,
-    proposalsResult,
-    activityResult,
-    membersResult,
-    overridesResult,
-    invitesResult,
-    connectionsResult,
-    mcpClientRows,
-    agentPermissionsResult,
-    companyGithubIntegration,
-    companyVersionControlResult,
-  ] = await Promise.all([
-    query(admin, tables.creed_sections, "select", (database, scope) => database.select().from(tables.creed_sections).where(and(scope, eq(tables.creed_sections.creed_id, creedId), isNull(tables.creed_sections.deleted_at))).orderBy(asc(tables.creed_sections.position))),
-    query(admin, tables.creed_proposals, "select", (database, scope) => database.select().from(tables.creed_proposals).where(and(scope, eq(tables.creed_proposals.creed_id, creedId))).orderBy(desc(tables.creed_proposals.created_at)).limit(500)),
-    query(admin, tables.creed_activity, "select", (database, scope) => database.select().from(tables.creed_activity).where(and(scope, eq(tables.creed_activity.creed_id, creedId))).orderBy(desc(tables.creed_activity.created_at)).limit(500)),
-    query(admin, tables.creed_members, "select", (database, scope) => database.select({ user_id: tables.creed_members.user_id, role: tables.creed_members.role }).from(tables.creed_members).where(and(scope, eq(tables.creed_members.creed_id, creedId)))),
-    query(admin, tables.creed_member_section_permissions, "select", (database, scope) => database.select({ section_id: tables.creed_member_section_permissions.section_id, permission: tables.creed_member_section_permissions.permission }).from(tables.creed_member_section_permissions).where(and(scope, eq(tables.creed_member_section_permissions.creed_id, creedId), eq(tables.creed_member_section_permissions.user_id, user.id)))),
-    query(admin, tables.creed_invites, "select", (database, scope) => database.select({ id: tables.creed_invites.id, email: tables.creed_invites.email, role: tables.creed_invites.role }).from(tables.creed_invites).where(and(scope, eq(tables.creed_invites.creed_id, creedId), eq(tables.creed_invites.status, "pending"))).orderBy(asc(tables.creed_invites.created_at))),
-    query(admin, tables.creed_connections, "select", (database, scope) => database.select().from(tables.creed_connections).where(and(scope, eq(tables.creed_connections.creed_id, creedId))).orderBy(desc(tables.creed_connections.updated_at))),
-    query(admin, tables.creed_mcp_clients, "select", (database, scope) => database.select().from(tables.creed_mcp_clients).where(and(scope, eq(tables.creed_mcp_clients.creed_id, creedId))).orderBy(desc(tables.creed_mcp_clients.last_seen_at))),
-    // The member's OWN per-section agent ceiling for this Company Strap (the
-    // company twin of personal agent_permission; no row = 'propose').
-    query(admin, tables.creed_member_agent_permissions, "select", (database, scope) => database.select({ section_id: tables.creed_member_agent_permissions.section_id, permission: tables.creed_member_agent_permissions.permission }).from(tables.creed_member_agent_permissions).where(and(scope, eq(tables.creed_member_agent_permissions.creed_id, creedId), eq(tables.creed_member_agent_permissions.user_id, user.id)))),
-    // The TEAM's GitHub connection (manager-only): a single team-wide token,
-    // separate from any member's personal GitHub. Members never see it.
-    role === "owner" || role === "admin"
-      ? readCompanyGitHubIntegration(creedId).catch(() => null)
-      : Promise.resolve(null),
-    companyVersionControl(admin.database, { userId: user.id }, creedId).then(data => ({ data, error: null })),
-  ]);
-
-  const creedRow = creedResult.data as {
-    name?: string;
-    company_email?: string | null;
-    avatar_url?: string | null;
-  } | null;
-  const creedName = creedRow?.name ?? "Company";
-  const companyEmail = creedRow?.company_email ?? undefined;
-  const companyAvatarUrl = creedRow?.avatar_url ?? undefined;
-  const allSectionRows = (sectionsResult.data as SectionRow[] | null) ?? [];
-  const memberRows =
-    (membersResult.data as Array<{
-      user_id: string;
-      role: StrapRole;
-    }> | null) ?? [];
-  const overrideRows =
-    (overridesResult.data as Array<{
-      section_id: string;
-      permission: AgentPermission;
-    }> | null) ?? [];
-  const inviteRows =
-    (invitesResult.data as Array<{
-      id: string;
-      email: string;
-      role: "admin" | "member";
-    }> | null) ?? [];
+  const creedName = rows.creed?.name ?? "Company";
+  const companyEmail = rows.creed?.company_email ?? undefined;
+  const companyAvatarUrl = rows.creed?.avatar_url ?? undefined;
+  const allSectionRows = rows.sections;
+  const overrideRows = rows.overrides;
+  const inviteRows = rows.invites;
 
   const overrides = new Map<string, AgentPermission>(
     overrideRows.map((row) => [
@@ -1520,28 +1550,23 @@ export async function loadCompanyCreedState(
     visibleSectionRows.map((row) => normalizeLegacySectionId(row.section_id)),
   );
 
-  // Roster with display names + real profile pictures (per-member auth lookup;
-  // rosters are small). Built before proposals so a manual (human) proposal can
-  // borrow its author's avatar.
-  const members: StrapMemberSummary[] = await Promise.all(
-    memberRows.map(async (row) => {
-      const { data } = await findUser(authAdmin, row.user_id)
-        .catch(() => ({ data: { user: null } }));
-      const memberUser = data.user;
-      const name = memberUser ? getUserName(memberUser) : "Member";
-      return {
-        userId: row.user_id,
-        name,
-        email: memberUser?.email ?? "",
-        avatarInitials: getAvatarInitials(name),
-        avatarUrl: memberUser ? getAvatarUrl(memberUser) : undefined,
-        role: row.role,
-      };
-    }),
-  );
+  // Roster with display names + real profile pictures. Built before proposals
+  // so a manual (human) proposal can borrow its author's avatar.
+  const members: StrapMemberSummary[] = rows.members.map((row) => {
+    const memberUser = row.user;
+    const name = memberUser ? getUserName(memberUser) : "Member";
+    return {
+      userId: row.user_id,
+      name,
+      email: memberUser?.email ?? "",
+      avatarInitials: getAvatarInitials(name),
+      avatarUrl: memberUser ? getAvatarUrl(memberUser) : undefined,
+      role: row.role,
+    };
+  });
   const memberById = new Map(members.map((m) => [m.userId, m]));
 
-  const proposals = ((proposalsResult.data as ProposalRow[] | null) ?? [])
+  const proposals = rows.proposals
     .map((row) => {
       const base = hydrateProposal(row);
       // author_user_id is set only for a member's manual edit; agent proposals
@@ -1572,9 +1597,7 @@ export async function loadCompanyCreedState(
     "byok",
     "billing",
   ]);
-  const activityRows = (
-    (activityResult.data as ActivityRow[] | null) ?? []
-  ).filter((row) => !HIDDEN_ACTIVITY_KINDS.has(row.event_kind ?? ""));
+  const activityRows = rows.activity.filter((row) => !HIDDEN_ACTIVITY_KINDS.has(row.event_kind ?? ""));
   const activity = hydrateActivityEntries(activityRows, visibleSectionRows)
     .map((entry, index) => {
       // A person's activity borrows their profile picture from the roster; an
@@ -1613,15 +1636,10 @@ export async function loadCompanyCreedState(
         : undefined,
   };
 
-  const mcpClients = ((mcpClientRows.data as McpClientRow[] | null) ?? []).map(
-    hydrateMcpClient,
-  );
+  const mcpClients = rows.mcpClients.map(hydrateMcpClient);
   const { definitions } = buildConnectionDefinitions();
   const connectionMap = new Map(
-    ((connectionsResult.data as ConnectionRow[] | null) ?? []).map((row) => [
-      row.connection_id,
-      row,
-    ]),
+    rows.connections.map((row) => [row.connection_id, row]),
   );
 
   const editTimes = visibleSectionRows
@@ -1632,13 +1650,8 @@ export async function loadCompanyCreedState(
   // settings Agent-edit-behaviour UI and MCP read the SAME per-member value.
   // The shared creed_sections.agent_permission column is meaningless for a
   // company file (it cannot vary per member), so it is ignored here.
-  const agentPermissionRows =
-    (agentPermissionsResult.data as Array<{
-      section_id: string;
-      permission: AgentPermission;
-    }> | null) ?? [];
   const myAgentPermissions = new Map<string, AgentPermission>(
-    agentPermissionRows.map((row) => [
+    rows.agentPermissions.map((row) => [
       normalizeLegacySectionId(row.section_id),
       row.permission,
     ]),
@@ -1649,7 +1662,7 @@ export async function loadCompanyCreedState(
   // enables); members get the blank not-configured shape.
   const companyVersionControlRow =
     role === "owner" || role === "admin"
-      ? ((companyVersionControlResult.data as VersionControlRow | null) ?? null)
+      ? rows.versionControl
       : null;
 
   // The team GitHub connection status feeds settings.integrations.github so the
@@ -1657,13 +1670,14 @@ export async function loadCompanyCreedState(
   // It is the TEAM's connection, not the manager's personal one, so we ignore
   // the caller's linked GitHub identity when deriving status (createBlankCreedState
   // option below). Only provider_login + status are read downstream.
+  const companyGithubIntegration = rows.githubIntegration;
   const githubRowForState: IntegrationRow | null = companyGithubIntegration
     ? ({
         user_id: user.id,
         provider: "github",
         status: companyGithubIntegration.status,
-        provider_account_id: companyGithubIntegration.providerAccountId,
-        provider_login: companyGithubIntegration.providerLogin,
+        provider_account_id: companyGithubIntegration.provider_account_id,
+        provider_login: companyGithubIntegration.provider_login,
         access_token: null,
         refresh_token: null,
         encrypted_access_token: null,
@@ -1675,7 +1689,7 @@ export async function loadCompanyCreedState(
     : null;
 
   const base = createBlankCreedState(
-    resolvedUser,
+    user,
     undefined,
     [],
     githubRowForState,
@@ -1722,6 +1736,7 @@ export async function loadCompanyCreedState(
           row.revision,
         ]),
       ),
+      gettingStarted: rows.gettingStarted,
     },
     hasPersistedCreed: false,
   };

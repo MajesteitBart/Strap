@@ -48,7 +48,11 @@ export const resolveActiveStrap = cache(async function resolveActiveStrap(
   client: DatabaseContext,
   user: User
 ): Promise<ActiveCreed | null> {
-  const creeds = await listUserStraps(client, user.id);
+  return pickActiveStrap(await listUserStraps(client, user.id));
+});
+
+/** resolveActiveStrap for a membership list the caller already read. */
+export function pickActiveStrap(creeds: StrapSummary[]): ActiveStrap | null {
   if (creeds.length === 0) return null;
 
   const requested = currentRequestCookie(ACTIVE_CREED_COOKIE) ?? null;
@@ -59,7 +63,7 @@ export const resolveActiveStrap = cache(async function resolveActiveStrap(
     creeds[0];
 
   return { creedId: chosen.id, role: chosen.role, creeds };
-});
+}
 
 /**
  * The active Strap's id if it is a Company Strap the caller OWNS, else null.
