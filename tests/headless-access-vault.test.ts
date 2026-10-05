@@ -15,16 +15,16 @@ import {
   normalizeDeviceUserCode,
   normalizeOAuthScope,
 } from "../lib/oauth-device-shared.ts";
+import { isNoStorePath, netlifyHeadersFile, NO_STORE_CACHE_CONTROL } from "../lib/http/headers.ts";
 
-const mcpRoute = readFileSync(new URL("../app/mcp/route.ts", import.meta.url), "utf8");
+const mcpRoute = readFileSync(new URL("../server/mcp/route.ts", import.meta.url), "utf8");
 const companySections = readFileSync(
   new URL("../lib/company-sections.ts", import.meta.url),
   "utf8",
 );
-const nextConfig = readFileSync(new URL("../next.config.ts", import.meta.url), "utf8");
-const tokenRoute = readFileSync(new URL("../app/token/route.ts", import.meta.url), "utf8");
+const tokenRoute = readFileSync(new URL("../server/token/route.ts", import.meta.url), "utf8");
 const oauthMetadata = readFileSync(
-  new URL("../app/.well-known/oauth-authorization-server/route.ts", import.meta.url),
+  new URL("../server/.well-known/oauth-authorization-server/route.ts", import.meta.url),
   "utf8",
 );
 const docsPage = readFileSync(
@@ -117,8 +117,14 @@ test("credential ceilings govern advertised and executed writes", () => {
 });
 
 test("Vault and device approval pages receive private no-store caching headers", () => {
-  assert.match(nextConfig, /"\/device\/:path\*"/);
-  assert.match(nextConfig, /"\/vault\/:path\*"/);
+  for (const path of ["/device", "/device/verify", "/vault", "/vault/anything"]) {
+    assert.equal(isNoStorePath(path), true, path);
+  }
+  // Prerendered shells come from the CDN, so the static header rules carry the same policy.
+  const headersFile = netlifyHeadersFile({ isDev: false, enforceCsp: false });
+  for (const pattern of ["/device", "/device/*", "/vault", "/vault/*"]) {
+    assert.ok(headersFile.includes(`${pattern}\n  Cache-Control: ${NO_STORE_CACHE_CONTROL}`), pattern);
+  }
 });
 
 test("OAuth discovery and token exchange advertise the RFC device grant", () => {

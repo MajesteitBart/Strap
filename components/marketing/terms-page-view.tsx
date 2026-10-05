@@ -4,7 +4,7 @@ import {
   StrapSiteHeader,
 } from "@/components/marketing/strap-site-shell";
 import { isDatabaseConfigured } from "@/lib/env";
-import Link from "next/link";
+import Link from "@/components/link";
 
 // Legal placeholder. The published sentence is the product's current claim
 // and stays verbatim until terms replace it.

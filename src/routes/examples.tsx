@@ -1,0 +1,45 @@
+import { useDeploymentInfo } from "@/components/deployment-info";
+import { ExamplesPageView } from "@/components/marketing/examples-page-view";
+import { JsonLd } from "@/components/marketing/json-ld";
+import { pageHead } from "@/lib/seo/head";
+import { breadcrumbSchema, graph, webPageSchema } from "@/lib/seo/structured-data";
+import { createFileRoute } from "@tanstack/react-router";
+
+const PATH = "/examples";
+const TITLE = "Examples";
+const DESCRIPTION =
+  "Real moments where one shared file changes the answer: allergies and boundaries that hold in every tool, a writing voice that survives a switch, stack conventions that follow you into a fresh repo, and context that is yours to keep.";
+
+export const Route = createFileRoute("/examples")({
+  head: () =>
+    pageHead({
+      title: TITLE,
+      description: DESCRIPTION,
+      canonical: PATH,
+      openGraph: {
+        type: "article",
+        url: PATH,
+        title: TITLE,
+        description: DESCRIPTION,
+      },
+    }),
+  component: ExamplesPage,
+});
+
+function ExamplesPage() {
+  const { configured } = useDeploymentInfo();
+  return (
+    <>
+      <JsonLd
+        data={graph(
+          webPageSchema({ path: PATH, name: TITLE, description: DESCRIPTION }),
+          breadcrumbSchema(PATH, [
+            { name: "Strap", path: "/home" },
+            { name: "Examples", path: PATH },
+          ])
+        )}
+      />
+      <ExamplesPageView configured={configured} />
+    </>
+  );
+}

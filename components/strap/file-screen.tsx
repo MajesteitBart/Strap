@@ -103,7 +103,7 @@ import {
   Send,
   X,
 } from "lucide-react";
-import Image from "next/image";
+import Image from "@/components/ui/image";
 import {
   memo,
   useCallback,
@@ -3556,7 +3556,6 @@ function ActivityActorAvatar({
           alt=""
           width={16}
           height={16}
-          unoptimized
           referrerPolicy="no-referrer"
           onError={() => setFailed(true)}
           className="h-4 w-4 rounded-[5px] object-cover"

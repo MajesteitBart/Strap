@@ -4,8 +4,8 @@ import type { ReactNode } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, Check, ChevronDown, Download, FileText, LoaderCircle, X } from "lucide-react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { useAppRouter } from "@/components/navigation";
+import Link from "@/components/link";
 import { Button } from "@/components/ui/button";
 import { ArrowRightIcon } from "@/components/ui/arrow-right";
 import { Textarea } from "@/components/ui/textarea";
@@ -71,7 +71,7 @@ export function OnboardingScreen({
 }: {
   initialStage?: "prompt" | "preview";
 }) {
-  const router = useRouter();
+  const router = useAppRouter();
   const { state, updateOnboarding, claimOnboardingPreview } = useStrap();
   const [step, setStep] = useState(
     initialStage === "preview" ? PREVIEW_STEP : initialStage === "prompt" ? PROMPT_STEP : 0
@@ -683,7 +683,6 @@ function WelcomeConstellation() {
             className="relative flex h-16 w-16 items-center justify-center rounded-full"
             style={{ backgroundColor: "#fbf6ee", border: `1px solid ${CREED_BLUE}` }}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/assets/brand/logo.svg"
               alt="Strap"

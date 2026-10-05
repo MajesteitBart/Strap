@@ -25,7 +25,7 @@ import {
 import { STRAP_FILE_NAME } from "@/lib/profile-file";
 import { accentColorMap } from "@/lib/strap-data";
 import { cn } from "@/lib/utils";
-import { useRouter } from "next/navigation";
+import { useAppRouter } from "@/components/navigation";
 import {
   useCallback,
   useEffect,
@@ -112,7 +112,7 @@ export function StrapPanel({
   onOpenPush,
   onSetActivity,
 }: PanelProps) {
-  const router = useRouter();
+  const router = useAppRouter();
   const { state, exportMarkdown, signOut } = useStrap();
   const { toggleTheme } = useTheme();
   const [open, setOpen] = useState(false);

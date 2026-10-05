@@ -1,6 +1,6 @@
 ---
 name: strap-repo
-description: Repository-specific guidance for understanding, reviewing, debugging, changing, testing, and operating Strap. Use for tasks involving the Next.js application, Personal or Company profiles, editor and proposals, Postgres schema or explicit authorization, OAuth/MCP, scoped keys, Vault, the Strap CLI, GitHub synchronization, security boundaries, routing, or verification.
+description: Repository-specific guidance for understanding, reviewing, debugging, changing, testing, and operating Strap. Use for tasks involving the TanStack Start (Vite) application, Personal or Company profiles, editor and proposals, Postgres schema or explicit authorization, OAuth/MCP, scoped keys, Vault, the Strap CLI, GitHub synchronization, security boundaries, routing, or verification.
 ---
 
 # Strap repository
@@ -37,6 +37,6 @@ Read every reference whose topic intersects the request. For cross-cutting work,
 - Do not expose hidden sections or secrets. Never print or commit `.env.local`, raw credentials, or tokens.
 - Do not route Company writes through Personal full-state persistence.
 - Do not expose Vault plaintext in list responses, logs, ordinary agent context, or audit payloads. Reveal is explicit, signed-in, authorized, `no-store`, and audited.
-- Treat changes to `lib/strap-data.ts` agent instructions and `app/mcp/route.ts` protocol behavior as ecosystem-wide compatibility changes requiring focused validation.
+- Treat changes to `lib/strap-data.ts` agent instructions and `server/mcp/route.ts` protocol behavior as ecosystem-wide compatibility changes requiring focused validation.
 - Load this checkout's `.env.local` without printing secrets. Use `npm run db:migrate` and `npm run test:db` on local Postgres. Read `db/README.md`; generated OpenWiki may describe the previous backend until its next regeneration.
-- Use repository logging utilities instead of `console.log`, keep strict TypeScript free of `any`, and default to server components unless client behavior is required.
+- Use repository logging utilities instead of `console.log`, keep strict TypeScript free of `any`, and keep database, secret and Node-only code in `server-only` modules reached through server functions or `server/` handlers.

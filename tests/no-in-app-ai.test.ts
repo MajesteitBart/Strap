@@ -19,7 +19,7 @@ function sources(directory: string): string[] {
 }
 
 test("application runtime has no LLM provider calls or retired AI requests", () => {
-  for (const file of ["app/", "components/", "lib/"].flatMap(sources)) {
+  for (const file of ["server/", "src/", "components/", "lib/"].flatMap(sources)) {
     const source = readFileSync(new URL(file, root), "utf8");
     assert.doesNotMatch(
       source,
@@ -37,12 +37,12 @@ test("application runtime has no LLM provider calls or retired AI requests", () 
     "openrouter-balance",
   ]) {
     assert.equal(
-      existsSync(new URL(`app/api/app/ai/${route}/route.ts`, root)),
+      existsSync(new URL(`server/api/app/ai/${route}/route.ts`, root)),
       false,
     );
   }
   assert.equal(
-    existsSync(new URL("app/api/app/company/byok/route.ts", root)),
+    existsSync(new URL("server/api/app/company/byok/route.ts", root)),
     false,
   );
 });
@@ -50,14 +50,14 @@ test("application runtime has no LLM provider calls or retired AI requests", () 
 test("external agents and user review keep their authenticated entry points", () => {
   const read = (path: string) => readFileSync(new URL(path, root), "utf8");
   assert.match(
-    read("app/api/app/proposals/[id]/route.ts"),
+    read("server/api/app/proposals/[id]/route.ts"),
     /requireApiAuth\(\)/,
   );
   assert.match(
-    read("app/api/creed/proposals/route.ts"),
+    read("server/api/creed/proposals/route.ts"),
     /findUserIdByProposalToken/,
   );
-  assert.match(read("app/mcp/route.ts"), /readLatestQualityReport/);
+  assert.match(read("server/mcp/route.ts"), /readLatestQualityReport/);
   assert.doesNotMatch(
     read("lib/quality-report.ts"),
     /fetch\(|resolveAiCredential|recordAiUsage/,

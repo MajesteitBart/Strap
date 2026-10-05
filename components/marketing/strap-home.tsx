@@ -7,7 +7,7 @@ import {
 } from "@/components/marketing/strap-site-shell";
 import { BRAND_TAGLINE } from "@/lib/marketing/brand";
 import { homeFaqItems } from "@/lib/marketing/faq";
-import Link from "next/link";
+import Link from "@/components/link";
 import type { ReactNode } from "react";
 
 const resources = [

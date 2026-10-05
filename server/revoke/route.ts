@@ -1,0 +1,58 @@
+import { creed_mcp_clients } from "@/db/schema/application";
+import { getAgentIconKind } from "@/lib/agent-icon";
+import { serviceContext } from "@/lib/db/service";
+import { getOAuthClient, revokeOAuthToken } from "@/lib/oauth";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { and, eq, like, or } from "drizzle-orm";
+
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+} as const;
+
+export function OPTIONS() {
+  return new Response(null, { status: 204, headers: CORS_HEADERS });
+}
+
+export async function POST(request: Request) {
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  const verdict = checkRateLimit({
+    scope: "oauth-revoke",
+    identifier: ip,
+    limit: 30,
+    windowMs: 60_000,
+  });
+  if (!verdict.ok) {
+    return Response.json(
+      { error: "too_many_requests" },
+      { status: 429, headers: { ...CORS_HEADERS, "Retry-After": String(verdict.retryAfterSeconds) } },
+    );
+  }
+
+  const contentType = request.headers.get("content-type") ?? "";
+  if (!contentType.includes("application/x-www-form-urlencoded")) {
+    return Response.json({ error: "invalid_request" }, { status: 400, headers: CORS_HEADERS });
+  }
+  const params = new URLSearchParams(await request.text());
+  const token = params.get("token")?.trim() ?? "";
+  const clientId = params.get("client_id")?.trim() ?? "";
+  if (!token || !clientId) {
+    return Response.json({ error: "invalid_request" }, { status: 400, headers: CORS_HEADERS });
+  }
+
+  const result = await revokeOAuthToken(token, clientId);
+  if (!result.ok) {
+    return Response.json({ error: result.error }, { status: 500, headers: CORS_HEADERS });
+  }
+
+  if (result.userId && result.clientId) {
+    const client = await getOAuthClient(result.clientId);
+    if (client && getAgentIconKind(client.clientName) === "cli") {
+      const context = serviceContext("revoke CLI roster after token verification");
+      await context.database.delete(creed_mcp_clients).where(and(eq(creed_mcp_clients.user_id, result.userId), or(eq(creed_mcp_clients.client_id, "cli"), like(creed_mcp_clients.client_id, `cli-${result.tokenId}-%`))));
+    }
+  }
+
+  return new Response(null, { status: 200, headers: CORS_HEADERS });
+}

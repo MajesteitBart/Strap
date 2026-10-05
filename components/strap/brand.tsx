@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import Image from "@/components/ui/image";
 import { cn } from "@/lib/utils";
 
 const allAgentsIcon = "/assets/agents/all.svg";
@@ -34,7 +34,6 @@ export function StrapWordmark({
 }) {
   return (
     <div className={cn("ml-1 h-[18px] shrink-0", className)}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={brandmark}
         alt="Strap"
@@ -52,7 +51,6 @@ export function StrapWordmark({
 export function StrapMark({ className }: { className?: string }) {
   return (
     <div className={cn("h-[18px] w-[18px] shrink-0", className)}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={logo}
         alt="Strap"
@@ -190,7 +188,6 @@ export function IntegrationGlyph({
             alt=""
             fill
             sizes={framed ? "20px" : "36px"}
-            unoptimized
             className={cn(
               "pointer-events-none select-none object-contain",
               // Monochrome agent assets read as black-on-light. Flip them to

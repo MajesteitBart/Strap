@@ -31,8 +31,8 @@
     {
       "file": ".env.example",
       "kind": "content",
-      "occurrences": 4,
-      "fingerprint": "86f0bf830f6d65e648a4ee3177e6ae4db22c76f04068e399fcb28896a7b4a9dd",
+      "occurrences": 2,
+      "fingerprint": "36f41bca1c957d397ff9c81b2c491d359a7dbc27cb24c2289f035449aee4999b",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -50,7 +50,7 @@
       "file": ".gitignore",
       "kind": "content",
       "occurrences": 1,
-      "fingerprint": "0e89bc13d257961a2546fc19a6bfb5a4f9a54d2ac12e61ade193dc6889994d6b",
+      "fingerprint": "dcaf2906c10cf3eaa946400fbccaec9b999748ffde12b3cc543c7e6fccaf5228",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -58,8 +58,8 @@
     {
       "file": "AGENTS.md",
       "kind": "content",
-      "occurrences": 10,
-      "fingerprint": "19e064162811dde78e9f5f1711346ba74b0b8e7b41af4f383ebfdf533755f39a",
+      "occurrences": 8,
+      "fingerprint": "105ca3e0b55d762948789fa93d5722a1f0bda16c1d788f87bf9297af4c78a41c",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -68,7 +68,7 @@
       "file": "CONTRIBUTING.md",
       "kind": "content",
       "occurrences": 3,
-      "fingerprint": "2864ff8103fccb94b2e98eb5a2ff122df4327d1eb3e66e1dd5ae40ff73c574f9",
+      "fingerprint": "ddf9a27cae9f3cb406ee5578b2f4a4d592146f59c63f9d5e4d684357605a078a",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -77,7 +77,7 @@
       "file": "README.md",
       "kind": "content",
       "occurrences": 15,
-      "fingerprint": "df823b1269af3d53c640f8345043d1e5f00205ddaea269bc6df543f347ae5427",
+      "fingerprint": "c7359a42542873f1e3c08739b9359cb2bd1e73e55db2978e542c22b0dd30eef5",
       "decision": "compatibility",
       "category": "project-origins-and-compatibility",
       "rationale": "User-requested acknowledgment of Creed as Strap's foundation, alongside documented legacy protocol, configuration, package, and file compatibility."
@@ -87,636 +87,6 @@
       "kind": "content",
       "occurrences": 5,
       "fingerprint": "09eac650344ba511c89699b00bc259da9b89eb2241286026d70252603beda081",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/(strap-app)/layout.tsx",
-      "kind": "content",
-      "occurrences": 5,
-      "fingerprint": "26eb92cebc1f7228de03203230a31019db0e54fe36a366366bed7dbc5bd63a05",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/adf79f0bf26d7d95d49893645669789c.txt/route.ts",
-      "kind": "content",
-      "occurrences": 1,
-      "fingerprint": "2c9c8c6e0ad327f425a36b463c66c670c4ed39872d645e7e07f63752a2e7cf0d",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/app/claim/route.ts",
-      "kind": "content",
-      "occurrences": 1,
-      "fingerprint": "87b8bf8ca3536fc495e55bcafa8144c9343833aa997c405561221ed86b86ef26",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/app/company/agent-permissions/route.ts",
-      "kind": "content",
-      "occurrences": 32,
-      "fingerprint": "78ba762aa0b7ab0b4489018bc44ceff63a82dbac1312405b0a211259a45989e1",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/app/company/general/route.ts",
-      "kind": "content",
-      "occurrences": 3,
-      "fingerprint": "cb4bc4c11893bf8085f2fa11e72b827b5bf1f7f3939784310af3ac2b8961dfd5",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/app/company/github/route.ts",
-      "kind": "content",
-      "occurrences": 5,
-      "fingerprint": "11ae19586268fac0bd2e06ad30b7889aa3d9ffaa51e9192f17e825a9c53074b8",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/app/company/invites/[id]/route.ts",
-      "kind": "content",
-      "occurrences": 26,
-      "fingerprint": "7e5b711887b0ac471906cc9733f5e6edde8de911c63abc8a4c38dddddca4d7ac",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/app/company/invites/accept/route.ts",
-      "kind": "content",
-      "occurrences": 8,
-      "fingerprint": "cb8e673a5d17af1335ac9463d1ad93f4a591bd4f5ce7adc90ff28acbca0aac63",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/app/company/invites/route.ts",
-      "kind": "content",
-      "occurrences": 13,
-      "fingerprint": "a0d64ebc4fbba2637b215f1b1f1d1c9e31a94c6a1c94d46d195a1806248fee06",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/app/company/members/[userId]/route.ts",
-      "kind": "content",
-      "occurrences": 8,
-      "fingerprint": "c963655fbb5fcda304f5a91547e589222d0b1ca4ad3b2ad7c47b6e99e8a114aa",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/app/company/onboarding/route.ts",
-      "kind": "content",
-      "occurrences": 64,
-      "fingerprint": "00a68584387ce4d6826d76e86c93e4e50bc52b3ac98d4853fb3ccfeacdfcb654",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/app/company/permissions/route.ts",
-      "kind": "content",
-      "occurrences": 18,
-      "fingerprint": "dd3c2f4719119922f4b804cf86c4d092abf83cd6daca496799fea851a67e0afb",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/app/company/route.ts",
-      "kind": "content",
-      "occurrences": 10,
-      "fingerprint": "74cb3c9ad548b0cd314009367f3ed5c74476e503b93f4081217fd8412ea72a0e",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/app/company/version-control/route.ts",
-      "kind": "content",
-      "occurrences": 12,
-      "fingerprint": "ed420f7c79c3f43b6426297b390222a2161f317bd10a7bbdc86218c9051e73c0",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/app/creeds/activate/route.ts",
-      "kind": "path",
-      "occurrences": 1,
-      "fingerprint": "c408128b4c7f45eb043085f40d516d5b67f774a6794b8cc3eaaeb1cb2a4411b6",
-      "decision": "compatibility",
-      "category": "stable-compatibility-path",
-      "rationale": "Exact tracked path retained until its separately staged compatibility migration."
-    },
-    {
-      "file": "app/api/app/creeds/route.ts",
-      "kind": "path",
-      "occurrences": 1,
-      "fingerprint": "4a48ed143ff95111798015b26de981aa46d71bf470c6d0102b7b2640ca47d476",
-      "decision": "compatibility",
-      "category": "stable-compatibility-path",
-      "rationale": "Exact tracked path retained until its separately staged compatibility migration."
-    },
-    {
-      "file": "app/api/app/getting-started/route.ts",
-      "kind": "content",
-      "occurrences": 11,
-      "fingerprint": "8f4b688269cebaab1593f30994e3a61f911f7aaffe65525731b5be1c9d8786a1",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/app/github/authorize/route.ts",
-      "kind": "content",
-      "occurrences": 12,
-      "fingerprint": "df370f5cf36ff1fc6a2b465e0d18527ffce50d47a6b19d553f9ccd79e1b385e9",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/app/github/branches/route.ts",
-      "kind": "content",
-      "occurrences": 2,
-      "fingerprint": "cdc75c0c7e438208e683938ef64f1e573cce6830c5312a6cc45bee9ee3c52ed0",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/app/github/pull/apply/route.ts",
-      "kind": "content",
-      "occurrences": 8,
-      "fingerprint": "40e820cd9f9d75679fbf977c4244865c6b4a70c72b73b23bad610c5e65cbd1c7",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/app/github/pull/preview/route.ts",
-      "kind": "content",
-      "occurrences": 4,
-      "fingerprint": "7d39a50b998bc8282cdd4a56507c406597f5096c72db3c43ed59f119efaec399",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/app/github/push/route.ts",
-      "kind": "content",
-      "occurrences": 10,
-      "fingerprint": "0ba19f155f6dc761d17d142496987645586333059711865a06f3b2353bb34401",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/app/github/repos/route.ts",
-      "kind": "content",
-      "occurrences": 2,
-      "fingerprint": "ede62bf65b7a26c43d3cfd5ad0679f103435875ec717ffb7dc6a45e6f3c14a1b",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/app/github/status/route.ts",
-      "kind": "content",
-      "occurrences": 2,
-      "fingerprint": "a87ec88bd42366f8b762386abb66d41b882f55f450726d0d6f0817f312c5e07c",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/app/headless-access/[id]/rotate/route.ts",
-      "kind": "content",
-      "occurrences": 2,
-      "fingerprint": "c94ba38ff5f36001c2269e8075b5f28fee3b8164732942ce0d4cba71d1a7e891",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/app/headless-access/[id]/route.ts",
-      "kind": "content",
-      "occurrences": 2,
-      "fingerprint": "163cfe45cd8f0641093a98f1afe5e5e168a7dfbebec8ef3ef306b0af0ec5c0fa",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/app/headless-access/route.ts",
-      "kind": "content",
-      "occurrences": 14,
-      "fingerprint": "102cb997e93c4b5e3343d7133ef29f45278c8df6d877f12a091370a293ddb80b",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/app/legacy-subscriptions/route.ts",
-      "kind": "content",
-      "occurrences": 60,
-      "fingerprint": "2d2f25ca58290a66e67cab4de14dc48c9b3b8c3c9f396423a37169a1886a8a53",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/app/mcp/cli-status/route.ts",
-      "kind": "content",
-      "occurrences": 19,
-      "fingerprint": "e2fd793c91e71525afc6a98851efaa8b2c2863d3b6f9277ae56d295dd446ed4d",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/app/mcp/health/route.ts",
-      "kind": "content",
-      "occurrences": 9,
-      "fingerprint": "1fc0029d483c8557ab2e2031f08678e2d572dde50a839ba5499c93e872355b34",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/app/mcp/revoke/route.ts",
-      "kind": "content",
-      "occurrences": 9,
-      "fingerprint": "0a7e69b263f2c634af6e74f405ab23cef4205b8958e2060394281b9718d8e61b",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/app/mcp/test/route.ts",
-      "kind": "content",
-      "occurrences": 17,
-      "fingerprint": "a442644c5b9e23b6ebfb60cf13e1eb2b19db03f91eeb8e5540afaa2dc21584c6",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/app/onboarding-status/route.ts",
-      "kind": "content",
-      "occurrences": 2,
-      "fingerprint": "1d1633efe8efa6b5fc2ec76955d1f8741f078c5d530593619751307e4ccf9535",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/app/onboarding/compose/route.ts",
-      "kind": "content",
-      "occurrences": 13,
-      "fingerprint": "4ca07b99dfc56878cc2b8ef8a79d139787eb44d397c3397a1bec5708727b0023",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/app/profile/avatar/route.ts",
-      "kind": "content",
-      "occurrences": 1,
-      "fingerprint": "0a175ed4b0462db4ab3c1bbbcdcbeb1158dc0564bbdb85c3739979c5d412b722",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/app/proposals/[id]/route.ts",
-      "kind": "content",
-      "occurrences": 11,
-      "fingerprint": "c401c54b498c2a6317c5cf984e6779120421580a8fb7b76d06956831c0d43866",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/app/sections/[sectionId]/restore/route.ts",
-      "kind": "content",
-      "occurrences": 3,
-      "fingerprint": "a2d3107220fac584f22bcbb32b72090cf1e83ccfcf04a2729505168beaec1c13",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/app/sections/[sectionId]/route.ts",
-      "kind": "content",
-      "occurrences": 9,
-      "fingerprint": "ecd33374166bbd392cbfd1ff1108345d2d92a0b682254e469601789c59c8cd08",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/app/sections/[sectionId]/versions/route.ts",
-      "kind": "content",
-      "occurrences": 5,
-      "fingerprint": "9a125055a588fca22e23fba53d51ea3b09aba855f61b0d2563819d5467e60601",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/app/sections/reorder/route.ts",
-      "kind": "content",
-      "occurrences": 3,
-      "fingerprint": "ef5a37e5eb7e3122dc58e03a016cdc44773ff33433eed263ab8765a2d237202a",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/app/sections/route.ts",
-      "kind": "content",
-      "occurrences": 3,
-      "fingerprint": "0af4a484a78959ad84141eec289af58b8d42f269b87ece2207c0459e3fcfe720",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/app/state/route.ts",
-      "kind": "content",
-      "occurrences": 8,
-      "fingerprint": "1a3692e87587d67cc12349602c0fe818dbb6e70bb375523fb6435cc373710464",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/app/straps/activate/route.ts",
-      "kind": "content",
-      "occurrences": 9,
-      "fingerprint": "04d18142b5ffdaceee759a326918a5fdcde06077bb90561bf7f26be696de0583",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/app/straps/route.ts",
-      "kind": "content",
-      "occurrences": 8,
-      "fingerprint": "d8d0c11ab1b37802e333b9b346ba70e594b2836735152c56d13082392a4044a4",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/app/vault/route.ts",
-      "kind": "content",
-      "occurrences": 8,
-      "fingerprint": "a7d3545f81ba8b5205264c2b4d9445432010d0461e95bacd625942c3011d61e5",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/creed/proposals/route.ts",
-      "kind": "content",
-      "occurrences": 25,
-      "fingerprint": "2093e5752c231f8ae560ec3824239ec12f5566683cbdf9369746448c238285ef",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/creed/proposals/route.ts",
-      "kind": "path",
-      "occurrences": 1,
-      "fingerprint": "ae725065feaec96f9054592a7a19d6dece29ddc8f4137d5764c321b15e7884e3",
-      "decision": "compatibility",
-      "category": "stable-compatibility-path",
-      "rationale": "Exact tracked path retained until its separately staged compatibility migration."
-    },
-    {
-      "file": "app/api/creed/route.ts",
-      "kind": "content",
-      "occurrences": 2,
-      "fingerprint": "aa25d4da6d366eb2fe98cfa0316ddc9311eaa468393569b3aa5be72d716aa338",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/creed/route.ts",
-      "kind": "path",
-      "occurrences": 1,
-      "fingerprint": "942702cdfb1274c31e030deb9678c847306bcca2e431da92f33e49058483068e",
-      "decision": "compatibility",
-      "category": "stable-compatibility-path",
-      "rationale": "Exact tracked path retained until its separately staged compatibility migration."
-    },
-    {
-      "file": "app/api/creed/write/route.ts",
-      "kind": "content",
-      "occurrences": 17,
-      "fingerprint": "b84ece8fffcdce2a7acc1d60f4dc867baf7f402e87a2f062185d7a68108314c4",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/creed/write/route.ts",
-      "kind": "path",
-      "occurrences": 1,
-      "fingerprint": "3fe41e55ba98068930846fc24bb016de26e6243539ec18d84652af32e2110b12",
-      "decision": "compatibility",
-      "category": "stable-compatibility-path",
-      "rationale": "Exact tracked path retained until its separately staged compatibility migration."
-    },
-    {
-      "file": "app/api/health/route.ts",
-      "kind": "content",
-      "occurrences": 2,
-      "fingerprint": "8dcef9a2e62c0485f3412fcaa1444aabf2c56f09acdbdf119589fc156e71a6b6",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/strap/proposals/route.ts",
-      "kind": "content",
-      "occurrences": 1,
-      "fingerprint": "354cc606d8c51a55f2243a7d5c62bc449d64f7aa20f60f360e0486f8780e14ba",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/strap/route.ts",
-      "kind": "content",
-      "occurrences": 2,
-      "fingerprint": "aa5bae4d7c98f5150259e40e6d58a62dcbae70513a37378ff948744436fd2349",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/strap/write/route.ts",
-      "kind": "content",
-      "occurrences": 1,
-      "fingerprint": "c0fb32d84587377884d9a2374a8c83c8702c1ff29edd03f92f3556ffd140ef2b",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/api/welcome/seen/route.ts",
-      "kind": "content",
-      "occurrences": 1,
-      "fingerprint": "5da72b98a8687be0ce322f4b4c32247eb16f7fdbdfe4b01db6710da7bc20664c",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/auth/github/callback/route.ts",
-      "kind": "content",
-      "occurrences": 12,
-      "fingerprint": "e049791eb35e09202930424f05e7abbdea916657afc013656ab25e78a4751b15",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/authorize/decision/route.ts",
-      "kind": "content",
-      "occurrences": 12,
-      "fingerprint": "b026446f2fc148a04399d0a04d5182c5e9c9465aeb8a4ce5c197b8785e332793",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/authorize/page.tsx",
-      "kind": "content",
-      "occurrences": 12,
-      "fingerprint": "2a2f3f1f7d6bcfd2e45a0ff7216600ba14e59767433ea13d7dc0396e2d99fd91",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/dev/company-onboarding/page.tsx",
-      "kind": "content",
-      "occurrences": 1,
-      "fingerprint": "70e455096f1ff7e6c9ceec17959df7ffd11c83d876eae0acbef6da8bf8694e72",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/device/decision/route.ts",
-      "kind": "content",
-      "occurrences": 3,
-      "fingerprint": "9501bdd1662f9804ea25aac6dd6a4bf0c6c1f78dd6d1a1256c642b166ae93a61",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/device/page.tsx",
-      "kind": "content",
-      "occurrences": 9,
-      "fingerprint": "9724a869a7293d5ce9584e41089f73bfd55f2c52217188eeb7afac2987aae65c",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/globals.css",
-      "kind": "content",
-      "occurrences": 87,
-      "fingerprint": "266bb56a3994b0be1458308d4372165694e9e7a16161502df1b19d6870e66ff1",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/layout.tsx",
-      "kind": "content",
-      "occurrences": 1,
-      "fingerprint": "7f295f54876f0e843e9189f25d47ea6ac7d2694618635d2caaf1fe84a6b8ea53",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/mcp/route.ts",
-      "kind": "content",
-      "occurrences": 145,
-      "fingerprint": "7758b8ba64adf2a612401c270a0f0a8188b05507c6e073189686eb945e1e7790",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/onboarding/company/page.tsx",
-      "kind": "content",
-      "occurrences": 7,
-      "fingerprint": "b24d2a9415b3b662ddaec88ff3c35185dc6ec06843931f69c6d9608950a95b56",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/onboarding/page.tsx",
-      "kind": "content",
-      "occurrences": 2,
-      "fingerprint": "f9b3afbbb875cff9053125a6c737247305d3d6b60de24baedb41aaeb4fdb2b08",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/page.tsx",
-      "kind": "content",
-      "occurrences": 4,
-      "fingerprint": "67b2717d7f7d6cd42ef390a987edaf1af61de195edfcfe031e3886aa803fa62c",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/revoke/route.ts",
-      "kind": "content",
-      "occurrences": 5,
-      "fingerprint": "18d0d38a10499677816c04fc30c635e65e7bc93fb9a10412c35f1ecbabb73f86",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "app/token/route.ts",
-      "kind": "content",
-      "occurrences": 5,
-      "fingerprint": "18dc4ff3f685c062edd5fc76d5f3cde7e9478d4066d9d11b6f042681b88a6b4c",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -794,15 +164,6 @@
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
     },
     {
-      "file": "components/strap/authed-providers.tsx",
-      "kind": "content",
-      "occurrences": 1,
-      "fingerprint": "79654db1b4e8d00d69c614114ed2409ea62e329548b640e3320f9bc7ef6cb62f",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
       "file": "components/strap/authorize-space-picker.tsx",
       "kind": "content",
       "occurrences": 1,
@@ -824,7 +185,7 @@
       "file": "components/strap/brand.tsx",
       "kind": "content",
       "occurrences": 3,
-      "fingerprint": "e14bec30e2ceef0321c363af19f3c3dce273780f8fa0426d45d39f9ea009c161",
+      "fingerprint": "de95495e7be5dfdef793856238bda9622e8b0afdbc3c52b01ba9c543311e2886",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -887,7 +248,7 @@
       "file": "components/strap/file-screen.tsx",
       "kind": "content",
       "occurrences": 29,
-      "fingerprint": "f098c3a7e7b1a9177acfad5b1433c27472085308960f9c0766c8baf922834567",
+      "fingerprint": "96cdbd6ddecbf517e6583f6965a397a4a39a4520cfcaae9e8a5b7c1d5c79cc8e",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -950,7 +311,7 @@
       "file": "components/strap/onboarding-screen.tsx",
       "kind": "content",
       "occurrences": 3,
-      "fingerprint": "dd36ff78bb9b88f3a0bff256fc5461fef4d16ca5212056e79b0872f9a3af8496",
+      "fingerprint": "69c53171e2a897f1f9a5d0bb83c098df68d6ded8c2c6ce0d85d5e2fdf1052b7f",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -1004,7 +365,7 @@
       "file": "components/strap/shell.tsx",
       "kind": "content",
       "occurrences": 11,
-      "fingerprint": "a07e574f3af91d27cdd9cce54e41e117224960bfbe3c0e39a51aaa3824f1b025",
+      "fingerprint": "ecba57e514cfad1ffe40081e8f726288b79ee816d29da0f9c24fdfc5eaff9c5e",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -1181,6 +542,15 @@
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
     },
     {
+      "file": "lib/app-shell.ts",
+      "kind": "content",
+      "occurrences": 5,
+      "fingerprint": "4ee255059eeabbac454e11b73c3d38bb0b28421642da6cc5468715fffe08c70e",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
       "file": "lib/audit-log.ts",
       "kind": "content",
       "occurrences": 7,
@@ -1257,6 +627,15 @@
       "kind": "content",
       "occurrences": 1,
       "fingerprint": "b19f99f558cada4044d4d1ef1005e925d6855449a4d418b0d0f168ad5b70019d",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "lib/consent-pages.ts",
+      "kind": "content",
+      "occurrences": 19,
+      "fingerprint": "76a82ad37ba4e13659856b4f937afef8e3967e5261f2ba99dfd955bc01219bbd",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -1442,6 +821,15 @@
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
     },
     {
+      "file": "lib/entry-gates.ts",
+      "kind": "content",
+      "occurrences": 1,
+      "fingerprint": "b288c741ee00357d09a48d6ff7f6f2bbbed630d048bbc5df17d774f4f37f03fd",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
       "file": "lib/github.ts",
       "kind": "content",
       "occurrences": 2,
@@ -1464,6 +852,24 @@
       "kind": "content",
       "occurrences": 30,
       "fingerprint": "09c9e53adbca7e1441c7a3596c844a99a7bcd74bf939b664da55e59a6b590080",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "lib/http/headers.ts",
+      "kind": "content",
+      "occurrences": 8,
+      "fingerprint": "944839bbb6d22d429573656617f82c02d8e2a242f6c0a8e69f2d59165e731073",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "lib/http/prerender-paths.ts",
+      "kind": "content",
+      "occurrences": 2,
+      "fingerprint": "57d8ac9ade5fc823c586372e2d650207b3803c0dd3cf5f64bc2aae4bab830214",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -1577,6 +983,15 @@
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
     },
     {
+      "file": "lib/onboarding-gate.ts",
+      "kind": "content",
+      "occurrences": 10,
+      "fingerprint": "5b5b9d1eecd2d19a522e5118200d2934c5619665837a64d2598b8de086c52915",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
       "file": "lib/onboarding/compile-company.ts",
       "kind": "content",
       "occurrences": 3,
@@ -1661,7 +1076,7 @@
       "file": "lib/strap-context.ts",
       "kind": "content",
       "occurrences": 46,
-      "fingerprint": "a8d2cac30907adc42fb7d557192dda298c9dc2589cd0be742653612552a6f029",
+      "fingerprint": "80b4939f914c40d157d51650bf1117b5d45107b432c9174b2b43c5f7a3fb0602",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -1743,15 +1158,6 @@
       "kind": "content",
       "occurrences": 28,
       "fingerprint": "9de01354f9192a839e52c3a6b6f51df968f0f08f9cea1929daea62057b79ec9d",
-      "decision": "compatibility",
-      "category": "stable-compatibility-content",
-      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
-    },
-    {
-      "file": "next.config.ts",
-      "kind": "content",
-      "occurrences": 9,
-      "fingerprint": "cce2aa49a27533f43278bd0a73e070dff13935b50bb940428042d489d98b5275",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -2324,6 +1730,699 @@
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
     },
     {
+      "file": "server/adf79f0bf26d7d95d49893645669789c.txt/route.ts",
+      "kind": "content",
+      "occurrences": 1,
+      "fingerprint": "2c9c8c6e0ad327f425a36b463c66c670c4ed39872d645e7e07f63752a2e7cf0d",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/app/claim/route.ts",
+      "kind": "content",
+      "occurrences": 1,
+      "fingerprint": "d51c614bb88e2d36ab7e4ad14c22772050cf5c31c7356e654da80563f865eb7b",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/app/company/agent-permissions/route.ts",
+      "kind": "content",
+      "occurrences": 32,
+      "fingerprint": "fbade169f2bb9c7c26db38d80e9d1d52ced62ce225635aef4e2df8724fb4c50c",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/app/company/general/route.ts",
+      "kind": "content",
+      "occurrences": 3,
+      "fingerprint": "16615e912285d22eda94b7f9531ebebacaaebc6c8e6d2961018cf9159252dd53",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/app/company/github/route.ts",
+      "kind": "content",
+      "occurrences": 5,
+      "fingerprint": "2921c94547fa90807ea4f4916f875d345c04606cfa0bfc85299676552dc2235d",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/app/company/invites/[id]/route.ts",
+      "kind": "content",
+      "occurrences": 26,
+      "fingerprint": "1d7b1a89ade1804214e483111c5e823c46db71105a3a4b9495e5436940f1fe25",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/app/company/invites/accept/route.ts",
+      "kind": "content",
+      "occurrences": 8,
+      "fingerprint": "cfd4500dd2f593179278c4b04effaec9bd0ab722cb90562ad120918b13eeb4f8",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/app/company/invites/route.ts",
+      "kind": "content",
+      "occurrences": 13,
+      "fingerprint": "972fb3f0837f7b5210048471415133f4e3a6cf996dbbb58b4db966edd6546b43",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/app/company/members/[userId]/route.ts",
+      "kind": "content",
+      "occurrences": 8,
+      "fingerprint": "1fa8fad04fc0a8672c1fdeebce0bf308a4f52c4aa4483d1eb3b6a99a3691c413",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/app/company/onboarding/route.ts",
+      "kind": "content",
+      "occurrences": 64,
+      "fingerprint": "e004422b866270fa692774f3ef153ea2cd03711c6cbf7f37b47dd05f6c935a7a",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/app/company/permissions/route.ts",
+      "kind": "content",
+      "occurrences": 18,
+      "fingerprint": "c54f138b671a5b96fa907002365e1a981d358b9e04c6a5458ec658ff4462d058",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/app/company/route.ts",
+      "kind": "content",
+      "occurrences": 10,
+      "fingerprint": "593d7abc7d26d800db05c810821ddfc3e937ab4ab4e4d0b84f2aabf91e702fe0",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/app/company/version-control/route.ts",
+      "kind": "content",
+      "occurrences": 12,
+      "fingerprint": "7c005ebaf3b23fabb55d3908a9197058de9e0931a1fe7a8afc84dec1a3ca5d3e",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/app/creeds/activate/route.ts",
+      "kind": "path",
+      "occurrences": 1,
+      "fingerprint": "8640d92f054fbf259b770f2977c1eeb40fa7760cffbe3e3d7cc96b1527a5e422",
+      "decision": "compatibility",
+      "category": "stable-compatibility-path",
+      "rationale": "Exact tracked path retained until its separately staged compatibility migration."
+    },
+    {
+      "file": "server/api/app/creeds/route.ts",
+      "kind": "path",
+      "occurrences": 1,
+      "fingerprint": "e9c7a05ed93b981cae549ccbf7975a408d87ae1834a5dbe0c7f80424c9de1c8e",
+      "decision": "compatibility",
+      "category": "stable-compatibility-path",
+      "rationale": "Exact tracked path retained until its separately staged compatibility migration."
+    },
+    {
+      "file": "server/api/app/getting-started/route.ts",
+      "kind": "content",
+      "occurrences": 11,
+      "fingerprint": "b68a8926917bd0715f9a0154602e0e30c384b3e5bf92bb7dee854cffdc3d4086",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/app/github/authorize/route.ts",
+      "kind": "content",
+      "occurrences": 12,
+      "fingerprint": "a13e4d2e549b5b24aac2d7b755d04ad088985c26e9c79f3a968a51e7966e544f",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/app/github/branches/route.ts",
+      "kind": "content",
+      "occurrences": 2,
+      "fingerprint": "de36b9865ef70aad084e3ab923b14aa1b365cd73a5772255b219f262cf174a8b",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/app/github/pull/apply/route.ts",
+      "kind": "content",
+      "occurrences": 8,
+      "fingerprint": "e5914daa84a1de0391b7ca37a1db8fb0e2489d9371a88a49c77e4ebf615823f6",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/app/github/pull/preview/route.ts",
+      "kind": "content",
+      "occurrences": 4,
+      "fingerprint": "a49a18eed8879c16b338493063ba901356ac57df61442008306d4ffbeeb97296",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/app/github/push/route.ts",
+      "kind": "content",
+      "occurrences": 10,
+      "fingerprint": "3624655bf497f1bfc9ec445accf8feb4d67f391a4a18ad71a93416bfde3ed2cb",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/app/github/repos/route.ts",
+      "kind": "content",
+      "occurrences": 2,
+      "fingerprint": "61ca155d96f492e417ab49f3ea662490ae4329ba8b778e50c55f1c53a885650a",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/app/github/status/route.ts",
+      "kind": "content",
+      "occurrences": 2,
+      "fingerprint": "f6305fa8a7bc7ac6d94cc7c4f580d4cca39f6a8ab5bf6d90d5905db712aa23a3",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/app/headless-access/[id]/rotate/route.ts",
+      "kind": "content",
+      "occurrences": 2,
+      "fingerprint": "1d103e4c136c292b29b8a54bf67a40d06ffdbd7961172eb6053e1a3b39779d45",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/app/headless-access/[id]/route.ts",
+      "kind": "content",
+      "occurrences": 2,
+      "fingerprint": "fc105158ee436ba773aaff6fd6124641ff161a11a5e93e6d068a1d1fe6d3ee1c",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/app/headless-access/route.ts",
+      "kind": "content",
+      "occurrences": 14,
+      "fingerprint": "abb5dc389032b0a47f32b6608726de30d7897abdaa6033d00fa71911278e16e0",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/app/legacy-subscriptions/route.ts",
+      "kind": "content",
+      "occurrences": 60,
+      "fingerprint": "23a30a3eb86053726028f51f45063ded45b1effed4138ac6449b70e029ed840f",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/app/mcp/cli-status/route.ts",
+      "kind": "content",
+      "occurrences": 19,
+      "fingerprint": "7a5bdd6cbb23ae3911845c32eab4498c909914591c2ae003f14414bb5c670860",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/app/mcp/health/route.ts",
+      "kind": "content",
+      "occurrences": 9,
+      "fingerprint": "dd639ddd42b793b49bd43abef656caf28770cef176c2d540cce961cc4996183f",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/app/mcp/revoke/route.ts",
+      "kind": "content",
+      "occurrences": 9,
+      "fingerprint": "c8c3b0aac7a17677c2b2a6d799dbdf818b5ca4a307c54d17758fa8ecc5874298",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/app/mcp/test/route.ts",
+      "kind": "content",
+      "occurrences": 17,
+      "fingerprint": "279612c87b23a63dd9befa7008a0244546882de88d21fec110e0ac1258cf1905",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/app/onboarding-status/route.ts",
+      "kind": "content",
+      "occurrences": 2,
+      "fingerprint": "4f2ae3a7e5eed97c92e98e88d8ba31c4d238f6516d872f72a98b86fb5aa77b18",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/app/onboarding/compose/route.ts",
+      "kind": "content",
+      "occurrences": 13,
+      "fingerprint": "637ddf089b42530550fa7e2b6f926b07bbc8cae62dcf9692f374498b6ed4fcd0",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/app/profile/avatar/route.ts",
+      "kind": "content",
+      "occurrences": 1,
+      "fingerprint": "139d8cef638f5c25a7b3b935d73a8227b9db6c5b00a16053ceafeb72dfca6a0a",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/app/proposals/[id]/route.ts",
+      "kind": "content",
+      "occurrences": 11,
+      "fingerprint": "0064c3edfadbd49d95712d640525757040edcbeb1701e8d21409133710eca2fb",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/app/sections/[sectionId]/restore/route.ts",
+      "kind": "content",
+      "occurrences": 3,
+      "fingerprint": "f0500e12cb28a0f13a07c08748d6d41ed73e5963b050c59dcb39033713bb29b0",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/app/sections/[sectionId]/route.ts",
+      "kind": "content",
+      "occurrences": 9,
+      "fingerprint": "271b97f958aeb540a6adf96d837dc4edb54ae633bb912c6c93c1fb0781c08b00",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/app/sections/[sectionId]/versions/route.ts",
+      "kind": "content",
+      "occurrences": 5,
+      "fingerprint": "fb764f9438a0d251b2e83ff49e81d5383f4576b6e47aad4a02c6ccf46e1eb740",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/app/sections/reorder/route.ts",
+      "kind": "content",
+      "occurrences": 3,
+      "fingerprint": "cf8e06d0d1fe63a2c3c75dde3ad43a28fc58b402f1da67a3a81b402f3dfa801b",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/app/sections/route.ts",
+      "kind": "content",
+      "occurrences": 3,
+      "fingerprint": "ca33dad8ef45f5703bf75942fc3237c9dd0a63a4434ec1c85cbe7e3fead0ebc3",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/app/state/route.ts",
+      "kind": "content",
+      "occurrences": 8,
+      "fingerprint": "80200133fd33989ecc0422a3a79fabadcccc8c912de6cbd397bce169133855fd",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/app/straps/activate/route.ts",
+      "kind": "content",
+      "occurrences": 9,
+      "fingerprint": "d002947ac84d9a6cc389757d9ef14ac912d7e49bfcde2ec9aa48eed3746167f9",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/app/straps/route.ts",
+      "kind": "content",
+      "occurrences": 8,
+      "fingerprint": "a3b419b2e18bf326564d0203bc58a99240192c33be3c0e1491b0e538f822be5c",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/app/vault/route.ts",
+      "kind": "content",
+      "occurrences": 8,
+      "fingerprint": "018622f335c6a2291e9f9d4a78e65f52b92b8d68a4411f2a8ab22ae2b2cc2f17",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/creed/proposals/route.ts",
+      "kind": "content",
+      "occurrences": 25,
+      "fingerprint": "4e4f2d70bde986707bd865da4f94eca0d988b52c950b7cdd0b3b0df94bf6cb2b",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/creed/proposals/route.ts",
+      "kind": "path",
+      "occurrences": 1,
+      "fingerprint": "37754600d66997e3a4317adfb94d2bf26b43bd89e4c3fe0b879863c862f1f56b",
+      "decision": "compatibility",
+      "category": "stable-compatibility-path",
+      "rationale": "Exact tracked path retained until its separately staged compatibility migration."
+    },
+    {
+      "file": "server/api/creed/route.ts",
+      "kind": "content",
+      "occurrences": 2,
+      "fingerprint": "1f5a6dcc609fcfa8163c241d2fe292b4869e056e70c1f81465325001db5e0e3f",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/creed/route.ts",
+      "kind": "path",
+      "occurrences": 1,
+      "fingerprint": "2349b79c1924b0841f0ace7054a69989dac291baa29fe11300c81d3fe45a1d55",
+      "decision": "compatibility",
+      "category": "stable-compatibility-path",
+      "rationale": "Exact tracked path retained until its separately staged compatibility migration."
+    },
+    {
+      "file": "server/api/creed/write/route.ts",
+      "kind": "content",
+      "occurrences": 17,
+      "fingerprint": "88166f5facc79a02e017e989a39308856aaea779b6d057e6c6be3f1748970d66",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/creed/write/route.ts",
+      "kind": "path",
+      "occurrences": 1,
+      "fingerprint": "f1ff55df3dd7fe89386ca0a5263634079fffa06085bc75e6b9326be002f206da",
+      "decision": "compatibility",
+      "category": "stable-compatibility-path",
+      "rationale": "Exact tracked path retained until its separately staged compatibility migration."
+    },
+    {
+      "file": "server/api/health/route.ts",
+      "kind": "content",
+      "occurrences": 2,
+      "fingerprint": "2775247fb10869ce0d30a8230e3801816625f4c45ea53f817ecaa297fdd52f38",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/strap/proposals/route.ts",
+      "kind": "content",
+      "occurrences": 1,
+      "fingerprint": "14376a84e2a283127a7a4dca4813d8e7b9a05c7dea7ba925d4d52d6200dffbad",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/strap/route.ts",
+      "kind": "content",
+      "occurrences": 2,
+      "fingerprint": "2c9d290bcb5bd24b88f33af3f9aab30e44d8d8bbb6f26900e3e48cb9862ac087",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/strap/write/route.ts",
+      "kind": "content",
+      "occurrences": 1,
+      "fingerprint": "6418c0b1b33295baf52a4c6edc15a4356fd4a0f6552c363d9c671feb56427030",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/api/welcome/seen/route.ts",
+      "kind": "content",
+      "occurrences": 1,
+      "fingerprint": "6af82cf3b2fa170c9e20ec391d758a24e5599a9f4b81aea5660ec2b554c5599a",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/auth/github/callback/route.ts",
+      "kind": "content",
+      "occurrences": 12,
+      "fingerprint": "1fb7a6fe0296009b003521b87b83f77cf55e6b0aafd5e0e5fd3a65ac86f0d39f",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/authorize/decision/route.ts",
+      "kind": "content",
+      "occurrences": 12,
+      "fingerprint": "2b231d285f22ff333cb378015977be2d29f5abdff98e60e576a8ee6ea67ca94d",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/device/decision/route.ts",
+      "kind": "content",
+      "occurrences": 3,
+      "fingerprint": "9501bdd1662f9804ea25aac6dd6a4bf0c6c1f78dd6d1a1256c642b166ae93a61",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/mcp/route.ts",
+      "kind": "content",
+      "occurrences": 145,
+      "fingerprint": "d6df89402712b0c547cfbf7714d37b06f95f77a7b91d4db55c411c0605a0b2ae",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/revoke/route.ts",
+      "kind": "content",
+      "occurrences": 5,
+      "fingerprint": "b7eddc3fc99964932b27eee340641ba8b4e8d7ea072a121c3b7b727a3e3a2553",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "server/token/route.ts",
+      "kind": "content",
+      "occurrences": 5,
+      "fingerprint": "28edd2c3416b24b6071791a68885e32e7077d57ba13a1484494c878ce3abb2e3",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "src/routeTree.gen.ts",
+      "kind": "content",
+      "occurrences": 120,
+      "fingerprint": "738e548e25ae56f6b3c42f67e6cc8fa1c6ca19bc5f501920f575f6c56a3ef711",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "src/routes/__root.tsx",
+      "kind": "content",
+      "occurrences": 1,
+      "fingerprint": "b433b26c8a13b03202e5b0649f0016c74979d1b00380fe1462079d115a144a64",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "src/routes/api/app/creeds/activate.ts",
+      "kind": "content",
+      "occurrences": 2,
+      "fingerprint": "4718acc5d9bb59eec95703086fca89dd0d825f1fa1c2edfb58a6a3297b13d426",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "src/routes/api/app/creeds/activate.ts",
+      "kind": "path",
+      "occurrences": 1,
+      "fingerprint": "d5169a533f3f916bb8b7169dcb591be3d79cdfaad19ddc544f0fe4ff48b28d8a",
+      "decision": "compatibility",
+      "category": "stable-compatibility-path",
+      "rationale": "Exact tracked path retained until its separately staged compatibility migration."
+    },
+    {
+      "file": "src/routes/api/app/creeds/index.ts",
+      "kind": "content",
+      "occurrences": 2,
+      "fingerprint": "bc9628fc9aa6d8d21ff702c01d841b1ac86c8abd32451204b701e36ea1f1eca1",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "src/routes/api/app/creeds/index.ts",
+      "kind": "path",
+      "occurrences": 1,
+      "fingerprint": "1f956bfa0ccfb36f86b960784849f1cf7f304ca2953f070ace639a7dffa9268d",
+      "decision": "compatibility",
+      "category": "stable-compatibility-path",
+      "rationale": "Exact tracked path retained until its separately staged compatibility migration."
+    },
+    {
+      "file": "src/routes/api/creed/index.ts",
+      "kind": "content",
+      "occurrences": 2,
+      "fingerprint": "f1f56dfadb2784e8d0e88cfc157ce0de592676229b410584ef394b846570ea4f",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "src/routes/api/creed/index.ts",
+      "kind": "path",
+      "occurrences": 1,
+      "fingerprint": "727d0479d73d4983fb2e1d6d7dde350b60f73c9fb74bd8556325cd7f74dfd298",
+      "decision": "compatibility",
+      "category": "stable-compatibility-path",
+      "rationale": "Exact tracked path retained until its separately staged compatibility migration."
+    },
+    {
+      "file": "src/routes/api/creed/proposals.ts",
+      "kind": "content",
+      "occurrences": 2,
+      "fingerprint": "947d9ff0a784df48afec5bda4cc354843485b1d7b90737d13fb915f7b5bbefdd",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "src/routes/api/creed/proposals.ts",
+      "kind": "path",
+      "occurrences": 1,
+      "fingerprint": "ec6d52f476f69885980d15460509c79ddb32d8fd50552eb5de2714c052cbac89",
+      "decision": "compatibility",
+      "category": "stable-compatibility-path",
+      "rationale": "Exact tracked path retained until its separately staged compatibility migration."
+    },
+    {
+      "file": "src/routes/api/creed/write.ts",
+      "kind": "content",
+      "occurrences": 2,
+      "fingerprint": "1c379cf72fce5408d9cf31ca0bfbe883e1cbb4b05eff61267096f80278dd728a",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "src/routes/api/creed/write.ts",
+      "kind": "path",
+      "occurrences": 1,
+      "fingerprint": "18a68ce91eb9da2cb423d025090f0ccc452406585afcd43fd0fdd9dcff77fea9",
+      "decision": "compatibility",
+      "category": "stable-compatibility-path",
+      "rationale": "Exact tracked path retained until its separately staged compatibility migration."
+    },
+    {
+      "file": "src/routes/dev/company-onboarding.tsx",
+      "kind": "content",
+      "occurrences": 1,
+      "fingerprint": "a371bd9cdbd503db3b126ed96fcd5ba72965de569ddf5279913a0128c3f884ec",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "src/routes/device/index.tsx",
+      "kind": "content",
+      "occurrences": 9,
+      "fingerprint": "b6990faad2934bd712d7eacde49b643b3d891b95bbe5a9d0ea1c2f0682bf3426",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "src/routes/onboarding/company.tsx",
+      "kind": "content",
+      "occurrences": 3,
+      "fingerprint": "21dfd97ecca7e19fe47e61842686883917da2db5f3c9f511a732e8cc86b3e5bd",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "src/styles/globals.css",
+      "kind": "content",
+      "occurrences": 87,
+      "fingerprint": "542ea9efa9acb2625fb8a30358d438c09e5eec77a497bc3cb676096920d4ad9f",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
       "file": "tests/agent-icon.test.ts",
       "kind": "content",
       "occurrences": 4,
@@ -2417,7 +2516,7 @@
       "file": "tests/db/vault-headless.test.ts",
       "kind": "content",
       "occurrences": 191,
-      "fingerprint": "d820cdf225f6d59fe5c1857899cb6ac9fef0bb269a33e890d6fd144bbd693e25",
+      "fingerprint": "604142459e3a28bdc592d849107f15c19bf5fe14088f8204f1fb3accc38ac54b",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -2435,7 +2534,16 @@
       "file": "tests/headless-access-vault.test.ts",
       "kind": "content",
       "occurrences": 9,
-      "fingerprint": "5bfcbd3ebc8a9d88406b066912ada935780f499696d7f9d02a42251c4e6b1fb0",
+      "fingerprint": "e199b6b487a40f0b645744b6624629e5a89ef76c725cd357bd8c528a2f03b835",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "tests/http-runtime.test.ts",
+      "kind": "content",
+      "occurrences": 2,
+      "fingerprint": "527ee1525d6ec54951b83d8c2f5362ac9aa4c214e85a9bb0d612c5cb10fe5133",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -2471,7 +2579,7 @@
       "file": "tests/merge-readiness.test.ts",
       "kind": "content",
       "occurrences": 7,
-      "fingerprint": "88437b250514b56ffabfda548df828f2235634fa2d5991b1ea7c7081d705debb",
+      "fingerprint": "7976f32c58e31a08d5e48ec027b6b5a3a1858f30c27ac0f1a6bb558e38d78026",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -2480,7 +2588,7 @@
       "file": "tests/no-in-app-ai.test.ts",
       "kind": "content",
       "occurrences": 1,
-      "fingerprint": "f3d9b0d92b56e52cb2923926c9e0a7a03074f5802523a6c7ea2d3b6efda1e033",
+      "fingerprint": "e5b3ab0021b25b70240b421c291212db96c1d6e4ea29c2c790268264d2995060",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -2524,8 +2632,8 @@
     {
       "file": "tests/strap-compatibility-origin.test.ts",
       "kind": "content",
-      "occurrences": 2,
-      "fingerprint": "b770f1537ce73df12b8f2cd7288fa7809f9e81b22ec5031ef4fb635b8ef4e20b",
+      "occurrences": 1,
+      "fingerprint": "efac64e98102d319c2feff86b316a314de0cda39846e0e6e3bc7a16d88cb2112",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -2543,7 +2651,7 @@
       "file": "tests/strap-protocol-compatibility.test.ts",
       "kind": "content",
       "occurrences": 35,
-      "fingerprint": "f337eb1c745f96a527e5134b3a430d2d48b9e474446d08be2edc4ea92b8e4da4",
+      "fingerprint": "46e309b1c56d1e10e2ef8b70064f9ebc24c1606d18683ab51980966b9a72a45f",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -2570,7 +2678,7 @@
       "file": "tsconfig.json",
       "kind": "content",
       "occurrences": 1,
-      "fingerprint": "5144df7cdf606aff8df76aefef6cc2b8eaff3958c31c87e8e4c2d848c7cae7d1",
+      "fingerprint": "bc02f1f429b26d893a53311b68d71d1eed4e5906e6406bb91cffa37c256eb1a8",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -2608,8 +2716,8 @@
       "rationale": "New deployments use the canonical Strap encryption variable."
     },
     {
-      "file": "app/api/strap/route.ts",
-      "pattern": "app/api/creed/route",
+      "file": "server/api/strap/route.ts",
+      "pattern": "server/api/creed/route",
       "rationale": "The canonical Strap direct API delegates to the shared compatibility implementation."
     },
     {
@@ -2617,8 +2725,8 @@
       "rationale": "The repository skill uses its canonical Strap directory."
     },
     {
-      "path": "app/(strap-app)/layout.tsx",
-      "rationale": "The signed-in route group uses its canonical Strap path."
+      "path": "src/routes/_app.tsx",
+      "rationale": "The signed-in app layout route lives at its canonical path."
     },
     {
       "path": "components/strap/strap-provider.tsx",

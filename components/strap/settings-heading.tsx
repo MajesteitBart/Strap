@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/link";
 
 // Heading for the Strap-scoped settings screens (personal and company). It says
 // which Strap the settings apply to and points to /account, where the settings

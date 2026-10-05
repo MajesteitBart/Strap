@@ -1,4 +1,4 @@
-// Auth configuration shared by the Next.js server and isolated integration tests.
+// Auth configuration shared by the app server and isolated integration tests.
 import { betterAuth, type BetterAuthOptions, type BetterAuthPlugin } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { createAuthMiddleware } from "better-auth/api";

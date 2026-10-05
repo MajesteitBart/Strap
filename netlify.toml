@@ -1,0 +1,11 @@
+# Netlify build for the TanStack Start (Vite) app.
+#
+# `vite build` writes the static site to dist/client (including prerendered
+# pages and the _headers file) and the server function to
+# .netlify/v1/functions/server.mjs, which Netlify picks up automatically.
+[build]
+  command = "npm run build"
+  publish = "dist/client"
+
+[build.environment]
+  NODE_VERSION = "22"

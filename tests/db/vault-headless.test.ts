@@ -4,7 +4,6 @@ import test from "node:test";
 import * as orm from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
-import { NextResponse } from "next/server.js";
 import ts from "typescript";
 import * as tables from "../../db/schema/application.ts";
 import * as policies from "../../lib/authz/policies.ts";
@@ -101,14 +100,13 @@ test("scoped Vault reveals enforce live Postgres permissions and audit before de
     "@/lib/rate-limit": { checkRateLimit },
     "@/lib/env": { isDatabaseConfigured: () => true },
     "@/lib/observability": { log: { warn: () => {} } },
-    "next/server": { NextResponse },
   };
   dependencies["@/lib/strap-membership"] = loadModule("../../lib/strap-membership.ts", dependencies);
   dependencies["@/lib/audit-log"] = loadModule("../../lib/audit-log.ts", dependencies);
   dependencies["@/lib/api-key-vault"] = loadModule("../../lib/api-key-vault.ts", dependencies);
   const headless = loadModule<typeof import("../../lib/headless-access.ts")>("../../lib/headless-access.ts", dependencies);
   dependencies["@/lib/headless-access"] = headless;
-  const route = loadModule<typeof import("../../app/api/strap/vault/reveal/route.ts")>("../../app/api/strap/vault/reveal/route.ts", dependencies);
+  const route = loadModule<typeof import("../../server/api/strap/vault/reveal/route.ts")>("../../server/api/strap/vault/reveal/route.ts", dependencies);
   const create = (vaultItemIds?: string[], creedId = personal, userId = owner) => headless.createHeadlessAccessKey({ userId, creedId, name: "Varlock", mode: "read-only", expiresAt: null, vaultItemIds });
   const request = (key: string, reference: unknown = item.id, body?: string) => route.POST(new Request("http://localhost/api/strap/vault/reveal", {
     method: "POST", headers: { authorization: `Bearer ${key}`, "Content-Type": "application/json" }, body: body ?? JSON.stringify({ reference }),
@@ -205,7 +203,7 @@ test("scoped Vault reveals enforce live Postgres permissions and audit before de
 
   await t.test("session key-creation route uses the new viewer context and validates its payload", async () => {
     dependencies["@/lib/api-auth"] = { requireApiAuth: async () => ({ user: { id: owner }, context: viewerContext(db, { userId: owner }) }) };
-    const app = loadModule<typeof import("../../app/api/app/headless-access/route.ts")>("../../app/api/app/headless-access/route.ts", dependencies);
+    const app = loadModule<typeof import("../../server/api/app/headless-access/route.ts")>("../../server/api/app/headless-access/route.ts", dependencies);
     const post = (body: unknown) => app.POST(new Request("http://localhost/api/app/headless-access", { method: "POST", body: JSON.stringify(body) }));
     for (const body of [null, [], {}, { strapId: personal, name: "Invalid", mode: "read-only", vaultItemIds: "*" }]) assert.equal((await post(body)).status, 400);
     const response = await post({ strapId: personal, name: "App key", mode: "read-only", vaultItemIds: [item.id] });
@@ -403,10 +401,10 @@ test("scoped Vault reveals enforce live Postgres permissions and audit before de
   await t.test("session routes edit grants, rotate keys and manage folders", async () => {
     dependencies["@/lib/api-auth"] = { requireApiAuth: async () => ({ user: { id: owner }, context: viewerContext(db, { userId: owner }) }) };
     dependencies["@/lib/strap-api"] = strapApi;
-    const keyRoute = loadModule<typeof import("../../app/api/app/headless-access/[id]/route.ts")>("../../app/api/app/headless-access/[id]/route.ts", dependencies);
-    const rotateRoute = loadModule<typeof import("../../app/api/app/headless-access/[id]/rotate/route.ts")>("../../app/api/app/headless-access/[id]/rotate/route.ts", dependencies);
-    const foldersRoute = loadModule<typeof import("../../app/api/app/vault/folders/route.ts")>("../../app/api/app/vault/folders/route.ts", dependencies);
-    const folderRoute = loadModule<typeof import("../../app/api/app/vault/folders/[id]/route.ts")>("../../app/api/app/vault/folders/[id]/route.ts", dependencies);
+    const keyRoute = loadModule<typeof import("../../server/api/app/headless-access/[id]/route.ts")>("../../server/api/app/headless-access/[id]/route.ts", dependencies);
+    const rotateRoute = loadModule<typeof import("../../server/api/app/headless-access/[id]/rotate/route.ts")>("../../server/api/app/headless-access/[id]/rotate/route.ts", dependencies);
+    const foldersRoute = loadModule<typeof import("../../server/api/app/vault/folders/route.ts")>("../../server/api/app/vault/folders/route.ts", dependencies);
+    const folderRoute = loadModule<typeof import("../../server/api/app/vault/folders/[id]/route.ts")>("../../server/api/app/vault/folders/[id]/route.ts", dependencies);
     const json = (method: string, body: unknown) => new Request("http://localhost/api/app", { method, body: JSON.stringify(body) });
     const params = (id: string) => ({ params: Promise.resolve({ id }) });
 

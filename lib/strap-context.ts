@@ -8,14 +8,14 @@ import {
 } from "@/lib/strap-membership";
 import type { StrapRole } from "@/lib/strap-permissions";
 import { getDisplayName } from "@/lib/user-name";
-import { cookies } from "next/headers";
+import { currentRequestCookie, setResponseCookie } from "@/lib/http/request-context";
 import { cache } from "react";
 import "server-only";
 
 // Active-Strap resolution.
 //
 // The app renders one Strap at a time. Which one is held in a cookie
-// (ACTIVE_CREED_COOKIE) so server components and route handlers agree without a
+// (ACTIVE_CREED_COOKIE) so page loaders and route handlers agree without a
 // round-trip. The cookie is advisory: it is always validated against live
 // membership, and falls back to the user's Personal Strap (or their sole
 // Company Strap) when it is missing, stale, or points at a Strap they no longer
@@ -41,10 +41,9 @@ export type ActiveCreed = ActiveStrap;
  * with no Strap row yet, which the gate routes to onboarding). `client` is the
  * caller's session client (used to read membership under RLS).
  */
-// cache()-wrapped: the app layout and AuthedProviders both resolve the active
-// Strap in the same render. With a shared client+user (see getRequestAuth)
-// the args match, so the membership read runs once per request. A no-op in
-// route handlers.
+// cache() only dedupes inside React Server Components; elsewhere it is a
+// no-op. Page loaders resolve the active Strap once per request and pass it
+// on (see lib/app-shell.ts).
 export const resolveActiveStrap = cache(async function resolveActiveStrap(
   client: DatabaseContext,
   user: User
@@ -52,8 +51,7 @@ export const resolveActiveStrap = cache(async function resolveActiveStrap(
   const creeds = await listUserStraps(client, user.id);
   if (creeds.length === 0) return null;
 
-  const cookieStore = await cookies();
-  const requested = cookieStore.get(ACTIVE_CREED_COOKIE)?.value ?? null;
+  const requested = currentRequestCookie(ACTIVE_CREED_COOKIE) ?? null;
 
   const chosen =
     (requested && creeds.find((c) => c.id === requested)) ||
@@ -143,8 +141,7 @@ export async function setActiveStrap(
   const role = await getStrapRole(client, user.id, creedId);
   if (!role) return null;
 
-  const cookieStore = await cookies();
-  cookieStore.set(ACTIVE_CREED_COOKIE, creedId, {
+  setResponseCookie(ACTIVE_CREED_COOKIE, creedId, {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",

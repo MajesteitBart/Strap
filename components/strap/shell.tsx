@@ -36,9 +36,9 @@ import { UserIcon } from "@/components/ui/user";
 import { accentColorMap, type StrapSection } from "@/lib/strap-data";
 import { cn } from "@/lib/utils";
 import { Plus } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import Image from "@/components/ui/image";
+import Link from "@/components/link";
+import { useAppRouter, usePathname } from "@/components/navigation";
 import {
   createContext,
   useCallback,
@@ -97,7 +97,7 @@ function ShellNavLink({
   collapsed: boolean;
 }) {
   const Icon = item.icon;
-  const router = useRouter();
+  const router = useAppRouter();
   const { iconRef, start, settle, initialState } = useAnimatedIconControls(120);
 
   return (
@@ -145,7 +145,7 @@ export function StrapShell({
   pendingProposalSectionIds = [],
 }: ShellProps) {
   const pathname = usePathname();
-  const router = useRouter();
+  const router = useAppRouter();
   const { signOut, state, exportMarkdown } = useStrap();
   const [failedAvatarUrl, setFailedAvatarUrl] = useState<string | null>(null);
   const searchIconRef = useRef<SearchIconHandle | null>(null);
@@ -665,7 +665,6 @@ export function StrapShell({
                             fill
                             className="rounded-[var(--radius-lg)] object-cover"
                             referrerPolicy="no-referrer"
-                            unoptimized
                             onError={() => setFailedAvatarUrl(avatarUrl)}
                           />
                         ) : (

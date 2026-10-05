@@ -11,10 +11,10 @@ function source(path: string) {
   return readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 }
 
-const mcpRoute = source("app/mcp/route.ts");
-const creedReadRoute = source("app/api/creed/route.ts");
-const creedProposalRoute = source("app/api/creed/proposals/route.ts");
-const creedWriteRoute = source("app/api/creed/write/route.ts");
+const mcpRoute = source("server/mcp/route.ts");
+const creedReadRoute = source("server/api/creed/route.ts");
+const creedProposalRoute = source("server/api/creed/proposals/route.ts");
+const creedWriteRoute = source("server/api/creed/write/route.ts");
 const oauth = source("lib/oauth.ts");
 const oauthDevice = source("lib/oauth-device.ts");
 const prompts = source("lib/strap-prompts.ts");
@@ -30,14 +30,14 @@ test("new headless keys are Strap-prefixed while legacy keys remain recognized",
 });
 
 test("Strap HTTP routes share Creed handler and rate-limit implementations", () => {
-  assert.match(source("app/api/strap/route.ts"), /app\/api\/creed\/route/);
+  assert.match(source("server/api/strap/route.ts"), /server\/api\/creed\/route/);
   assert.match(
-    source("app/api/strap/proposals/route.ts"),
-    /app\/api\/creed\/proposals\/route/,
+    source("server/api/strap/proposals/route.ts"),
+    /server\/api\/creed\/proposals\/route/,
   );
   assert.match(
-    source("app/api/strap/write/route.ts"),
-    /app\/api\/creed\/write\/route/,
+    source("server/api/strap/write/route.ts"),
+    /server\/api\/creed\/write\/route/,
   );
   assert.match(creedReadRoute, /scope: "creed-read"/);
   assert.match(creedProposalRoute, /scope: "creed-proposals"/);
@@ -92,31 +92,31 @@ test("agent guidance has no secret-bearing read URL and advertises Strap tools",
 test("browser API ids read both field names and write Strap fields additively", () => {
   assert.equal(readStrapId({ strapId: "new", creedId: "old" }), "new");
   assert.equal(readStrapId({ creedId: "old" }), "old");
-  assert.match(source("app/api/app/straps/route.ts"), /strapId: creed\.id/);
-  assert.match(source("app/api/app/straps/route.ts"), /\{ straps, creeds: straps \}/);
-  assert.match(source("app/api/app/straps/route.ts"), /requireApiAuth\(\)/);
+  assert.match(source("server/api/app/straps/route.ts"), /strapId: creed\.id/);
+  assert.match(source("server/api/app/straps/route.ts"), /\{ straps, creeds: straps \}/);
+  assert.match(source("server/api/app/straps/route.ts"), /requireApiAuth\(\)/);
   assert.match(
-    source("app/api/app/creeds/route.ts"),
-    /app\/api\/app\/straps\/route/,
+    source("server/api/app/creeds/route.ts"),
+    /server\/api\/app\/straps\/route/,
   );
   assert.match(
-    source("app/api/app/straps/activate/route.ts"),
+    source("server/api/app/straps/activate/route.ts"),
     /\{ ok: true, strapId: creedId, creedId, role \}/,
   );
   assert.match(
-    source("app/api/app/straps/activate/route.ts"),
+    source("server/api/app/straps/activate/route.ts"),
     /requireApiAuth\(\)/,
   );
   assert.match(
-    source("app/api/app/creeds/activate/route.ts"),
-    /app\/api\/app\/straps\/activate\/route/,
+    source("server/api/app/creeds/activate/route.ts"),
+    /server\/api\/app\/straps\/activate\/route/,
   );
   assert.match(
-    source("app/authorize/decision/route.ts"),
+    source("server/authorize/decision/route.ts"),
     /form\.get\("strap_grant"\) \?\? form\.get\("creed_grant"\)/,
   );
   assert.match(
-    source("app/device/decision/route.ts"),
+    source("server/device/decision/route.ts"),
     /form\.get\("strap_id"\) \?\? form\.get\("creed_id"\)/,
   );
 

@@ -4,16 +4,17 @@ import {
   StrapSiteFooter,
   StrapSiteHeader,
 } from "@/components/marketing/strap-site-shell";
-import { isDatabaseConfigured } from "@/lib/env";
+import { useDeploymentInfo } from "@/components/deployment-info";
 import type { RoadmapColumn, RoadmapTask } from "@/lib/marketing/roadmap";
-import Link from "next/link";
+import Link from "@/components/link";
 
 export function RoadmapPageView({ columns }: { columns: RoadmapColumn[] }) {
+  const { configured } = useDeploymentInfo();
   const total = columns.reduce((sum, column) => sum + column.tasks.length, 0);
 
   return (
     <div className="strap-site">
-      <StrapSiteHeader configured={isDatabaseConfigured()} current="roadmap" />
+      <StrapSiteHeader configured={configured} current="roadmap" />
 
       <main>
         <StrapPageHero

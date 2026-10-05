@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { useAppRouter } from "@/components/navigation";
+import Link from "@/components/link";
 import {
   StrapPageHero,
   StrapSiteFooter,
@@ -209,7 +209,7 @@ function PersonalCta({ configured }: { configured: boolean }) {
 // signed-out visitors sign in first and land back here to create it.
 function CompanyCta({ configured }: { configured: boolean }) {
   const authState = useLandingAuthState(configured);
-  const router = useRouter();
+  const router = useAppRouter();
   const [creating, setCreating] = useState(false);
   const { signIn, pendingProvider } = useOAuthSignIn(configured, "/pricing");
   const loading = pendingProvider === "google";

@@ -4,9 +4,9 @@ import {
   StrapSiteFooter,
   StrapSiteHeader,
 } from "@/components/marketing/strap-site-shell";
-import { isDatabaseConfigured } from "@/lib/env";
+import { useDeploymentInfo } from "@/components/deployment-info";
 import { companyFaqItems } from "@/lib/marketing/faq";
-import Link from "next/link";
+import Link from "@/components/link";
 
 // Server-rendered Company plan landing page. All content ships in the initial
 // HTML so crawlers and answer engines read the full pitch, roles, and pricing
@@ -56,9 +56,10 @@ const MEMBERS = [
 ] as const;
 
 export function CompanyPageView() {
+  const { configured } = useDeploymentInfo();
   return (
     <div className="strap-site">
-      <StrapSiteHeader configured={isDatabaseConfigured()} current="company" />
+      <StrapSiteHeader configured={configured} current="company" />
 
       <main>
         <StrapPageHero

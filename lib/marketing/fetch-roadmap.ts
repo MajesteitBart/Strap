@@ -7,6 +7,7 @@ import "server-only";
 // so the page and teaser degrade to a calm empty state, matching the
 // fail-closed posture of the other marketing integrations (system status,
 // GitHub stars).
+import { memoize } from "@/lib/http/memo";
 import { log } from "@/lib/observability";
 import {
   groupTasksIntoColumns,
@@ -15,6 +16,30 @@ import {
 
 const MEDIAN_TASKS_ENDPOINT = "https://api.median.sh/api/tasks";
 
+// Near-real-time without a webhook (median exposes no outbound events):
+// cache the board for 60s so moving a task between phases shows up within
+// about a minute, while capping median to ~1 request/min per server instance
+// no matter how much marketing traffic hits the page.
+const BOARD_TTL_MS = 60_000;
+
+async function fetchBoard(apiKey: string): Promise<RoadmapColumn[]> {
+  const res = await fetch(`${MEDIAN_TASKS_ENDPOINT}?limit=500`, {
+    headers: { Authorization: `Bearer ${apiKey}` },
+  });
+
+  if (!res.ok) {
+    log.error(
+      "roadmap_upstream_failed",
+      { status: res.status },
+      new Error("median_tasks_upstream_failed"),
+    );
+    throw new Error("median_tasks_upstream_failed");
+  }
+
+  const payload = (await res.json()) as { tasks?: unknown };
+  return groupTasksIntoColumns(payload?.tasks);
+}
+
 export async function fetchRoadmap(): Promise<RoadmapColumn[]> {
   const apiKey = process.env.MEDIAN_API_KEY?.trim();
   if (!apiKey) {
@@ -22,32 +47,15 @@ export async function fetchRoadmap(): Promise<RoadmapColumn[]> {
   }
 
   try {
-    const res = await fetch(`${MEDIAN_TASKS_ENDPOINT}?limit=500`, {
-      headers: { Authorization: `Bearer ${apiKey}` },
-      // Near-real-time without a webhook (median exposes no outbound events):
-      // cache the board for 60s so moving a task between phases shows up within
-      // about a minute, while capping median to ~1 request/min no matter how
-      // much marketing traffic hits the page.
-      next: { revalidate: 60 },
-    });
-
-    if (!res.ok) {
-      log.error(
-        "roadmap_upstream_failed",
-        { status: res.status },
-        new Error("median_tasks_upstream_failed"),
-      );
-      return groupTasksIntoColumns([]);
-    }
-
-    const payload = (await res.json()) as { tasks?: unknown };
-    return groupTasksIntoColumns(payload?.tasks);
+    return await memoize("median-roadmap", BOARD_TTL_MS, () => fetchBoard(apiKey));
   } catch (error) {
-    log.error(
-      "roadmap_upstream_error",
-      {},
-      error instanceof Error ? error : new Error(String(error)),
-    );
+    if (!(error instanceof Error && error.message === "median_tasks_upstream_failed")) {
+      log.error(
+        "roadmap_upstream_error",
+        {},
+        error instanceof Error ? error : new Error(String(error)),
+      );
+    }
     return groupTasksIntoColumns([]);
   }
 }

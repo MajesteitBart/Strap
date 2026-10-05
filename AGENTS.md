@@ -35,31 +35,48 @@ wrong change.
 ## Stack
 
 ```
-Next.js 16 (App Router, Turbopack)   React 19   TypeScript (strict)
+TanStack Start (TanStack Router) on Vite 8   React 19   TypeScript (strict)
 Tailwind v4   shadcn/ui   Tiptap   Framer Motion / motion
-Postgres 17 + Drizzle + Better Auth
+Postgres 17 + Drizzle + Better Auth   Netlify (CDN + one server function)
 ```
+
+How pages render:
+- Marketing pages, `/reset-password` and the crawler files are prerendered at
+  build time and served as static files.
+- The signed-in app (`/file`, `/skills`, `/connections`, `/vault`,
+  `/settings`, `/account`) and onboarding are static shells (`ssr: false`).
+  One server function (`src/functions/app.ts`) runs the access gate and loads
+  the Strap when the app is entered; moving between app pages stays on the
+  client.
+- Pages that decide per request (`/`, sign-in, OAuth consent, device, invites,
+  `/roadmap`) render on the server.
 
 ---
 
 ## Repo layout
 
 ```
-app/                Next routes
-├── (strap-app)/    signed-in product: /file, /skills, /connections, /vault, /settings (active Strap), /account (user)
+src/
+├── routes/         TanStack file routes (URL -> page or server route)
+│   ├── __root.tsx  document shell, head tags, fonts, theme bootstrap
+│   ├── _app.tsx    signed-in layout: gate + StrapProvider; _app/* are its pages
+│   ├── onboarding/ guided onboarding flow
+│   ├── authorize/ device/ invite/   OAuth consent, device authorization, invites
+│   ├── home|docs|pricing|privacy|terms|stack|learn/   marketing (prerendered)
+│   └── api/ mcp.ts token.ts ...    server routes; each binds one server/ module
+├── functions/      server functions used by route loaders
+├── start.ts        request middleware: security headers, caching, redirects, request id
+├── router.tsx      router options (plain query strings, preloading, error pages)
+└── styles/         globals.css, strap-public.css, fonts.css
+
+server/             HTTP handler modules: (request, { params }) => Response
 ├── api/app/        session-authed APIs (requireApiAuth)
 │   ├── headless-access/  one-time-visible scoped agent keys
 │   └── vault/      metadata, create, update, reveal, delete, and folder operations
 ├── api/creed/*     token-authed agent APIs (hash compare)
-├── authorize/      browser OAuth consent
-├── device/         OAuth device authorization
+├── authorize/ device/   OAuth consent and device decisions
 ├── auth/callback/  legacy auth landing; OAuth callbacks use /api/auth/callback/*
-├── mcp/route.ts    MCP protocol endpoint
-├── home/           public landing (/home)
-├── docs|pricing|privacy|terms|stack/   marketing
-├── onboarding/     guided onboarding flow
-├── layout.tsx      root layout — skips loadCreedState for marketing
-└── proxy.ts        sets x-request-id + x-pathname
+└── mcp/route.ts    MCP protocol endpoint
 
 components/
 ├── strap/          product UI (editor, sidebars, settings)
@@ -86,6 +103,9 @@ lib/
 ├── rate-limit.ts             per-token rate limiting
 ├── observability.ts          structured log helpers
 ├── api-auth.ts               requireApiAuth helper
+├── app-shell.ts              signed-in access gate and initial Strap state
+├── http/                     header policy, route binding, cookies, request context
+├── seo/head.ts               page titles, descriptions, Open Graph, canonical links
 └── branding.ts               env-driven contact / social URLs
 
 db/schema/             canonical Drizzle schema
@@ -115,9 +135,9 @@ These are non-negotiable. Don't cross them without asking.
    compatibility prefix.
 3. **No personal info in source.** Email / handles / names go through
    `lib/branding.ts` env vars.
-4. **Marketing routes never read user state.** The root layout skips
-   `loadCreedState` based on the `x-pathname` header set by `proxy.ts`.
-   Don't reintroduce a fan-out without that gate.
+4. **Marketing routes never read user state.** They are prerendered at build
+   time; the root route only loads deployment facts (`useDeploymentInfo`).
+   Keep user-state loading in the `_app` and onboarding loaders.
 5. **Don't touch `lib/strap-data.ts:collaborationRules`** without
    thinking carefully — it ships to every connected agent on every
    read. Test across at least 2 models if you do.
@@ -127,8 +147,11 @@ These are non-negotiable. Don't cross them without asking.
    `log.info / warn / error` for server-side logging.
 8. **No new dependencies without justification** in the commit message.
 9. **TypeScript strict, no `any`.** `unknown` + narrowing instead.
-10. **Default to server components.** Add `"use client"` only when a
-    hook, browser API, or interactive event genuinely needs it.
+10. **Server-only code stays out of the browser bundle.** Modules that touch
+    the database, secrets or Node APIs import `"server-only"`; pages reach them
+    through server functions (`src/functions/`) or `server/` handlers, never by
+    importing them into a component. Components render on both server and
+    client, so they must not read server environment variables directly.
 11. **Secret plaintext stays inside its narrow reveal boundary.** Vault lists,
     logs, audits, and ordinary MCP responses contain metadata or references,
     never secret values.
@@ -144,12 +167,20 @@ These are non-negotiable. Don't cross them without asking.
 - Inline `style` is acceptable when Tailwind merge isn't deduplicating
   arbitrary classes correctly.
 
-### Fetches
-- Server fetches in route handlers / server components.
+### Routes and fetches
+- A new API endpoint is a module under `server/` plus a binding in
+  `src/routes/` that wraps it with `routeHandlers()`. Keep handler modules free
+  of router imports so tests can call them directly.
+- Page data comes from route loaders calling server functions. Signed-in
+  pages read the Strap from `StrapProvider`, not from their own loaders.
 - Client fetches go through `components/strap/settings-preload.ts`-style module
   singletons when state must survive navigation.
-- No `next/dynamic({ ssr: false })` for heavy public-route components
-  — known to hang in Next 16 dev.
+- Internal links use `@/components/link`; programmatic navigation uses
+  `useAppRouter()` from `@/components/navigation`.
+- Prerendered paths are listed in `lib/http/prerender-paths.ts`. A page that
+  makes a per-request decision must not be added there.
+- Response headers and redirects live in `lib/http/headers.ts`, which feeds
+  both the server middleware and the generated Netlify `_headers` file.
 
 ### Database and environment
 - .env.local is the canonical configuration for this checkout. Load it before local database commands and never print secrets.
@@ -167,9 +198,8 @@ These are non-negotiable. Don't cross them without asking.
   `load` event.
 
 ### Images
-- Default Next/Image quality (75) is fine for backgrounds. Don't use
-  `quality={100}` without confirming `next.config.ts:images.qualities`
-  allowlists it AND restarting the dev server.
+- `@/components/ui/image` renders a plain lazy `<img>`; there is no resizing
+  service, so size source files for their display.
 - Marketing page MediaSlots show a clean placeholder card when an
   image file is missing — see the comment block at the top of
   `MediaSlot` in `components/marketing/below-hero-sections.tsx` for
@@ -183,8 +213,11 @@ These are non-negotiable. Don't cross them without asking.
 npm test
 npx tsc --noEmit -p .   # zero new type errors
 npm run lint            # zero new ESLint errors
-npm run build           # production build must succeed
+npm run build           # production build and prerender must succeed
 ```
+
+`npm run build && npm start` serves the build the way Netlify does (static
+files first, then the server function); `npm run verify:local` exercises it.
 
 For CLI changes, run the affected package typecheck, tests, and package dry run; the root TypeScript project excludes CLI packages. For compatibility classification changes, review affected occurrences and run `npm run audit:brand`.
 
@@ -216,7 +249,7 @@ product. Some legacy code paths still reference the old framing —
 `conventions` section ID, "operating principles" naming, chips/rules/
 focus payload variants in the markdown parser.
 
-Canonical implementation paths are `app/(strap-app)/`, `components/strap/`,
+Canonical implementation paths are `src/routes/_app/`, `components/strap/`,
 and `lib/strap-*`. Narrow `lib/creed-*` re-export shims, `/api/creed/**`,
 database identifiers, migration history, and `packages/creed-cli/` remain
 explicit compatibility surfaces.
@@ -240,13 +273,3 @@ This repository uses OpenWiki for recurring code documentation. Start with `open
 The scheduled OpenWiki GitHub Actions workflow refreshes the repository wiki. Do not hand-edit generated OpenWiki pages unless explicitly asked; prefer updating source code/docs and letting OpenWiki regenerate.
 
 <!-- OPENWIKI:END -->
-
-<!-- BEGIN:nextjs-agent-rules -->
-
-# This is NOT the Next.js you know
-
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
-
-This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
-
-<!-- END:nextjs-agent-rules -->

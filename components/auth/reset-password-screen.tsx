@@ -6,7 +6,7 @@ import { AuthSubmitButton, PasswordField } from "@/components/auth/auth-fields";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { authClient } from "@/lib/auth/client";
 import { LoaderCircle } from "lucide-react";
-import Link from "next/link";
+import Link from "@/components/link";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 

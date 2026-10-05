@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useAppRouter } from "@/components/navigation";
 import { Check, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -75,7 +75,7 @@ export function StrapTitle() {
  */
 export function StrapSwitcher({ collapsed }: { collapsed: boolean }) {
   const { state, switchCreed } = useStrap();
-  const router = useRouter();
+  const router = useAppRouter();
   const [switching, setSwitching] = useState(false);
   const [optimisticId, setOptimisticId] = useState<string | null>(null);
   const previousActiveIdRef = useRef<string | null>(null);

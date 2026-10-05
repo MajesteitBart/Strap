@@ -6,7 +6,7 @@ import { AuthShell } from "@/components/auth/auth-shell";
 import { readLastAuthProvider, useOAuthSignIn, type OAuthProvider } from "@/components/auth/use-oauth-sign-in";
 import { authClient } from "@/lib/auth/client";
 import { LoaderCircle, MailCheck } from "lucide-react";
-import Link from "next/link";
+import Link from "@/components/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 
@@ -187,7 +187,7 @@ export function AuthScreen({
           window.location.assign(`/login/two-factor?next=${encodeURIComponent(nextPath)}`);
           return;
         }
-        // Full navigation so server components pick up the new session.
+        // Full navigation so the server-side gates pick up the new session.
         window.location.assign(nextPath);
         return;
       }

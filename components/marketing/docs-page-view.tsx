@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import Link from "next/link";
+import Link from "@/components/link";
 import { AnimatedSectionHeading } from "@/components/marketing/animated-page-title";
 import { IntegrationGlyph } from "@/components/strap/brand";
 import {

@@ -3,14 +3,14 @@ import {
   StrapSiteFooter,
   StrapSiteHeader,
 } from "@/components/marketing/strap-site-shell";
-import { isDatabaseConfigured } from "@/lib/env";
-import Link from "next/link";
+import { useDeploymentInfo } from "@/components/deployment-info";
+import Link from "@/components/link";
 
 const stackRows = [
   {
-    name: "Next.js, React, and TypeScript",
-    purpose: "Application framework, user interface, and strict implementation language",
-    website: "https://nextjs.org",
+    name: "TanStack Start, Vite, React, and TypeScript",
+    purpose: "Application framework, build tooling, user interface, and strict implementation language",
+    website: "https://tanstack.com/start",
     tone: "context",
   },
   {
@@ -52,9 +52,10 @@ const stackRows = [
 ] as const;
 
 export function StackPageView() {
+  const { configured } = useDeploymentInfo();
   return (
     <div className="strap-site">
-      <StrapSiteHeader configured={isDatabaseConfigured()} current="stack" />
+      <StrapSiteHeader configured={configured} current="stack" />
 
       <main>
         <StrapPageHero

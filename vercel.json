@@ -1,9 +1,0 @@
-{
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "regions": ["lhr1"],
-  "functions": {
-    "app/api/feedback/route.ts": {
-      "maxDuration": 15
-    }
-  }
-}

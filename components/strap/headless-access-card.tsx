@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Copy, KeyRound, Link2, RefreshCw, Server, ShieldCheck, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";

@@ -4,7 +4,7 @@
 // /reset-password): the labelled text field, the password field with the
 // animated eye toggle, the checkbox, and the submit button with the animated
 // arrow. Kept here so every auth screen stays visually and behaviourally
-// identical, in the worktable form language from app/strap-public.css.
+// identical, in the worktable form language from src/styles/strap-public.css.
 
 import { useId, useState, type ReactNode, type Ref } from "react";
 import { Check, LoaderCircle } from "lucide-react";

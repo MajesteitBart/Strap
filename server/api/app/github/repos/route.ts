@@ -1,0 +1,40 @@
+import { requireApiAuth } from "@/lib/api-auth";
+import { withCompanyGitHubAccess } from "@/lib/company-github";
+import { listGitHubRepos } from "@/lib/github";
+import {
+  withAuthenticatedGitHubAccess
+} from "@/lib/github-version-control";
+import { resolveManagedCompanyCreedId } from "@/lib/strap-context";
+
+export async function GET() {
+  const auth = await requireApiAuth();
+  if (auth instanceof Response) return auth;
+  try {
+    const { context, user } = auth;
+    // Company managers list repos on the TEAM's GitHub connection (so they see
+    // the org repos the team can push to); everyone else lists their own.
+    const companyId = await resolveManagedCompanyCreedId(context, user);
+    const repos = companyId
+      ? await withCompanyGitHubAccess(companyId, (token) => listGitHubRepos(token))
+      : await withAuthenticatedGitHubAccess(({ integration }) =>
+          listGitHubRepos(integration.access_token!)
+        );
+
+    return Response.json({
+      repos: repos.map((repo) => ({
+        id: repo.id,
+        owner: repo.owner.login,
+        name: repo.name,
+        fullName: repo.full_name,
+        defaultBranch: repo.default_branch,
+        private: repo.private,
+      })),
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Could not load GitHub repos.";
+    return Response.json(
+      { error: message },
+      { status: message === "Unauthorized" ? 401 : 400 }
+    );
+  }
+}

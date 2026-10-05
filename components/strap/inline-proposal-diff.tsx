@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Image from "next/image";
+import Image from "@/components/ui/image";
 import { diffWords } from "diff";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, ChevronDown, Pencil, Trash2, X } from "lucide-react";
@@ -36,7 +36,6 @@ export function ProposalAuthor({
           alt=""
           width={20}
           height={20}
-          unoptimized
           referrerPolicy="no-referrer"
           onError={() => setFailed(true)}
           className="h-5 w-5 shrink-0 rounded-[6px] object-cover"
