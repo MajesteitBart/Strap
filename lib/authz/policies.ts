@@ -54,6 +54,9 @@ export async function authorizeValues(context: DatabaseContext, table: PgTable, 
   const userId = context.actor.viewer.userId;
   const name = getTableName(table);
   const values = Array.isArray(input) ? input : [input];
+  // A full-state save writes every section, proposal and activity row of one
+  // Strap, so each distinct Strap is checked once rather than once per row.
+  const personalProfiles = new Set<string>();
   for (const value of values) {
     if (!value || typeof value !== "object" || Array.isArray(value)) throw new AccessDeniedError();
     const row = value as Record<string, unknown>;
@@ -65,11 +68,16 @@ export async function authorizeValues(context: DatabaseContext, table: PgTable, 
       if ("user_id" in row && row.user_id !== userId) throw new AccessDeniedError();
       if (operation === "insert" || "creed_id" in row) {
         if (typeof row.creed_id !== "string") throw new AccessDeniedError();
-        const result = await context.database.execute(sql`select 1 from public.creeds profile inner join public.creed_members member on member.creed_id = profile.id where profile.id = ${row.creed_id} and profile.type = 'personal' and profile.owner_user_id = ${userId} and member.user_id = ${userId} and member.role = 'owner'`);
-        if (result.length !== 1) throw new AccessDeniedError();
+        personalProfiles.add(row.creed_id);
       }
       continue;
     }
     throw new AccessDeniedError();
   }
+  if (personalProfiles.size === 0) return;
+  // Each requested id is matched on its own, so two spellings of one UUID
+  // (upper and lower case, braces) are both checked, as they were per row.
+  const requested = sql.join([...personalProfiles].map((id) => sql`(${id})`), sql`, `);
+  const result = await context.database.execute(sql`select requested.id from (values ${requested}) as requested(id) where exists (select 1 from public.creeds profile inner join public.creed_members member on member.creed_id = profile.id where profile.id = requested.id::uuid and profile.type = 'personal' and profile.owner_user_id = ${userId} and member.user_id = ${userId} and member.role = 'owner')`);
+  if (result.length !== personalProfiles.size) throw new AccessDeniedError();
 }

@@ -563,7 +563,7 @@
       "file": "lib/authz/policies.ts",
       "kind": "content",
       "occurrences": 45,
-      "fingerprint": "848cadff35863c4d1fca5c574530e109a6e0bfa178a8e7c7a68894408eb2e3f1",
+      "fingerprint": "c1398a1c416126cd98baae2672c47fbea1dd4710c000440eef9a2c9f370314fc",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -2452,8 +2452,8 @@
     {
       "file": "tests/db/authorization.test.ts",
       "kind": "content",
-      "occurrences": 85,
-      "fingerprint": "f1c71c8ffe85a4be25962b92c936b1efd6f7514f9d6863fad53cdcf3e4d9f435",
+      "occurrences": 96,
+      "fingerprint": "e156f20c9776bbb60dadeb075c718943dc1b275baf162062fd118eb6a2626ffa",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
