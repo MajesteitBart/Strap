@@ -1,0 +1,120 @@
+import { requireApiAuth } from "@/lib/api-auth";
+import { canAdoptResolvedProfilePath } from "@/lib/profile-file";
+import { loadCreedState, persistCreedState } from "@/lib/strap-backend";
+import { resolveManagedCompanyCreedId } from "@/lib/strap-context";
+import { isOnDemand, type CreedSection } from "@/lib/strap-data";
+
+type ApplyBody = {
+  sections?: CreedSection[];
+  remoteSha?: string | null;
+  remoteMessage?: string | null;
+  remoteCommittedAt?: string | null;
+  remoteContentHash?: string | null;
+  remotePath?: string | null;
+};
+
+export async function POST(request: Request) {
+  const auth = await requireApiAuth();
+  if (auth instanceof Response) return auth;
+  try {
+    const { context, user } = auth;
+    // Applying a GitHub import overwrites sections via the personal full-state
+    // persist, which is blocked for Company Straps; guard it explicitly.
+    if (await resolveManagedCompanyCreedId(context, user)) {
+      return Response.json(
+        { error: "Pulling from GitHub into a company Strap isn't supported yet. You can push to GitHub." },
+        { status: 400 }
+      );
+    }
+    const body = (await request.json()) as ApplyBody;
+
+    if (!Array.isArray(body.sections) || body.sections.length === 0) {
+      return Response.json({ error: "Missing imported sections." }, { status: 400 });
+    }
+
+    const result = await loadCreedState(context, user);
+    const remotePath = body.remotePath?.trim();
+    if (
+      remotePath &&
+      !canAdoptResolvedProfilePath(result.state.settings.versionControl.path, remotePath)
+    ) {
+      return Response.json({ error: "Invalid remote profile path." }, { status: 400 });
+    }
+    // Pull is authoritative. Force every imported section to be
+    // agent-writable so connected agents (Codex / Claude / MCP clients)
+    // can edit them post-pull. Without this, sections inherit the
+    // parser's historical `agentWritable: false` and the MCP contract
+    // reports zero editable sections. Healing here also fixes rows that
+    // a prior pull wrote with `false`. The next pull rewrites them.
+    const existingById = new Map(
+      result.state.sections.map((section) => [section.id, section])
+    );
+    const importedSections = body.sections.map((section) => {
+      // Older remote files carry no accent marker, so the parser falls back
+      // to "custom" (mono). Keep the locally stored color in that case.
+      const existing = existingById.get(section.id);
+      const accent =
+        section.accent === "custom" && existing && !existing.archived
+          ? existing.accent
+          : section.accent;
+      // Likewise, files pushed before the loading marker existed don't say a
+      // section loads only when relevant. Keep that local setting.
+      const onDemand =
+        section.loading === "on-demand" ||
+        Boolean(existing && !existing.archived && isOnDemand(existing));
+      return {
+        ...section,
+        accent,
+        loading: onDemand ? ("on-demand" as const) : undefined,
+        agentWritable: true,
+        agentPermission: "propose" as const,
+      };
+    });
+    // Archived sections never appear in the pushed markdown, so a pull must
+    // not delete them - they stay restorable from Settings. Retain any that
+    // the import didn't reintroduce under the same id.
+    const importedIds = new Set(importedSections.map((section) => section.id));
+    const retainedArchived = result.state.sections.filter(
+      (section) => section.archived && !importedIds.has(section.id)
+    );
+    const nextState = {
+      ...result.state,
+      lastSavedAt: Date.now(),
+      sections: [...importedSections, ...retainedArchived],
+      proposals: [],
+      settings: {
+        ...result.state.settings,
+        versionControl: {
+          ...result.state.settings.versionControl,
+          path: remotePath || result.state.settings.versionControl.path,
+          lastRemoteSha: body.remoteSha ?? undefined,
+          lastRemoteMessage: body.remoteMessage ?? undefined,
+          lastRemoteCommittedAt: body.remoteCommittedAt ?? undefined,
+          lastSyncedContentHash: body.remoteContentHash ?? undefined,
+          syncStatus: "up-to-date" as const,
+        },
+      },
+      mutationTick: result.state.mutationTick + 1,
+      sectionRevisions: Object.fromEntries([
+        ...body.sections.map((section) => [section.id, 1] as const),
+        ...retainedArchived.map(
+          (section) =>
+            [
+              section.id,
+              result.state.sectionRevisions?.[section.id] ?? 1,
+            ] as const
+        ),
+      ]),
+    };
+
+    await persistCreedState(context, user.id, nextState);
+
+    return Response.json({ ok: true });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Could not import Strap from GitHub.";
+    return Response.json(
+      { error: message },
+      { status: message === "Unauthorized" ? 401 : 400 }
+    );
+  }
+}

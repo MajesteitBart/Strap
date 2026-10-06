@@ -95,6 +95,19 @@ test("former RLS policy families deny cross-user and cross-profile access", { sk
     assert.equal(unchanged.creed_id, company);
     assert.equal((await db.delete(tables.creed_sections).where(and(rowScope(viewer(owner), tables.creed_sections, "delete"), eq(tables.creed_sections.creed_id, company))).returning()).length, 0);
   });
+  await t.test("a bulk personal write checks each Strap once and rejects any foreign row", async () => {
+    let checks = 0;
+    const counted = Object.create(db) as typeof db;
+    counted.execute = ((...args: Parameters<typeof db.execute>) => { checks += 1; return db.execute(...args); }) as typeof db.execute;
+    const rows = Array.from({ length: 25 }, (_, index) => ({ creed_id: personal, user_id: owner, id: `bulk-${index}` }));
+    await authorizeValues(viewerContext(counted, { userId: owner }), tables.creed_activity, "insert", rows);
+    assert.equal(checks, 1);
+    // Other spellings of the same UUID stay allowed, as with the per-row check.
+    await authorizeValues(viewer(owner), tables.creed_activity, "insert", [...rows, { creed_id: personal.toUpperCase(), user_id: owner, id: "upper" }, { creed_id: `{${personal}}`, user_id: owner, id: "braced" }]);
+    await assert.rejects(authorizeValues(viewer(owner), tables.creed_activity, "insert", [...rows, { creed_id: other, user_id: owner, id: "foreign" }]));
+    await assert.rejects(authorizeValues(viewer(owner), tables.creed_activity, "insert", [...rows, { creed_id: company, user_id: owner, id: "company" }]));
+    await assert.rejects(authorizeValues(viewer(owner), tables.creed_activity, "insert", [...rows, { creed_id: personal, user_id: outsider, id: "other-user" }]));
+  });
   await t.test("service-only and anonymous operations deny by default", async () => {
     await sql`insert into oauth_clients(client_id) values ('private-client')`;
     for (const context of [viewer(owner), { database: db, actor: { kind: "anonymous" } } as DatabaseContext]) {

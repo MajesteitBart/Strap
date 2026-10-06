@@ -4,8 +4,8 @@ import type { ReactNode } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, Check, ChevronDown, LoaderCircle, Mail, User, X } from "lucide-react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { useAppRouter } from "@/components/navigation";
+import Link from "@/components/link";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -68,7 +68,7 @@ export function CompanyOnboardingScreen({
   creedId: string;
   previewMode?: boolean;
 }) {
-  const router = useRouter();
+  const router = useAppRouter();
   const [step, setStep] = useState(0);
   const [busy, setBusy] = useState(false);
   const [seeded, setSeeded] = useState(false);
@@ -1181,7 +1181,6 @@ function CompanyConstellation() {
       <div className="absolute left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-1/2">
         <motion.div initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}>
           <div className="relative flex h-16 w-16 items-center justify-center rounded-full" style={{ backgroundColor: "#fbf6ee", border: `1px solid ${AMBER}` }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/assets/brand/logo.svg" alt="Strap" className="h-8 w-auto select-none" draggable={false} />
             <motion.span
               className="absolute inset-0 rounded-full border"

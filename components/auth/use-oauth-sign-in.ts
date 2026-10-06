@@ -38,9 +38,13 @@ export function useOAuthSignIn(configured: boolean = true, redirectTo?: string) 
     } catch {
       // Storage may be unavailable; the "Last used" hint is non-essential.
     }
+    const next = redirectTo && redirectTo !== "/" ? `?next=${encodeURIComponent(redirectTo)}` : "";
     const { error } = await authClient.signIn.social({
       provider: provider === "x" ? "twitter" : "google",
       callbackURL: new URL(redirectTo || "/", window.location.origin).toString(),
+      // Errors, such as a first sign-in while signups are closed, come back to
+      // the sign-in page as ?error=<code> instead of a bare error page.
+      errorCallbackURL: new URL(`/login${next}`, window.location.origin).toString(),
     });
 
     // On success the browser is already navigating to the provider, so this

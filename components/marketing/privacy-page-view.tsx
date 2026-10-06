@@ -3,15 +3,16 @@ import {
   StrapSiteFooter,
   StrapSiteHeader,
 } from "@/components/marketing/strap-site-shell";
-import { isDatabaseConfigured } from "@/lib/env";
-import Link from "next/link";
+import { useDeploymentInfo } from "@/components/deployment-info";
+import Link from "@/components/link";
 
 // Legal placeholder. The published sentence is the product's current claim
 // and stays verbatim until a privacy policy replaces it.
 export function PrivacyPageView() {
+  const { configured } = useDeploymentInfo();
   return (
     <div className="strap-site">
-      <StrapSiteHeader configured={isDatabaseConfigured()} current="privacy" />
+      <StrapSiteHeader configured={configured} current="privacy" />
 
       <main>
         <StrapPageHero

@@ -125,19 +125,6 @@ function bulletList(items: string[]) {
     .join("")}</ul>`;
 }
 
-function graphTags(names: string[]) {
-  if (!names.length) return "";
-  const tags = names
-    .map((name) => {
-      const slug = name
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "");
-      return `<span class="creed-inline-tag" data-tag="${escapeHtml(slug)}">${escapeHtml(name)}</span>`;
-    })
-    .join(" ");
-  return `<h3>Graph Tags</h3><p>${tags}</p>`;
-}
 
 function makeSection(
   partial: Pick<StrapSection, "id" | "name" | "accent" | "content"> & {
@@ -189,34 +176,34 @@ export function buildCompanyOnboardingSections(
     company: `${
       paragraphContent(companyBody) ||
       `<p>${escapeHtml("Add what the company does and who this Strap is for.")}</p>`
-    }${graphTags(["Ethos", "Projects", "People"])}`,
-    ethos: `${paragraphContent(ETHOS_STUB)}${graphTags(["Company", "Operating Rules", "Agent Rules"])}`,
+    }`,
+    ethos: `${paragraphContent(ETHOS_STUB)}`,
     "operating-rules": `${bulletList(
       toRuleLines(state.neverChange, 6).length
         ? toRuleLines(state.neverChange, 6)
         : [
             "Do not change canonical context without an owner or admin approving.",
           ],
-    )}${graphTags(["Ethos", "People", "Agent Rules"])}`,
+    )}`,
     people: `${bulletList(
       toListItems(state.people, 20).length
         ? toListItems(state.people, 20)
         : [PEOPLE_STUB],
-    )}${graphTags(["Company", "Projects", "Operating Rules"])}`,
+    )}`,
     projects: `${bulletList(
       toListItems(state.projects, 20).length
         ? toListItems(state.projects, 20)
         : [PROJECTS_STUB],
-    )}${graphTags(["Company", "People", "Clients", "Tools"])}`,
-    clients: `${bulletList([CLIENTS_STUB])}${graphTags(["Company", "Projects", "People"])}`,
-    tools: `${bulletList([TOOLS_STUB])}${graphTags(["Projects", "People", "Agent Rules"])}`,
+    )}`,
+    clients: `${bulletList([CLIENTS_STUB])}`,
+    tools: `${bulletList([TOOLS_STUB])}`,
     "agent-rules": `${bulletList(
       toRuleLines(state.agentsGetWrong, 6).length
         ? toRuleLines(state.agentsGetWrong, 6)
         : [
             "Read this Strap before acting. Propose changes; do not overwrite canonical context.",
           ],
-    )}${graphTags(["Company", "Operating Rules", "Tools"])}`,
+    )}`,
   };
 
   return COMPANY_SECTIONS.map((section, index) =>

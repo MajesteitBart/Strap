@@ -1,8 +1,9 @@
 import * as tables from "@/db/schema/application";
+import { rowScope } from "@/lib/authz/policies";
 import type { DatabaseContext } from "@/lib/db/context";
 import { maybeOne, query } from "@/lib/db/query";
 import type { StrapRole, StrapType } from "@/lib/strap-permissions";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import "server-only";
 
 // Membership + Strap-listing helpers.
@@ -46,6 +47,46 @@ type MemberRow = {
   role: StrapRole;
 };
 
+export type StrapMemberships = {
+  straps: StrapSummary[];
+  // Same answer as getPersonalStrapId, from the same read.
+  personalStrapId: string | null;
+};
+
+/**
+ * Every Strap the user belongs to, in one statement, plus their own Personal
+ * Strap id. Throws on database errors; listUserStraps is the forgiving form.
+ */
+export async function readStrapMemberships(
+  client: DatabaseContext,
+  userId: string
+): Promise<StrapMemberships> {
+  const { data, error } = (await query(client, tables.creed_members, "select", (database, scope) => database
+    .select({ id: tables.creeds.id, type: tables.creeds.type, name: tables.creeds.name, owner_user_id: tables.creeds.owner_user_id, avatar_url: tables.creeds.avatar_url, onboarding_stage: tables.creeds.onboarding_stage, role: tables.creed_members.role })
+    .from(tables.creed_members)
+    .innerJoin(tables.creeds, eq(tables.creeds.id, tables.creed_members.creed_id))
+    .where(and(scope, rowScope(client, tables.creeds, "select"), eq(tables.creed_members.user_id, userId))))) as { data: Array<CreedRow & { role: StrapRole }> | null; error: { message: string } | null };
+  if (error) throw new Error(error.message);
+  const rows = data ?? [];
+
+  const straps = rows
+    .map((row) => ({
+      id: row.id,
+      type: row.type,
+      name: row.name,
+      role: row.role,
+      avatarUrl: row.avatar_url ?? undefined,
+      needsSetup: row.type === "company" && row.onboarding_stage != null,
+    }))
+    .sort((a, b) => {
+      // Personal first, then company Creeds alphabetically.
+      if (a.type !== b.type) return a.type === "personal" ? -1 : 1;
+      return a.name.localeCompare(b.name);
+    });
+  const personal = rows.find((row) => row.type === "personal" && row.owner_user_id === userId);
+  return { straps, personalStrapId: personal?.id ?? null };
+}
+
 /**
  * Every Strap a user can open, personal first then Company Straps by name.
  * Used by the switcher and the app gate. Returns [] on any error so a transient
@@ -55,49 +96,11 @@ export async function listUserStraps(
   client: DatabaseContext,
   userId: string
 ): Promise<StrapSummary[]> {
-  const db = client;
-  const { data: memberRows, error: memberError } = (await query(db, tables.creed_members, "select", (database, scope) => database.select({ creed_id: tables.creed_members.creed_id, role: tables.creed_members.role }).from(tables.creed_members).where(and(scope, eq(tables.creed_members.user_id, userId))))) as { data: Array<{ creed_id: string; role: StrapRole }> | null; error: unknown };
-
-  if (memberError || !memberRows || memberRows.length === 0) {
+  try {
+    return (await readStrapMemberships(client, userId)).straps;
+  } catch {
     return [];
   }
-
-  const roleByCreed = new Map(memberRows.map((row) => [row.creed_id, row.role]));
-  const ids = [...roleByCreed.keys()];
-
-  let creedRows: CreedRow[] | null = null;
-  const withAvatar = (await query(db, tables.creeds, "select", (database, scope) => database.select({ id: tables.creeds.id, type: tables.creeds.type, name: tables.creeds.name, owner_user_id: tables.creeds.owner_user_id, avatar_url: tables.creeds.avatar_url, onboarding_stage: tables.creeds.onboarding_stage }).from(tables.creeds).where(and(scope, inArray(tables.creeds.id, ids))))) as { data: CreedRow[] | null; error: unknown };
-
-  if (withAvatar.error) {
-    const fallback = (await query(db, tables.creeds, "select", (database, scope) => database.select({ id: tables.creeds.id, type: tables.creeds.type, name: tables.creeds.name, owner_user_id: tables.creeds.owner_user_id, onboarding_stage: tables.creeds.onboarding_stage }).from(tables.creeds).where(and(scope, inArray(tables.creeds.id, ids))))) as { data: CreedRow[] | null; error: unknown };
-    if (fallback.error || !fallback.data) {
-      return [];
-    }
-    creedRows = fallback.data;
-  } else {
-    creedRows = withAvatar.data;
-  }
-
-  if (!creedRows) {
-    return [];
-  }
-
-  const mapped = creedRows
-    .map((row) => ({
-      id: row.id,
-      type: row.type,
-      name: row.name,
-      role: roleByCreed.get(row.id) ?? "member",
-      avatarUrl: row.avatar_url ?? undefined,
-      needsSetup: row.type === "company" && row.onboarding_stage != null,
-    }))
-    .sort((a, b) => {
-      // Personal first, then company Creeds alphabetically.
-      if (a.type !== b.type) return a.type === "personal" ? -1 : 1;
-      return a.name.localeCompare(b.name);
-    });
-
-  return mapped;
 }
 
 /** The caller's role on a Strap, or null if they are not a member. */
@@ -121,24 +124,6 @@ export async function getPersonalStrapId(
   const { data, error } = (await query(db, tables.creeds, "select", (database, scope) => database.select({ id: tables.creeds.id }).from(tables.creeds).where(and(scope, eq(tables.creeds.owner_user_id, userId), eq(tables.creeds.type, "personal")))).then(maybeOne)) as { data: { id: string } | null; error: unknown };
   if (error || !data) return null;
   return data.id;
-}
-
-/**
- * Does the user hold membership on at least one Company Strap? Used by the app
- * gate so an invited member without a Personal Strap of their own still enters.
- * Reads membership under RLS via the passed client.
- */
-export async function hasCompanyMembership(
-  client: DatabaseContext,
-  userId: string
-): Promise<boolean> {
-  const db = client;
-  const { data: memberRows, error: memberError } = (await query(db, tables.creed_members, "select", (database, scope) => database.select({ creed_id: tables.creed_members.creed_id }).from(tables.creed_members).where(and(scope, eq(tables.creed_members.user_id, userId))))) as { data: Array<{ creed_id: string }> | null; error: unknown };
-  if (memberError || !memberRows?.length) return false;
-
-  const { data: companyRows, error: companyError } = (await query(db, tables.creeds, "select", (database, scope) => database.select({ id: tables.creeds.id }).from(tables.creeds).where(and(scope, inArray(tables.creeds.id, memberRows.map((row) => row.creed_id)), eq(tables.creeds.type, "company"))).limit(1))) as { data: Array<{ id: string }> | null; error: unknown };
-
-  return !companyError && Boolean(companyRows?.length);
 }
 
 export type { CreedRow, MemberRow };

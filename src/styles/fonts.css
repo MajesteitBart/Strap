@@ -1,0 +1,45 @@
+/* Self-hosted variable fonts. Each family ships per-subset files with
+   unicode-range, so browsers download only the subsets a page uses. */
+@import "@fontsource-variable/inter/wght.css";
+@import "@fontsource-variable/jetbrains-mono/wght.css";
+@import "@fontsource-variable/bricolage-grotesque/wght.css";
+
+/* Arial fallbacks sized to each font's metrics, so text keeps its layout while
+   the web font loads. Values match the fallbacks next/font generated before
+   the Vite port. */
+@font-face {
+  font-family: "Inter Fallback";
+  src: local("Arial");
+  ascent-override: 90.44%;
+  descent-override: 22.52%;
+  line-gap-override: 0%;
+  size-adjust: 107.12%;
+}
+
+@font-face {
+  font-family: "JetBrains Mono Fallback";
+  src: local("Arial");
+  ascent-override: 75.79%;
+  descent-override: 22.29%;
+  line-gap-override: 0%;
+  size-adjust: 134.59%;
+}
+
+@font-face {
+  font-family: "Bricolage Grotesque Fallback";
+  src: local("Arial");
+  ascent-override: 88.21%;
+  descent-override: 25.61%;
+  line-gap-override: 0%;
+  size-adjust: 105.43%;
+}
+
+:root {
+  --font-strap-sans: "Inter Variable", "Inter Fallback";
+  --font-strap-mono: "JetBrains Mono Variable", "JetBrains Mono Fallback";
+  --font-strap-display: "Bricolage Grotesque Variable", "Bricolage Grotesque Fallback";
+  /* Geist only ever appeared after the Inter and JetBrains Mono stacks, whose
+     local Arial fallbacks always resolve, so it never rendered. */
+  --font-geist-sans: ui-sans-serif, system-ui, sans-serif;
+  --font-geist-mono: ui-monospace, monospace;
+}

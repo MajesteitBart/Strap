@@ -9,6 +9,7 @@ import { connectStrap, listAllPrompts, listAllResources, listAllTools } from "./
 import { printToolResult, writeJson } from "./terminal/output.js";
 import { runInteractive } from "./terminal/interactive.js";
 import { revokeTokens } from "./auth/revoke.js";
+import { parseProfileCommand, PROFILE_USAGE, runProfileCommand } from "./profile/command.js";
 import { parseSkillsCommand, runSkillsCommand, SKILLS_USAGE } from "./skills/command.js";
 import { parseVaultCommand, runVaultCommand, VAULT_USAGE } from "./vault/command.js";
 
@@ -19,7 +20,7 @@ async function readStdin(): Promise<string> {
 }
 
 function usage(): string {
-  return `Usage: strap [--agent ID] [command]\n\nCommands:\n  login                  Connect through Strap OAuth\n  logout                 Revoke and remove this connection\n  status                  Show local connection status\n  doctor                  Verify OAuth, MCP, tools, resources, and prompts\n  tools [--json]          List live MCP tools\n  call <tool> [options]   Call an exact MCP tool name\n  resources [--json]      List live MCP resources\n  resource <uri>          Read a resource\n  prompts [--json]        List live MCP prompts\n  prompt <name>           Get a prompt\n  config set server URL   Save a hosted or self-hosted MCP URL\n  skills <action>         Pull, push, and sync shared skills\n  vault <action>          List Vault folders and secret references\n\nPass --agent ID when an agent invokes the CLI so Strap can attribute usage.\nRun strap with no command for the interactive terminal.\n`;
+  return `Usage: strap [--agent ID] [command]\n\nCommands:\n  login                  Connect through Strap OAuth\n  logout                 Revoke and remove this connection\n  status                  Show local connection status\n  doctor                  Verify OAuth, MCP, tools, resources, and prompts\n  tools [--json]          List live MCP tools\n  call <tool> [options]   Call an exact MCP tool name\n  resources [--json]      List live MCP resources\n  resource <uri>          Read a resource\n  prompts [--json]        List live MCP prompts\n  prompt <name>           Get a prompt\n  config set server URL   Save a hosted or self-hosted MCP URL\n  skills <action>         Pull, push, and sync shared skills\n  profile <action>        Show or sync your always-loaded profile into agent files\n  vault <action>          List Vault folders and secret references\n\nPass --agent ID when an agent invokes the CLI so Strap can attribute usage.\nRun strap with no command for the interactive terminal.\n`;
 }
 
 function assertArgumentCount(
@@ -62,13 +63,18 @@ export async function run(argv: string[]): Promise<void> {
   }
 
   if (command === "help" || command === "--help" || command === "-h") {
-    process.stdout.write(usage() + "\n" + SKILLS_USAGE + "\n" + VAULT_USAGE);
+    process.stdout.write(usage() + "\n" + SKILLS_USAGE + "\n" + PROFILE_USAGE + "\n" + VAULT_USAGE);
     return;
   }
   if (command === "skills" && [undefined, "help", "--help", "-h"].includes(args[1])) {
     process.stdout.write(SKILLS_USAGE);
     return;
   }
+  if (command === "profile" && [undefined, "help", "--help", "-h"].includes(args[1])) {
+    process.stdout.write(PROFILE_USAGE);
+    return;
+  }
+  if (command === "profile") parseProfileCommand(args.slice(1));
   if (command === "vault" && [undefined, "help", "--help", "-h"].includes(args[1])) {
     process.stdout.write(VAULT_USAGE);
     return;
@@ -119,6 +125,10 @@ export async function run(argv: string[]): Promise<void> {
   try {
     if (command === "skills") {
       await runSkillsCommand(connection.client, serverUrl, args.slice(1), json);
+      return;
+    }
+    if (command === "profile") {
+      await runProfileCommand(connection.client, args.slice(1), json);
       return;
     }
     if (vaultCommand) {

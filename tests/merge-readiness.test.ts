@@ -3,15 +3,19 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
 const legacySubscriptionRoute = readFileSync(
-  new URL("../app/api/app/legacy-subscriptions/route.ts", import.meta.url),
+  new URL("../server/api/app/legacy-subscriptions/route.ts", import.meta.url),
+  "utf8",
+);
+const authorizeView = readFileSync(
+  new URL("../lib/consent-pages.ts", import.meta.url),
   "utf8",
 );
 const authorizePage = readFileSync(
-  new URL("../app/authorize/page.tsx", import.meta.url),
+  new URL("../src/routes/authorize/index.tsx", import.meta.url),
   "utf8",
 );
 const authorizeDecision = readFileSync(
-  new URL("../app/authorize/decision/route.ts", import.meta.url),
+  new URL("../server/authorize/decision/route.ts", import.meta.url),
   "utf8",
 );
 const inviteSource = readFileSync(
@@ -38,7 +42,7 @@ test("persisted profiles can manage subscriptions even with no sections", () => 
 });
 
 test("OAuth never issues an authorization code without a Creed grant", () => {
-  assert.match(authorizePage, /if \(creeds\.length === 0\)/);
+  assert.match(authorizeView, /if \(creeds\.length === 0\) return \{ kind: "setup-first"/);
   assert.match(authorizePage, /href="\/onboarding"/);
   assert.match(authorizeDecision, /if \(!target\)/);
   assert.doesNotMatch(authorizeDecision, /const creedGrants:[^\n]+\? \[/);

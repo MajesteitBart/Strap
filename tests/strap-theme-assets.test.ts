@@ -14,7 +14,7 @@ const richTextCompatibilityClasses = [
 ] as const;
 
 test("shared theme uses Strap namespaces with explicit rich-text compatibility", async () => {
-  const css = await readFile("app/globals.css", "utf8");
+  const css = await readFile("src/styles/globals.css", "utf8");
 
   assert.match(css, /--strap-background:/);
   assert.match(css, /\.strap-scrollbar/);
@@ -29,8 +29,8 @@ test("shared theme uses Strap namespaces with explicit rich-text compatibility",
 });
 
 test("worktable tokens define the shared palette, typography, and geometry", async () => {
-  const css = await readFile("app/globals.css", "utf8");
-  const publicCss = await readFile("app/strap-public.css", "utf8");
+  const css = await readFile("src/styles/globals.css", "utf8");
+  const publicCss = await readFile("src/styles/strap-public.css", "utf8");
 
   // Warm paper and the persistent resource colours live at the root so the
   // signed-in product and the public site share one system.
@@ -69,14 +69,14 @@ test("worktable tokens define the shared palette, typography, and geometry", asy
 });
 
 test("canonical Strap assets and install metadata replace legacy paths", async () => {
-  const manifest = await readFile("app/manifest.ts", "utf8");
-  const layout = await readFile("app/layout.tsx", "utf8");
+  const manifest = await readFile("server/manifest.webmanifest/route.ts", "utf8");
+  const head = await readFile("lib/seo/head.ts", "utf8");
   const brand = await readFile("components/strap/brand.tsx", "utf8");
 
   assert.match(manifest, /strap-icon-192\.png/);
   assert.match(manifest, /strap-icon-512\.png/);
-  assert.match(layout, /strap-touch-icon\.png/);
-  assert.match(layout, /manifest\.webmanifest/);
+  assert.match(head, /strap-touch-icon\.png/);
+  assert.match(head, /manifest\.webmanifest/);
   assert.match(brand, /assets\/brand\/strap-logo\.svg/);
   assert.doesNotMatch(brand, /assets\/brand\/brandmark\.svg/);
 
@@ -106,7 +106,7 @@ test("public docs and home share the Strap worktable shell", async () => {
     readFile("components/marketing/docs-page-view.tsx", "utf8"),
     readFile("components/marketing/strap-home.tsx", "utf8"),
     readFile("components/marketing/strap-site-shell.tsx", "utf8"),
-    readFile("app/globals.css", "utf8"),
+    readFile("src/styles/globals.css", "utf8"),
   ]);
 
   assert.match(docs, /<StrapSiteNav cta=\{cta\} current="docs" \/>/);
@@ -130,11 +130,11 @@ test("every public, auth, and consent surface composes the worktable shell", asy
     "components/marketing/privacy-page-view.tsx",
     "components/marketing/terms-page-view.tsx",
     "components/marketing/stack-page-view.tsx",
-    "app/learn/page.tsx",
-    "app/bench/page.tsx",
-    "app/changelog/page.tsx",
-    "app/not-found.tsx",
-    "app/error.tsx",
+    "src/routes/learn/index.tsx",
+    "src/routes/bench.tsx",
+    "src/routes/changelog.tsx",
+    "components/not-found-page.tsx",
+    "components/route-error.tsx",
     "components/auth/auth-shell.tsx",
     "components/strap/consent-shell.tsx",
   ];
@@ -145,7 +145,7 @@ test("every public, auth, and consent surface composes the worktable shell", asy
     assert.doesNotMatch(source, /MarketingHeroBanner|MarketingFooter|BackdropImage/, `${file} still uses legacy chrome`);
   }
 
-  for (const file of ["app/authorize/page.tsx", "app/device/page.tsx", "app/invite/[token]/page.tsx", "components/auth/backend-setup-screen.tsx"]) {
+  for (const file of ["src/routes/authorize/index.tsx", "src/routes/device/index.tsx", "src/routes/invite/$token.tsx", "components/auth/backend-setup-screen.tsx"]) {
     const source = await readFile(file, "utf8");
     assert.match(source, /ConsentShell/, `${file} must use the shared consent shell`);
   }
@@ -174,7 +174,7 @@ test("transactional emails use the worktable palette and keep their template var
 });
 
 test("solid status actions keep white labels readable in both themes", async () => {
-  const css = await readFile("app/globals.css", "utf8");
+  const css = await readFile("src/styles/globals.css", "utf8");
   const darkStart = css.indexOf("\n.dark {");
   const light = css.slice(0, darkStart);
   const dark = css.slice(darkStart, css.indexOf("\n}", darkStart));
@@ -199,8 +199,8 @@ test("solid status actions keep white labels readable in both themes", async () 
 });
 
 test("public resource labels pair their fills with readable foregrounds", async () => {
-  const globals = await readFile("app/globals.css", "utf8");
-  const css = await readFile("app/strap-public.css", "utf8");
+  const globals = await readFile("src/styles/globals.css", "utf8");
+  const css = await readFile("src/styles/strap-public.css", "utf8");
   const vars = new Map<string, string>();
   for (const block of [globals.match(/:root\s*\{([\s\S]*?)\n\}/)?.[1],
     globals.match(/\.strap-public-theme\s*\{([\s\S]*?)\n\}/)?.[1]]) {
@@ -232,7 +232,7 @@ test("public resource labels pair their fills with readable foregrounds", async 
 });
 
 test("toast labels, Refresh action and context text are readable in both themes", async () => {
-  const css = await readFile("app/globals.css", "utf8");
+  const css = await readFile("src/styles/globals.css", "utf8");
   const toaster = await readFile("components/ui/toaster.tsx", "utf8");
   const notifier = await readFile("components/strap/app-version-notifier.tsx", "utf8");
   const permissionSources = await Promise.all(["components/strap/settings-screen.tsx", "components/strap/section-permission-control.tsx"]

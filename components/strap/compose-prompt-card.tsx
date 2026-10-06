@@ -48,8 +48,8 @@ export function ComposePromptCard({
         <Plus strokeWidth={2} className="h-8 w-8 shrink-0 p-[7px] text-[var(--strap-text-primary)]" />
       </div>
       <p className="mt-4 text-[13px] leading-6 text-[var(--strap-text-secondary)]">
-        Paste this prompt into any AI. It replies with a markdown Strap you paste back into Strap on
-        the next page.
+        Paste this prompt into any AI. Answer its questions, then paste the markdown Strap it gives you
+        back into Strap on the next page.
       </p>
       <div className="mt-4">
         <AnimatedIconButton

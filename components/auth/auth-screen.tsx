@@ -5,8 +5,8 @@ import { AuthCheckbox, AuthField, AuthSubmitButton, PasswordField } from "@/comp
 import { AuthShell } from "@/components/auth/auth-shell";
 import { readLastAuthProvider, useOAuthSignIn, type OAuthProvider } from "@/components/auth/use-oauth-sign-in";
 import { authClient } from "@/lib/auth/client";
-import { LoaderCircle, MailCheck } from "lucide-react";
-import Link from "next/link";
+import { LoaderCircle, LockKeyhole, MailCheck } from "lucide-react";
+import Link from "@/components/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 
@@ -66,18 +66,30 @@ function authErrorMessage(message: string, mode: AuthMode) {
   return message || "Something went wrong. Try again.";
 }
 
+// A failed OAuth sign-in comes back to /login with ?error=<code>. With
+// signups closed, a first sign-in for an unknown account ends in one of these.
+function oauthErrorMessage(code: string, signUpsOpen: boolean) {
+  if (!signUpsOpen && (code === "signup_disabled" || code === "unable_to_create_user")) {
+    return "There's no Strap account for that sign-in, and Strap isn't taking new accounts.";
+  }
+  return "Sign-in didn't finish. Try again.";
+}
+
 type Confirmation = { email: string; kind: "signup" | "reset" };
 
 export function AuthScreen({
   mode,
   configured = true,
   nextPath = "/",
+  signUpsOpen = true,
 }: {
   mode: AuthMode;
   configured?: boolean;
   // Where to land after a successful auth (e.g. back to /authorize for an MCP
   // connect). Defaults to the root router.
   nextPath?: string;
+  // False hides every way to create an account; existing users still sign in.
+  signUpsOpen?: boolean;
 }) {
   const t = copy[mode];
   const isSignup = mode === "signup";
@@ -117,6 +129,11 @@ export function AuthScreen({
   useEffect(() => {
     setLastProvider(readLastAuthProvider());
   }, []);
+
+  useEffect(() => {
+    const code = new URLSearchParams(window.location.search).get("error");
+    if (code) toast.error(oauthErrorMessage(code, signUpsOpen));
+  }, [signUpsOpen]);
 
   // While the signup "check your inbox" screen is up, watch for the session to
   // appear (the user confirms in another tab in the same browser) and log this
@@ -187,7 +204,7 @@ export function AuthScreen({
           window.location.assign(`/login/two-factor?next=${encodeURIComponent(nextPath)}`);
           return;
         }
-        // Full navigation so server components pick up the new session.
+        // Full navigation so the server-side gates pick up the new session.
         window.location.assign(nextPath);
         return;
       }
@@ -233,12 +250,28 @@ export function AuthScreen({
     }
   }
 
+  if (isSignup && !signUpsOpen) {
+    return (
+      <AuthShell
+        topRight={
+          <Link href={withNext("/login")} className="strap-link-plain">
+            Sign in
+          </Link>
+        }
+      >
+        <SignUpsClosedNotice signInHref={withNext("/login")} />
+      </AuthShell>
+    );
+  }
+
   return (
     <AuthShell
       topRight={
-        <Link href={withNext(t.topHref)} className="strap-link-plain">
-          {t.topAction}
-        </Link>
+        isSignup || signUpsOpen ? (
+          <Link href={withNext(t.topHref)} className="strap-link-plain">
+            {t.topAction}
+          </Link>
+        ) : undefined
       }
     >
       {confirmation ? (
@@ -346,15 +379,34 @@ export function AuthScreen({
             />
           </form>
 
-          <p className="strap-auth-switch">
-            {t.switchPrompt}{" "}
-            <Link href={withNext(t.switchHref)} className="strap-link-plain">
-              {t.switchAction}
-            </Link>
-          </p>
+          {isSignup || signUpsOpen ? (
+            <p className="strap-auth-switch">
+              {t.switchPrompt}{" "}
+              <Link href={withNext(t.switchHref)} className="strap-link-plain">
+                {t.switchAction}
+              </Link>
+            </p>
+          ) : null}
         </>
       )}
     </AuthShell>
+  );
+}
+
+function SignUpsClosedNotice({ signInHref }: { signInHref: string }) {
+  return (
+    <div className="strap-auth-centered">
+      <div className="strap-auth-glyph">
+        <LockKeyhole className="h-6 w-6" aria-hidden="true" />
+      </div>
+      <h1>Signups are closed</h1>
+      <p>Strap isn&apos;t taking new accounts right now. If you already have one, sign in.</p>
+      <div className="strap-actions">
+        <Link href={signInHref} className="strap-button strap-button-primary">
+          Sign in
+        </Link>
+      </div>
+    </div>
   );
 }
 

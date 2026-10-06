@@ -78,7 +78,11 @@ import {
   normalizeLegacyProposalDraft,
   normalizeProposalForSection,
   sectionToMarkdown,
+  alwaysLoadedWordCount,
+  isOnDemand,
+  STRAP_WORD_BUDGET,
   type AccentKey,
+  type SectionLoading,
   type ActivityEntry,
   type ActivityStatus,
   type Proposal,
@@ -103,7 +107,7 @@ import {
   Send,
   X,
 } from "lucide-react";
-import Image from "next/image";
+import Image from "@/components/ui/image";
 import {
   memo,
   useCallback,
@@ -711,6 +715,24 @@ type GitHubPullPreview = {
   sections: StrapSection[];
 };
 
+// How much of the profile every agent reads with each request. Sections marked
+// "Load only when relevant" don't count; agents fetch those when needed.
+function ProfileBudget({ sections }: { sections: StrapSection[] }) {
+  const words = useMemo(() => alwaysLoadedWordCount(sections), [sections]);
+  const over = words > STRAP_WORD_BUDGET;
+  return (
+    <p
+      className={cn(
+        "mt-1 text-[13px]",
+        over ? "text-[var(--strap-warning)]" : "text-[var(--strap-text-tertiary)]",
+      )}
+    >
+      {words} of {STRAP_WORD_BUDGET} words load with every agent request
+      {over ? ". Tighten it, or set rarely needed sections to load only when relevant." : ""}
+    </p>
+  );
+}
+
 // The header save indicator. Owns the animated clock so its 60s relative-label
 // ticker re-renders only this line, not the whole editor.
 function SaveStatus({
@@ -768,6 +790,7 @@ export function FileScreen() {
     addSectionAfter,
     renameSection,
     setSectionAccent,
+    setSectionLoading,
     deleteSection,
     archiveSection,
     archiveCreed,
@@ -934,12 +957,6 @@ export function FileScreen() {
   const cancelComposerRevealRef = useRef<() => void>(() => {});
   const versionIcon = useAnimatedIconControls();
   const activityIcon = useAnimatedIconControls();
-  // `exportMarkdown` is identity-stable now (the provider hands out proxy
-  // actions), so the content dependency must be explicit: rebuild only when
-  // the sections actually change, not on every render.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const localMarkdown = useMemo(() => exportMarkdown(), [state.sections]);
-
   // True only while a section drag is in progress; gates the Reorder layout
   // animation so framer doesn't measure every section on every height change
   // (see the layout prop on Reorder.Item).
@@ -978,6 +995,8 @@ export function FileScreen() {
       void navigator.clipboard.writeText(sectionToMarkdown(section).trim()),
     setAccent: (sectionId: string, accent: AccentKey) =>
       setSectionAccent(sectionId, accent),
+    setLoading: (sectionId: string, loading: SectionLoading) =>
+      setSectionLoading(sectionId, loading),
     // Defer so the section menu closes before the dialog opens, letting the
     // dialog play its enter animation.
     requestDelete: (sectionId: string, name: string) =>
@@ -1060,7 +1079,7 @@ export function FileScreen() {
         setVersionStatusBusy(true);
         const buffer = await crypto.subtle.digest(
           "SHA-256",
-          new TextEncoder().encode(localMarkdown),
+          new TextEncoder().encode(exportMarkdown()),
         );
         const localHash = Array.from(new Uint8Array(buffer))
           .map((value) => value.toString(16).padStart(2, "0"))
@@ -1100,8 +1119,8 @@ export function FileScreen() {
       }
     }
 
-    // Trailing debounce: localMarkdown changes on every autosaved keystroke,
-    // and each run hashes the whole file and hits the GitHub status API. One
+    // Trailing debounce: the sections change on every keystroke, and each run
+    // exports and hashes the whole file and hits the GitHub status API. One
     // check after the typing burst settles gives the same answer.
     const debounce = window.setTimeout(() => void loadVersionStatus(), 1_500);
 
@@ -1109,8 +1128,11 @@ export function FileScreen() {
       cancelled = true;
       window.clearTimeout(debounce);
     };
+    // exportMarkdown is identity-stable (the provider hands out proxy
+    // actions), so the sections are the explicit content dependency.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    localMarkdown,
+    state.sections,
     state.settings.integrations.github.status,
     state.settings.versionControl.repoOwner,
     state.settings.versionControl.repoName,
@@ -1313,7 +1335,7 @@ export function FileScreen() {
       setPushPreviewBusy(true);
       const buffer = await crypto.subtle.digest(
         "SHA-256",
-        new TextEncoder().encode(localMarkdown),
+        new TextEncoder().encode(exportMarkdown()),
       );
       const localHash = Array.from(new Uint8Array(buffer))
         .map((value) => value.toString(16).padStart(2, "0"))
@@ -1360,6 +1382,7 @@ export function FileScreen() {
     try {
       setSelectedVersionAction("push");
       setPushBusy(true);
+      const localMarkdown = exportMarkdown();
       const buffer = await crypto.subtle.digest(
         "SHA-256",
         new TextEncoder().encode(localMarkdown),
@@ -1405,7 +1428,7 @@ export function FileScreen() {
 
       const buffer = await crypto.subtle.digest(
         "SHA-256",
-        new TextEncoder().encode(localMarkdown),
+        new TextEncoder().encode(exportMarkdown()),
       );
       const localHash = Array.from(new Uint8Array(buffer))
         .map((value) => value.toString(16).padStart(2, "0"))
@@ -1832,6 +1855,9 @@ export function FileScreen() {
                       saving={state.saving}
                       lastSavedAt={state.lastSavedAt}
                     />
+                    {state.creedType !== "company" ? (
+                      <ProfileBudget sections={state.sections} />
+                    ) : null}
                   </div>
 
                   <div className="flex items-center gap-2 self-start">
@@ -2280,6 +2306,7 @@ export function FileScreen() {
                             state.creedType === "company" && isCompanyManager
                           }
                           canArchive={canArchiveSection}
+                          canSetLoading={state.creedType !== "company"}
                           canAddAfter={canCreateSections}
                           handlers={sectionHandlers}
                         />
@@ -2775,6 +2802,7 @@ type SectionCardHandlers = {
   history: (sectionId: string, name: string) => void;
   copy: (section: StrapSection) => void;
   setAccent: (sectionId: string, accent: AccentKey) => void;
+  setLoading: (sectionId: string, loading: SectionLoading) => void;
   requestDelete: (sectionId: string, name: string) => void;
   archive: (sectionId: string, name: string) => void;
   addSectionAfter: (sectionId: string) => void;
@@ -2802,6 +2830,7 @@ const SectionCardBound = memo(function SectionCardBound({
   proposals,
   canHistory,
   canArchive,
+  canSetLoading,
   canAddAfter,
   handlers,
 }: {
@@ -2819,6 +2848,7 @@ const SectionCardBound = memo(function SectionCardBound({
   proposals: Proposal[];
   canHistory: boolean;
   canArchive: boolean;
+  canSetLoading: boolean;
   canAddAfter: boolean;
   handlers: SectionCardHandlers;
 }) {
@@ -2856,6 +2886,11 @@ const SectionCardBound = memo(function SectionCardBound({
       }
       onCopy={() => handlers.copy(section)}
       onSetAccent={(accent) => handlers.setAccent(section.id, accent)}
+      onSetLoading={
+        canSetLoading
+          ? (loading) => handlers.setLoading(section.id, loading)
+          : undefined
+      }
       onDelete={() => handlers.requestDelete(section.id, section.name)}
       onArchive={
         canArchive
@@ -2893,6 +2928,7 @@ function SectionCard({
   onRename,
   onHistory,
   onSetAccent,
+  onSetLoading,
   onCopy,
   onDelete,
   onArchive,
@@ -2937,6 +2973,9 @@ function SectionCard({
   // is hidden when absent.
   onHistory?: () => void;
   onSetAccent: (accent: AccentKey) => void;
+  // Personal Straps only: whether agents get this section with every request
+  // or fetch it when a task needs it.
+  onSetLoading?: (loading: SectionLoading) => void;
   onCopy: () => void;
   onDelete: () => void;
   onArchive?: () => void;
@@ -3033,6 +3072,11 @@ function SectionCard({
                   style={{ color: accent }}
                 >
                   {section.name}
+                  {isOnDemand(section) ? (
+                    <span className="ml-2 align-middle text-[12px] font-normal text-[var(--strap-text-tertiary)]">
+                      Loads when relevant
+                    </span>
+                  ) : null}
                 </span>
 
                 {editingBy && editingBy.length > 0 ? (
@@ -3245,6 +3289,19 @@ function SectionCard({
                       }
                     >
                       History
+                    </AnimatedMenuIconItem>
+                  ) : null}
+                  {onSetLoading ? (
+                    <AnimatedMenuIconItem
+                      icon={ClockIcon}
+                      className="text-sm"
+                      onSelect={() =>
+                        onSetLoading(isOnDemand(section) ? "always" : "on-demand")
+                      }
+                    >
+                      {isOnDemand(section)
+                        ? "Load with every request"
+                        : "Load only when relevant"}
                     </AnimatedMenuIconItem>
                   ) : null}
                   {onArchive ? (
@@ -3556,7 +3613,6 @@ function ActivityActorAvatar({
           alt=""
           width={16}
           height={16}
-          unoptimized
           referrerPolicy="no-referrer"
           onError={() => setFailed(true)}
           className="h-4 w-4 rounded-[5px] object-cover"
@@ -3771,6 +3827,10 @@ function ActivityRail({
                           <ActivityRow
                             key={entry.id}
                             entry={entry}
+                            relativeTime={formatRelativeTime(
+                              entry.createdAt,
+                              entry.timeLabel,
+                            )}
                             liveExistingContent={liveExistingContent}
                             liveProposedText={liveProposedText}
                           />
@@ -3808,12 +3868,20 @@ function ActivityRail({
   );
 }
 
-function ActivityRow({
+// The rail stays mounted and re-renders with every keystroke in the editor.
+// Rows only change when their entry or live pending text does.
+const ActivityRow = memo(ActivityRowContent);
+
+function ActivityRowContent({
   entry,
+  relativeTime,
   liveExistingContent,
   liveProposedText,
 }: {
   entry: ActivityEntry;
+  // Formatted by the rail, so a memoized row still updates when its
+  // "just now" turns into "2m".
+  relativeTime: string;
   liveExistingContent?: string;
   liveProposedText?: string;
 }) {
@@ -3909,7 +3977,7 @@ function ActivityRow({
             </div>
           </div>
           <div className="text-[12px] text-[var(--strap-text-tertiary)]">
-            {formatRelativeTime(entry.createdAt, entry.timeLabel)}
+            {relativeTime}
           </div>
         </div>
       </button>

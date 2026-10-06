@@ -14,7 +14,7 @@ Pack durable context once. Every connected agent reads it before meaningful work
 [Home](https://strap.bvdm.ai) | [Docs](https://strap.bvdm.ai/docs) | [Pricing](https://strap.bvdm.ai/pricing) | [Stack](https://strap.bvdm.ai/stack) | [Privacy](https://strap.bvdm.ai/privacy)
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
-[![Next.js 16](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org)
+[![TanStack Start on Vite](https://img.shields.io/badge/TanStack%20Start-Vite-black)](https://tanstack.com/start)
 [![MCP](https://img.shields.io/badge/protocol-MCP%20%2B%20OAuth%202.1-8A2BE2)](https://strap.bvdm.ai/docs)
 
 </div>
@@ -112,7 +112,7 @@ The CLI discovers tools, resources, and prompts from the live MCP server. Its co
 
 | Layer | Choice |
 |---|---|
-| Framework | Next.js 16 App Router, React 19, strict TypeScript |
+| Framework | TanStack Start on Vite, React 19, strict TypeScript |
 | UI | Tailwind CSS v4, shadcn/ui, Tiptap, Motion |
 | Backend | Postgres 17, Drizzle, Better Auth, explicit authorization and encrypted Vault |
 | Feedback | Connected agents propose updates for user review; no in-app LLM calls |
@@ -124,7 +124,8 @@ Full tour: [strap.bvdm.ai/stack](https://strap.bvdm.ai/stack).
 ## Repository map
 
 ```text
-app/                    public, authenticated, OAuth, API, and MCP routes
+src/routes/             page and server routes (TanStack Start file routes)
+server/                 API, OAuth, and MCP request handlers
 components/             product, marketing, auth, and shared UI
 lib/                    domain, persistence, authorization and integrations
 packages/strap/         @bvdm/strap CLI package
@@ -136,7 +137,7 @@ db/migrations/          squashed baseline and future forward-only migrations
 tests/                  Node contract and logic tests
 ```
 
-Canonical implementation paths use `components/strap`, `app/(strap-app)`, and `lib/strap-*`. Narrow `lib/creed-*` re-export shims and the `/api/creed` alias routes remain where source or protocol compatibility requires them.
+Canonical implementation paths use `components/strap`, `src/routes/_app`, and `lib/strap-*`. Narrow `lib/creed-*` re-export shims and the `/api/creed` alias routes remain where source or protocol compatibility requires them.
 
 ## Commands
 
@@ -146,6 +147,7 @@ npm test
 npx tsc --noEmit -p .
 npm run lint
 npm run build
+npm start          # serve the build like production: static files first, then the server
 
 npm --prefix packages/strap run typecheck
 npm --prefix packages/strap test

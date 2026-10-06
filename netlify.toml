@@ -1,0 +1,15 @@
+# Netlify build for the TanStack Start (Vite) app.
+#
+# `vite build` writes the static site to dist/client (including prerendered
+# pages and the _headers file) and the server function to
+# .netlify/v1/functions/server.mjs, which Netlify picks up automatically.
+[build]
+  command = "npm run build"
+  publish = "dist/client"
+
+[build.environment]
+  NODE_VERSION = "22"
+  # The site still has the Next.js runtime installed from the Netlify UI. It
+  # fails builds that have no Next.js output, so skip it until it is removed
+  # there.
+  NETLIFY_NEXT_PLUGIN_SKIP = "true"

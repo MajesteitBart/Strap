@@ -30,12 +30,9 @@ test("company seed: always emits the 8 default sections in order", () => {
     assert.equal(s.kind, "rich-text");
     assert.equal(s.agentWritable, true);
     assert.ok(s.content.length > 0, `${s.id} should have content`);
-    assert.match(s.content, /Graph Tags/, `${s.id} should teach graph tags`);
-    assert.match(
-      s.content,
-      /creed-inline-tag/,
-      `${s.id} should include section reference chips`,
-    );
+    // Seeds stay lean: no generated Graph Tags subsections or tag chips.
+    assert.doesNotMatch(s.content, /Graph Tags/, `${s.id} should not seed graph tags`);
+    assert.doesNotMatch(s.content, /creed-inline-tag/, `${s.id} should not seed tag chips`);
   }
 });
 

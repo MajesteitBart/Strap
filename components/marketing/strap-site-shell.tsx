@@ -7,8 +7,8 @@
 // product. Server-rendered pages use <StrapSiteHeader>, which owns the auth
 // hook; client pages can call useStrapSiteCta themselves.
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import Link from "@/components/link";
+import { usePathname } from "@/components/navigation";
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { SystemStatusPill } from "@/components/marketing/system-status";
 import { useLandingAuthState } from "@/components/marketing/use-landing-auth-state";
@@ -156,7 +156,6 @@ export function StrapSiteNav({
     <nav className="strap-nav" aria-label="Primary navigation">
       <div className="strap-wrap strap-navbar">
         <Link className="strap-wordmark" href="/home" aria-label="Strap home">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/assets/brand/strap-logo.svg"
             width="1003"
@@ -216,8 +215,8 @@ export function StrapSiteNav({
   );
 }
 
-// Server components cannot call the auth hook, so they render this thin
-// client wrapper instead of <StrapSiteNav> directly.
+// Pages pass whether auth is configured; this wrapper adds the visitor's
+// signed-in state from the auth hook before rendering <StrapSiteNav>.
 export function StrapSiteHeader({
   configured,
   current,
@@ -243,7 +242,6 @@ export function StrapSiteFooter() {
         <div className="strap-footer-grid">
           <div className="strap-footer-brand">
             <Link href="/home" aria-label="Strap home">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/assets/brand/strap-logo.svg" width="1003" height="257" alt="Strap" />
             </Link>
             <p>{BRAND_TAGLINE}</p>

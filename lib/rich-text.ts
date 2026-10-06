@@ -35,18 +35,23 @@ function applyInlineEmphasis(escapedText: string) {
 // of inline processing runs so the code body isn't re-parsed as emphasis /
 // tags / links. We restore the placeholders at the end. Escaping inside the
 // code body uses `escapeHtml` so `<`/`>`/`&` inside code render literally.
+// Placeholders are wrapped in private-use characters: an underscore-based
+// token was itself rewritten by the emphasis rules and never restored.
+const CODE_OPEN = "\uE000";
+const CODE_CLOSE = "\uE001";
+
 function withInlineCode(rawText: string, render: (rest: string) => string) {
   const placeholders: string[] = [];
-  const stashed = rawText.replace(/`([^`\n]+)`/g, (_match, body: string) => {
-    const token = `__CREED_INLINE_CODE_${placeholders.length}__`;
-    placeholders.push(`<code>${escapeHtml(body)}</code>`);
-    return token;
-  });
-  let out = render(stashed);
-  placeholders.forEach((html, index) => {
-    out = out.replace(`__CREED_INLINE_CODE_${index}__`, html);
-  });
-  return out;
+  const stashed = rawText
+    .replace(/[\uE000\uE001]/g, "")
+    .replace(/`([^`\n]+)`/g, (_match, body: string) => {
+      placeholders.push(`<code>${escapeHtml(body)}</code>`);
+      return `${CODE_OPEN}${placeholders.length - 1}${CODE_CLOSE}`;
+    });
+  return render(stashed).replace(
+    /\uE000(\d+)\uE001/g,
+    (_match, index: string) => placeholders[Number(index)] ?? "",
+  );
 }
 
 // Markdown links (`[text](url)`) - converted to anchor tags with the URL

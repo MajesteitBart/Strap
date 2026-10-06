@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
+import Image from "@/components/ui/image";
+import { useAppRouter } from "@/components/navigation";
 import { toast } from "sonner";
 import { LoaderCircle, Send } from "lucide-react";
 
@@ -23,7 +23,6 @@ function PersonAvatar({ person, label }: { person: Person; label: string }) {
           fill
           className="object-cover"
           referrerPolicy="no-referrer"
-          unoptimized
           onError={() => setFailed(true)}
         />
       ) : (
@@ -51,7 +50,7 @@ export function InviteAcceptCard({
   inviter: Person;
   you: { avatarUrl?: string; initials: string; email: string };
 }) {
-  const router = useRouter();
+  const router = useAppRouter();
   const [action, setAction] = useState<"accept" | "decline" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const busy = action !== null;

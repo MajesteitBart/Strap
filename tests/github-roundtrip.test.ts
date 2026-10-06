@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { sectionToMarkdown, type StrapSection } from "../lib/strap-data.ts";
+import { buildVisibleStrapMarkdown, sectionToMarkdown, type StrapSection } from "../lib/strap-data.ts";
 import { parseStrapMarkdown } from "../lib/strap-markdown.ts";
 import { markdownToRichHtml } from "../lib/rich-text.ts";
 
@@ -98,4 +98,18 @@ test("does not collapse paragraphs into bullet list", () => {
   );
   assert.ok(!result.includes("<ul"), `unexpected list in: ${result}`);
   assert.ok(!result.includes("<li>"), `unexpected list item in: ${result}`);
+});
+
+test("push -> pull keeps a section's on-demand loading", () => {
+  const markdown = buildVisibleStrapMarkdown([
+    makeSection({ id: "identity", name: "Identity", accent: "identity", content: "<p>I'm Sam.</p>" }),
+    makeSection({ id: "people", name: "People", accent: "rose", content: "<p>Maaike is my sister.</p>", loading: "on-demand" }),
+  ]);
+  assert.match(markdown, /<!-- strap:loading=on-demand -->/);
+  const { sections } = parseStrapMarkdown(markdown);
+  const byId = Object.fromEntries(sections.map((section) => [section.id, section]));
+  assert.equal(byId.identity?.loading, undefined, "always-loaded sections carry no marker");
+  assert.equal(byId.people?.loading, "on-demand");
+  assert.equal(byId.people?.accent, "rose", "the accent marker still parses next to it");
+  assert.doesNotMatch(byId.people?.content ?? "", /strap:loading|creed:accent/, "markers never reach the editor");
 });

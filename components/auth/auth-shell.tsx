@@ -5,7 +5,7 @@
 // the right. /login, /signup and /reset-password all render inside it so they
 // stay visually identical to each other and to the public site.
 
-import Link from "next/link";
+import Link from "@/components/link";
 import type { ReactNode } from "react";
 import { CONTACT_MAILTO } from "@/lib/branding";
 
@@ -21,7 +21,6 @@ export function AuthShell({ topRight, children }: { topRight?: ReactNode; childr
       <div className="strap-auth-form">
         <div className="strap-auth-top">
           <Link className="strap-wordmark" href="/home" aria-label="Strap home">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/assets/brand/strap-logo.svg" width="1003" height="257" alt="Strap" />
           </Link>
           {topRight ? <div>{topRight}</div> : null}

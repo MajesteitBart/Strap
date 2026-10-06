@@ -1,7 +1,7 @@
 "use client";
 
 import { ChevronLeft, LoaderCircle } from "lucide-react";
-import Link from "next/link";
+import Link from "@/components/link";
 import { CONTACT_MAILTO } from "@/lib/branding";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";

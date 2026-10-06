@@ -36,7 +36,7 @@ Exercise changed API routes locally and confirm relevant audit evidence. Databas
 ## Coding style
 
 - Use strict TypeScript. Prefer `unknown` plus narrowing over `any`.
-- Default to server components. Add `"use client"` only for hooks, browser APIs, or interaction.
+- Keep database, secret and Node-only code in `"server-only"` modules. Pages reach it through server functions in `src/functions/` or handlers in `server/`.
 - Do not use em dashes in product copy.
 - Prefer existing CSS tokens such as `var(--strap-text-primary)` over one-off colors. Retain old selectors only where persisted rich-text compatibility requires them.
 - Do not use `console.log` in committed code. Use `lib/observability.ts` for server logs.
@@ -45,9 +45,10 @@ Exercise changed API routes locally and confirm relevant audit evidence. Databas
 
 ## Architecture map
 
-- `app/(strap-app)/`: authenticated product routes.
-- `app/api/app/**`: session-authenticated browser APIs.
-- `app/api/strap/**` and `app/mcp/route.ts`: canonical agent APIs; `app/api/creed/**` remains a compatibility alias.
+- `src/routes/`: TanStack Start file routes. `src/routes/_app/` holds the authenticated product pages; other files bind URLs to `server/` handlers.
+- `server/api/app/**`: session-authenticated browser APIs.
+- `server/api/strap/**` and `server/mcp/route.ts`: canonical agent APIs; `server/api/creed/**` remains a compatibility alias.
+- `lib/http/**`: response header policy, prerendered paths and route binding.
 - `components/strap/**`: product UI.
 - `components/marketing/**`: public Strap site.
 - `lib/strap-data.ts`: shared types, sections, and connected-agent contract.

@@ -55,7 +55,7 @@ import {
   LoaderCircle,
   Mail,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useAppRouter } from "@/components/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 
@@ -177,7 +177,7 @@ export function CompanySettings() {
     exportActivityJson,
     exportAllDataJson,
   } = useStrap();
-  const router = useRouter();
+  const router = useAppRouter();
   const company = state.company;
   const creedId = state.creedId ?? "";
   const role = company?.myRole ?? "member";

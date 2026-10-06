@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { SkillError } from "@/lib/skills";
 import { isRecord } from "@/packages/strap/src/skills/bundle";
 import { JsonBodyLimitError, readBoundedJson } from "@/lib/bounded-json";
@@ -6,7 +5,7 @@ import { JsonBodyLimitError, readBoundedJson } from "@/lib/bounded-json";
 export const SKILL_NO_STORE = { "Cache-Control": "private, no-store" };
 
 export function skillHttpError(error: unknown) {
-  return NextResponse.json(
+  return Response.json(
     {
       error: error instanceof Error ? error.message : "Skill operation failed.",
     },

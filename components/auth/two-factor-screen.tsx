@@ -6,7 +6,7 @@
 import { AuthField, AuthSubmitButton } from "@/components/auth/auth-fields";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { authClient } from "@/lib/auth/client";
-import Link from "next/link";
+import Link from "@/components/link";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -56,7 +56,7 @@ export function TwoFactorScreen({ nextPath = "/" }: { nextPath?: string }) {
         toast.error(message);
         return;
       }
-      // Full navigation so server components pick up the new session.
+      // Full navigation so the server-side gates pick up the new session.
       window.location.assign(nextPath);
     } finally {
       setSubmitting(false);

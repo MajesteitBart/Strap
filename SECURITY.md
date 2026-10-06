@@ -21,7 +21,7 @@ The highest-risk surfaces are:
 - encrypted provider tokens and `CREED_ENCRYPTION_SECRET`
 - Application-encrypted Vault secret boundaries and metadata-only audit behavior
 - prompt injection through user- or agent-supplied content
-- security headers and CSP in `next.config.ts`
+- security headers, CSP and caching rules in `lib/http/headers.ts` (applied by `src/start.ts` and the generated Netlify `_headers` file)
 - Explicit database guards in `lib/authz/**` and scoped repositories in `lib/db/**`
 
 Access to another user's context or secrets, privilege escalation across Personal or Company boundaries, plaintext credential disclosure, and bypasses of approval or section permission are in scope.

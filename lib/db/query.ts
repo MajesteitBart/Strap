@@ -12,11 +12,25 @@ export async function query<T>(context: DatabaseContext, table: PgTable, operati
     if (values !== undefined && (operation === "insert" || operation === "update")) await authorizeValues(context, table, operation, values);
     return { data: await run(context.database, rowScope(context, table, operation)), error: null };
   } catch (error) {
-    const cause = error instanceof Error && error.cause ? error.cause : error;
-    const code = cause && typeof cause === "object" && "code" in cause && typeof cause.code === "string" ? cause.code : undefined;
-    // Driver errors can contain query arguments, including ciphertext and PII.
-    return { data: null, error: { message: code === "42P01" ? "Database schema is not initialized." : "Database operation failed.", code } };
+    return { data: null, error: queryFailure(error) };
   }
+}
+
+// A read that spans several tables in one statement. The statement must apply
+// rowScope (or an equivalent explicit check) to every table it reads.
+export async function scopedStatement<T>(context: DatabaseContext, run: (database: DatabaseContext["database"]) => PromiseLike<T>): Promise<QueryResult<T>> {
+  try {
+    return { data: await run(context.database), error: null };
+  } catch (error) {
+    return { data: null, error: queryFailure(error) };
+  }
+}
+
+function queryFailure(error: unknown): QueryFailure {
+  const cause = error instanceof Error && error.cause ? error.cause : error;
+  const code = cause && typeof cause === "object" && "code" in cause && typeof cause.code === "string" ? cause.code : undefined;
+  // Driver errors can contain query arguments, including ciphertext and PII.
+  return { message: code === "42P01" ? "Database schema is not initialized." : "Database operation failed.", code };
 }
 
 export function maybeOne<T>(result: QueryResult<T[]>): QueryResult<T> {

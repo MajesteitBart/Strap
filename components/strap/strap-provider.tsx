@@ -27,6 +27,7 @@ import {
   normalizeProposalForSection,
   permissionToWritable,
   type AccentKey,
+  type SectionLoading,
   type ActivityEntry,
   type AgentPermission,
   type GettingStartedStepKey,
@@ -70,6 +71,7 @@ type StrapContextValue = {
   ) => void;
   renameSection: (sectionId: string, name: string) => void;
   setSectionAccent: (sectionId: string, accent: AccentKey) => void;
+  setSectionLoading: (sectionId: string, loading: SectionLoading) => void;
   duplicateSection: (sectionId: string) => void;
   deleteSection: (sectionId: string) => void;
   archiveSection: (sectionId: string) => void;
@@ -108,7 +110,13 @@ type StrapContextValue = {
 };
 
 const StrapContext = createContext<StrapContextValue | null>(null);
-const AUTOSAVE_DELAY_MS = 500;
+// Autosave waits for a pause in typing. A personal save serializes and sends
+// the whole Strap, which stalls the main thread for a moment, so 2 s keeps saves
+// out of the short pauses between words and sentences. Leaving or hiding the
+// page still flushes a pending personal save at once.
+const AUTOSAVE_DELAY_MS = 2_000;
+// Browsers reject keepalive requests whose body is larger than 64 KiB.
+const KEEPALIVE_BODY_LIMIT_BYTES = 60_000;
 const EXTERNAL_SYNC_INTERVAL_MS = 30_000;
 // Company Straps are multi-user, so changes (proposals, edits, reviews) need to
 // surface on everyone's screen quickly. Member edits arrive instantly over the
@@ -532,10 +540,14 @@ export function StrapProvider({
   children,
   initialState = initialStrapState,
   persistenceEnabled: initialPersistenceEnabled = false,
+  initialStateLoadedAt = 0,
 }: {
   children: ReactNode;
   initialState?: StrapState;
   persistenceEnabled?: boolean;
+  // When initialState arrived (Date.now()). Counts as the last server sync,
+  // so a mount right after the load doesn't fetch the same state again.
+  initialStateLoadedAt?: number;
 }) {
   const [state, setState] = useState(initialState);
   // Reactive, not just the prop: onboarding loads before any Strap exists (so
@@ -573,7 +585,7 @@ export function StrapProvider({
     null,
   );
   const syncInFlightRef = useRef(false);
-  const lastSyncAtRef = useRef(0);
+  const lastSyncAtRef = useRef(initialStateLoadedAt);
   const syncActivityRef = useRef(Date.now());
   const broadcastStateChanged = useCallback(() => {
     const creedId = latestStateRef.current.creedId;
@@ -602,13 +614,19 @@ export function StrapProvider({
         return;
       }
 
+      const body = JSON.stringify({ state: nextState });
       const response = await fetch("/api/app/state", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        keepalive,
-        body: JSON.stringify({ state: nextState }),
+        // A keepalive request over the browser's limit fails outright. A
+        // larger Strap is sent normally instead, which still completes when
+        // the tab is only hidden.
+        keepalive:
+          keepalive &&
+          new Blob([body]).size <= KEEPALIVE_BODY_LIMIT_BYTES,
+        body,
       });
 
       if (!response.ok) {
@@ -1223,7 +1241,7 @@ export function StrapProvider({
 
   // Listen for other tabs' save announcements (see broadcastStateChanged).
   // The resync is trailing-debounced: a typing burst in the other tab
-  // announces every autosave (~2/s), and answering each with a full-state GET
+  // announces an autosave at every pause, and answering each with a full-state GET
   // would double backend reads for a two-tab user. One fetch after the burst
   // settles delivers the same freshness.
   useEffect(() => {
@@ -1261,8 +1279,9 @@ export function StrapProvider({
   // saves per section) so the right save path is used after the switch.
   const switchCreed = useCallback(
     async (creedId: string): Promise<{ ok: boolean; error?: string }> => {
-      // Flush a pending personal autosave so leaving never drops an edit, then
-      // cancel any debounced per-section company saves (we're leaving on purpose).
+      // Flush pending autosaves so leaving never drops an edit: the personal
+      // full-state save, and any debounced per-section company saves. Both
+      // still read the Strap we're leaving, because the state is replaced below.
       if (saveTimerRef.current !== null) {
         window.clearTimeout(saveTimerRef.current);
         saveTimerRef.current = null;
@@ -1270,10 +1289,18 @@ export function StrapProvider({
           await flushPendingState(latestStateRef.current).catch(() => {});
         }
       }
+      const pendingCompanySectionIds = [...companySaveTimers.current.keys()];
       for (const timer of companySaveTimers.current.values()) {
         window.clearTimeout(timer);
       }
       companySaveTimers.current.clear();
+      await Promise.all(
+        pendingCompanySectionIds.map((sectionId) =>
+          (runCompanySaveRef.current?.(sectionId) ?? Promise.resolve()).catch(
+            () => {},
+          ),
+        ),
+      );
       // Every per-Strap bit of bookkeeping belongs to the Strap we're
       // leaving: locally-resolved proposal ids, dirty/in-flight save markers,
       // queued retries (draining them against the NEW creedId would fire
@@ -1726,6 +1753,22 @@ export function StrapProvider({
     if (latestStateRef.current.creedType === "company") {
       void saveCompanySectionMeta(sectionId, { accent });
     }
+  }
+
+  // Personal Straps only: company sections save through the per-section API,
+  // which doesn't carry a loading mode, so they always load.
+  function setSectionLoading(sectionId: string, loading: SectionLoading) {
+    if (latestStateRef.current.creedType === "company") return;
+    commitState((current) =>
+      nextMutationTick({
+        ...current,
+        sections: current.sections.map((section) => {
+          if (section.id !== sectionId) return section;
+          const { loading: _previous, ...rest } = section;
+          return loading === "on-demand" ? { ...rest, loading } : rest;
+        }),
+      }),
+    );
   }
 
   function duplicateSection(sectionId: string) {
@@ -2608,6 +2651,7 @@ export function StrapProvider({
     addSectionAfter,
     renameSection,
     setSectionAccent,
+    setSectionLoading,
     duplicateSection,
     deleteSection,
     archiveSection,

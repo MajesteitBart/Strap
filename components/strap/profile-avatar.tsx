@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import Image from "next/image";
+import Image from "@/components/ui/image";
 import { LoaderCircle } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { UploadIcon, type UploadIconHandle } from "@/components/ui/upload";
@@ -63,7 +63,6 @@ export function ProfileAvatar({
           fill
           className={cn("object-cover", IMAGE_RADIUS[size])}
           referrerPolicy="no-referrer"
-          unoptimized
           onError={() => setFailedUrl(avatarUrl)}
         />
       ) : (

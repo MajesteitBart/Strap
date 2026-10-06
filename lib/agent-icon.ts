@@ -1,6 +1,6 @@
 // Maps a free-text agent / client name to one of the fixed brand icon kinds.
-// Lives in lib (not the "use client" agent-icon-stack) so server components,
-// like the OAuth consent screen, can resolve a connecting client's icon too.
+// Lives in lib (not the "use client" agent-icon-stack) so server code, like the
+// OAuth consent loader, can resolve a connecting client's icon too.
 import type { AgentIconKind } from "@/lib/strap-data";
 
 export const CLI_ATTRIBUTABLE_AGENT_IDS = [

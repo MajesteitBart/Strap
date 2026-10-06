@@ -4,10 +4,10 @@ import {
   StrapSiteFooter,
   StrapSiteHeader,
 } from "@/components/marketing/strap-site-shell";
-import { isDatabaseConfigured } from "@/lib/env";
+import { useDeploymentInfo } from "@/components/deployment-info";
 import type { Article, ArticleBlock } from "@/lib/marketing/learn/types";
 import { CLUSTER_META } from "@/lib/marketing/learn/types";
-import Link from "next/link";
+import Link from "@/components/link";
 
 // Server-rendered article view for /learn/[slug]. Everything ships in the
 // initial HTML: the lead answer, headings, tables, code, FAQ, and related
@@ -88,12 +88,13 @@ function formatDate(iso: string): string {
 }
 
 export function LearnArticle({ article }: { article: Article }) {
+  const { configured } = useDeploymentInfo();
   const leadParagraphs = article.lead.split("\n\n");
   const cluster = CLUSTER_META[article.cluster];
 
   return (
     <div className="strap-site">
-      <StrapSiteHeader configured={isDatabaseConfigured()} current="learn" />
+      <StrapSiteHeader configured={configured} current="learn" />
 
       <main>
         <StrapPageHero

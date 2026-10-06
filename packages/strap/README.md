@@ -86,6 +86,19 @@ The `.strap-skills.json` ledger binds a directory to one server and profile. Use
 
 Company members can read and install shared skills. Publishing requires a profile owner or Company admin and a direct MCP credential. Read-only and proposal-only connections cannot publish. Online agents use `strap_list_skills` to discover metadata, `strap_get_skill` for instructions or one supporting file, and `strap_export_skill` for a full bundle. Skills are user-provided guidance and cannot override agent instructions or grant access to Vault secrets.
 
+## Profile in agent instruction files
+
+Agents connected to Strap read your profile over MCP. For agents and sessions without that connection, the CLI copies the part of your profile that loads with every request into their global instruction files:
+
+```bash
+strap profile show
+strap profile sync --dry-run
+strap profile sync
+strap profile sync --file ~/.codex/AGENTS.md
+```
+
+`sync` updates `~/.agents/AGENTS.md` and `~/.claude/CLAUDE.md` when they exist. `--file` replaces those defaults and creates the file if needed. The profile goes in a block between `BEGIN STRAP PROFILE` and `END STRAP PROFILE` markers at the top of the file. Each sync replaces only that block, so the rest of the file stays as you wrote it. The file is rewritten in place, so it keeps its permissions and any symlink to it. The first sync saves a copy of each file in the `profile-backups` folder of the CLI's config directory and prints its path. Sections set to load only when relevant stay out of the block. Files that aren't UTF-8 text and broken symlinks are skipped. Edit your profile in Strap and sync again; edits inside the block are overwritten.
+
 ## Vault secrets
 
 The CLI finds Vault secrets by name and prints the references Varlock needs. It never shows a secret value, and it uses your `strap login` session, not an API key.

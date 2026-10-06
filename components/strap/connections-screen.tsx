@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { AnimatedCheckmark } from "@/components/ui/animated-checkmark";
 import { Button } from "@/components/ui/button";

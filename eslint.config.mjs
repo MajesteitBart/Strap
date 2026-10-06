@@ -1,31 +1,68 @@
 import { defineConfig, globalIgnores } from "eslint/config";
-import nextVitals from "eslint-config-next/core-web-vitals";
-import nextTs from "eslint-config-next/typescript";
+import importPlugin from "eslint-plugin-import";
+import jsxA11y from "eslint-plugin-jsx-a11y";
+import react from "eslint-plugin-react";
+import reactHooks from "eslint-plugin-react-hooks";
+import globals from "globals";
+import tseslint from "typescript-eslint";
 
+// The rule set the app linted with on Next.js (eslint-config-next's React,
+// hooks, accessibility and TypeScript rules) without the Next-specific plugin.
 const eslintConfig = defineConfig([
-  ...nextVitals,
-  ...nextTs,
-  // Override default ignores of eslint-config-next.
   globalIgnores([
-    // Default ignores of eslint-config-next:
+    "dist/**",
+    ".output/**",
+    ".tanstack/**",
+    "src/routeTree.gen.ts",
+    // Output folders left over from the Next.js build in older checkouts.
     ".next/**",
-    ".next-runtime*/**",
-    // Isolated dist dir for the local preview launch config (gitignored as
-    // `.next-preview*`); ignore it here too so linting after a preview run
-    // doesn't drown in generated-file errors.
-    ".next-preview*/**",
-    ".next-legacy-verification/**",
+    ".next-*/**",
     // Generated deployment bundles and agent assets are validated by their own
     // tools. They include bundled and CommonJS JavaScript that is not part of
     // Strap's TypeScript application lint surface.
     ".netlify/**",
     ".agents/**",
     ".claude/**",
-    "out/**",
     "build/**",
     "packages/varlock-strap-plugin/dist/**",
-    "next-env.d.ts",
   ]),
+  ...tseslint.configs.recommended,
+  {
+    files: ["**/*.{js,jsx,mjs,ts,tsx,mts,cts}"],
+    plugins: {
+      react,
+      "react-hooks": reactHooks,
+      import: importPlugin,
+      "jsx-a11y": jsxA11y,
+    },
+    languageOptions: {
+      globals: { ...globals.browser, ...globals.node },
+    },
+    settings: {
+      react: { version: "detect" },
+    },
+    rules: {
+      ...react.configs.recommended.rules,
+      ...reactHooks.configs.recommended.rules,
+      "import/no-anonymous-default-export": "warn",
+      "react/no-unknown-property": "off",
+      "react/react-in-jsx-scope": "off",
+      "react/prop-types": "off",
+      "react/jsx-no-target-blank": "off",
+      "jsx-a11y/alt-text": ["warn", { elements: ["img"], img: ["Image"] }],
+      "jsx-a11y/aria-props": "warn",
+      "jsx-a11y/aria-proptypes": "warn",
+      "jsx-a11y/aria-unsupported-elements": "warn",
+      "jsx-a11y/role-has-required-aria-props": "warn",
+      "jsx-a11y/role-supports-aria-props": "warn",
+    },
+  },
+  {
+    files: ["**/*.{ts,tsx,mts,cts}"],
+    rules: {
+      "@typescript-eslint/no-unused-expressions": "warn",
+    },
+  },
   {
     // Honour the standard "leading underscore = intentionally unused"
     // convention. Without this override, callsites that destructure or

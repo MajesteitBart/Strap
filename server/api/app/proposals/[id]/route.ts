@@ -1,0 +1,89 @@
+import { requireApiAuth } from "@/lib/api-auth";
+import {
+  reviewCompanyProposal,
+  reviewPersonalProposal,
+} from "@/lib/company-sections";
+import { serviceContext } from "@/lib/db/service";
+import { readStrapId } from "@/lib/strap-api";
+import { getPersonalCreedId } from "@/lib/strap-membership";
+
+type Ctx = { params: Promise<{ id: string }> };
+
+// POST /api/app/proposals/[id] { creedId, decision: "accept" | "reject" | "withdraw" }
+//
+// Company: proposal review. Owner/admin may review any; a member may review
+// only sections where they hold Direct edit. "withdraw" lets the proposal's
+// own author delete their pending proposal (all enforced in the lib).
+//
+// Personal: the owner accepts/rejects their own proposals. This makes the
+// resolution durable at click time instead of riding the debounced full-state
+// autosave (which let a fast refresh resurrect an already-reviewed proposal).
+export async function POST(request: Request, ctx: Ctx) {
+  const auth = await requireApiAuth();
+  if (auth instanceof Response) return auth;
+  const { id } = await ctx.params;
+
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return Response.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+  const b = (body ?? {}) as {
+    strapId?: unknown;
+    creedId?: unknown;
+    decision?: unknown;
+  };
+  const strapId = readStrapId(b);
+  if (
+    !strapId ||
+    (b.decision !== "accept" &&
+      b.decision !== "reject" &&
+      b.decision !== "withdraw")
+  ) {
+    return Response.json(
+      { error: "strapId and decision are required." },
+      { status: 400 },
+    );
+  }
+
+  // Personal-vs-company dispatch: creed-membership owns the ownership
+  // semantics. A creedId that is the caller's own Personal Strap goes down
+  // the personal path; anything else (a company, or someone else's personal
+  // Strap) goes through reviewCompanyProposal, whose role check rejects
+  // non-members.
+  const admin = serviceContext("server/api/app/proposals/[id]/route.ts");
+  const personalCreedId = await getPersonalCreedId(admin, auth.user.id);
+  const result =
+    personalCreedId && personalCreedId === strapId
+      ? await reviewPersonalProposal({
+          creedId: strapId,
+          user: auth.user,
+          proposalId: id,
+          // Personal has no separate withdraw flow; deleting your own
+          // pending proposal and rejecting it are the same operation.
+          decision: b.decision === "accept" ? "accept" : "reject",
+        })
+      : await reviewCompanyProposal({
+          creedId: strapId,
+          user: auth.user,
+          proposalId: id,
+          decision: b.decision,
+        });
+
+  if (!result.ok) {
+    const status =
+      result.code === "forbidden"
+        ? 403
+        : result.code === "not_found"
+          ? 404
+          : result.code === "stale" || result.code === "conflict"
+            ? 409
+            : 400;
+    return Response.json(
+      { error: result.error, code: result.code },
+      { status },
+    );
+  }
+  return Response.json(result);
+}
