@@ -1039,8 +1039,8 @@
     {
       "file": "lib/rich-text.ts",
       "kind": "content",
-      "occurrences": 10,
-      "fingerprint": "8dd234972f1e3c0f12ddd71a535b00b956ef5ddeaf1898e8921e4836a3a8b89f",
+      "occurrences": 8,
+      "fingerprint": "5231ed35e329f8cc17650da7c5d8da285ff67a6c83805419bcc4ff5cd2ca24cf",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -2616,6 +2616,15 @@
       "kind": "content",
       "occurrences": 11,
       "fingerprint": "0c4ee6c72199bcac3f067a1e9b1d230c204b2a505a21d429b7f378090e1231ff",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "tests/rich-text-inline-code.test.ts",
+      "kind": "content",
+      "occurrences": 1,
+      "fingerprint": "1a957639aa73562e5fe3c4550204d0ca381bfb9ad6a5d7899d8c1f39fc908765",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
