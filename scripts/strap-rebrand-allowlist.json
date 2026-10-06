@@ -1643,7 +1643,16 @@
       "file": "packages/strap/README.md",
       "kind": "content",
       "occurrences": 4,
-      "fingerprint": "71b4674c294fad41ca30a011885c6f504ded56149aa249e6469751004de8927d",
+      "fingerprint": "3b622936d9a6d81676a814bbc16d0844dc3b7be59c0d159d2f9caf2960c035e3",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "packages/strap/src/profile/command.ts",
+      "kind": "content",
+      "occurrences": 1,
+      "fingerprint": "3c0ebf70f35e5d890f52dc970820b2d2dcdbfd75f79cbec26083b810f92b5685",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -1680,6 +1689,15 @@
       "kind": "content",
       "occurrences": 3,
       "fingerprint": "9d2514a545ed94e508ac84609ae2c96c8c2358003eb21ac62665eb37c684ec58",
+      "decision": "compatibility",
+      "category": "stable-compatibility-content",
+      "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
+    },
+    {
+      "file": "packages/strap/tests/profile.test.ts",
+      "kind": "content",
+      "occurrences": 5,
+      "fingerprint": "1c5f612041b16eeffa55d63adcfdfbdbd094dacd10066548996da8fc9b033bb2",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
