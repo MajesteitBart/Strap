@@ -9,3 +9,7 @@
 
 [build.environment]
   NODE_VERSION = "22"
+  # The site still has the Next.js runtime installed from the Netlify UI. It
+  # fails builds that have no Next.js output, so skip it until it is removed
+  # there.
+  NETLIFY_NEXT_PLUGIN_SKIP = "true"
