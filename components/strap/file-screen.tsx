@@ -957,12 +957,6 @@ export function FileScreen() {
   const cancelComposerRevealRef = useRef<() => void>(() => {});
   const versionIcon = useAnimatedIconControls();
   const activityIcon = useAnimatedIconControls();
-  // `exportMarkdown` is identity-stable now (the provider hands out proxy
-  // actions), so the content dependency must be explicit: rebuild only when
-  // the sections actually change, not on every render.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const localMarkdown = useMemo(() => exportMarkdown(), [state.sections]);
-
   // True only while a section drag is in progress; gates the Reorder layout
   // animation so framer doesn't measure every section on every height change
   // (see the layout prop on Reorder.Item).
@@ -1085,7 +1079,7 @@ export function FileScreen() {
         setVersionStatusBusy(true);
         const buffer = await crypto.subtle.digest(
           "SHA-256",
-          new TextEncoder().encode(localMarkdown),
+          new TextEncoder().encode(exportMarkdown()),
         );
         const localHash = Array.from(new Uint8Array(buffer))
           .map((value) => value.toString(16).padStart(2, "0"))
@@ -1125,8 +1119,8 @@ export function FileScreen() {
       }
     }
 
-    // Trailing debounce: localMarkdown changes on every autosaved keystroke,
-    // and each run hashes the whole file and hits the GitHub status API. One
+    // Trailing debounce: the sections change on every keystroke, and each run
+    // exports and hashes the whole file and hits the GitHub status API. One
     // check after the typing burst settles gives the same answer.
     const debounce = window.setTimeout(() => void loadVersionStatus(), 1_500);
 
@@ -1134,8 +1128,11 @@ export function FileScreen() {
       cancelled = true;
       window.clearTimeout(debounce);
     };
+    // exportMarkdown is identity-stable (the provider hands out proxy
+    // actions), so the sections are the explicit content dependency.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    localMarkdown,
+    state.sections,
     state.settings.integrations.github.status,
     state.settings.versionControl.repoOwner,
     state.settings.versionControl.repoName,
@@ -1338,7 +1335,7 @@ export function FileScreen() {
       setPushPreviewBusy(true);
       const buffer = await crypto.subtle.digest(
         "SHA-256",
-        new TextEncoder().encode(localMarkdown),
+        new TextEncoder().encode(exportMarkdown()),
       );
       const localHash = Array.from(new Uint8Array(buffer))
         .map((value) => value.toString(16).padStart(2, "0"))
@@ -1385,6 +1382,7 @@ export function FileScreen() {
     try {
       setSelectedVersionAction("push");
       setPushBusy(true);
+      const localMarkdown = exportMarkdown();
       const buffer = await crypto.subtle.digest(
         "SHA-256",
         new TextEncoder().encode(localMarkdown),
@@ -1430,7 +1428,7 @@ export function FileScreen() {
 
       const buffer = await crypto.subtle.digest(
         "SHA-256",
-        new TextEncoder().encode(localMarkdown),
+        new TextEncoder().encode(exportMarkdown()),
       );
       const localHash = Array.from(new Uint8Array(buffer))
         .map((value) => value.toString(16).padStart(2, "0"))
@@ -3829,6 +3827,10 @@ function ActivityRail({
                           <ActivityRow
                             key={entry.id}
                             entry={entry}
+                            relativeTime={formatRelativeTime(
+                              entry.createdAt,
+                              entry.timeLabel,
+                            )}
                             liveExistingContent={liveExistingContent}
                             liveProposedText={liveProposedText}
                           />
@@ -3866,12 +3868,20 @@ function ActivityRail({
   );
 }
 
-function ActivityRow({
+// The rail stays mounted and re-renders with every keystroke in the editor.
+// Rows only change when their entry or live pending text does.
+const ActivityRow = memo(ActivityRowContent);
+
+function ActivityRowContent({
   entry,
+  relativeTime,
   liveExistingContent,
   liveProposedText,
 }: {
   entry: ActivityEntry;
+  // Formatted by the rail, so a memoized row still updates when its
+  // "just now" turns into "2m".
+  relativeTime: string;
   liveExistingContent?: string;
   liveProposedText?: string;
 }) {
@@ -3967,7 +3977,7 @@ function ActivityRow({
             </div>
           </div>
           <div className="text-[12px] text-[var(--strap-text-tertiary)]">
-            {formatRelativeTime(entry.createdAt, entry.timeLabel)}
+            {relativeTime}
           </div>
         </div>
       </button>

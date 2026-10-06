@@ -147,6 +147,7 @@ export function StrapShell({
   const pathname = usePathname();
   const router = useAppRouter();
   const { signOut, state, exportMarkdown } = useStrap();
+  const hasSections = state.sections.length > 0;
   const [failedAvatarUrl, setFailedAvatarUrl] = useState<string | null>(null);
   const searchIconRef = useRef<SearchIconHandle | null>(null);
   // Desktop sidebar collapse (S key). Collapsed drops every lg: sidebar style
@@ -263,27 +264,19 @@ export function StrapShell({
     // directly, and warming these creed-agnostic caches with company data would
     // leak it back to the personal screen after a Strap switch.
     if (state.creedType !== "company") {
-      const githubConnected =
-        state.settings.integrations.github.status === "connected";
       preloadSettingsData({
         scope: state.user.email || state.user.handle,
-        githubConnected,
+        githubConnected:
+          state.settings.integrations.github.status === "connected",
         repoOwner: state.settings.versionControl.repoOwner,
         repoName: state.settings.versionControl.repoName,
-        // The markdown only feeds the GitHub version-status preload, so skip the
-        // full export rebuild entirely when GitHub isn't connected.
-        markdown:
-          githubConnected && state.sections.length
-            ? exportMarkdown()
-            : undefined,
       });
     }
-    if (state.sections.length) {
+    if (hasSections) {
       preloadMcpHealth("30d", state.creedId ?? "");
     }
   }, [
-    exportMarkdown,
-    state.sections,
+    hasSections,
     state.creedId,
     state.creedType,
     state.user.email,
@@ -291,6 +284,31 @@ export function StrapShell({
     state.settings.integrations.github.status,
     state.settings.versionControl.repoName,
     state.settings.versionControl.repoOwner,
+  ]);
+
+  useEffect(() => {
+    // The GitHub version-status preload exports and hashes the whole file, and
+    // the sections change with every keystroke, so it waits for typing to
+    // settle. Skipped entirely when GitHub isn't connected.
+    if (
+      state.creedType === "company" ||
+      state.settings.integrations.github.status !== "connected" ||
+      !hasSections
+    ) {
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      preloadSettingsData({ githubConnected: true, markdown: exportMarkdown() });
+    }, 2_000);
+    return () => window.clearTimeout(timer);
+    // exportMarkdown is identity-stable (the provider hands out proxy
+    // actions), so the sections are the explicit content dependency.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    hasSections,
+    state.sections,
+    state.creedType,
+    state.settings.integrations.github.status,
   ]);
 
   function setFileIntent(

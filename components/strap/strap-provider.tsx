@@ -110,7 +110,13 @@ type StrapContextValue = {
 };
 
 const StrapContext = createContext<StrapContextValue | null>(null);
-const AUTOSAVE_DELAY_MS = 500;
+// Autosave waits for a pause in typing. A personal save serializes and sends
+// the whole Strap, which stalls the main thread for a moment, so 2 s keeps saves
+// out of the short pauses between words and sentences. Leaving or hiding the
+// page still flushes a pending personal save at once.
+const AUTOSAVE_DELAY_MS = 2_000;
+// Browsers reject keepalive requests whose body is larger than 64 KiB.
+const KEEPALIVE_BODY_LIMIT_BYTES = 60_000;
 const EXTERNAL_SYNC_INTERVAL_MS = 30_000;
 // Company Straps are multi-user, so changes (proposals, edits, reviews) need to
 // surface on everyone's screen quickly. Member edits arrive instantly over the
@@ -608,13 +614,19 @@ export function StrapProvider({
         return;
       }
 
+      const body = JSON.stringify({ state: nextState });
       const response = await fetch("/api/app/state", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        keepalive,
-        body: JSON.stringify({ state: nextState }),
+        // A keepalive request over the browser's limit fails outright. A
+        // larger Strap is sent normally instead, which still completes when
+        // the tab is only hidden.
+        keepalive:
+          keepalive &&
+          new Blob([body]).size <= KEEPALIVE_BODY_LIMIT_BYTES,
+        body,
       });
 
       if (!response.ok) {
@@ -1229,7 +1241,7 @@ export function StrapProvider({
 
   // Listen for other tabs' save announcements (see broadcastStateChanged).
   // The resync is trailing-debounced: a typing burst in the other tab
-  // announces every autosave (~2/s), and answering each with a full-state GET
+  // announces an autosave at every pause, and answering each with a full-state GET
   // would double backend reads for a two-tab user. One fetch after the burst
   // settles delivers the same freshness.
   useEffect(() => {
@@ -1267,8 +1279,9 @@ export function StrapProvider({
   // saves per section) so the right save path is used after the switch.
   const switchCreed = useCallback(
     async (creedId: string): Promise<{ ok: boolean; error?: string }> => {
-      // Flush a pending personal autosave so leaving never drops an edit, then
-      // cancel any debounced per-section company saves (we're leaving on purpose).
+      // Flush pending autosaves so leaving never drops an edit: the personal
+      // full-state save, and any debounced per-section company saves. Both
+      // still read the Strap we're leaving, because the state is replaced below.
       if (saveTimerRef.current !== null) {
         window.clearTimeout(saveTimerRef.current);
         saveTimerRef.current = null;
@@ -1276,10 +1289,18 @@ export function StrapProvider({
           await flushPendingState(latestStateRef.current).catch(() => {});
         }
       }
+      const pendingCompanySectionIds = [...companySaveTimers.current.keys()];
       for (const timer of companySaveTimers.current.values()) {
         window.clearTimeout(timer);
       }
       companySaveTimers.current.clear();
+      await Promise.all(
+        pendingCompanySectionIds.map((sectionId) =>
+          (runCompanySaveRef.current?.(sectionId) ?? Promise.resolve()).catch(
+            () => {},
+          ),
+        ),
+      );
       // Every per-Strap bit of bookkeeping belongs to the Strap we're
       // leaving: locally-resolved proposal ids, dirty/in-flight save markers,
       // queued retries (draining them against the NEW creedId would fire

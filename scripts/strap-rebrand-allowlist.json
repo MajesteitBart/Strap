@@ -248,7 +248,7 @@
       "file": "components/strap/file-screen.tsx",
       "kind": "content",
       "occurrences": 31,
-      "fingerprint": "9b744edb95f500943d33bde5432e4d765d65d12115d778b6c587a0f037215944",
+      "fingerprint": "7f4397b175cc1f2388c9fd6de1436cfeba391c7a0385c35ac9310e66ce32955a",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -364,8 +364,8 @@
     {
       "file": "components/strap/shell.tsx",
       "kind": "content",
-      "occurrences": 11,
-      "fingerprint": "ecba57e514cfad1ffe40081e8f726288b79ee816d29da0f9c24fdfc5eaff9c5e",
+      "occurrences": 13,
+      "fingerprint": "0ed6f4eb716e059a4608f65ce9bea0dd778e878b582a9f5641d5f82bbf8b107f",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -383,7 +383,7 @@
       "file": "components/strap/strap-provider.tsx",
       "kind": "content",
       "occurrences": 121,
-      "fingerprint": "15f90dbc9622129986f1934700cb9e5d246a9b9b0fba1b7ba81010de1497216a",
+      "fingerprint": "8ce15629831fc336d4730d7e3d72c2c3d96cd941c5b02a75dcf7c99a7f034132",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
