@@ -46,6 +46,7 @@ test("account MFA on local Postgres", { skip: !databaseTestsEnabled }, async (t)
   const auth = createAuth(db, {
     baseURL,
     secret: randomBytes(32).toString("base64"),
+    allowSignUps: true,
     sendVerificationEmail: async () => {},
     sendResetPassword: async () => {},
     socialProviders: { google: { clientId: "probe", clientSecret: "probe" } },

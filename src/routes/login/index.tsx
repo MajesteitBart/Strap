@@ -18,6 +18,6 @@ export const Route = createFileRoute("/login/")({
 });
 
 function LoginPage() {
-  const { configured, nextPath } = Route.useLoaderData();
-  return <AuthScreen mode="login" configured={configured} nextPath={nextPath} />;
+  const { configured, nextPath, signUpsOpen } = Route.useLoaderData();
+  return <AuthScreen mode="login" configured={configured} nextPath={nextPath} signUpsOpen={signUpsOpen} />;
 }

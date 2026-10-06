@@ -17,6 +17,6 @@ export const Route = createFileRoute("/signup")({
 });
 
 function SignupPage() {
-  const { configured, nextPath } = Route.useLoaderData();
-  return <AuthScreen mode="signup" configured={configured} nextPath={nextPath} />;
+  const { configured, nextPath, signUpsOpen } = Route.useLoaderData();
+  return <AuthScreen mode="signup" configured={configured} nextPath={nextPath} signUpsOpen={signUpsOpen} />;
 }

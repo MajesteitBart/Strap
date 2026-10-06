@@ -32,7 +32,7 @@
       "file": ".env.example",
       "kind": "content",
       "occurrences": 2,
-      "fingerprint": "36f41bca1c957d397ff9c81b2c491d359a7dbc27cb24c2289f035449aee4999b",
+      "fingerprint": "f413fd70f2d3f319eef6f4de4a50573ed5202b3d59f8d0e7e377cbbc1b4114c8",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."

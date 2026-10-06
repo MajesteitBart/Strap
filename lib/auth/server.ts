@@ -1,6 +1,7 @@
 import { recordAuditEvent } from "@/lib/audit-log";
 import { sendEmail } from "@/lib/email";
 import { renderAuthEmail } from "@/lib/email-templates/auth";
+import { areSignUpsOpen } from "@/lib/env";
 import { log } from "@/lib/observability";
 import { runAfterResponse } from "@/lib/http/background";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
@@ -23,17 +24,27 @@ function initializeAuth() {
       if (!result.ok) log.warn("auth_email_delivery_failed", { kind });
     });
   };
+  const allowSignUps = areSignUpsOpen();
   return createAuth(getDatabase(), {
     baseURL,
     secret,
+    allowSignUps,
     sendVerificationEmail: ({ user, url }) => send("confirmation", user.email, url),
     sendResetPassword: ({ user, url }) => send("reset", user.email, url),
     socialProviders: {
       ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET ? {
-        google: { clientId: process.env.GOOGLE_CLIENT_ID, clientSecret: process.env.GOOGLE_CLIENT_SECRET },
+        google: {
+          clientId: process.env.GOOGLE_CLIENT_ID,
+          clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+          disableSignUp: !allowSignUps,
+        },
       } : {}),
       ...(process.env.X_CLIENT_ID && process.env.X_CLIENT_SECRET ? {
-        twitter: { clientId: process.env.X_CLIENT_ID, clientSecret: process.env.X_CLIENT_SECRET },
+        twitter: {
+          clientId: process.env.X_CLIENT_ID,
+          clientSecret: process.env.X_CLIENT_SECRET,
+          disableSignUp: !allowSignUps,
+        },
       } : {}),
     },
     plugins: [tanstackStartCookies()],

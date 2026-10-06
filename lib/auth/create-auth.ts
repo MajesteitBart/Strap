@@ -12,6 +12,8 @@ type Mail = { user: { email: string; name: string }; url: string };
 export type AuthConfiguration = {
   baseURL: string;
   secret: string;
+  // False blocks every way of creating an account; existing users still sign in.
+  allowSignUps: boolean;
   socialProviders?: BetterAuthOptions["socialProviders"];
   plugins?: BetterAuthPlugin[];
   sendVerificationEmail: (message: Mail) => Promise<void>;
@@ -54,6 +56,7 @@ export function createAuth(db: PostgresJsDatabase, config: AuthConfiguration) {
     },
     emailAndPassword: {
       enabled: true,
+      disableSignUp: !config.allowSignUps,
       requireEmailVerification: true,
       password,
       revokeSessionsOnPasswordReset: true,
@@ -66,6 +69,15 @@ export function createAuth(db: PostgresJsDatabase, config: AuthConfiguration) {
       sendVerificationEmail: config.sendVerificationEmail,
     },
     socialProviders: config.socialProviders,
+    databaseHooks: {
+      user: {
+        create: {
+          // Backstop for every path that creates an account, including a first
+          // OAuth sign-in: returning false stops the insert.
+          before: async () => (config.allowSignUps ? undefined : false),
+        },
+      },
+    },
     hooks: {
       before: createAuthMiddleware(async (ctx) => mfa.before(ctx)),
       after: createAuthMiddleware(async (ctx) => {

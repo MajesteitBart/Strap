@@ -1,4 +1,4 @@
-import { isDatabaseConfigured } from "@/lib/env";
+import { areSignUpsOpen, isDatabaseConfigured } from "@/lib/env";
 import { currentRequestCookie } from "@/lib/http/request-context";
 import { log } from "@/lib/observability";
 import { getRequestAuth } from "@/lib/request-auth";
@@ -58,14 +58,15 @@ export async function resolveRootEntry(): Promise<Redirect | { kind: "missing-sc
 // Sign-in, sign-up and two-factor pages: a signed-in visitor goes on to `next`
 // (or the app) instead of seeing the form again.
 export async function resolveSignInEntry(next: unknown, { requireConfigured }: { requireConfigured: boolean }): Promise<
-  Redirect | { kind: "ready"; configured: boolean; nextPath: string }
+  Redirect | { kind: "ready"; configured: boolean; nextPath: string; signUpsOpen: boolean }
 > {
   const nextPath = sanitizeNextPath(typeof next === "string" ? next : undefined);
   const configured = isDatabaseConfigured();
+  const signUpsOpen = areSignUpsOpen();
   if (!configured) {
-    return requireConfigured ? { kind: "redirect", to: "/login" } : { kind: "ready", configured, nextPath };
+    return requireConfigured ? { kind: "redirect", to: "/login" } : { kind: "ready", configured, nextPath, signUpsOpen };
   }
   const { user } = await getRequestAuth();
   if (user) return { kind: "redirect", to: nextPath };
-  return { kind: "ready", configured, nextPath };
+  return { kind: "ready", configured, nextPath, signUpsOpen };
 }

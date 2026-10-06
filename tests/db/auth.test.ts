@@ -17,6 +17,7 @@ test("Better Auth migration probe on local Postgres", { skip: !databaseTestsEnab
   const auth = createAuth(db, {
     baseURL,
     secret: randomBytes(32).toString("base64"),
+    allowSignUps: true,
     sendVerificationEmail: async ({ url }) => { verificationUrls.push(url); },
     sendResetPassword: async ({ url }) => { resetUrls.push(url); },
     socialProviders: { google: { clientId: "probe", clientSecret: "probe" } },
