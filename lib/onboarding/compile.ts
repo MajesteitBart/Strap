@@ -31,6 +31,12 @@ const WORK_STUB =
 const PREFERENCES_STUB = "Lead with the answer. Skip filler and over-praise.";
 const ROUTINES_STUB =
   "Add a daily, weekly, or seasonal rhythm AI should respect.";
+const STARTER_TEXTS = new Set([WORK_STUB, PREFERENCES_STUB, ROUTINES_STUB]);
+
+/** True when a section holds only the starter text the seed put there. */
+function isStarterContent(content: string) {
+  return STARTER_TEXTS.has(content.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim());
+}
 
 export type OnboardingPreviewDraft = {
   identityText: string;
@@ -215,10 +221,12 @@ export function mergeComposedSections(
   seed: StrapSection[],
   parsed: ReadonlyArray<{ id: string; content: string }>,
   isEmpty: (content: string) => boolean,
-): { sections: StrapSection[]; matched: number } {
+): { sections: StrapSection[]; matched: number; recognized: number } {
   const parsedById = new Map<string, string>();
+  const emptyIds = new Set<string>();
   for (const section of parsed) {
-    if (!isEmpty(section.content)) parsedById.set(section.id, section.content);
+    if (isEmpty(section.content)) emptyIds.add(section.id);
+    else parsedById.set(section.id, section.content);
   }
   const composed = (section: StrapSection, content: string): StrapSection => ({
     ...section,
@@ -231,10 +239,22 @@ export function mergeComposedSections(
     lastEditedLabel: "just now",
   });
 
+  // matched counts sections the paste changed; recognized counts known
+  // headings it filled, changed or not. A paste needs both to be saved, so one
+  // that only has empty headings is still rejected.
   let matched = 0;
+  let recognized = 0;
   const sections = seed.map((section) => {
     const content = parsedById.get(section.id);
-    if (!content || content === section.content) return section;
+    if (content === undefined) {
+      // The interview leaves a heading empty when there is nothing durable to
+      // say. Drop starter text then, but keep what the user wrote in onboarding.
+      if (!emptyIds.has(section.id) || !isStarterContent(section.content)) return section;
+      matched += 1;
+      return composed(section, "");
+    }
+    recognized += 1;
+    if (content === section.content) return section;
     matched += 1;
     return composed(section, content);
   });
@@ -243,7 +263,8 @@ export function mergeComposedSections(
     const content = parsedById.get(optional.id);
     if (!content || existing.has(optional.id)) continue;
     matched += 1;
+    recognized += 1;
     sections.push(composed(makeSection({ ...optional, content }), content));
   }
-  return { sections, matched };
+  return { sections, matched, recognized };
 }

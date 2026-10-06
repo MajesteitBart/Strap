@@ -102,3 +102,50 @@ test("connected agents can run the same interview over MCP", () => {
   assert.match(prompt.text, /one question per message/i);
   assert.match(prompt.text, /strap_\* tools/);
 });
+
+test("an empty heading clears starter text but keeps the user's own answers", () => {
+  const seed = buildOnboardingPreviewSections(PERSONAL_DRAFT);
+  const isEmpty = (content: string) => {
+    const text = content.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+    return !text || text === "Start shaping this section.";
+  };
+  const { sections, matched, recognized } = mergeComposedSections(
+    seed,
+    [
+      { id: "identity", content: "<p>Start shaping this section.</p>" },
+      { id: "work", content: "<p>Start shaping this section.</p>" },
+      { id: "routines", content: "" },
+      { id: "goals", content: "<p>Ship Strap 1.0.</p>" },
+    ],
+    isEmpty,
+  );
+  const byId = Object.fromEntries(sections.map((section) => [section.id, section]));
+  assert.equal(byId.work!.content, "", "the Work stub is dropped");
+  assert.equal(byId.routines!.content, "", "the Routines stub is dropped");
+  assert.equal(byId.identity!.content, seed.find((section) => section.id === "identity")!.content, "the user's identity answer stays");
+  assert.equal(byId.goals!.content, "<p>Ship Strap 1.0.</p>");
+  assert.equal(matched, 3, "the goals change and both cleared stubs count as changes");
+  assert.equal(recognized, 1, "only goals had content");
+});
+
+test("unchanged answers plus empty headings still save the cleared stubs", () => {
+  const seed = buildOnboardingPreviewSections(PERSONAL_DRAFT);
+  const identity = seed.find((section) => section.id === "identity")!.content;
+  const { matched, recognized } = mergeComposedSections(
+    seed,
+    [{ id: "identity", content: identity }, { id: "work", content: "" }],
+    (content) => !content.replace(/<[^>]*>/g, "").trim(),
+  );
+  assert.equal(matched, 1);
+  assert.equal(recognized, 1);
+});
+
+test("a paste with only empty headings is not recognized", () => {
+  const seed = buildOnboardingPreviewSections(PERSONAL_DRAFT);
+  const { recognized } = mergeComposedSections(
+    seed,
+    [{ id: "work", content: "" }, { id: "routines", content: "" }],
+    (content) => !content.replace(/<[^>]*>/g, "").trim(),
+  );
+  assert.equal(recognized, 0);
+});

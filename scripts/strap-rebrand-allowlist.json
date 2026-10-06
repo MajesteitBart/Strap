@@ -1004,7 +1004,7 @@
       "file": "lib/onboarding/compile.ts",
       "kind": "content",
       "occurrences": 2,
-      "fingerprint": "e933c72669972366f727219086b86ecaf851eb6de7d40ffd575f47684b8c8d17",
+      "fingerprint": "b2ace592366d34e0ca755c559181a0d9893d7911b420180ee21808c1499d8bf9",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -1652,7 +1652,7 @@
       "file": "packages/strap/src/profile/command.ts",
       "kind": "content",
       "occurrences": 1,
-      "fingerprint": "3c0ebf70f35e5d890f52dc970820b2d2dcdbfd75f79cbec26083b810f92b5685",
+      "fingerprint": "14cb460d8e9b2a19402be436a51c1b29b7e96f96f781d6c850d18311c9d34082",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -1697,7 +1697,7 @@
       "file": "packages/strap/tests/profile.test.ts",
       "kind": "content",
       "occurrences": 5,
-      "fingerprint": "1c5f612041b16eeffa55d63adcfdfbdbd094dacd10066548996da8fc9b033bb2",
+      "fingerprint": "9b947cac5b58065e929399bdd86c657b5d82c856296900f4b4023428859e39b1",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."

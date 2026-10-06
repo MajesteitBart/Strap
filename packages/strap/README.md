@@ -97,7 +97,7 @@ strap profile sync
 strap profile sync --file ~/.codex/AGENTS.md
 ```
 
-`sync` updates `~/.agents/AGENTS.md` and `~/.claude/CLAUDE.md` when they exist. `--file` replaces those defaults and creates the file if needed. The profile goes in a block between `BEGIN STRAP PROFILE` and `END STRAP PROFILE` markers at the top of the file. Each sync replaces only that block, so the rest of the file stays as you wrote it. The first sync keeps a copy of each file as `<file>.before-strap`. Sections set to load only when relevant stay out of the block. Files that aren't UTF-8 text are skipped. Edit your profile in Strap and sync again; edits inside the block are overwritten.
+`sync` updates `~/.agents/AGENTS.md` and `~/.claude/CLAUDE.md` when they exist. `--file` replaces those defaults and creates the file if needed. The profile goes in a block between `BEGIN STRAP PROFILE` and `END STRAP PROFILE` markers at the top of the file. Each sync replaces only that block, so the rest of the file stays as you wrote it. The file is rewritten in place, so it keeps its permissions and any symlink to it. The first sync saves a copy of each file in the `profile-backups` folder of the CLI's config directory and prints its path. Sections set to load only when relevant stay out of the block. Files that aren't UTF-8 text and broken symlinks are skipped. Edit your profile in Strap and sync again; edits inside the block are overwritten.
 
 ## Vault secrets
 

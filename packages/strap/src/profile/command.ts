@@ -1,7 +1,9 @@
-import { copyFile, readFile, stat, writeFile, rename } from "node:fs/promises";
+import { createHash } from "node:crypto";
+import { chmod, lstat, mkdir, open, readFile, stat, type FileHandle } from "node:fs/promises";
 import { homedir } from "node:os";
-import { join, resolve } from "node:path";
+import { basename, dirname, join, resolve } from "node:path";
 import type { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { configDirectory } from "../config/paths.js";
 import { CliError } from "../errors.js";
 import { listAllResources } from "../mcp/client.js";
 import { writeJson } from "../terminal/output.js";
@@ -14,7 +16,7 @@ sync writes it into a managed block in your agents' global instruction files,
 so agents without a Strap connection read the same profile. By default it
 updates ~/.agents/AGENTS.md and ~/.claude/CLAUDE.md when they exist; --file
 adds or replaces targets. Only the block between the Strap markers changes,
-and the first sync keeps a copy of each file as <file>.before-strap.
+and the first sync keeps a copy of each file in Strap's config folder.
 Edit your profile in Strap, not in the files.
 `;
 
@@ -130,6 +132,70 @@ async function exists(path: string) {
   }
 }
 
+async function isBrokenSymlink(path: string) {
+  try {
+    return (await lstat(path)).isSymbolicLink() && !(await exists(path));
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Rewrites an instruction file in place, so it keeps its permissions, Windows
+ * access rules, owner and any symlink pointing at it, and no temporary file
+ * exists for anyone to plant. A missing file is created exclusively: 0600 on
+ * POSIX, the folder's access rules on Windows. A broken symlink is never
+ * replaced, because opening it exclusively fails.
+ */
+export async function writeInstructionFile(file: string, text: string) {
+  const data = Buffer.from(text, "utf8");
+  let handle: FileHandle;
+  try {
+    handle = await open(file, "r+");
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+    handle = await open(file, "wx", 0o600);
+  }
+  try {
+    // Write first, then cut off the old tail, so an interrupted write never
+    // leaves an empty file.
+    await handle.write(data, 0, data.length, 0);
+    await handle.truncate(data.length);
+  } finally {
+    await handle.close();
+  }
+}
+
+/**
+ * Where the one-time copy of an instruction file goes: a folder inside the
+ * CLI's private config directory, next to the stored credentials, so a copy of
+ * a private file never lands somewhere more readable than the original.
+ */
+export function backupPathFor(file: string, directory = configDirectory()) {
+  const id = createHash("sha256").update(resolve(file)).digest("hex").slice(0, 12);
+  return join(directory, "profile-backups", `${basename(file)}.${id}.before-strap`);
+}
+
+/** Saves the original bytes once; returns the path when it wrote a new copy. */
+async function backupOnce(file: string, original: Uint8Array) {
+  const backup = backupPathFor(file);
+  await mkdir(dirname(backup), { recursive: true, mode: 0o700 });
+  if (process.platform !== "win32") await chmod(dirname(backup), 0o700);
+  let handle: FileHandle;
+  try {
+    handle = await open(backup, "wx", 0o600);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "EEXIST") return undefined;
+    throw error;
+  }
+  try {
+    await handle.writeFile(original);
+  } finally {
+    await handle.close();
+  }
+  return backup;
+}
+
 export async function runProfileCommand(client: Client, args: string[], json: boolean) {
   const options = parseProfileCommand(args);
   const profile = await readProfile(client);
@@ -141,14 +207,24 @@ export async function runProfileCommand(client: Client, args: string[], json: bo
     return;
   }
 
-  const results: Array<{ file: string; status: "updated" | "unchanged" | "skipped"; reason?: string }> = [];
+  const results: Array<{
+    file: string;
+    status: "updated" | "unchanged" | "skipped";
+    reason?: string;
+    backup?: string;
+  }> = [];
   for (const file of options.files) {
     const present = await exists(file);
+    if (!present && (await isBrokenSymlink(file))) {
+      results.push({ file, status: "skipped", reason: "symlink target is missing" });
+      continue;
+    }
     if (!present && !options.explicit) {
       results.push({ file, status: "skipped", reason: "file does not exist" });
       continue;
     }
-    const before = present ? decodeInstructionFile(await readFile(file)) : "";
+    const bytes = present ? await readFile(file) : undefined;
+    const before = bytes ? decodeInstructionFile(bytes) : "";
     if (before === undefined) {
       results.push({ file, status: "skipped", reason: "not a UTF-8 text file" });
       continue;
@@ -158,15 +234,12 @@ export async function runProfileCommand(client: Client, args: string[], json: bo
       results.push({ file, status: "unchanged" });
       continue;
     }
+    let backup: string | undefined;
     if (!options.dryRun) {
-      if (present && !before.includes(BLOCK_START) && !(await exists(`${file}.before-strap`))) {
-        await copyFile(file, `${file}.before-strap`);
-      }
-      const temporary = `${file}.strap-tmp`;
-      await writeFile(temporary, after, "utf8");
-      await rename(temporary, file);
+      if (bytes && !before.includes(BLOCK_START)) backup = await backupOnce(file, bytes);
+      await writeInstructionFile(file, after);
     }
-    results.push({ file, status: "updated" });
+    results.push({ file, status: "updated", ...(backup ? { backup } : {}) });
   }
 
   if (json) {
@@ -175,6 +248,7 @@ export async function runProfileCommand(client: Client, args: string[], json: bo
   }
   for (const result of results) {
     const verb = result.status === "updated" && options.dryRun ? "would update" : result.status;
-    process.stdout.write(`${verb.padEnd(12)} ${result.file}${result.reason ? ` (${result.reason})` : ""}\n`);
+    const note = result.reason ?? (result.backup ? `original saved to ${result.backup}` : undefined);
+    process.stdout.write(`${verb.padEnd(12)} ${result.file}${note ? ` (${note})` : ""}\n`);
   }
 }

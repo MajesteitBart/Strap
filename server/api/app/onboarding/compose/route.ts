@@ -88,7 +88,7 @@ export async function POST(request: Request) {
   // keeping the seed spine (id/name/accent/template/permission). Unmatched seed
   // sections keep their draft; Constraints, Context and People are added when
   // the interview filled them; other pasted sections are ignored.
-  const { sections: nextSections, matched } = mergeComposedSections(
+  const { sections: nextSections, matched, recognized } = mergeComposedSections(
     result.state.sections,
     parsed.sections,
     (content) => {
@@ -97,9 +97,9 @@ export async function POST(request: Request) {
     },
   );
 
-  if (matched === 0) {
-    // Nothing recognizable in the paste; write nothing and let the client show
-    // an inline "that doesn't look right" message.
+  if (matched === 0 || recognized === 0) {
+    // Nothing recognizable in the paste, or only empty headings; write nothing
+    // and let the client show an inline "that doesn't look right" message.
     return Response.json({ ok: false, matched: 0 }, { status: 200 });
   }
 
