@@ -80,6 +80,27 @@ export function isNoStorePath(pathname: string) {
   );
 }
 
+// Endpoints that answer with a user's data, tokens or OAuth grants. A response
+// without its own Cache-Control is never stored; handlers that serve public
+// data (health, version, OG images, avatars) set their own policy.
+export const PRIVATE_ENDPOINT_PREFIXES = [
+  "/api",
+  "/mcp",
+  "/token",
+  "/register",
+  "/revoke",
+  "/authorize",
+  "/device",
+  "/auth",
+] as const;
+
+export function isPrivateEndpoint(pathname: string) {
+  // The router matches paths case-insensitively, so /API/app/state reaches the
+  // same handler and must get the same policy.
+  const path = pathname.toLowerCase();
+  return PRIVATE_ENDPOINT_PREFIXES.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
+}
+
 export function isImmutablePath(pathname: string) {
   return IMMUTABLE_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 }

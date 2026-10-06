@@ -6,6 +6,7 @@ import {
   IMMUTABLE_CACHE_CONTROL,
   isImmutablePath,
   isNoStorePath,
+  isPrivateEndpoint,
   NO_STORE_CACHE_CONTROL,
   permanentRedirectFor,
   securityHeaders,
@@ -28,8 +29,9 @@ function applyResponsePolicy(response: Response, pathname: string, requestId: st
     response.headers.set("Cache-Control", NO_STORE_CACHE_CONTROL);
   } else if (!response.headers.has("Cache-Control") && response.headers.get("Content-Type")?.startsWith("text/html")) {
     response.headers.set("Cache-Control", DYNAMIC_HTML_CACHE_CONTROL);
-  } else if (serverFunction && !response.headers.has("Cache-Control")) {
-    // Server functions return the signed-in user's data.
+  } else if ((serverFunction || isPrivateEndpoint(pathname)) && !response.headers.has("Cache-Control")) {
+    // Server functions and API, MCP and OAuth endpoints return a user's data
+    // or tokens. Next.js marked these dynamic responses no-store by default.
     response.headers.set("Cache-Control", NO_STORE_CACHE_CONTROL);
   }
 }

@@ -860,7 +860,7 @@
       "file": "lib/http/headers.ts",
       "kind": "content",
       "occurrences": 8,
-      "fingerprint": "944839bbb6d22d429573656617f82c02d8e2a242f6c0a8e69f2d59165e731073",
+      "fingerprint": "7d800f28996089297258c11a0c8c3ed49236a07583d098b83a41fa459bcf099e",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."
@@ -2569,8 +2569,8 @@
     {
       "file": "tests/http-runtime.test.ts",
       "kind": "content",
-      "occurrences": 2,
-      "fingerprint": "527ee1525d6ec54951b83d8c2f5362ac9aa4c214e85a9bb0d612c5cb10fe5133",
+      "occurrences": 3,
+      "fingerprint": "afdae3aaca1d951e9038bb3206721b1fc3ecfd1ce810c3f8abcda43ba407c056",
       "decision": "compatibility",
       "category": "stable-compatibility-content",
       "rationale": "Reviewed exact-file occurrence set containing internal, protocol, data, test, or explicitly labeled compatibility terminology."

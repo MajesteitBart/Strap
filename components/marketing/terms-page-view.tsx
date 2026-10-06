@@ -3,15 +3,16 @@ import {
   StrapSiteFooter,
   StrapSiteHeader,
 } from "@/components/marketing/strap-site-shell";
-import { isDatabaseConfigured } from "@/lib/env";
+import { useDeploymentInfo } from "@/components/deployment-info";
 import Link from "@/components/link";
 
 // Legal placeholder. The published sentence is the product's current claim
 // and stays verbatim until terms replace it.
 export function TermsPageView() {
+  const { configured } = useDeploymentInfo();
   return (
     <div className="strap-site">
-      <StrapSiteHeader configured={isDatabaseConfigured()} current="terms" />
+      <StrapSiteHeader configured={configured} current="terms" />
 
       <main>
         <StrapPageHero

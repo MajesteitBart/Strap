@@ -5,6 +5,7 @@ import {
   DYNAMIC_HTML_CACHE_CONTROL,
   isImmutablePath,
   isNoStorePath,
+  isPrivateEndpoint,
   netlifyHeadersFile,
   permanentRedirectFor,
   securityHeaders,
@@ -71,6 +72,15 @@ test("signed-in pages are private and never stored", () => {
   assert.equal(isImmutablePath("/assets/index-abc123.js"), true);
   assert.equal(isImmutablePath("/api/og"), false);
   assert.match(DYNAMIC_HTML_CACHE_CONTROL, /no-store/);
+});
+
+test("API, MCP and OAuth responses default to private and never stored", () => {
+  for (const path of ["/api/app/state", "/API/app/state", "/Api/App/State", "/api/auth/get-session", "/api/creed", "/mcp", "/MCP", "/token", "/register", "/revoke", "/authorize/decision", "/AUTHORIZE/decision", "/device/verify", "/auth/callback"]) {
+    assert.equal(isPrivateEndpoint(path), true, path);
+  }
+  for (const path of ["/home", "/apis", "/authorized-agents", "/learn/connect-strap-to-claude-code", "/assets/index.js"]) {
+    assert.equal(isPrivateEndpoint(path), false, path);
+  }
 });
 
 test("security headers switch CSP to enforcing only when asked", () => {
