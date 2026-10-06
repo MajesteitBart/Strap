@@ -27,6 +27,7 @@ import {
   normalizeProposalForSection,
   permissionToWritable,
   type AccentKey,
+  type SectionLoading,
   type ActivityEntry,
   type AgentPermission,
   type GettingStartedStepKey,
@@ -70,6 +71,7 @@ type StrapContextValue = {
   ) => void;
   renameSection: (sectionId: string, name: string) => void;
   setSectionAccent: (sectionId: string, accent: AccentKey) => void;
+  setSectionLoading: (sectionId: string, loading: SectionLoading) => void;
   duplicateSection: (sectionId: string) => void;
   deleteSection: (sectionId: string) => void;
   archiveSection: (sectionId: string) => void;
@@ -1732,6 +1734,22 @@ export function StrapProvider({
     }
   }
 
+  // Personal Straps only: company sections save through the per-section API,
+  // which doesn't carry a loading mode, so they always load.
+  function setSectionLoading(sectionId: string, loading: SectionLoading) {
+    if (latestStateRef.current.creedType === "company") return;
+    commitState((current) =>
+      nextMutationTick({
+        ...current,
+        sections: current.sections.map((section) => {
+          if (section.id !== sectionId) return section;
+          const { loading: _previous, ...rest } = section;
+          return loading === "on-demand" ? { ...rest, loading } : rest;
+        }),
+      }),
+    );
+  }
+
   function duplicateSection(sectionId: string) {
     commitState((current) => {
       const section = current.sections.find((item) => item.id === sectionId);
@@ -2612,6 +2630,7 @@ export function StrapProvider({
     addSectionAfter,
     renameSection,
     setSectionAccent,
+    setSectionLoading,
     duplicateSection,
     deleteSection,
     archiveSection,

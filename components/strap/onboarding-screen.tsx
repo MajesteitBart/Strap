@@ -415,7 +415,7 @@ export function OnboardingScreen({
                       <AnimatedBlock index={1}>
                         <p className="t-lede mx-auto mt-6 max-w-2xl text-[var(--strap-text-tertiary)]">
                           Copy this prompt and paste it into ChatGPT, Claude, or any AI you use. It
-                          turns everything you just shared into your full Strap.
+                          asks you a few quick questions, then writes a short Strap from your answers.
                         </p>
                       </AnimatedBlock>
                       <AnimatedBlock index={2}>

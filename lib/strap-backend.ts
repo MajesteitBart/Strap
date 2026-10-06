@@ -970,6 +970,7 @@ function serializeSectionPayload(section: StrapSection) {
     template: section.template,
     agentWritable: section.agentWritable,
     agentPermission: section.agentPermission,
+    ...(section.loading === "on-demand" ? { loading: "on-demand" } : {}),
   };
 }
 
@@ -999,6 +1000,7 @@ function hydrateSection(row: SectionRow): StrapSection {
     lastEditedType: row.last_edited_type,
     lastEditedLabel: toRelativeTime(row.last_edited_at) ?? "just now",
     archived: row.archived_at != null,
+    ...(row.payload.loading === "on-demand" ? { loading: "on-demand" as const } : {}),
   };
 }
 

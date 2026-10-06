@@ -41,6 +41,7 @@ StrapSwitcherItem,
 import {
 buildAgentReadPayload,
 buildVisibleStrapMarkdown,
+isOnDemand,
 isAccentKey,
 permissionToWritable,
 } from "@/lib/strap-data";
@@ -539,6 +540,9 @@ function listToolsFor(state: StrapState, credentialMode: StrapGrantMode) {
 
 const LEGACY_CREED_RESOURCE_URI = "creed://profile";
 const STRAP_RESOURCE_URI = "strap://profile";
+// The always-loaded part only: what `strap profile sync` writes into native
+// instruction files. Sections set to load on demand are left out.
+const STRAP_CORE_RESOURCE_URI = "strap://profile/core";
 
 function textToolResult(value: string) {
   return {
@@ -1268,6 +1272,7 @@ async function handleToolCall(
       accent: section.accent,
       agentWritable: section.agentWritable,
       permission: section.agentPermission,
+      loading: section.loading ?? "always",
       contentHtml: section.content,
       lastEditedBy: section.lastEditedBy,
       lastEditedType: section.lastEditedType,
@@ -2281,6 +2286,12 @@ async function handleRpcRequest(
           mimeType: "text/markdown",
         },
         {
+          uri: STRAP_CORE_RESOURCE_URI,
+          name: "Your Strap, always-loaded part",
+          description: "The profile without sections set to load only when relevant, as Markdown.",
+          mimeType: "text/markdown",
+        },
+        {
           uri: LEGACY_CREED_RESOURCE_URI,
           name: "Your Strap (compatibility URI)",
           description: "Compatibility alias for strap://profile.",
@@ -2292,16 +2303,19 @@ async function handleRpcRequest(
 
   if (rpcRequest.method === "resources/read") {
     const uri = (rpcRequest.params as { uri?: unknown } | undefined)?.uri;
-    if (uri !== STRAP_RESOURCE_URI && uri !== LEGACY_CREED_RESOURCE_URI) {
+    if (uri !== STRAP_RESOURCE_URI && uri !== LEGACY_CREED_RESOURCE_URI && uri !== STRAP_CORE_RESOURCE_URI) {
       return errorFor(rpcRequest.id, -32602, `Unknown resource: ${String(uri)}.`);
     }
+    const coreOnly = uri === STRAP_CORE_RESOURCE_URI;
     return responseFor(rpcRequest.id, {
       contents: [
         {
           uri,
           mimeType: "text/markdown",
           text: buildVisibleStrapMarkdown(
-            state.sections.filter((section) => section.agentPermission !== "hidden")
+            state.sections.filter(
+              (section) => section.agentPermission !== "hidden" && !(coreOnly && isOnDemand(section)),
+            )
           ).trim(),
         },
       ],

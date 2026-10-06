@@ -78,7 +78,11 @@ import {
   normalizeLegacyProposalDraft,
   normalizeProposalForSection,
   sectionToMarkdown,
+  alwaysLoadedWordCount,
+  isOnDemand,
+  STRAP_WORD_BUDGET,
   type AccentKey,
+  type SectionLoading,
   type ActivityEntry,
   type ActivityStatus,
   type Proposal,
@@ -711,6 +715,24 @@ type GitHubPullPreview = {
   sections: StrapSection[];
 };
 
+// How much of the profile every agent reads with each request. Sections marked
+// "Load only when relevant" don't count; agents fetch those when needed.
+function ProfileBudget({ sections }: { sections: StrapSection[] }) {
+  const words = useMemo(() => alwaysLoadedWordCount(sections), [sections]);
+  const over = words > STRAP_WORD_BUDGET;
+  return (
+    <p
+      className={cn(
+        "mt-1 text-[13px]",
+        over ? "text-[var(--strap-warning)]" : "text-[var(--strap-text-tertiary)]",
+      )}
+    >
+      {words} of {STRAP_WORD_BUDGET} words load with every agent request
+      {over ? ". Tighten it, or set rarely needed sections to load only when relevant." : ""}
+    </p>
+  );
+}
+
 // The header save indicator. Owns the animated clock so its 60s relative-label
 // ticker re-renders only this line, not the whole editor.
 function SaveStatus({
@@ -768,6 +790,7 @@ export function FileScreen() {
     addSectionAfter,
     renameSection,
     setSectionAccent,
+    setSectionLoading,
     deleteSection,
     archiveSection,
     archiveCreed,
@@ -978,6 +1001,8 @@ export function FileScreen() {
       void navigator.clipboard.writeText(sectionToMarkdown(section).trim()),
     setAccent: (sectionId: string, accent: AccentKey) =>
       setSectionAccent(sectionId, accent),
+    setLoading: (sectionId: string, loading: SectionLoading) =>
+      setSectionLoading(sectionId, loading),
     // Defer so the section menu closes before the dialog opens, letting the
     // dialog play its enter animation.
     requestDelete: (sectionId: string, name: string) =>
@@ -1832,6 +1857,9 @@ export function FileScreen() {
                       saving={state.saving}
                       lastSavedAt={state.lastSavedAt}
                     />
+                    {state.creedType !== "company" ? (
+                      <ProfileBudget sections={state.sections} />
+                    ) : null}
                   </div>
 
                   <div className="flex items-center gap-2 self-start">
@@ -2280,6 +2308,7 @@ export function FileScreen() {
                             state.creedType === "company" && isCompanyManager
                           }
                           canArchive={canArchiveSection}
+                          canSetLoading={state.creedType !== "company"}
                           canAddAfter={canCreateSections}
                           handlers={sectionHandlers}
                         />
@@ -2775,6 +2804,7 @@ type SectionCardHandlers = {
   history: (sectionId: string, name: string) => void;
   copy: (section: StrapSection) => void;
   setAccent: (sectionId: string, accent: AccentKey) => void;
+  setLoading: (sectionId: string, loading: SectionLoading) => void;
   requestDelete: (sectionId: string, name: string) => void;
   archive: (sectionId: string, name: string) => void;
   addSectionAfter: (sectionId: string) => void;
@@ -2802,6 +2832,7 @@ const SectionCardBound = memo(function SectionCardBound({
   proposals,
   canHistory,
   canArchive,
+  canSetLoading,
   canAddAfter,
   handlers,
 }: {
@@ -2819,6 +2850,7 @@ const SectionCardBound = memo(function SectionCardBound({
   proposals: Proposal[];
   canHistory: boolean;
   canArchive: boolean;
+  canSetLoading: boolean;
   canAddAfter: boolean;
   handlers: SectionCardHandlers;
 }) {
@@ -2856,6 +2888,11 @@ const SectionCardBound = memo(function SectionCardBound({
       }
       onCopy={() => handlers.copy(section)}
       onSetAccent={(accent) => handlers.setAccent(section.id, accent)}
+      onSetLoading={
+        canSetLoading
+          ? (loading) => handlers.setLoading(section.id, loading)
+          : undefined
+      }
       onDelete={() => handlers.requestDelete(section.id, section.name)}
       onArchive={
         canArchive
@@ -2893,6 +2930,7 @@ function SectionCard({
   onRename,
   onHistory,
   onSetAccent,
+  onSetLoading,
   onCopy,
   onDelete,
   onArchive,
@@ -2937,6 +2975,9 @@ function SectionCard({
   // is hidden when absent.
   onHistory?: () => void;
   onSetAccent: (accent: AccentKey) => void;
+  // Personal Straps only: whether agents get this section with every request
+  // or fetch it when a task needs it.
+  onSetLoading?: (loading: SectionLoading) => void;
   onCopy: () => void;
   onDelete: () => void;
   onArchive?: () => void;
@@ -3033,6 +3074,11 @@ function SectionCard({
                   style={{ color: accent }}
                 >
                   {section.name}
+                  {isOnDemand(section) ? (
+                    <span className="ml-2 align-middle text-[12px] font-normal text-[var(--strap-text-tertiary)]">
+                      Loads when relevant
+                    </span>
+                  ) : null}
                 </span>
 
                 {editingBy && editingBy.length > 0 ? (
@@ -3245,6 +3291,19 @@ function SectionCard({
                       }
                     >
                       History
+                    </AnimatedMenuIconItem>
+                  ) : null}
+                  {onSetLoading ? (
+                    <AnimatedMenuIconItem
+                      icon={ClockIcon}
+                      className="text-sm"
+                      onSelect={() =>
+                        onSetLoading(isOnDemand(section) ? "always" : "on-demand")
+                      }
+                    >
+                      {isOnDemand(section)
+                        ? "Load with every request"
+                        : "Load only when relevant"}
                     </AnimatedMenuIconItem>
                   ) : null}
                   {onArchive ? (

@@ -100,6 +100,8 @@ function inferAccent(name: string): AccentKey {
 // survive the round-trip, and strip the comment so it never reaches the
 // editor content. Files without the marker fall back to name inference.
 const ACCENT_COMMENT = /<!--\s*creed:accent=([a-z-]+)\s*-->\n?/g;
+// Sections set to load only when relevant carry a second marker the same way.
+const LOADING_COMMENT = /<!--\s*strap:loading=([a-z-]+)\s*-->\n?/g;
 
 function parseSectionBody(
   id: string,
@@ -108,9 +110,14 @@ function parseSectionBody(
   _index: number
 ): StrapSection {
   let markedAccent: AccentKey | undefined;
+  let markedOnDemand = false;
   const normalizedBody = body
     .replace(ACCENT_COMMENT, (_match, value: string) => {
       if (isAccentKey(value)) markedAccent = value;
+      return "";
+    })
+    .replace(LOADING_COMMENT, (_match, value: string) => {
+      if (value === "on-demand") markedOnDemand = true;
       return "";
     })
     .trim();
@@ -122,6 +129,7 @@ function parseSectionBody(
       template,
       name,
       accent: markedAccent ?? inferAccent(name),
+      ...(markedOnDemand ? { loading: "on-demand" as const } : {}),
       content,
       // Pulled sections must be agent-writable, matching every other
       // creation path (onboarding, in-app create, agent-create). If this

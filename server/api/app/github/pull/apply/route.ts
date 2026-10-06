@@ -2,7 +2,7 @@ import { requireApiAuth } from "@/lib/api-auth";
 import { canAdoptResolvedProfilePath } from "@/lib/profile-file";
 import { loadCreedState, persistCreedState } from "@/lib/strap-backend";
 import { resolveManagedCompanyCreedId } from "@/lib/strap-context";
-import type { CreedSection } from "@/lib/strap-data";
+import { isOnDemand, type CreedSection } from "@/lib/strap-data";
 
 type ApplyBody = {
   sections?: CreedSection[];
@@ -57,9 +57,15 @@ export async function POST(request: Request) {
         section.accent === "custom" && existing && !existing.archived
           ? existing.accent
           : section.accent;
+      // Likewise, files pushed before the loading marker existed don't say a
+      // section loads only when relevant. Keep that local setting.
+      const onDemand =
+        section.loading === "on-demand" ||
+        Boolean(existing && !existing.archived && isOnDemand(existing));
       return {
         ...section,
         accent,
+        loading: onDemand ? ("on-demand" as const) : undefined,
         agentWritable: true,
         agentPermission: "propose" as const,
       };

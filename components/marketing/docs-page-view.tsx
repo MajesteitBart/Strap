@@ -145,7 +145,7 @@ const sections: DocsSection[] = [
     title: "What goes in a Strap",
     paragraphs: [
       "A Strap has ten sections: five always-on core sections everyone fills in, and five optional ones that appear only once you use them. The whole thing is plain Markdown, sized to read end to end in under a minute.",
-      "Aim for specific over complete. A short profile that changes how AI replies beats a long one that reads like a resume.",
+      "Aim for specific over complete. A short profile that changes how AI replies beats a long one that reads like a resume. Every agent reads it before it answers, so keep the whole profile under about 500 words and put procedures in skills.",
     ],
   },
   {
@@ -154,9 +154,9 @@ const sections: DocsSection[] = [
     group: "Start here",
     title: "Section references",
     paragraphs: [
-      "Graph Tags are section references. They tell agents which other sections provide related context.",
+      "A section reference points agents to another section that holds related context.",
       "Typing # in the editor opens a section picker. It becomes a styled chip only when it matches a real visible section, case-insensitively. If it does not match a section, it stays plain hashtag text.",
-      "Use a short Graph Tags subsection near the end of each section when it helps. Two to four related sections is usually enough. Do not use Graph Tags for tools, apps, brands, themes, clients, or random labels unless those are actual section names.",
+      "Most sections need no references. Add one only when a section depends on another, and never for tools, apps, brands, themes or clients.",
     ],
   },
   {

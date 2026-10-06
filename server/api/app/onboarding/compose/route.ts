@@ -1,8 +1,8 @@
 import { requireApiAuth } from "@/lib/api-auth";
 import { recordAuditEvent } from "@/lib/audit-log";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { mergeComposedSections } from "@/lib/onboarding/compile";
 import { loadCreedState, persistCreedState } from "@/lib/strap-backend";
-import type { CreedSection } from "@/lib/strap-data";
 import { parseCreedMarkdown } from "@/lib/strap-markdown";
 
 // Onboarding compose via copy-paste (replaces the old MCP compose_creed). The
@@ -86,32 +86,16 @@ export async function POST(request: Request) {
   // Map parsed bodies onto the seed sections by id. parseCreedMarkdown normalizes
   // each heading to the same ids the seed uses, so this upgrades content while
   // keeping the seed spine (id/name/accent/template/permission). Unmatched seed
-  // sections keep their draft; extra pasted sections are ignored.
-  const parsedById = new Map<string, string>();
-  for (const section of parsed.sections) {
-    const text = section.content.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
-    if (!text || text === EMPTY_PLACEHOLDER) continue;
-    parsedById.set(section.id, section.content);
-  }
-
-  let matched = 0;
-  const nextSections: CreedSection[] = result.state.sections.map((section) => {
-    const content = parsedById.get(section.id);
-    if (!content || content === section.content) {
-      return section;
-    }
-    matched += 1;
-    return {
-      ...section,
-      content,
-      // Stays "propose": ongoing edits need approval; this paste is the one
-      // allowed initialize. Marked agent-authored so resume/composed detection
-      // treats the Strap as composed.
-      lastEditedBy: "Your assistant",
-      lastEditedType: "agent" as const,
-      lastEditedLabel: "just now",
-    };
-  });
+  // sections keep their draft; Constraints, Context and People are added when
+  // the interview filled them; other pasted sections are ignored.
+  const { sections: nextSections, matched } = mergeComposedSections(
+    result.state.sections,
+    parsed.sections,
+    (content) => {
+      const text = content.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+      return !text || text === EMPTY_PLACEHOLDER;
+    },
+  );
 
   if (matched === 0) {
     // Nothing recognizable in the paste; write nothing and let the client show

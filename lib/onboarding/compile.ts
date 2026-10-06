@@ -1,6 +1,9 @@
 import {
+  CONSTRAINTS_SECTION_ID,
+  CONTEXT_SECTION_ID,
   GOALS_SECTION_ID,
   IDENTITY_SECTION_ID,
+  PEOPLE_SECTION_ID,
   PREFERENCES_SECTION_ID,
   ROUTINES_SECTION_ID,
   WORK_SECTION_ID,
@@ -103,9 +106,10 @@ export function compileOnboardingDraft(
 // Section emit
 // ──────────────────────────────────────────────────────────────────
 
-function makeSection(
+export function makeSection(
   partial: Pick<StrapSection, "id" | "name" | "accent" | "content"> & {
     template?: StrapSection["template"];
+    loading?: StrapSection["loading"];
   },
 ): StrapSection {
   return {
@@ -122,6 +126,7 @@ function makeSection(
     lastEditedBy: "You",
     lastEditedType: "user",
     lastEditedLabel: "just now",
+    ...(partial.loading === "on-demand" ? { loading: "on-demand" as const } : {}),
   };
 }
 
@@ -141,20 +146,6 @@ function bulletList(items: string[]) {
     .join("")}</ul>`;
 }
 
-function graphTags(names: string[]) {
-  if (!names.length) return "";
-  const tags = names
-    .map((name) => {
-      const slug = name
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "");
-      return `<span class="creed-inline-tag" data-tag="${escapeHtml(slug)}">${escapeHtml(name)}</span>`;
-    })
-    .join(" ");
-  return `<h3>Graph Tags</h3><p>${tags}</p>`;
-}
-
 export function buildOnboardingPreviewSections(
   draft: OnboardingPreviewDraft,
 ): StrapSection[] {
@@ -164,35 +155,95 @@ export function buildOnboardingPreviewSections(
       name: "Identity",
       accent: "identity",
       template: "identity",
-      content: `${paragraphContent(draft.identityText) || `<p>${escapeHtml(draft.identityText)}</p>`}${graphTags(["Goals", "Work", "Preferences"])}`,
+      content: `${paragraphContent(draft.identityText) || `<p>${escapeHtml(draft.identityText)}</p>`}`,
     }),
     makeSection({
       id: GOALS_SECTION_ID,
       name: "Goals",
       accent: "projects",
       template: "focus",
-      content: `${paragraphContent(draft.goalsText) || `<p>${escapeHtml(draft.goalsText)}</p>`}${graphTags(["Identity", "Work", "Routines"])}`,
+      content: `${paragraphContent(draft.goalsText) || `<p>${escapeHtml(draft.goalsText)}</p>`}`,
     }),
     makeSection({
       id: WORK_SECTION_ID,
       name: "Work",
       accent: "tools",
       template: "freeform",
-      content: `${paragraphContent(WORK_STUB)}${graphTags(["Goals", "Preferences", "Routines"])}`,
+      content: `${paragraphContent(WORK_STUB)}`,
     }),
     makeSection({
       id: PREFERENCES_SECTION_ID,
       name: "Preferences",
       accent: "preferences",
       template: "principles",
-      content: `${bulletList(draft.preferences)}${graphTags(["Identity", "Work", "Routines"])}`,
+      content: `${bulletList(draft.preferences)}`,
     }),
     makeSection({
       id: ROUTINES_SECTION_ID,
       name: "Routines",
       accent: "workflows",
       template: "principles",
-      content: `${bulletList([ROUTINES_STUB])}${graphTags(["Goals", "Work", "Preferences"])}`,
+      content: `${bulletList([ROUTINES_STUB])}`,
+      // Routines matter for scheduling, not for every reply.
+      loading: "on-demand",
     }),
   ];
+}
+
+// Optional sections a pasted Strap may add when the onboarding interview
+// surfaced something for them. Onboarding never seeds these empty: an empty
+// section would still load into every prompt.
+export const COMPOSE_OPTIONAL_SECTIONS = [
+  { id: CONSTRAINTS_SECTION_ID, name: "Constraints", accent: "boundaries", template: "principles" },
+  { id: CONTEXT_SECTION_ID, name: "Context", accent: "tools", template: "freeform" },
+  { id: PEOPLE_SECTION_ID, name: "People", accent: "rose", template: "freeform", loading: "on-demand" },
+] as const satisfies ReadonlyArray<{
+  id: string;
+  name: string;
+  accent: StrapSection["accent"];
+  template: StrapSection["template"];
+  loading?: StrapSection["loading"];
+}>;
+
+/**
+ * Maps the sections parsed from a pasted Strap onto the seed. Seed sections
+ * keep their id, name and accent and take the pasted body; the optional
+ * sections above are appended when the paste has content for them; anything
+ * else is ignored. Parsed content must already be normalized HTML.
+ */
+export function mergeComposedSections(
+  seed: StrapSection[],
+  parsed: ReadonlyArray<{ id: string; content: string }>,
+  isEmpty: (content: string) => boolean,
+): { sections: StrapSection[]; matched: number } {
+  const parsedById = new Map<string, string>();
+  for (const section of parsed) {
+    if (!isEmpty(section.content)) parsedById.set(section.id, section.content);
+  }
+  const composed = (section: StrapSection, content: string): StrapSection => ({
+    ...section,
+    content,
+    // Stays "propose": ongoing edits need approval; this paste is the one
+    // allowed initialize. Marked agent-authored so resume/composed detection
+    // treats the Strap as composed.
+    lastEditedBy: "Your assistant",
+    lastEditedType: "agent",
+    lastEditedLabel: "just now",
+  });
+
+  let matched = 0;
+  const sections = seed.map((section) => {
+    const content = parsedById.get(section.id);
+    if (!content || content === section.content) return section;
+    matched += 1;
+    return composed(section, content);
+  });
+  const existing = new Set(sections.map((section) => section.id));
+  for (const optional of COMPOSE_OPTIONAL_SECTIONS) {
+    const content = parsedById.get(optional.id);
+    if (!content || existing.has(optional.id)) continue;
+    matched += 1;
+    sections.push(composed(makeSection({ ...optional, content }), content));
+  }
+  return { sections, matched };
 }
